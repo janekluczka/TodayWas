@@ -187,9 +187,15 @@ has bounced off heavier journal apps or pressure-inducing streak trackers before
 - FR-009: User can tap "help me start" on a journal entry, choose a tone on a 5-point scale (very
   bad/bad/neutral/good/very good), optionally add a few thoughts, and receive an AI-generated prompt
   personalized to that tone and the optional thoughts given — not dependent on the user's journal
-  history or habit data. Prompt can be regenerated up to 3 times per entry. Priority: must-have
+  history or habit data. Prompt can be regenerated up to 3 times per entry. Requires a signed-in
+  account (email or Google, per FR-007); unavailable to users without one. Priority: must-have
+  > Socrates: Counter-argument considered: gating an assistive feature behind login adds friction
+  > for users who haven't created an account yet. Resolution: kept — the account requirement lets
+  > the AI proxy rely on Supabase's own session verification for access control, rather than a
+  > separate app-level secret; core journaling/habit-tracking (FR-003, FR-002/FR-004) remain fully
+  > available with no account, so this doesn't touch the app's core no-login guarantee.
 - FR-010: User can tap "help me refine" on a journal entry they've written to get AI-assisted
-  refinement. Priority: nice-to-have
+  refinement. Requires a signed-in account, same as FR-009. Priority: nice-to-have
 
 ## Non-Functional Requirements
 
@@ -218,8 +224,12 @@ automatically or unprompted.
 ## Access Control
 
 The app is usable without login — data lives on-device (local, no server required). An optional
-account (email or Google sign-in) can be created to save/sync progress and data. Flat user model —
-no roles; every user has identical capabilities regardless of signed-in status.
+account (email or Google sign-in) can be created to save/sync progress and data. Core journaling and
+habit-tracking capabilities are identical regardless of signed-in status — no roles, no tiers on the
+core experience. The one exception is AI-assistance (FR-009, FR-010): "help me start" and "help me
+refine" require a signed-in account, since the server-side AI proxy authenticates callers via the
+user's Supabase session rather than any separate mechanism. A signed-out user can still journal and
+track habits fully; they just don't see the AI-assist entry points until they sign in.
 
 ## Non-Goals
 
