@@ -22,6 +22,14 @@ server-side piece that holds the Gemini API key and proxies "help me start" / "h
 requests (FR-009, FR-010), so the key is never embedded in the distributed APK where it would be
 trivially extractable. This document scopes to that single decision.
 
+**Correction (post-write):** FR-009 originally (incorrectly) specified that the AI prompt was
+personalized using "the user's own recent journal entries." That was wrong — per-PRD correction,
+"help me start" only ever uses the tone pick and the optional in-the-moment thoughts text; it never
+reads journal history or habit data. `context/foundation/prd.md` FR-009 and the Business Logic
+section have been corrected to match. This changes the proxy's shape: it's a pure stateless
+passthrough (tone + optional thoughts → Gemini → response), with no Supabase round-trip at all. The
+cross-check findings below reflect the corrected, simpler design.
+
 ## Recommendation
 
 **Run the AI proxy on Cloudflare Workers.**
@@ -32,6 +40,9 @@ lead was Supabase Edge Functions for "fewer moving parts" (same vendor as Auth/P
 anti-bias cross-check surfaced a real risk — cold-start latency on a synchronous, user-facing tap
 ("help me start" → wait → prompt appears) reading as the app freezing — significant enough to swap
 to Cloudflare Workers' faster, more battle-tested edge runtime despite the second-vendor overhead.
+Now that the proxy is confirmed to be a pure stateless passthrough (no journal-history lookup), the
+second-vendor overhead is the only real remaining downside — there's no Supabase coupling to give
+back in exchange, which makes Cloudflare Workers a cleaner win than the first pass suggested.
 
 ## Platform Comparison
 
@@ -69,38 +80,46 @@ feature together).
    (`wrangler`) on top of the Supabase CLI already needed for Auth/DB.
 2. Secrets now split across two vaults (Cloudflare Workers Secrets + Supabase secrets), raising
    drift/rotation-gap risk.
-3. Free tier CPU limit is 10ms/invocation — fine for a bare passthrough, tight if the proxy does any
-   real work (e.g. shaping a prompt from multiple journal entries).
-4. The proxy still needs to fetch the user's recent journal entries from Supabase to personalize the
-   prompt (FR-009) — so it isn't actually vendor-independent; there's still a Worker→Supabase
-   network hop, just now across an extra vendor boundary instead of staying internal to one.
-5. No native Postgres driver support in Workers' stateless edge model — journal-entry lookups go
-   through Supabase's HTTP Data API (PostgREST), not a drop-in detail.
+3. As a bare stateless passthrough with no request authentication of its own, the Worker has no
+   built-in way to tell a legitimate app request from any other HTTP client that discovers its
+   public URL — it's an open proxy to Gemini's API unless request auth is deliberately added.
+4. The "regenerate up to 3 times per entry" business rule (FR-009) has no server-side enforcement
+   point once the proxy doesn't touch Supabase or any per-entry state — as designed, it's a
+   client-side-only constraint in the Android app, trivially bypassable by any caller that skips the
+   app.
+5. Free tier CPU limit is 10ms/invocation — very unlikely to bind for a bare passthrough (mostly I/O
+   wait on the Gemini call, not CPU), but worth confirming once request-auth/validation logic is
+   added on top.
 
 ### Pre-Mortem — How This Could Fail
 
-The team deployed the Gemini-proxy Worker on Cloudflare, separate from Supabase. Six months later,
-it was a disaster. The Worker needed the user's recent journal entries to personalize prompts, so
-every "help me start" tap triggered a Worker-to-Supabase network hop before the Worker could even
-call Gemini — the exact latency problem they'd tried to avoid, just relocated across two vendors
-instead of one. Debugging a slow prompt meant checking Cloudflare's dashboard, Supabase's dashboard,
-and Google's Gemini console — three places for one feature. The Gemini key lived in Cloudflare
-Workers Secrets, completely separate from the Supabase secrets used everywhere else; during a rushed
-rotation after the free tier ran low, the developer updated the wrong vault, leaving a stale key
-live for two days because nothing failed loudly — it just quietly retried. What was meant to be a
-simple proxy became the most fragile, most vendor-spanning part of the app.
+The team deployed the Gemini-proxy Worker on Cloudflare as a bare stateless passthrough — tone and
+optional thoughts in, generated prompt out. Six months later, it was a disaster, but not for the
+reason anyone expected. Because the Worker had no way to verify a request came from the real app,
+someone found the Worker's URL in the APK's decompiled network layer within a week of a small public
+mention, and started hitting it directly with scripted requests — no journal entry, no regeneration
+cap, just free API calls running straight into the Gemini free tier's rate limit within days. The "3
+regenerations per entry" rule, which existed only in the Android app's local state, meant nothing to
+a client that skipped the app entirely. What was meant to be a two-hour proxy setup became a
+scramble to add request signing and rate limiting after the free tier was already exhausted by a
+stranger — the kind of guard that should have shipped on day one, not been patched on after the
+fact.
 
 ### Unknown Unknowns
 
-- Cloudflare Workers can't hold a persistent Postgres connection — journal-entry lookups need
-  Supabase's HTTP Data API, not a native driver, which isn't obvious from Cloudflare's marketing
-  docs.
-- The 10ms free-tier CPU limit is easy to hit once the proxy does more than bare passthrough.
-- Two separate secret vaults, no unified rotation workflow — has to be built manually.
-- No single trace/log view across Android app → Worker → Supabase → Gemini → back; debugging means
-  correlating timestamps across three dashboards.
-- Cloudflare's advertised sub-5ms cold start only covers its own compute — the effective latency now
-  includes a second network hop to Supabase that wasn't there in the co-located option.
+- The Worker has no way to distinguish a legitimate app request from any other HTTP client hitting
+  its public URL — without request authentication (e.g. a shared secret header, or verifying the
+  caller's Supabase session), it's effectively an open proxy to Gemini for anyone who finds the URL.
+- The regeneration cap (FR-009: max 3 per entry) has no server-side enforcement point in a stateless
+  design that never touches Supabase — it's a UI-only constraint today, not a real limit.
+- The 10ms free-tier CPU limit was the headline concern in the original (journal-history-fetching)
+  design; for a bare passthrough it's very unlikely to bind — the real cost/abuse risk shifted from
+  compute limits to unauthenticated request volume.
+- Outbound `fetch` calls to Gemini's API count against Workers' own subrequest limits (plan-
+  dependent) — worth confirming headroom once real traffic patterns are known.
+- Removing the Supabase dependency makes this Worker small and easy to reason about, but that
+  simplicity can also mean it gets under-engineered relative to the abuse surface it exposes — a
+  public endpoint that spends someone else's (Google's) API quota by design.
 
 ## Operational Story
 
@@ -122,13 +141,13 @@ simple proxy became the most fragile, most vendor-spanning part of the app.
 
 ## Risk Register
 
-| Risk                                                                                                   | Source                              | Likelihood | Impact | Mitigation                                                                                                                                                                               |
-| ------------------------------------------------------------------------------------------------------ | ----------------------------------- | ---------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Proxy still round-trips to Supabase for journal context, undermining the vendor-independence rationale | Devil's advocate                    | H          | M      | Accept the extra hop; benchmark actual end-to-end latency (Worker → Supabase Data API → Gemini → back) before shipping, not just Cloudflare's advertised cold start.                     |
-| Secret sprawl across two vaults (Cloudflare + Supabase) with no unified rotation workflow              | Devil's advocate / Unknown unknowns | M          | M      | Write down a rotation checklist (which key lives where) in `context/foundation/` once keys are actually provisioned; revisit if this becomes recurring friction.                         |
-| 10ms free-tier CPU limit gets tight if prompt-shaping logic grows                                      | Devil's advocate                    | L          | L      | Keep the Worker's logic to request-shaping + pass-through; move any heavier logic to Supabase if it grows. Monitor via `wrangler tail` during early testing.                             |
-| No cross-vendor request tracing; debugging a slow/failed prompt means correlating 3 dashboards         | Pre-mortem / Unknown unknowns       | M          | L      | Log a request ID at the Android app layer and echo it through the Worker's logs so at least manual correlation is possible.                                                              |
-| Gemini's 60 req/min free-tier limit is global to the API key, not per-user                             | Research finding                    | L          | M      | Not a Cloudflare-specific risk (applies equally to any hosting choice) — monitor usage once real users are live; add basic per-request throttling in the Worker if it becomes a problem. |
+| Risk                                                                                              | Source                                           | Likelihood | Impact | Mitigation                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Worker is an unauthenticated open proxy to Gemini — anyone who finds the URL can call it directly | Devil's advocate / Pre-mortem / Unknown unknowns | H          | H      | Require a shared secret header (or verify the caller's Supabase session/anon key) before forwarding to Gemini. Build this in from the first version, not as a follow-up.                                |
+| "3 regenerations per entry" cap (FR-009) has no server-side enforcement in a stateless design     | Devil's advocate / Unknown unknowns              | M          | M      | Accept as a client-side-only guard for the MVP given the timeline; note explicitly that it's bypassable, and revisit if abuse is observed. Combined with request auth above, this bounds the real risk. |
+| Secret sprawl across two vaults (Cloudflare + Supabase) with no unified rotation workflow         | Devil's advocate / Unknown unknowns              | M          | M      | Write down a rotation checklist (which key lives where) in `context/foundation/` once keys are actually provisioned; revisit if this becomes recurring friction.                                        |
+| Gemini's 60 req/min free-tier limit is global to the API key, not per-user                        | Research finding                                 | L          | M      | Monitor usage once real users are live; the request-auth mitigation above also bounds this by blocking non-app traffic.                                                                                 |
+| 10ms free-tier CPU limit                                                                          | Devil's advocate                                 | L          | L      | Very unlikely to bind for a bare passthrough plus auth check; monitor via `wrangler tail` during early testing.                                                                                         |
 
 ## Getting Started
 
@@ -137,12 +156,14 @@ simple proxy became the most fragile, most vendor-spanning part of the app.
    Cloudflare's CLI scaffolding flags have changed across versions — don't copy this verbatim
    without checking `npm create cloudflare@latest -- --help` first).
 2. `wrangler secret put GEMINI_API_KEY` — store the Gemini API key server-side, never in the Android
-   app.
-3. Implement the Worker: accept a tone + optional user-thoughts payload from the Android app, fetch
-   recent journal entries from Supabase's Data API (PostgREST) for personalization context, call the
-   Gemini API, return the generated prompt.
+   app. Also set a second secret (e.g. `wrangler secret put APP_SHARED_SECRET`) for request
+   authentication — see risk register above; this is not optional.
+3. Implement the Worker: verify the request-auth secret/header first and reject anything that
+   doesn't match, then accept a tone + optional user-thoughts payload from the Android app, call the
+   Gemini API, and return the generated prompt. No Supabase calls — this is a pure passthrough.
 4. `wrangler deploy` — ship it; note the returned Worker URL and wire it into the Android app's
    network layer (not yet built — this is a prerequisite the app's networking code will depend on).
+   The app must send the shared secret/auth header on every call.
 5. `wrangler tail` while testing the first few "help me start" taps end-to-end from a real device.
 
 ## Out of Scope

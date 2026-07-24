@@ -186,8 +186,8 @@ has bounced off heavier journal apps or pressure-inducing streak trackers before
 
 - FR-009: User can tap "help me start" on a journal entry, choose a tone on a 5-point scale (very
   bad/bad/neutral/good/very good), optionally add a few thoughts, and receive an AI-generated prompt
-  personalized to that tone and input from their own recent journal entries (not dependent on habit
-  data). Prompt can be regenerated up to 3 times per entry. Priority: must-have
+  personalized to that tone and the optional thoughts given — not dependent on the user's journal
+  history or habit data. Prompt can be regenerated up to 3 times per entry. Priority: must-have
 - FR-010: User can tap "help me refine" on a journal entry they've written to get AI-assisted
   refinement. Priority: nice-to-have
 
@@ -202,16 +202,18 @@ has bounced off heavier journal apps or pressure-inducing streak trackers before
 TodayWas computes each day's contribution intensity relative to the user's own historical range for
 that specific journal or habit, and — only when the user taps "help me start" or "help me refine" —
 presents a 5-point tone scale (very bad, bad, neutral, good, very good) to choose from, then
-generates a journal-entry prompt personalized to the chosen tone (and any optional thoughts the user
-provides) using the user's own recent journal entries, independent of any habit-tracking data.
+generates a journal-entry prompt personalized to the chosen tone and any optional thoughts the user
+provides. The AI prompt generation does not read the user's journal history or habit-tracking data —
+its only inputs are the chosen tone and the optional thoughts typed in the moment.
 
-Inputs are the user's own past journal entries (for prompt personalization) and the user's own
-logged values for a given journal or habit (for intensity calculation) — never data from other users
-or a fixed global scale. Output is (a) a per-day, per-habit/journal color intensity reflecting where
-that day falls in the user's own range, and (b) an on-demand, tone-matched journal prompt or
-refinement. The user encounters (a) on the main screen and detail views as colored cells, and (b)
-only when explicitly requesting help via "help me start" or "help me refine" on a journal entry —
-never shown automatically or unprompted.
+Inputs are the user's own logged values for a given journal or habit (for intensity calculation,
+never data from other users or a fixed global scale) and, separately, the tone pick plus optional
+thoughts typed at the moment of the request (for prompt personalization — no journal history
+involved). Output is (a) a per-day, per-habit/journal color intensity reflecting where that day
+falls in the user's own range, and (b) an on-demand, tone-matched journal prompt or refinement. The
+user encounters (a) on the main screen and detail views as colored cells, and (b) only when
+explicitly requesting help via "help me start" or "help me refine" on a journal entry — never shown
+automatically or unprompted.
 
 ## Access Control
 
