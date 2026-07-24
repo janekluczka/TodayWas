@@ -11,9 +11,9 @@ decisions.
   become read-only. Enforce this at write time, not just in the UI.
 - Core journaling and habit tracking must work with zero account (FR-008) — never gate them behind
   sign-in.
-- AI features ("help me start", "help me refine") must use journal content only for the specific
-  in-the-moment request — never log, store, or reuse it beyond that call (see the NFR in
-  @context/foundation/prd.md).
+- AI features ("help me start", "help me refine") never read journal or habit history — inputs are
+  only the tone pick and the optional thoughts typed in the moment (FR-009). They also require a
+  signed-in account (Supabase session); core journaling/habit-tracking above stays account-free.
 
 ## Project Structure
 

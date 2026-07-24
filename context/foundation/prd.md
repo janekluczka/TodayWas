@@ -200,8 +200,9 @@ has bounced off heavier journal apps or pressure-inducing streak trackers before
 ## Non-Functional Requirements
 
 - A user's journal content is never accessible to anyone other than the user — not shared with third
-  parties, and not used by AI-assisted features (FR-009, FR-010) beyond the specific request the
-  user makes in the moment.
+  parties, and never read by AI-assisted features (FR-009, FR-010) at all. The tone pick and any
+  optional thoughts the user types when requesting AI help are used only for that specific request,
+  never logged or reused beyond it.
 
 ## Business Logic
 

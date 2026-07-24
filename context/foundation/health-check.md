@@ -1,7 +1,7 @@
 ---
 project: "Today Was"
-checked_at: 2026-07-24T14:50:13Z
-health_status: needs-attention
+checked_at: 2026-07-24T21:47:42Z
+health_status: healthy
 context_type: brownfield
 language_family: java
 stack_assessment_available: false
@@ -18,8 +18,8 @@ audit_findings:
   moderate: 0
   low: 0
 test_runner_detected: true
-ci_provider: null
-recommended_fixes: 5
+ci_provider: github-actions (decided, not yet implemented)
+recommended_fixes: 2
 ---
 
 > **Adaptation note**: `/10x-health-check`'s built-in dispatch tables (marker files, audit tools,
@@ -27,6 +27,11 @@ recommended_fixes: 5
 > `language_family: java` is the closest schema enum (JVM/Gradle ecosystem); checks below were run
 > directly against the Gradle project rather than through the skill's built-in dispatch commands.
 > Same as `context/foundation/tech-stack.md`'s deviation note for the same underlying reason.
+>
+> **Re-run note**: this is a regeneration of the original 2026-07-24T14:50:13Z check, not a fresh
+> first pass — three of the five original findings (ktlint, JVM target, `.editorconfig`) were fixed
+> in the meantime. Per the health-check schema, re-runs overwrite rather than appending a log; the
+> prior version's reasoning for what was fixed and why lives in git history on this file.
 
 ## Dependency Health
 
@@ -47,11 +52,11 @@ as a fix.
 
 ```
 Tool: skipped — no built-in audit tool for Kotlin/Gradle projects (matches the skill's own "Java, Dart: skip" line)
-Recommended external tool: OWASP dependency-check-gradle plugin, or enable GitHub Dependabot alerts on the janekluczka/TodayWas remote once pushed
+Recommended external tool: OWASP dependency-check-gradle plugin, or enable GitHub Dependabot alerts on the janekluczka/TodayWas remote
 ```
 
-No audit was run — 0/0/0/0 above reflects "not checked," not "checked clean." Treat this as an open
-question, not a clean bill of health.
+No audit was run — 0/0/0/0 above reflects "not checked," not "checked clean." Still an open
+question, unchanged since the original check.
 
 ### Outdated Dependencies
 
@@ -59,20 +64,18 @@ question, not a clean bill of health.
 Packages with major version gaps: unable to determine precisely (no network dependency-resolution check run)
 ```
 
-One thing stands out on inspection of `gradle/libs.versions.toml`: `agp` (9.3.1), `kotlin` (2.2.10),
-and `compose-bom` (2026.02.01) are current/recent, but `coreKtx` (1.10.1), `lifecycleRuntimeKtx`
-(2.6.1), `activityCompose` (1.8.0), and `espressoCore` (3.5.1) look noticeably older by comparison —
-version numbers from a much earlier AndroidX release cycle sitting alongside a bleeding-edge
-AGP/Kotlin/Compose BOM. Worth a pass through Android Studio's version catalog update suggestions
-(right-click `libs.versions.toml` → "Show Gradle Version Catalog Updates" or the built-in lint
-check) to confirm whether these are intentionally pinned or just stale from the initial scaffold.
+Unchanged since the original check: `agp` (9.3.1), `kotlin` (2.2.10), and `compose-bom` (2026.02.01)
+are current/recent, but `coreKtx` (1.10.1), `lifecycleRuntimeKtx` (2.6.1), `activityCompose`
+(1.8.0), and `espressoCore` (3.5.1) look noticeably older by comparison. Still worth a pass through
+Android Studio's version catalog update suggestions to confirm whether these are intentionally
+pinned or just stale from the initial scaffold.
 
 ## Test Suite
 
 ```
 Test runner: JUnit 4 (local unit tests) + AndroidX Test/Espresso (instrumented tests)
 Tests found: 1 unit test (ExampleUnitTest — stock Android Studio placeholder), 1 instrumented test (ExampleInstrumentedTest — stock placeholder)
-Test execution: passing (testDebugUnitTest ran clean: 1 test, 0 failures, 0 errors)
+Test execution: passing (testDebugUnitTest re-ran clean: 1 test, 0 failures, 0 errors)
 ```
 
 ```
@@ -80,90 +83,76 @@ Configuration: app/build.gradle.kts (testImplementation/androidTestImplementatio
 Framework: JUnit 4.13.2 (unit), AndroidX Test 1.1.5 + Espresso 3.5.1 (instrumented)
 ```
 
-Instrumented tests were not attempted — they require a connected device/emulator, unavailable in
-this environment. Both test files are still the unmodified Android Studio template stubs
-(`addition_isCorrect`, `useAppContext`) — no project-specific test coverage exists yet, expected at
-this stage since no feature code has been written.
+Instrumented tests still not attempted (require a connected device/emulator, unavailable in this
+environment). Both test files are still the Android Studio template stubs — no project-specific test
+coverage exists yet, expected since no feature code has been written. One change since the original
+check: both stub files' wildcard imports (`import org.junit.Assert.*`) were expanded to explicit
+imports as part of the ktlint setup.
 
 ## CI/CD
 
 ```
-Provider: not detected
+Provider: not yet implemented (no .github/workflows/ files exist)
 Configuration: not found
 ```
 
-ℹ No CI/CD configuration detected. You'll set this up in the infrastructure and deployment lesson
-([Sprint Zero z Agentem: infrastruktura, walking skeleton i pierwszy deploy (M1L5)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l5)).
-For now, a local, working test runner is what matters for agent collaboration — confirmed above.
+Unlike the original check, a CI provider **has** since been decided — `tech-stack.md`'s
+`hints.ci_provider: github-actions` / `ci_default_flow: auto-deploy-on-merge` — and
+`context/changes/deployment/deployment-plan.md` Phase 4 plans a path-scoped GitHub Actions job for
+the Supabase Edge Function deploy. No workflow file has actually been created yet for either the
+Android app's own CI or the function deploy — both remain Category B (infrastructure lesson scope),
+now with a concrete plan rather than an open question.
 
-| Stage      | Status | Notes                                               |
-| ---------- | ------ | --------------------------------------------------- |
-| Lint       | ✗      | not configured                                      |
-| Test       | ✗      | not configured (works locally, not wired to CI)     |
-| Build      | ✗      | not configured                                      |
-| Type check | n/a    | Kotlin is statically typed; no separate step needed |
-| Security   | ✗      | not configured                                      |
+| Stage      | Status | Notes                                                                                 |
+| ---------- | ------ | ------------------------------------------------------------------------------------- |
+| Lint       | ✗      | not configured (ktlint runs locally via `./gradlew ktlintCheck`, not yet wired to CI) |
+| Test       | ✗      | not configured (works locally, not wired to CI)                                       |
+| Build      | ✗      | not configured                                                                        |
+| Type check | n/a    | Kotlin is statically typed; no separate step needed                                   |
+| Security   | ✗      | not configured                                                                        |
 
 ## Configuration
 
 ### Medium severity
 
-- **No Kotlin linter/formatter (ktlint or detekt)** — Kotlin has no built-in equivalent to
-  ESLint/Prettier; without one, an agent's generated code style will drift from whatever conventions
-  accumulate ad hoc. Fix: add the `ktlint-gradle` or `detekt` Gradle plugin.
 - **`buildTypes.release.optimization.enable = false`** in `app/build.gradle.kts` — release builds
   ship unminified/unobfuscated (no R8 shrinking). Fine for now with no release build in flight, but
   worth revisiting before the first real release build given the 2026-08-31 deadline. Fix: flip to
   `true` once release builds start getting tested, and add ProGuard/R8 keep rules as needed (a
-  `rules.keep` file already exists at `app/src/main/keepRules/`).
-- **`compileOptions` pinned to `JavaVersion.VERSION_11`** while `compileSdk` targets API 36 and
-  AGP/Kotlin are on recent versions — this combination is unusual; recent Android Studio "Empty
-  Activity" templates typically default `sourceCompatibility`/`targetCompatibility` to 17. Worth
-  confirming this was intentional rather than a template artifact.
+  `rules.keep` file already exists at `app/src/main/keepRules/`). Unchanged since the original
+  check.
 
 ### Low severity
 
-- **`.editorconfig`** — no formatting-consistency file across editors. Fix: add one (Android Studio
-  can generate a Kotlin-style `.editorconfig` from Preferences → Code Style).
-- **`.env.example` / secrets template** — not yet needed (no Supabase/Gemini keys wired up yet per
-  `tech-stack.md`), but worth adding once those integrations start, so secrets never get hardcoded
-  or accidentally committed. `local.properties` (the conventional place for local API keys in
-  Android) is already correctly gitignored.
+- **`.env.example` / secrets template** — still not yet needed (no Supabase/Gemini keys wired up yet
+  — `supabase/` doesn't exist in the repo, per `context/changes/deployment/deployment-plan.md` Phase
+  0 not having run yet), but worth adding once those integrations start, so secrets never get
+  hardcoded or accidentally committed. `local.properties` remains correctly gitignored.
 
-All other expected configuration is present: `.gitignore` is present and correctly excludes
-`local.properties`, build output, and IDE caches; no secrets or generated files are currently
-tracked in git.
+Resolved since the original check (no longer findings):
+
+- ~~No Kotlin linter/formatter~~ — ktlint installed (`gradle/libs.versions.toml`,
+  `app/build.gradle.kts`), `ktlintCheck` passes clean, enforced per `AGENTS.md`.
+- ~~`compileOptions` pinned to `JavaVersion.VERSION_11`~~ — bumped to `JavaVersion.VERSION_17`,
+  confirmed via a clean re-build.
+- ~~No `.editorconfig`~~ — added, including a deliberate
+  `ktlint_standard_function-naming = disabled` override for `@Composable` functions (see the file's
+  own inline comment for why).
+
+All other expected configuration remains present: `.gitignore` correctly excludes
+`local.properties`, build output, and IDE caches; no secrets or generated files are tracked in git.
 
 ## Stack Assessment Cross-Reference
 
 No stack-assessment.md found — that skill (`/10x-stack-assess`) is the brownfield equivalent of the
 greenfield `/10x-tech-stack-selector`, which was already run instead and produced
-`context/foundation/tech-stack.md`. Not applicable here.
+`context/foundation/tech-stack.md`. Not applicable here. Unchanged since the original check.
 
 ## Recommended Fixes
 
 ### Fix before agent work (Category A)
 
-#### 1. Add a Kotlin linter/formatter (ktlint or detekt)
-
-- **Impact**: without one, an agent has no enforced style convention to follow or be checked against
-  — its output style will be inconsistent with itself run to run.
-- **Severity**: medium
-- **Effort**: moderate (15-30 min)
-- **Fix**: add `org.jlleitschuh.gradle.ktlint` or `io.gitlab.arturbosch.detekt` to the root
-  `build.gradle.kts` plugins block, run once to establish a baseline.
-
-#### 2. Confirm `JavaVersion.VERSION_11` compile target is intentional
-
-- **Impact**: an agent reasoning about available Kotlin/Java language features may assume a newer
-  baseline (matching the recent AGP/Kotlin versions) than what's actually configured, generating
-  code that doesn't compile.
-- **Severity**: medium
-- **Effort**: quick (< 5 min) to check, moderate if a bump to 17 is needed and touches other config
-- **Fix**: open `app/build.gradle.kts`, confirm intent; if it should match a modern template, bump
-  `sourceCompatibility`/`targetCompatibility` to `JavaVersion.VERSION_17`.
-
-#### 3. Revisit `release.optimization.enable = false` before first real release build
+#### 1. Revisit `release.optimization.enable = false` before first real release build
 
 - **Impact**: not urgent today, but an agent generating release-build tooling later may not think to
   check this flag, and shipping a real Play Store build with minification off is a real regression
@@ -173,59 +162,46 @@ greenfield `/10x-tech-stack-selector`, which was already run instead and produce
 - **Fix**: set to `true` once the app has real release-build coverage; validate with
   `app/src/main/keepRules/rules.keep`.
 
-#### 4. Add `.editorconfig`
-
-- **Impact**: minor — prevents formatting drift across editors/IDEs, low agent impact on its own but
-  cheap to fix alongside the linter setup.
-- **Severity**: low
-- **Effort**: quick (< 5 min)
-- **Fix**: Android Studio → Preferences → Editor → Code Style → Kotlin → "Export to .editorconfig".
-
-#### 5. Set up dependency vulnerability scanning
+#### 2. Set up dependency vulnerability scanning
 
 - **Impact**: currently zero visibility into whether any pinned dependency (e.g. the notably-older
   `coreKtx`/`lifecycleRuntimeKtx`/`activityCompose`/`espressoCore` versions flagged above) carries a
   known CVE.
 - **Severity**: low today (no known findings, but none were checked either)
 - **Effort**: moderate (15-30 min)
-- **Fix**: add the `dependency-check-gradle` plugin, or enable GitHub Dependabot alerts once the
-  repo is pushed to `janekluczka/TodayWas`.
+- **Fix**: add the `dependency-check-gradle` plugin, or enable GitHub Dependabot alerts on the
+  `janekluczka/TodayWas` remote.
 
 ### Addressed in upcoming lessons (Category B)
 
-#### No CI/CD pipeline
+#### No CI/CD pipeline implemented yet
 
-- **Lesson**:
-  [Sprint Zero z Agentem: infrastruktura, walking skeleton i pierwszy deploy (M1L5)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l5)
-- **What you'll do there**: turn `tech-stack.md` into a deliberate platform/CI choice and wire up
-  the first deploy pipeline.
+- **Lesson**: covered by Module 1 Lesson 5 (infra research, done) and its output,
+  `context/changes/deployment/deployment-plan.md` Phase 4.
+- **What you'll do there**: the plan already specifies a path-scoped GitHub Actions job using
+  `supabase/setup-cli`; the Android app's own build/test/lint CI (per `tech-stack.md`'s
+  `ci_provider: github-actions`) is still an open implementation task, not yet a workflow file.
 
-#### No CLAUDE.md / AGENTS.md
+#### No deployment configuration implemented yet
 
-- **Lesson**:
-  [Agent Onboarding: Agents.md, AI Rules i feedback loops (M1L4)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l4)
-- **What you'll do there**: draft a first AGENTS.md/CLAUDE.md and score it, rather than generating a
-  premature stub now.
-
-#### No deployment configuration
-
-- **Lesson**:
-  [Sprint Zero z Agentem: infrastruktura, walking skeleton i pierwszy deploy (M1L5)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l5)
-- **What you'll do there**: pick a deployment target and produce a deploy plan (the MVP is
-  internal/sideload-only for now per `tech-stack.md`).
+- **Lesson**: covered by Module 1 Lesson 5 (done) — see `context/foundation/infrastructure.md` and
+  `context/changes/deployment/deployment-plan.md`.
+- **What you'll do there**: the plan exists in full (prerequisites through verification); Phase 0
+  (real Supabase account/CLI setup) hasn't been executed yet — that's a human-only step.
 
 ## Summary
 
-Health status: needs-attention
+Health status: healthy
 
-The project's foundation is solid — Kotlin + Compose from the official Android Studio template, a
-working JUnit test runner (verified: 1/1 passing), correctly gitignored secrets/build output, and
-dependency versions pinned via the Gradle version catalog. The gaps are typical for a
-just-scaffolded solo MVP: no linter/formatter yet, an unusual Java-11 compile target sitting next to
-otherwise-current AGP/Kotlin versions worth double-checking, release minification currently
-disabled, and zero dependency-vulnerability visibility since no audit tool has been run. None of
-these block agent-assisted development today, but the linter and Java-version check are worth 20
-minutes before diving into feature work.
+The project's foundation is solid and improved since the original check: Kotlin + Compose from the
+official Android Studio template, a working JUnit test runner (re-verified: 1/1 passing), ktlint
+enforced and clean, a consistent Java 17 compile target, a project `.editorconfig`, and correctly
+gitignored secrets/build output. The three Category A gaps from the original check (linter,
+Java-version mismatch, `.editorconfig`) are resolved. What remains open is lower-stakes: release
+minification is still off (fine until a real release build), and dependency-vulnerability scanning
+still isn't wired up. Neither blocks agent-assisted development today.
 
-Next step: address the linter and Java-version fixes above (quick wins), then proceed to agent
-onboarding (M1L4) to draft CLAUDE.md/AGENTS.md.
+Next step: proceed to implementation — the infrastructure decision and deployment plan are both
+recorded (`context/foundation/infrastructure.md`, `context/changes/deployment/deployment-plan.md`);
+Module 2 of the 10xDevs course (roadmap → implementation loop) is the natural next step in the
+course chain.
