@@ -1,0 +1,12 @@
+{
+  "name": "todaywas-docs",
+  "private": true,
+  "description": "Markdown formatting for project-authored docs (AGENTS.md, context/**). Not a build dependency of the Android app.",
+  "scripts": {
+    "format:md": "prettier --write \"AGENTS.md\" \"context/**/*.md\"",
+    "format:md:check": "prettier --check \"AGENTS.md\" \"context/**/*.md\""
+  },
+  "devDependencies": {
+    "prettier": "^3.5.0"
+  }
+}
