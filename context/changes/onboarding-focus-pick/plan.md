@@ -192,15 +192,22 @@ will build on.
 
 **File**: `gradle/libs.versions.toml`
 
-**Intent**: Add Room (runtime, ktx, compiler), Hilt (android, compiler) + Hilt Navigation Compose,
-the KSP plugin, and Robolectric + `kotlinx-coroutines-test` as test-only dependencies.
+**Intent**: Add Room (runtime, ktx, compiler), Hilt (android, compiler) + Hilt's Compose ViewModel
+integration, the KSP plugin, and Robolectric + `kotlinx-coroutines-test` as test-only dependencies.
 
 **Contract**: New `[versions]` entries for `room`, `hilt`, `ksp`, `robolectric`, `coroutinesTest`; new
 `[libraries]` entries `androidx-room-runtime`, `androidx-room-ktx`, `androidx-room-compiler`,
-`hilt-android`, `hilt-compiler`, `androidx-hilt-navigation-compose`, `robolectric`,
+`hilt-android`, `hilt-compiler`, `androidx-hilt-lifecycle-viewmodel-compose`, `robolectric`,
 `kotlinx-coroutines-test`; new `[plugins]` entries `ksp` (`com.google.devtools.ksp`) and `hilt`
 (`com.google.dagger.hilt.android`). Resolve current stable versions at implementation time rather
 than pinning guessed numbers here.
+
+Use `androidx.hilt:hilt-lifecycle-viewmodel-compose` for `hiltViewModel()`, NOT the older
+`androidx.hilt:hilt-navigation-compose` — the latter's `hiltViewModel()` is deprecated in favor of
+the former specifically so apps without Navigation Compose (this one has none — onboarding is a
+Dialog overlay, not a nav destination) avoid an unnecessary transitive `androidx.navigation`
+dependency. Import from `androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel`, not
+`androidx.hilt.navigation.compose.hiltViewModel`.
 
 #### 2. Root and app Gradle plugin wiring
 
@@ -215,7 +222,7 @@ root; `alias(libs.plugins.ksp)` and `alias(libs.plugins.hilt)` in `app/`; `app/b
 `dependencies` block gains `implementation(libs.androidx.room.runtime)`,
 `implementation(libs.androidx.room.ktx)`, `ksp(libs.androidx.room.compiler)`,
 `implementation(libs.hilt.android)`, `ksp(libs.hilt.compiler)`,
-`implementation(libs.androidx.hilt.navigation.compose)`, `testImplementation(libs.robolectric)`,
+`implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)`, `testImplementation(libs.robolectric)`,
 `testImplementation(libs.kotlinx.coroutines.test)`.
 
 #### 3. Hilt bootstrap
@@ -252,7 +259,7 @@ database (future slices add entities here, not a new database). Instantiated onl
 
 **Contract**: `@Entity(tableName = "user_preferences")` with `@PrimaryKey val id: Int = 0` (always
 0 — enforces a single row), `val focus: String` (stores `Focus.name`), `val onboardingCompleted: Boolean`.
-`@Database(entities = [UserPreferencesEntity::class], version = 1)` abstract class exposing
+`@Database(entities = [UserPreferencesEntity::class], version = 1, exportSchema = false)` abstract class exposing
 `abstract fun userPreferencesDao(): UserPreferencesDao`.
 
 #### 6. DAO
@@ -401,7 +408,8 @@ observeOnboardingState: ObserveOnboardingStateUseCase, private val selectFocus: 
 private val skipOnboarding: SkipOnboardingUseCase) : ViewModel()`, exposing `StateFlow<MainUiState>`
 (`MutableStateFlow` internally) and `val exitAppEvent: Flow<Unit>` (backed by a `Channel<Unit>`,
 per Critical Implementation Details). No manual factory — Hilt generates the wiring via
-`hiltViewModel()` at the call site (Phase 4).
+`hiltViewModel()` at the call site (Phase 4), imported from
+`androidx.hilt.lifecycle.viewmodel.compose`, not the deprecated `androidx.hilt.navigation.compose`.
 
 ### Success Criteria:
 
@@ -652,11 +660,11 @@ database to read the full local dataset from).
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — bb3eaae
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — bb3eaae
-- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug` — bb3eaae
-- [x] 1.4 Robolectric persistence round-trip test passes — bb3eaae
-- [x] 1.5 Repository retry-once-then-fail test passes — bb3eaae
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 2db4649
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — 2db4649
+- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug` — 2db4649
+- [x] 1.4 Robolectric persistence round-trip test passes — 2db4649
+- [x] 1.5 Repository retry-once-then-fail test passes — 2db4649
 
 ### Phase 2: Domain (use cases)
 
