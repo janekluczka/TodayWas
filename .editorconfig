@@ -7,3 +7,6 @@ ktlint_standard_function-naming = disabled
 # Project style: a blank line after the opening brace, before the first member,
 # reads better than a member immediately abutting the declaration line.
 ktlint_standard_no-empty-first-line-in-class-body = disabled
+# Allow `class Foo @Inject constructor(...)` on one line instead of forcing the
+# annotation and `constructor` keyword onto their own lines.
+ktlint_standard_annotation = disabled
