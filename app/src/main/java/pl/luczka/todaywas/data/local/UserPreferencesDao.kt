@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserPreferencesDao {
+
     @Query("SELECT * FROM user_preferences WHERE id = 0")
     fun observe(): Flow<UserPreferencesEntity?>
 

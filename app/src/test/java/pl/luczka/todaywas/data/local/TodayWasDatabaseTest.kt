@@ -12,6 +12,7 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class TodayWasDatabaseTest {
+
     @Test
     fun `saved focus survives recreating the database instance from the same file`() =
         runTest {

@@ -14,6 +14,7 @@ class OnboardingRepositoryImpl
     constructor(
         private val dao: UserPreferencesDao,
     ) : OnboardingRepository {
+
         override fun observeState(): Flow<OnboardingState> =
             dao.observe().map { entity ->
                 OnboardingState(

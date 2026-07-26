@@ -11,9 +11,11 @@ import pl.luczka.todaywas.data.local.UserPreferencesEntity
 import pl.luczka.todaywas.domain.model.Focus
 
 class OnboardingRepositoryImplTest {
+
     private class FakeDao(
         private val failuresBeforeSuccess: Int,
     ) : UserPreferencesDao {
+
         var upsertCallCount = 0
             private set
 

@@ -652,11 +652,11 @@ database to read the full local dataset from).
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [x] 1.4 Robolectric persistence round-trip test passes
-- [x] 1.5 Repository retry-once-then-fail test passes
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — bb3eaae
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — bb3eaae
+- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug` — bb3eaae
+- [x] 1.4 Robolectric persistence round-trip test passes — bb3eaae
+- [x] 1.5 Repository retry-once-then-fail test passes — bb3eaae
 
 ### Phase 2: Domain (use cases)
 
