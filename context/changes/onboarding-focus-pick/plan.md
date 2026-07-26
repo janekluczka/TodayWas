@@ -670,10 +670,10 @@ database to read the full local dataset from).
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.3 SkipOnboardingUseCase test passes
-- [ ] 2.4 SelectFocusUseCase test passes
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.3 SkipOnboardingUseCase test passes
+- [x] 2.4 SelectFocusUseCase test passes
 
 ### Phase 3: Presentation (MainViewModel)
 
