@@ -73,8 +73,8 @@ class MainViewModelTest {
             val state = viewModel.uiState.value
 
             assertTrue(state.showOnboardingDialog)
-            assertEquals(OnboardingMode.MANDATORY, state.onboardingMode)
-            assertEquals(OnboardingStep.WELCOME, state.onboardingStep)
+            assertEquals(OnboardingMode.MANDATORY, state.onboardingDialogState.onboardingMode)
+            assertEquals(OnboardingStep.WELCOME, state.onboardingDialogState.onboardingStep)
             assertNull(state.currentFocus)
         }
 
@@ -85,7 +85,7 @@ class MainViewModelTest {
 
             viewModel.onIntent(MainIntent.WelcomeContinue)
 
-            assertEquals(OnboardingStep.FOCUS_PICK, viewModel.uiState.value.onboardingStep)
+            assertEquals(OnboardingStep.FOCUS_PICK, viewModel.uiState.value.onboardingDialogState.onboardingStep)
         }
 
     @Test
@@ -100,10 +100,10 @@ class MainViewModelTest {
 
             val state = viewModel.uiState.value
             assertEquals(Focus.JOURNAL, state.currentFocus)
-            assertEquals(OnboardingStep.ACCOUNT_INFO, state.onboardingStep)
+            assertEquals(OnboardingStep.ACCOUNT_INFO, state.onboardingDialogState.onboardingStep)
             assertTrue(state.showOnboardingDialog)
-            assertFalse(state.isSaving)
-            assertFalse(state.saveError)
+            assertFalse(state.onboardingDialogState.isSaving)
+            assertFalse(state.onboardingDialogState.saveError)
         }
 
     @Test
@@ -133,9 +133,9 @@ class MainViewModelTest {
             viewModel.onIntent(MainIntent.ConfirmSelection)
 
             val state = viewModel.uiState.value
-            assertTrue(state.saveError)
-            assertFalse(state.isSaving)
-            assertEquals(OnboardingStep.FOCUS_PICK, state.onboardingStep)
+            assertTrue(state.onboardingDialogState.saveError)
+            assertFalse(state.onboardingDialogState.isSaving)
+            assertEquals(OnboardingStep.FOCUS_PICK, state.onboardingDialogState.onboardingStep)
         }
 
     @Test
@@ -162,7 +162,7 @@ class MainViewModelTest {
 
             viewModel.onIntent(MainIntent.AccountContinue)
 
-            assertEquals(OnboardingStep.ALL_SET, viewModel.uiState.value.onboardingStep)
+            assertEquals(OnboardingStep.ALL_SET, viewModel.uiState.value.onboardingDialogState.onboardingStep)
         }
 
     @Test
@@ -187,7 +187,7 @@ class MainViewModelTest {
 
             viewModel.onIntent(MainIntent.StepBack)
 
-            assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value.onboardingStep)
+            assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value.onboardingDialogState.onboardingStep)
         }
 
     @Test
@@ -201,8 +201,8 @@ class MainViewModelTest {
             viewModel.onIntent(MainIntent.StepBack)
 
             val state = viewModel.uiState.value
-            assertEquals(OnboardingStep.FOCUS_PICK, state.onboardingStep)
-            assertEquals(Focus.HABIT, state.selectedFocusInDialog)
+            assertEquals(OnboardingStep.FOCUS_PICK, state.onboardingDialogState.onboardingStep)
+            assertEquals(Focus.HABIT, state.onboardingDialogState.selectedFocusInDialog)
         }
 
     @Test
@@ -216,7 +216,7 @@ class MainViewModelTest {
 
             viewModel.onIntent(MainIntent.StepBack)
 
-            assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.onboardingStep)
+            assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.onboardingDialogState.onboardingStep)
         }
 
     @Test
@@ -233,7 +233,7 @@ class MainViewModelTest {
             runCurrent()
 
             assertEquals(listOf(MainUiEvent.ExitApp), events)
-            assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value.onboardingStep)
+            assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value.onboardingDialogState.onboardingStep)
             collectJob.cancel()
         }
 
@@ -275,9 +275,21 @@ class MainViewModelTest {
 
             val state = viewModel.uiState.value
             assertTrue(state.showOnboardingDialog)
-            assertEquals(OnboardingMode.REPICK, state.onboardingMode)
-            assertEquals(OnboardingStep.FOCUS_PICK, state.onboardingStep)
-            assertEquals(Focus.HABIT, state.selectedFocusInDialog)
+            assertEquals(OnboardingMode.REPICK, state.onboardingDialogState.onboardingMode)
+            assertEquals(OnboardingStep.FOCUS_PICK, state.onboardingDialogState.onboardingStep)
+            assertEquals(Focus.HABIT, state.onboardingDialogState.selectedFocusInDialog)
+        }
+
+    @Test
+    fun `DialogDismissed closes the dialog`() =
+        runTest {
+            val repository = FakeOnboardingRepository(OnboardingState(completed = true, focus = Focus.HABIT))
+            val viewModel = viewModel(repository)
+            viewModel.onIntent(MainIntent.ChangeFocusRequested)
+
+            viewModel.onIntent(MainIntent.DialogDismissed)
+
+            assertFalse(viewModel.uiState.value.showOnboardingDialog)
         }
 
     @Test
@@ -289,14 +301,14 @@ class MainViewModelTest {
             viewModel.onIntent(MainIntent.WelcomeContinue)
             viewModel.onIntent(MainIntent.FocusOptionSelected(Focus.HABIT))
             viewModel.onIntent(MainIntent.ConfirmSelection)
-            assertTrue(viewModel.uiState.value.saveError)
+            assertTrue(viewModel.uiState.value.onboardingDialogState.saveError)
             repository.saveFocusResult = Result.success(Unit)
 
             viewModel.onIntent(MainIntent.RetrySave)
 
             val state = viewModel.uiState.value
-            assertFalse(state.saveError)
+            assertFalse(state.onboardingDialogState.saveError)
             assertEquals(Focus.HABIT, state.currentFocus)
-            assertEquals(OnboardingStep.ACCOUNT_INFO, state.onboardingStep)
+            assertEquals(OnboardingStep.ACCOUNT_INFO, state.onboardingDialogState.onboardingStep)
         }
 }

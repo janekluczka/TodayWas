@@ -679,17 +679,17 @@ database to read the full local dataset from).
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 MainViewModel state-transition tests pass (4-step flow, Skip, back-navigation, retry, re-pick)
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — a78eb54
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — a78eb54
+- [x] 3.3 MainViewModel state-transition tests pass (4-step flow, Skip, back-navigation, retry, re-pick) — a78eb54
 
 ### Phase 4: UI
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
 
 #### Manual
 

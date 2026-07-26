@@ -25,4 +25,6 @@ sealed interface MainIntent {
     data object ChangeFocusRequested : MainIntent
 
     data object RetrySave : MainIntent
+
+    data object DialogDismissed : MainIntent
 }

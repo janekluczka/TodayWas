@@ -7,6 +7,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,14 +29,17 @@ class MainViewModel @Inject constructor(
             MainUiState(
                 currentFocus = null,
                 showOnboardingDialog = false,
-                onboardingMode = OnboardingMode.MANDATORY,
-                onboardingStep = OnboardingStep.WELCOME,
-                selectedFocusInDialog = null,
-                isSaving = false,
-                saveError = false,
+                onboardingDialogState =
+                    OnboardingDialogState(
+                        onboardingMode = OnboardingMode.MANDATORY,
+                        onboardingStep = OnboardingStep.WELCOME,
+                        selectedFocusInDialog = null,
+                        isSaving = false,
+                        saveError = false,
+                    ),
             ),
         )
-    val uiState: StateFlow<MainUiState> = _uiState
+    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     private val eventChannel = Channel<MainUiEvent>(Channel.BUFFERED)
     val events: Flow<MainUiEvent> = eventChannel.receiveAsFlow()
@@ -47,14 +51,18 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             observeOnboardingState().collect { state ->
+                val isFirstEmission = !onboardingStateInitialized
+                onboardingStateInitialized = true
                 _uiState.update { current ->
-                    if (!onboardingStateInitialized) {
-                        onboardingStateInitialized = true
+                    if (isFirstEmission) {
                         current.copy(
                             currentFocus = state.focus,
                             showOnboardingDialog = !state.completed,
-                            onboardingMode = OnboardingMode.MANDATORY,
-                            onboardingStep = OnboardingStep.WELCOME,
+                            onboardingDialogState =
+                                current.onboardingDialogState.copy(
+                                    onboardingMode = OnboardingMode.MANDATORY,
+                                    onboardingStep = OnboardingStep.WELCOME,
+                                ),
                         )
                     } else {
                         current.copy(currentFocus = state.focus)
@@ -76,40 +84,53 @@ class MainViewModel @Inject constructor(
             MainIntent.SkipOnboarding -> onSkipOnboarding()
             MainIntent.ChangeFocusRequested -> onChangeFocusRequested()
             MainIntent.RetrySave -> onRetrySave()
+            MainIntent.DialogDismissed -> onDialogDismissed()
         }
     }
 
     private fun onWelcomeContinue() {
-        _uiState.update { it.copy(onboardingStep = OnboardingStep.FOCUS_PICK) }
+        _uiState.update {
+            it.copy(onboardingDialogState = it.onboardingDialogState.copy(onboardingStep = OnboardingStep.FOCUS_PICK))
+        }
     }
 
     private fun onFocusOptionSelected(focus: Focus) {
-        _uiState.update { it.copy(selectedFocusInDialog = focus) }
+        _uiState.update {
+            it.copy(onboardingDialogState = it.onboardingDialogState.copy(selectedFocusInDialog = focus))
+        }
     }
 
     private fun onConfirmSelection() {
-        val focus = _uiState.value.selectedFocusInDialog ?: return
+        if (_uiState.value.onboardingDialogState.isSaving) return
+        val focus = _uiState.value.onboardingDialogState.selectedFocusInDialog ?: return
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, saveError = false) }
+            _uiState.update {
+                it.copy(onboardingDialogState = it.onboardingDialogState.copy(isSaving = true, saveError = false))
+            }
             val result = selectFocus(focus)
             _uiState.update { current ->
                 if (result.isSuccess) {
-                    when (current.onboardingMode) {
+                    when (current.onboardingDialogState.onboardingMode) {
                         OnboardingMode.MANDATORY ->
                             current.copy(
                                 currentFocus = focus,
-                                isSaving = false,
-                                onboardingStep = OnboardingStep.ACCOUNT_INFO,
+                                onboardingDialogState =
+                                    current.onboardingDialogState.copy(
+                                        isSaving = false,
+                                        onboardingStep = OnboardingStep.ACCOUNT_INFO,
+                                    ),
                             )
                         OnboardingMode.REPICK ->
                             current.copy(
                                 currentFocus = focus,
-                                isSaving = false,
                                 showOnboardingDialog = false,
+                                onboardingDialogState = current.onboardingDialogState.copy(isSaving = false),
                             )
                     }
                 } else {
-                    current.copy(isSaving = false, saveError = true)
+                    current.copy(
+                        onboardingDialogState = current.onboardingDialogState.copy(isSaving = false, saveError = true),
+                    )
                 }
             }
         }
@@ -120,7 +141,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun onAccountContinue() {
-        _uiState.update { it.copy(onboardingStep = OnboardingStep.ALL_SET) }
+        _uiState.update {
+            it.copy(onboardingDialogState = it.onboardingDialogState.copy(onboardingStep = OnboardingStep.ALL_SET))
+        }
     }
 
     private fun onFinishOnboarding() {
@@ -128,18 +151,25 @@ class MainViewModel @Inject constructor(
     }
 
     private fun onStepBack() {
-        when (_uiState.value.onboardingStep) {
+        when (_uiState.value.onboardingDialogState.onboardingStep) {
             OnboardingStep.FOCUS_PICK ->
-                _uiState.update { it.copy(onboardingStep = OnboardingStep.WELCOME) }
+                _uiState.update {
+                    it.copy(onboardingDialogState = it.onboardingDialogState.copy(onboardingStep = OnboardingStep.WELCOME))
+                }
             OnboardingStep.ACCOUNT_INFO ->
                 _uiState.update {
                     it.copy(
-                        onboardingStep = OnboardingStep.FOCUS_PICK,
-                        selectedFocusInDialog = it.currentFocus,
+                        onboardingDialogState =
+                            it.onboardingDialogState.copy(
+                                onboardingStep = OnboardingStep.FOCUS_PICK,
+                                selectedFocusInDialog = it.currentFocus,
+                            ),
                     )
                 }
             OnboardingStep.ALL_SET ->
-                _uiState.update { it.copy(onboardingStep = OnboardingStep.ACCOUNT_INFO) }
+                _uiState.update {
+                    it.copy(onboardingDialogState = it.onboardingDialogState.copy(onboardingStep = OnboardingStep.ACCOUNT_INFO))
+                }
             OnboardingStep.WELCOME -> eventChannel.trySend(MainUiEvent.ExitApp)
         }
     }
@@ -147,8 +177,24 @@ class MainViewModel @Inject constructor(
     private fun onSkipOnboarding() {
         if (_uiState.value.currentFocus == null) {
             viewModelScope.launch {
-                skipOnboarding()
-                _uiState.update { it.copy(currentFocus = Focus.BOTH, showOnboardingDialog = false) }
+                _uiState.update {
+                    it.copy(onboardingDialogState = it.onboardingDialogState.copy(isSaving = true, saveError = false))
+                }
+                val result = skipOnboarding()
+                _uiState.update { current ->
+                    if (result.isSuccess) {
+                        current.copy(
+                            currentFocus = Focus.BOTH,
+                            showOnboardingDialog = false,
+                            onboardingDialogState = current.onboardingDialogState.copy(isSaving = false),
+                        )
+                    } else {
+                        current.copy(
+                            onboardingDialogState =
+                                current.onboardingDialogState.copy(isSaving = false, saveError = true),
+                        )
+                    }
+                }
             }
         } else {
             _uiState.update { it.copy(showOnboardingDialog = false) }
@@ -159,14 +205,21 @@ class MainViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 showOnboardingDialog = true,
-                onboardingMode = OnboardingMode.REPICK,
-                onboardingStep = OnboardingStep.FOCUS_PICK,
-                selectedFocusInDialog = it.currentFocus,
+                onboardingDialogState =
+                    it.onboardingDialogState.copy(
+                        onboardingMode = OnboardingMode.REPICK,
+                        onboardingStep = OnboardingStep.FOCUS_PICK,
+                        selectedFocusInDialog = it.currentFocus,
+                    ),
             )
         }
     }
 
     private fun onRetrySave() {
         onConfirmSelection()
+    }
+
+    private fun onDialogDismissed() {
+        onFinishOnboarding()
     }
 }
