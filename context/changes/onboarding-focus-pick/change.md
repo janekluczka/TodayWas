@@ -1,7 +1,7 @@
 ---
 change_id: onboarding-focus-pick
 title: Onboarding focus pick
-status: planned
+status: implementing
 created: 2026-07-25
 updated: 2026-07-26
 archived_at: null
