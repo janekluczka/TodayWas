@@ -62,6 +62,14 @@
   actually needed — the minimal `NavDisplay` setup works fine without them.
 - **Applies to**: plan, plan-review, implement, impl-review
 
+## Cross-layer mapping (entity↔domain, domain↔UI) lives in its own dedicated file
+
+- **Context**: Any repository or ViewModel mapping between two layers' data shapes
+- **Problem**: The first draft of `JournalRepositoryImpl` mapped `JournalEntryEntity` to
+  `JournalEntry` inline as a private extension function inside the repository class itself.
+- **Rule**: Put mapping extension functions (`fun XxxEntity.toDomain(): Xxx`, `fun Xxx.toUiState(): XxxUi`, etc.) in their own file named after what they map (e.g. `JournalEntryEntityMapper.kt`), not as a private method buried inside the repository/ViewModel class that happens to use them. Applies at every layer boundary — entity→domain in repositories, domain→UI-facing shape in ViewModels.
+- **Applies to**: plan, plan-review, implement, impl-review
+
 ## Every screen and design-system component ships with light/dark previews
 
 - **Context**: Every screen and :core:designsystem component
