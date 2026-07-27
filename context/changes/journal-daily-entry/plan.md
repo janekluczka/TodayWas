@@ -446,28 +446,28 @@ S-03 adds its own entity to this same database.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [x] 1.4 Robolectric round-trip test passes for `JournalEntryDao`
-- [x] 1.5 Repository retry-once-then-fail test passes for `JournalRepositoryImpl`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 9eed819
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — 9eed819
+- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug` — 9eed819
+- [x] 1.4 Robolectric round-trip test passes for `JournalEntryDao` — 9eed819
+- [x] 1.5 Repository retry-once-then-fail test passes for `JournalRepositoryImpl` — 9eed819
 
 ### Phase 2: Domain (use cases)
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.3 `AddJournalEntryUseCase` test passes
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — f420d67
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — f420d67
+- [x] 2.3 `AddJournalEntryUseCase` test passes — f420d67
 
 ### Phase 3: Presentation (ViewModels)
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 `MainViewModelTest` passes (focus-gating, addableSlots derivation, intent→event mapping)
-- [ ] 3.4 `AddJournalEntryViewModelTest` passes (slot selection, save success/failure, events)
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 `MainViewModelTest` passes (focus-gating, addableSlots derivation, intent→event mapping)
+- [x] 3.4 `AddJournalEntryViewModelTest` passes (slot selection, save success/failure, events)
 
 ### Phase 4: UI
 
