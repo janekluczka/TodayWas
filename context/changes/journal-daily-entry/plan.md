@@ -456,9 +456,9 @@ S-03 adds its own entity to this same database.
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.3 `AddJournalEntryUseCase` test passes
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.3 `AddJournalEntryUseCase` test passes
 
 ### Phase 3: Presentation (ViewModels)
 
