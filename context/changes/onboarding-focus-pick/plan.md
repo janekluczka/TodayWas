@@ -888,32 +888,32 @@ database to read the full local dataset from).
 
 #### Automated
 
-- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 5.3 Debug build compiles: `./gradlew.bat assembleDebug`
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — f531320
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck` — f531320
+- [x] 5.3 Debug build compiles: `./gradlew.bat assembleDebug` — f531320
 
 #### Manual
 
-- [x] 5.4 Fresh install shows the Welcome page; back press exits the app from there
+- [x] 5.4 Fresh install shows the Welcome page; back press exits the app from there — f531320
 - [x] 5.5 All four pages flow in order (Welcome → Focus-pick → Account → All-set) via the primary
-      button and persist across relaunch
+      button and persist across relaunch — f531320
 - [x] 5.6 Back press at each page moves to the previous page, pre-filling Focus-pick from the
-      confirmed choice when backing up from Account
+      confirmed choice when backing up from Account — f531320
 - [x] 5.7 Skip on Welcome/Focus-pick defaults to "Both"; Skip on Account/All-set preserves the
-      already-chosen focus
+      already-chosen focus — f531320
 - [x] 5.8 Forced write-failure on Focus-pick shows the inline error, primary button switches to
-      "Try again" with a loading spinner while saving, and retrying succeeds
+      "Try again" with a loading spinner while saving, and retrying succeeds — f531320
 
 ### Phase 6: Navigation 3 for root routing
 
 #### Automated
 
-- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 6.3 Debug build compiles: `./gradlew.bat assembleDebug`
+- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — f531320
+- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck` — f531320
+- [x] 6.3 Debug build compiles: `./gradlew.bat assembleDebug` — f531320
 
 #### Manual
 
 - [x] 6.4 Fresh install lands on Welcome; finishing onboarding (or Skip) lands on MainScreen;
-      relaunching after onboarding goes straight to MainScreen
-- [x] 6.5 System back-press on MainScreen still exits/backgrounds the app (not a blank screen)
+      relaunching after onboarding goes straight to MainScreen — f531320
+- [x] 6.5 System back-press on MainScreen still exits/backgrounds the app (not a blank screen) — f531320
