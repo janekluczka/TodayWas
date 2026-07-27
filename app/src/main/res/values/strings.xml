@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">Today Was...</string>
+
+    <string name="main_top_bar_title">TodayWas</string>
+    <string name="main_empty_state">No entries yet</string>
+
+    <string name="focus_journal">Journaling</string>
+    <string name="focus_habit">Habit tracking</string>
+    <string name="focus_both">Both</string>
+
+    <string name="onboarding_skip">Skip</string>
+
+    <string name="onboarding_welcome_title">Welcome to TodayWas</string>
+    <string name="onboarding_welcome_description">Track your journal entries and habits, all in one place.</string>
+    <string name="onboarding_welcome_cta">Get started</string>
+
+    <string name="onboarding_focus_pick_title">What would you like to focus on?</string>
+    <string name="onboarding_focus_pick_error">Something went wrong. Please try again.</string>
+    <string name="onboarding_focus_pick_retry">Try again</string>
+    <string name="onboarding_focus_pick_confirm">Confirm</string>
+
+    <string name="onboarding_account_description">Create an account to sync your data across devices.</string>
+    <string name="onboarding_account_create_cta">Create account</string>
+    <string name="onboarding_account_continue_cta">Continue</string>
+
+    <string name="onboarding_all_set_title">All set!</string>
+    <string name="onboarding_all_set_cta">Get started</string>
 </resources>
