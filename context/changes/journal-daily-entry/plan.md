@@ -464,26 +464,26 @@ S-03 adds its own entity to this same database.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 `MainViewModelTest` passes (focus-gating, addableSlots derivation, intent→event mapping)
-- [x] 3.4 `AddJournalEntryViewModelTest` passes (slot selection, save success/failure, events)
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 4b21fc1
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — 4b21fc1
+- [x] 3.3 `MainViewModelTest` passes (focus-gating, addableSlots derivation, intent→event mapping) — 4b21fc1
+- [x] 3.4 `AddJournalEntryViewModelTest` passes (slot selection, save success/failure, events) — 4b21fc1
 
 ### Phase 4: UI
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 4.4 Main screen shows Journal section + "Add entry" (Journal/Both focus) or placeholder
+- [x] 4.4 Main screen shows Journal section + "Add entry" (Journal/Both focus) or placeholder
       (Habit focus)
-- [ ] 4.5 Add-entry flow (Today default) saves and appears in the list immediately
-- [ ] 4.6 Entries persist across relaunch
-- [ ] 4.7 Tapping a list entry opens the read-only detail screen with matching date/text
-- [ ] 4.8 "Add entry" narrows to Yesterday-only after Today is logged, then disappears after both
+- [x] 4.5 Add-entry flow (Today default) saves and appears in the list immediately
+- [x] 4.6 Entries persist across relaunch
+- [x] 4.7 Tapping a list entry opens the read-only detail screen with matching date/text
+- [x] 4.8 "Add entry" narrows to Yesterday-only after Today is logged, then disappears after both
       are logged
-- [ ] 4.9 Forced write-failure shows an inline error and retry succeeds
+- [x] 4.9 Forced write-failure shows an inline error and retry succeeds

@@ -4,6 +4,14 @@
     <string name="main_top_bar_title">TodayWas</string>
     <string name="main_empty_state">No entries yet</string>
 
+    <string name="main_journal_section_title">Journal</string>
+    <string name="main_journal_empty_state">No entries yet — add one to get started.</string>
+    <string name="main_habit_placeholder">Habit tracking is coming soon.</string>
+
+    <string name="main_fab_add_journal">Add journal</string>
+    <string name="content_description_add">Add</string>
+    <string name="content_description_back">Back</string>
+
     <string name="focus_journal">Journaling</string>
     <string name="focus_habit">Habit tracking</string>
     <string name="focus_both">Both</string>
@@ -25,4 +33,11 @@
 
     <string name="onboarding_all_set_title">All set!</string>
     <string name="onboarding_all_set_cta">Get started</string>
+
+    <string name="journal_add_entry_title">New entry</string>
+    <string name="journal_add_entry_text_label">What\'s on your mind?</string>
+    <string name="journal_add_entry_save_cta">Save</string>
+    <string name="journal_add_entry_error">Something went wrong. Please try again.</string>
+
+    <string name="journal_detail_title">Journal entry</string>
 </resources>

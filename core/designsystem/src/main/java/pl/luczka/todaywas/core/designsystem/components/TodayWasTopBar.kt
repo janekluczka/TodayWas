@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.core.designsystem.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBar
@@ -16,11 +17,13 @@ import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 fun TodayWasTopBar(
     title: String,
     modifier: Modifier = Modifier,
+    navigationIcon: @Composable () -> Unit = {},
     actions: @Composable () -> Unit = {},
 ) {
     TopAppBar(
         title = { TodayWasText(text = title) },
         modifier = modifier,
+        navigationIcon = navigationIcon,
         actions = { actions() },
     )
 }
@@ -33,6 +36,13 @@ private fun TodayWasTopBarPreview(
     DesignSystemPreviewTheme {
         TodayWasTopBar(
             title = "TodayWas",
+            navigationIcon = {
+                if (withAction) {
+                    TodayWasIconButton(onClick = {}) {
+                        TodayWasIcon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            },
             actions = {
                 if (withAction) {
                     TodayWasIconButton(onClick = {}) {

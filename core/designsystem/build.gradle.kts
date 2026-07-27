@@ -8,7 +8,7 @@ android {
     namespace = "pl.luczka.todaywas.core.designsystem"
     compileSdk {
         version =
-            release(36) {
+            release(37) {
                 minorApiLevel = 1
             }
     }

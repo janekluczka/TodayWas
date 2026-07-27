@@ -4,9 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
+import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen
 import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
 
@@ -26,6 +30,11 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
         entryProvider =
             entryProvider {
                 entry<OnboardingKey> {
@@ -37,7 +46,32 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                     )
                 }
                 entry<MainKey> {
-                    MainScreen()
+                    MainScreen(
+                        onAddEntryClicked = { availableSlots -> backStack.add(AddJournalEntryKey(availableSlots)) },
+                        onJournalEntryClicked = { entry ->
+                            backStack.add(
+                                JournalEntryDetailKey(
+                                    date = entry.date.toString(),
+                                    text = entry.text,
+                                    createdAt = entry.createdAt.toEpochMilli(),
+                                ),
+                            )
+                        },
+                    )
+                }
+                entry<AddJournalEntryKey> { key ->
+                    AddJournalEntryScreen(
+                        availableSlots = key.availableSlots,
+                        onSaved = { backStack.removeLastOrNull() },
+                        onCancelled = { backStack.removeLastOrNull() },
+                    )
+                }
+                entry<JournalEntryDetailKey> { key ->
+                    JournalEntryDetailScreen(
+                        date = key.date,
+                        text = key.text,
+                        onBack = { backStack.removeLastOrNull() },
+                    )
                 }
             },
     )
