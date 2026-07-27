@@ -60,6 +60,16 @@
   `NavDisplay`/ViewModel again. Skip `lifecycle-viewmodel-navigation3`/`entryDecorators` and
   `adaptive-navigation3` until per-entry ViewModel scoping or large-screen multi-pane layouts are
   actually needed — the minimal `NavDisplay` setup works fine without them.
+  **Update (journal-daily-entry)**: per-entry ViewModel scoping stopped being optional the moment
+  a screen's ViewModel takes per-navigation data via Hilt assisted injection (e.g.
+  `AddJournalEntryViewModel`'s `availableSlots`) and can be re-entered more than once. Without
+  `rememberViewModelStoreNavEntryDecorator()`, revisiting the same destination type reuses the
+  *first* visit's cached ViewModel instance — the assisted-injected constructor args from later
+  visits are silently ignored, and any retained state (typed text, etc.) leaks across visits. This
+  surfaced as a real bug (re-opening "Add entry" for a second day showed the first day's stale
+  text and stale addable-slots). Add `lifecycle-viewmodel-navigation3` and wire
+  `rememberViewModelStoreNavEntryDecorator()` (alongside `rememberSaveableStateHolderNavEntryDecorator()`)
+  as soon as any screen reached via Nav3 needs a ViewModel constructed from per-entry data.
 - **Applies to**: plan, plan-review, implement, impl-review
 
 ## Cross-layer mapping (entity↔domain, domain↔UI) lives in its own dedicated file

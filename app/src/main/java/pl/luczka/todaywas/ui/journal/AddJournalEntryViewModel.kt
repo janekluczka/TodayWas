@@ -30,6 +30,13 @@ class AddJournalEntryViewModel
             fun create(availableSlots: List<JournalDateSlot>): AddJournalEntryViewModel
         }
 
+        init {
+            require(availableSlots.isNotEmpty()) {
+                "AddJournalEntryViewModel requires at least one available slot; the caller " +
+                    "(MainScreen's FAB) should never navigate here otherwise."
+            }
+        }
+
         private val _uiState =
             MutableStateFlow(
                 AddJournalEntryUiState(

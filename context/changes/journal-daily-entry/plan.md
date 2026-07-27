@@ -329,6 +329,13 @@ a `LaunchedEffect` exactly like `OnboardingScreen`, calling the new `onAddEntryC
 
 **Contract**: `MainScreen(onAddEntryClicked: (List<JournalDateSlot>) -> Unit, onJournalEntryClicked: (JournalEntry) -> Unit, viewModel: MainViewModel = hiltViewModel())`.
 
+**As built** (superseded during manual verification, per live UI feedback): the "Add entry"
+action is not an inline `TodayWasButton` in the Journal section — it's an expandable FAB
+(`MainFab`, new `TodayWasFloatingActionButton`/`TodayWasExtendedFloatingActionButton` design-system
+components), gated on the same `addableSlots`/`focus` condition the plan intended. It behaves as a
+plain single-tap FAB today since habit tracking (S-03) contributes no second action yet; the
+expand-to-menu behavior activates automatically once a second action exists.
+
 #### 4. Add-entry screen
 
 **File**: `app/src/main/java/pl/luczka/todaywas/ui/journal/AddJournalEntryScreen.kt`
@@ -339,6 +346,21 @@ it's for, no toggle), a `TodayWasTextField` for the entry text, and a `TodayWasB
 save action (disabled while `text` is blank or `isSaving`).
 
 **Contract**: `AddJournalEntryScreen(availableSlots: List<JournalDateSlot>, onSaved: () -> Unit, onCancelled: () -> Unit, viewModel: AddJournalEntryViewModel = ...)`.
+
+**As built** (superseded during manual verification, per live UI feedback across several rounds):
+- The Today/Yesterday picker is not a `TodayWasRadioOption` pair — it's a bespoke calendar-strip
+  `DayStrip`/`DayCard` built on `HorizontalPager` (fixed-width cards, `userScrollEnabled = false`,
+  page index = the date's epoch-day so no true infinite-scroll trickery is needed). Only the
+  TODAY/YESTERDAY cards are ever tappable; every other card shown (for calendar-strip context) is
+  disabled. Chosen over `TodayWasRadioOption` because the user explicitly wanted a
+  "full-width, cards-in-a-row, selected-day-centered" calendar-strip feel ("like a clock pager on
+  iOS") rather than a plain two-button toggle — this is real added complexity relative to the
+  original plan, deliberately accepted for that UX, not an oversight.
+- Save moved from a bottom `TodayWasButtonWithLoading` into `TodayWasTopBar`'s `actions` slot
+  (new `navigationIcon` param added to `TodayWasTopBar` to carry the back icon instead).
+- The inline error text was replaced with a `TodayWasSnackbarHost`/`SnackbarHostState` (new
+  `snackbarHost` param added to `TodayWasScaffold`), triggered by a `LaunchedEffect` keyed on
+  `uiState.saveError`.
 
 #### 5. Detail screen
 

@@ -40,6 +40,8 @@ import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 fun MainScreen(
@@ -101,6 +103,10 @@ private fun MainFab(
         )
     if (actions.isEmpty()) return
 
+    // actions.size is always 1 today (only journal has a destination), so this FAB behaves as a
+    // plain single-tap button and the expand branch below never triggers. It becomes a real
+    // speed-dial automatically once a second action exists (e.g. habit tracking in S-03) — no
+    // further changes needed here when that happens.
     var expanded by remember { mutableStateOf(false) }
 
     Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -163,7 +169,7 @@ private fun JournalEntryListItem(
                 .clickable(onClick = onClick)
                 .padding(vertical = 8.dp),
     ) {
-        TodayWasText(text = entry.date.toString())
+        TodayWasText(text = entry.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
         TodayWasText(text = entry.text, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }

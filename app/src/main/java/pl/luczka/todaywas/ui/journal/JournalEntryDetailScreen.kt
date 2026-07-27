@@ -17,6 +17,9 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
 import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 fun JournalEntryDetailScreen(
@@ -47,7 +50,7 @@ fun JournalEntryDetailScreen(
                     .padding(innerPadding)
                     .padding(24.dp),
         ) {
-            TodayWasText(text = date)
+            TodayWasText(text = LocalDate.parse(date).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
             TodayWasText(text = text)
         }
     }
