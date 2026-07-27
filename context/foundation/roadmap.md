@@ -3,7 +3,7 @@ project: "TodayWas"
 version: 1
 status: draft
 created: 2026-07-25
-updated: 2026-07-25
+updated: 2026-07-27
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -37,7 +37,7 @@ Vision frames daily journaling as the primary act and habit tracking as optional
 | ID   | Change ID                    | Outcome (user can …)                                              | Prerequisites  | PRD refs             | Status   |
 | ---- | ----------------------------- | ------------------------------------------------------------------ | -------------- | --------------------- | -------- |
 | F-01 | supabase-auth-foundation       | (foundation) Supabase project + email/Google sign-in scaffold live | —              | FR-007, Access Control section | ready    |
-| S-01 | onboarding-focus-pick          | complete onboarding and pick a focus (journaling / habits / both)  | —              | FR-001                | ready    |
+| S-01 | onboarding-focus-pick          | complete onboarding and pick a focus (journaling / habits / both)  | —              | FR-001                | done    |
 | S-02 | journal-daily-entry            | add a daily journal entry and see it on the main screen            | S-01           | US-01, FR-003, FR-005, FR-008 | proposed |
 | S-03 | habit-create-and-checkin       | create a habit and log check-ins for it, seen on the main screen   | S-01           | US-02, FR-002, FR-004, FR-005, FR-008 | proposed |
 | S-04 | edit-within-24h-window         | edit a recent journal entry or habit check-in within 24 hours      | S-02, S-03     | US-03, FR-006         | proposed |
@@ -123,7 +123,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:** —
 - **Risk:** Smallest possible first slice; sequenced first because the focus pick likely shapes what
   the main screen shows next (journal-only, habit-only, or both).
-- **Status:** ready
+- **Status:** done
 
 ### S-02: Daily journal entry (north star)
 
@@ -267,3 +267,5 @@ S-08 stays in the 3-week window) is slice-local and recorded under S-08's Unknow
 
 (Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status`
 to `done` — when a change whose `Change ID` matches the item is archived.)
+
+- **S-01: User completes onboarding and picks a focus (journaling, habit tracking, or both).** — Archived 2026-07-27 → `context/archive/2026-07-25-onboarding-focus-pick/`. Lesson: —.
