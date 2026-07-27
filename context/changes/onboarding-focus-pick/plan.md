@@ -871,18 +871,16 @@ database to read the full local dataset from).
 #### Manual
 
 > Superseded by Phase 5 — the dialog these steps describe was replaced by a full-screen flow
-> before manual verification completed. Left unchecked as a historical record; see Phase 5's
-> Manual Verification for the current checklist.
+> before manual verification completed on the dialog itself. Closed out via Phase 5/6's manual
+> verification instead, which covers the same underlying behaviors (Skip, back-navigation,
+> write-failure retry) against the current full-screen UI — see Phase 5's Manual Verification.
 
-- [ ] 4.4 Fresh install shows Welcome step, non-dismissible, Skip visible
-- [ ] 4.5 All four steps flow in order (Welcome → Focus-pick → Account → All-set) and persist
-      across relaunch
-- [ ] 4.6 Back press at each step moves to the previous step; back on Welcome exits the app
-- [ ] 4.7 Skip on Welcome/Focus-pick defaults to "Both"; Skip on Account/All-set preserves the
-      already-chosen focus
-- [ ] 4.8 "Change focus" reopens the dialog pre-filled, in dismissible mode, Focus-pick step only,
-      no Skip button
-- [ ] 4.9 Write-failure retry flow works as specified
+- [x] 4.4 Fresh install shows Welcome step, non-dismissible, Skip visible — superseded, see 5.4
+- [x] 4.5 All four steps flow in order (Welcome → Focus-pick → Account → All-set) and persist across relaunch — superseded, see 5.5
+- [x] 4.6 Back press at each step moves to the previous step; back on Welcome exits the app — superseded, see 5.6
+- [x] 4.7 Skip on Welcome/Focus-pick defaults to "Both"; Skip on Account/All-set preserves the already-chosen focus — superseded, see 5.7
+- [x] 4.8 "Change focus" reopens the dialog pre-filled, in dismissible mode, Focus-pick step only, no Skip button — dropped, "Change focus" deferred to Settings (see Phase 5 Overview)
+- [x] 4.9 Write-failure retry flow works as specified — superseded, see 5.8
 
 ### Phase 5: Screen-based onboarding redesign
 
@@ -895,14 +893,10 @@ database to read the full local dataset from).
 #### Manual
 
 - [x] 5.4 Fresh install shows the Welcome page; back press exits the app from there — f531320
-- [x] 5.5 All four pages flow in order (Welcome → Focus-pick → Account → All-set) via the primary
-      button and persist across relaunch — f531320
-- [x] 5.6 Back press at each page moves to the previous page, pre-filling Focus-pick from the
-      confirmed choice when backing up from Account — f531320
-- [x] 5.7 Skip on Welcome/Focus-pick defaults to "Both"; Skip on Account/All-set preserves the
-      already-chosen focus — f531320
-- [x] 5.8 Forced write-failure on Focus-pick shows the inline error, primary button switches to
-      "Try again" with a loading spinner while saving, and retrying succeeds — f531320
+- [x] 5.5 All four pages flow in order (Welcome → Focus-pick → Account → All-set) via the primary button and persist across relaunch — f531320
+- [x] 5.6 Back press at each page moves to the previous page, pre-filling Focus-pick from the confirmed choice when backing up from Account — f531320
+- [x] 5.7 Skip on Welcome/Focus-pick defaults to "Both"; Skip on Account/All-set preserves the already-chosen focus — f531320
+- [x] 5.8 Forced write-failure on Focus-pick shows the inline error, primary button switches to "Try again" with a loading spinner while saving, and retrying succeeds — f531320
 
 ### Phase 6: Navigation 3 for root routing
 
@@ -914,6 +908,5 @@ database to read the full local dataset from).
 
 #### Manual
 
-- [x] 6.4 Fresh install lands on Welcome; finishing onboarding (or Skip) lands on MainScreen;
-      relaunching after onboarding goes straight to MainScreen — f531320
+- [x] 6.4 Fresh install lands on Welcome; finishing onboarding (or Skip) lands on MainScreen; relaunching after onboarding goes straight to MainScreen — f531320
 - [x] 6.5 System back-press on MainScreen still exits/backgrounds the app (not a blank screen) — f531320
