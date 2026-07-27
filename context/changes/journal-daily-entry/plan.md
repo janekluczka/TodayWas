@@ -473,17 +473,15 @@ S-03 adds its own entity to this same database.
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — ec5c935
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — ec5c935
+- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — ec5c935
 
 #### Manual
 
-- [x] 4.4 Main screen shows Journal section + "Add entry" (Journal/Both focus) or placeholder
-      (Habit focus)
-- [x] 4.5 Add-entry flow (Today default) saves and appears in the list immediately
-- [x] 4.6 Entries persist across relaunch
-- [x] 4.7 Tapping a list entry opens the read-only detail screen with matching date/text
-- [x] 4.8 "Add entry" narrows to Yesterday-only after Today is logged, then disappears after both
-      are logged
-- [x] 4.9 Forced write-failure shows an inline error and retry succeeds
+- [x] 4.4 Main screen shows Journal section + "Add entry" (Journal/Both focus) or placeholder (Habit focus) — ec5c935
+- [x] 4.5 Add-entry flow (Today default) saves and appears in the list immediately — ec5c935
+- [x] 4.6 Entries persist across relaunch — ec5c935
+- [x] 4.7 Tapping a list entry opens the read-only detail screen with matching date/text — ec5c935
+- [x] 4.8 "Add entry" narrows to Yesterday-only after Today is logged, then disappears after both are logged — ec5c935
+- [x] 4.9 Forced write-failure shows an inline error and retry succeeds — ec5c935
