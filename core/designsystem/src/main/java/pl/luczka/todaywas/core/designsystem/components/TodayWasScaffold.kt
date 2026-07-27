@@ -12,11 +12,13 @@ import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 fun TodayWasScaffold(
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
+    bottomBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
         topBar = topBar,
+        bottomBar = bottomBar,
         content = content,
     )
 }

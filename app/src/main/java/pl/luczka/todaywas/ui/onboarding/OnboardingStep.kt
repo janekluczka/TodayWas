@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.main
+package pl.luczka.todaywas.ui.onboarding
 
 enum class OnboardingStep {
     WELCOME,

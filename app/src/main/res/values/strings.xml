@@ -2,7 +2,6 @@
     <string name="app_name">Today Was...</string>
 
     <string name="main_top_bar_title">TodayWas</string>
-    <string name="main_change_focus_content_description">Change focus</string>
     <string name="main_empty_state">No entries yet</string>
 
     <string name="focus_journal">Journaling</string>

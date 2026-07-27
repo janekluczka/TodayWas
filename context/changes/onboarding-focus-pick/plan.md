@@ -12,6 +12,12 @@ the app's data/domain/presentation layering, Hilt-based DI, and a **new Gradle m
 slice touches — that later roadmap slices (`S-02` onward) will follow and extend. This is the first
 multi-module split in the repo; `:app` depends on `:core:designsystem`, never the reverse.
 
+> **Note**: Phases 1-4 below describe the original dialog-based UI and its "Change focus" re-pick
+> entry point. Phase 5 replaced the UI with a full-screen, pager-based flow and deferred "Change
+> focus" to Settings (not yet built) — see Phase 5 for the current architecture. Phases 1-4's data/
+> domain layers and business rules (Skip's two behaviors, back-navigation, write-retry) are
+> unchanged; only the presentation layer changed.
+
 ## Current State Analysis
 
 The codebase is the unmodified Android Studio Compose template:
@@ -482,9 +488,10 @@ the new module — every call site in this slice goes through these (imported fr
 confirm/retry, Account's "Continue", All-set's "Get started"). `TodayWasTextButton` wraps
 `TextButton` (Skip, "Create account"). `TodayWasText` wraps `Text` (all copy). `TodayWasScaffold`
 wraps `Scaffold`. `TodayWasTopBar` wraps `TopAppBar`. `TodayWasIconButton` wraps `IconButton` and
-`TodayWasIcon` wraps `Icon` (the "Change focus" top-bar action). `TodayWasDialog` wraps `Dialog`
-(the outer container `OnboardingDialog` builds on — distinct from `OnboardingDialog` itself, which
-stays in `:app` as the feature composable). `TodayWasRadioOption` is a composite (`RadioButton` +
+`TodayWasIcon` wraps `Icon` (the "Change focus" top-bar action). `TodayWasDialog` wraps
+`AlertDialog` (the outer container `OnboardingDialog` builds on, using its real
+`title`/`text`/`confirmButton`/`dismissButton` slots — distinct from `OnboardingDialog` itself,
+which stays in `:app` as the feature composable). `TodayWasRadioOption` is a composite (`RadioButton` +
 `TodayWasText` in a selectable `Row`) for the three focus choices — not a raw `RadioButton` wrapper
 alone, since the picker always needs the pair together. `TodayWasLoadingIndicator` wraps
 `CircularProgressIndicator`, shown while `uiState.isSaving` is true.
@@ -515,43 +522,50 @@ content later. Hosts `OnboardingDialog` when `uiState.showOnboardingDialog` is t
 
 **File**: `app/src/main/java/pl/luczka/todaywas/ui/main/OnboardingDialog.kt`
 
-**Intent**: Built on `TodayWasDialog`, renders one of four steps based on `uiState.onboardingStep`
-(MANDATORY mode only — REPICK stays on `FOCUS_PICK`): `WELCOME` shows app name + one-line value prop
-(`TodayWasText`) + "Get started" (`TodayWasButton`, `onWelcomeContinue()`); `FOCUS_PICK` shows three
-`TodayWasRadioOption`s plus a confirm `TodayWasButton`; `ACCOUNT_INFO` shows a short explanation
-(`TodayWasText`) of the benefit of an account, a "Create account" `TodayWasTextButton`
-(`onCreateAccountClicked()` — no-op) and a "Continue" `TodayWasButton` (`onAccountContinue()`);
-`ALL_SET` shows a confirmation message (`TodayWasText`) plus "Get started" (`TodayWasButton`,
-`onFinishOnboarding()`). A persistent "Skip" `TodayWasTextButton` (top-end corner) is shown on all
-four steps in MANDATORY mode only, calling `viewModel.onSkipOnboarding()`. `TodayWasLoadingIndicator`
-shows while `uiState.isSaving`. Mode-dependent dismissal per Critical Implementation Details; inline
-error + "Try again" (`TodayWasText` + `TodayWasButton`) on `FOCUS_PICK` when `uiState.saveError` is
-true.
+**Intent**: Built on `TodayWasDialog`, which wraps Material3's real `AlertDialog` slots
+(`title`/`text`/`confirmButton`/`dismissButton`) rather than a bare `Dialog` + custom `Box`
+layout, so the dialog gets its background/shape/elevation and bottom-aligned action row for free.
+Renders one of four steps based on `uiState.onboardingStep` (MANDATORY mode only — REPICK stays
+on `FOCUS_PICK`): `WELCOME` shows a title + one-line value prop (`TodayWasText`) in `title`/`text`,
+"Get started" (`TodayWasButton`, `onWelcomeContinue()`) as `confirmButton`; `FOCUS_PICK` shows a
+title plus three `TodayWasRadioOption`s (+ loading/error state) as `text`, and "Confirm"/"Try
+again" (depending on `uiState.saveError`) as `confirmButton`; `ACCOUNT_INFO` has no title, just a
+short explanation (`TodayWasText`) and a "Create account" `TodayWasTextButton`
+(`onCreateAccountClicked()` — no-op) in `text`, with "Continue" (`onAccountContinue()`) as
+`confirmButton`; `ALL_SET` has only a title ("All set!", no body) and "Get started"
+(`onFinishOnboarding()`) as `confirmButton`. A persistent "Skip" `TodayWasTextButton` is passed as
+`dismissButton` (M3's real secondary-action slot, bottom-left) on all four steps in MANDATORY mode
+only, calling `viewModel.onSkipOnboarding()` — `dismissButton = null` in REPICK mode.
+`TodayWasLoadingIndicator` shows in `text` while `uiState.isSaving`; the `confirmButton` label switches
+between "Confirm" and "Try again" based on `uiState.saveError`, disabled while saving or before a
+focus is picked. Mode-dependent dismissal per Critical Implementation Details.
 
 **Contract**:
 
 ```kotlin
+if (uiState.onboardingMode == OnboardingMode.MANDATORY) {
+    // The ViewModel's onStepBack() branches on onboardingStep internally (WELCOME emits
+    // exitAppEvent instead of changing the step).
+    BackHandler(enabled = true) { viewModel.onStepBack() }
+}
 TodayWasDialog(
     onDismissRequest = { if (uiState.onboardingMode == OnboardingMode.REPICK) viewModel.onDismiss() },
     dismissOnBackPress = uiState.onboardingMode == OnboardingMode.REPICK,
     dismissOnClickOutside = uiState.onboardingMode == OnboardingMode.REPICK,
-) {
-    if (uiState.onboardingMode == OnboardingMode.MANDATORY) {
-        // Single callback for all four steps — the ViewModel's onStepBack() branches on
-        // onboardingStep internally (WELCOME emits exitAppEvent instead of changing the step).
-        BackHandler(enabled = true) { viewModel.onStepBack() }
-    }
-    Box {
+    title = /* per-step title, or null (e.g. ACCOUNT_INFO) */,
+    text = /* per-step body, or null (ALL_SET) */,
+    confirmButton = { /* per-step primary action, switched on uiState.onboardingStep */ },
+    dismissButton =
         if (uiState.onboardingMode == OnboardingMode.MANDATORY) {
-            TodayWasTextButton(text = "Skip", onClick = viewModel::onSkipOnboarding, modifier = Modifier.align(Alignment.TopEnd))
-        }
-        // WELCOME / FOCUS_PICK / ACCOUNT_INFO / ALL_SET content, switched on uiState.onboardingStep
-    }
-}
+            { TodayWasTextButton(text = "Skip", onClick = viewModel::onSkipOnboarding) }
+        } else {
+            null
+        },
+)
 ```
 
-`TodayWasDialog` itself wraps the underlying `Dialog`/`DialogProperties` (per item #2 above) —
-`OnboardingDialog` never touches `androidx.compose.material3.Dialog` directly.
+`TodayWasDialog` itself wraps `androidx.compose.material3.AlertDialog` (per item #2 above) —
+`OnboardingDialog` never touches `AlertDialog`/`Dialog`/`DialogProperties` directly.
 
 #### 5. MainActivity
 
@@ -594,6 +608,169 @@ TodayWasTheme { MainScreen() } }`; delete `Greeting`/`GreetingPreview`.
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause
 here for manual confirmation from the human that the manual testing was successful.
+
+---
+
+## Phase 5: Screen-based onboarding redesign
+
+### Overview
+
+Supersedes Phase 3/4's dialog-based UI with a full-screen, pager-based flow, per direct user
+request after Phase 4 was already built and reviewed: onboarding is now its own screen
+(`TopBar` + `HorizontalPager`, one page per step, no drag/swipe + a fixed bottom `Skip`/primary
+button row) instead of an `AlertDialog` layered on `MainScreen`. The "Change focus" re-pick entry
+point (originally in `MainScreen`'s top bar) is dropped for now — it will live in Settings later,
+which doesn't exist yet. This also drops `OnboardingMode` (`MANDATORY`/`REPICK`) entirely, since
+there is only ever one flow while "Change focus" is out of scope.
+
+This redesign also emptied out `MainViewModel`/`MainUiState`/`MainIntent`/`MainUiEvent` (they
+existed only to hold onboarding state and the "Change focus" trigger) and `TodayWasDialog` (its
+only caller was the now-deleted `OnboardingDialog`) — all deleted. `MainScreen` is now a stateless
+composable; a real `MainViewModel` will come back once `S-02` gives it actual content.
+
+**Key subtlety**: `OnboardingRepositoryImpl.saveFocus()` flips the persisted `completed` flag as
+soon as a focus is picked — before the Account/All-set pages are shown. A new top-level router
+(`RootViewModel`) reads only the *first* emission of `ObserveOnboardingStateUseCase()` to decide
+the initial screen, then ignores later emissions; the transition to `MainScreen` after that comes
+only from `OnboardingViewModel` explicitly signaling completion (`OnboardingUiEvent.Finished`),
+never from re-observing the DB.
+
+### Changes Required:
+
+#### 1. `ui/onboarding/` package (new)
+
+**Files**: `OnboardingStep.kt` (moved from `ui/main/`), `OnboardingUiState.kt`,
+`OnboardingIntent.kt`, `OnboardingUiEvent.kt`, `OnboardingViewModel.kt`, `OnboardingScreen.kt`
+
+`OnboardingViewModel` depends only on `SelectFocusUseCase`/`SkipOnboardingUseCase` (no
+`ObserveOnboardingStateUseCase` — nothing else can write onboarding state while this screen is
+alive). `OnboardingUiState` tracks `confirmedFocus` (focus persisted *this* session) instead of
+reading `currentFocus` from Room, replacing the dialog-era reliance on `MainUiState.currentFocus`
+for the "Skip preserves an already-made choice" rule. `OnboardingIntent.NextClicked` is one intent
+for the single bottom-right button, branching on `state.step` inside the ViewModel — mirrors
+`StepBack`'s existing one-intent-branches-on-step pattern, now applied symmetrically to the
+forward direction; it replaces the five separate forward intents Phase 3 had
+(`WelcomeContinue`/`ConfirmSelection`/`RetrySave`/`AccountContinue`/`FinishOnboarding` — `RetrySave`
+was already a pure alias for `ConfirmSelection`). `OnboardingScreen` hosts a
+`HorizontalPager(userScrollEnabled = false)` kept in sync with `uiState.step` via
+`LaunchedEffect`/`animateScrollToPage` (state-driven, not gesture-driven), plus a bottom `Row`
+(`Skip` `TodayWasTextButton`, primary `TodayWasButtonWithLoading`). Per-step primary label/enabled/
+loading rules are unchanged from Phase 4's `confirmButton` branching (see Phase 4 §4 above), just
+relocated into a fixed bottom bar instead of a dialog's `confirmButton` slot. A plain top-level
+`BackHandler` now works with no caveats (no more Dialog-window back-dispatcher pitfall from
+Phase 4, since there's no separate window anymore).
+
+#### 2. Root routing (new, `ui/` top level — not a feature package)
+
+**Files**: `RootUiState.kt`, `RootViewModel.kt`, `TodayWasApp.kt`; `MainActivity.kt` now calls
+`TodayWasApp()` instead of `MainScreen()`.
+
+`RootViewModel` seeds `RootUiState` (`Loading`/`Onboarding`/`Main`) from the first
+`ObserveOnboardingStateUseCase()` emission only (`initialized` guard, same pattern as Phase 3's
+`onboardingStateInitialized`), then ignores later emissions per the subtlety above. Exposes
+`onOnboardingFinished()`, called from `TodayWasApp` (not from `OnboardingViewModel` — no
+ViewModel-to-ViewModel coupling) when `OnboardingScreen` reports `onFinished`.
+
+#### 3. Design-system additions
+
+**Files**: `TodayWasScaffold.kt` (new `bottomBar` param), `TodayWasButtonWithLoading.kt` (new —
+filled button, `Modifier.animateContentSize()` smooths width changes as the label swaps, shows a
+loading spinner in place of the label while `loading = true`), `TodayWasLoadingIndicator.kt` (new
+optional `color` param so the button can pass `LocalContentColor.current` for contrast). New
+version-catalog entry `libs.androidx.compose.animation` (`androidx.compose.animation:animation`),
+added to `core/designsystem/build.gradle.kts`.
+
+**Deleted**: `ui/main/MainViewModel.kt`, `MainUiState.kt`, `MainIntent.kt`, `MainUiEvent.kt`,
+`OnboardingDialogState.kt`, `OnboardingMode.kt`, `OnboardingDialog.kt`,
+`app/src/test/.../MainViewModelTest.kt`, `core/designsystem/.../TodayWasDialog.kt`, and the
+now-unused `main_change_focus_content_description` string.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Unit tests pass: `./gradlew.bat testDebugUnitTest` (`OnboardingViewModelTest` replaces
+  `MainViewModelTest`'s onboarding coverage; new `RootViewModelTest` covers the routing guard)
+- Lint passes: `./gradlew.bat ktlintCheck`
+- Debug build compiles and installs: `./gradlew.bat assembleDebug` (confirms the new
+  `androidx.compose.animation` dependency resolves)
+
+#### Manual Verification:
+
+- Fresh install shows the Welcome page; back press exits the app from there.
+- Full four-page flow (Welcome → Focus-pick → Account → All-set) via the bottom-right button,
+  persists across relaunch.
+- Back button at every page moves to the previous page (pre-filling Focus-pick from the confirmed
+  choice when backing up from Account).
+- Skip on Welcome/Focus-pick (nothing confirmed yet) defaults focus to "Both"; Skip on
+  Account/All-set (already confirmed) preserves the existing choice — both close onboarding
+  immediately.
+- Forced write-failure on Focus-pick shows the inline error, the primary button switches to "Try
+  again" with a loading spinner while saving, and retrying succeeds.
+- No "Change focus" affordance exists anywhere yet (intentionally deferred to Settings).
+
+**Implementation Note**: This supersedes Phase 4's manual-verification checklist (Progress rows
+4.4-4.9 below), which described the now-removed dialog. After this phase's automated verification
+passes, pause for manual confirmation from the human, same as every other phase.
+
+---
+
+## Phase 6: Navigation 3 for root routing
+
+### Overview
+
+Replaces Phase 5's hand-rolled `RootUiState` (`Loading`/`Onboarding`/`Main`) `when`-switch in
+`TodayWasApp` with **Navigation 3** (`androidx.navigation3`, stable `1.1.4`), per direct user
+request — specifically so a future bottom navigation bar inside `MainScreen` is just *more*
+Navigation 3, not a second navigation mechanism next to an ad-hoc state switch. Root routing stays
+minimal (`OnboardingKey` vs `MainKey`, one-way, no back-stack semantics that matter yet); a future
+bottom nav belongs entirely inside `MainScreen` as its own nested Nav3 setup (own per-tab back
+stacks, own `NavDisplay`), never touching `TodayWasApp`/`RootViewModel` again.
+
+### Changes Required:
+
+**Files**: `TodayWasKey.kt` (new, replaces `RootUiState.kt`) — `@Serializable sealed interface
+TodayWasKey : NavKey` with `OnboardingKey`/`MainKey` data objects. `RootViewModel.kt` — same
+first-emission-only guard as Phase 5 (unchanged subtlety: `saveFocus()` flips `completed` before
+Account/All-set show), now exposing `val initialDestination: StateFlow<TodayWasKey?>` (`null` =
+loading) instead of a 3-state `RootUiState`; `onOnboardingFinished()` is gone — finishing
+onboarding now mutates the Nav3 backstack (`SnapshotStateList`) directly from the composable side,
+no ViewModel round-trip needed. `TodayWasApp.kt` — renders nothing while `initialDestination ==
+null`, otherwise seeds `rememberNavBackStack(initialDestination)` and renders a `NavDisplay` whose
+`entryProvider` maps `OnboardingKey` → `OnboardingScreen(onFinished = { backStack.clear();
+backStack.add(MainKey) })` (replace, not push — no way back into a stale `OnboardingKey`) and
+`MainKey` → `MainScreen()`.
+
+**Dependencies** (`gradle/libs.versions.toml`, `app/build.gradle.kts`): `androidx.navigation3:
+navigation3-runtime:1.1.4`, `androidx.navigation3:navigation3-ui:1.1.4`,
+`org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0`, plus the
+`org.jetbrains.kotlin.plugin.serialization` Gradle plugin (`NavKey`s need `@Serializable` for
+`rememberNavBackStack`'s save/restore) — **pinned to this repo's existing Kotlin version
+(`2.2.10`)**, not a separate version. Deliberately *not* added: `androidx.lifecycle:
+lifecycle-viewmodel-navigation3`/`entryDecorators` (per-entry ViewModel scoping — not needed until
+bottom-nav tabs need independently-scoped ViewModels) or `adaptive-navigation3` (large-screen
+multi-pane layouts, unrelated to a bottom nav bar).
+
+**Deleted**: `ui/RootUiState.kt`.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Unit tests pass: `./gradlew.bat testDebugUnitTest` (`RootViewModelTest` adapted to
+  `initialDestination: StateFlow<TodayWasKey?>`)
+- Lint passes: `./gradlew.bat ktlintCheck`
+- Debug build compiles: `./gradlew.bat assembleDebug` (confirms the Nav3 + kotlinx-serialization
+  dependencies resolve without a Kotlin-version conflict on the serialization plugin)
+
+#### Manual Verification:
+
+- Fresh install still lands on Welcome; finishing onboarding (or Skip) still lands on
+  `MainScreen`; relaunching after onboarding goes straight to `MainScreen`.
+- **Specifically confirm system back-press on `MainScreen` still exits/backgrounds the app**
+  rather than showing a blank screen — Nav3's documented single-entry back behavior should match
+  Android's default, but this is worth confirming on-device rather than trusting docs alone. If it
+  doesn't, guard `onBack` with `if (backStack.size > 1) backStack.removeLastOrNull()`.
 
 ---
 
@@ -687,11 +864,15 @@ database to read the full local dataset from).
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 9012c75
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — 9012c75
+- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — 9012c75
 
 #### Manual
+
+> Superseded by Phase 5 — the dialog these steps describe was replaced by a full-screen flow
+> before manual verification completed. Left unchecked as a historical record; see Phase 5's
+> Manual Verification for the current checklist.
 
 - [ ] 4.4 Fresh install shows Welcome step, non-dismissible, Skip visible
 - [ ] 4.5 All four steps flow in order (Welcome → Focus-pick → Account → All-set) and persist
@@ -702,3 +883,37 @@ database to read the full local dataset from).
 - [ ] 4.8 "Change focus" reopens the dialog pre-filled, in dismissible mode, Focus-pick step only,
       no Skip button
 - [ ] 4.9 Write-failure retry flow works as specified
+
+### Phase 5: Screen-based onboarding redesign
+
+#### Automated
+
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 5.3 Debug build compiles: `./gradlew.bat assembleDebug`
+
+#### Manual
+
+- [x] 5.4 Fresh install shows the Welcome page; back press exits the app from there
+- [x] 5.5 All four pages flow in order (Welcome → Focus-pick → Account → All-set) via the primary
+      button and persist across relaunch
+- [x] 5.6 Back press at each page moves to the previous page, pre-filling Focus-pick from the
+      confirmed choice when backing up from Account
+- [x] 5.7 Skip on Welcome/Focus-pick defaults to "Both"; Skip on Account/All-set preserves the
+      already-chosen focus
+- [x] 5.8 Forced write-failure on Focus-pick shows the inline error, primary button switches to
+      "Try again" with a loading spinner while saving, and retrying succeeds
+
+### Phase 6: Navigation 3 for root routing
+
+#### Automated
+
+- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 6.3 Debug build compiles: `./gradlew.bat assembleDebug`
+
+#### Manual
+
+- [x] 6.4 Fresh install lands on Welcome; finishing onboarding (or Skip) lands on MainScreen;
+      relaunching after onboarding goes straight to MainScreen
+- [x] 6.5 System back-press on MainScreen still exits/backgrounds the app (not a blank screen)
