@@ -11,4 +11,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindOnboardingRepository(impl: OnboardingRepositoryImpl): OnboardingRepository
+
+    @Binds
+    abstract fun bindJournalRepository(impl: JournalRepositoryImpl): JournalRepository
 }

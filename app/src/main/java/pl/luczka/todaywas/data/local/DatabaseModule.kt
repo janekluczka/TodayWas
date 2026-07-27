@@ -25,4 +25,7 @@ object DatabaseModule {
 
     @Provides
     fun provideUserPreferencesDao(database: TodayWasDatabase): UserPreferencesDao = database.userPreferencesDao()
+
+    @Provides
+    fun provideJournalEntryDao(database: TodayWasDatabase): JournalEntryDao = database.journalEntryDao()
 }
