@@ -17,9 +17,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.data.repository.JournalRepository
-import pl.luczka.todaywas.domain.model.JournalDateSlot
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,7 +43,7 @@ class AddJournalEntryViewModelTest {
     }
 
     private fun viewModel(
-        availableSlots: List<JournalDateSlot>,
+        availableSlots: List<JournalDateSlotUiState>,
         repository: JournalRepository = FakeJournalRepository(),
     ) = AddJournalEntryViewModel(
         availableSlots = availableSlots,
@@ -63,25 +63,25 @@ class AddJournalEntryViewModelTest {
     @Test
     fun `initial state defaults selectedSlot to the first available slot`() =
         runTest {
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY))
+            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY))
 
-            assertEquals(JournalDateSlot.TODAY, viewModel.uiState.value.selectedSlot)
+            assertEquals(JournalDateSlotUiState.TODAY, viewModel.uiState.value.selectedSlot)
         }
 
     @Test
     fun `SlotSelected updates selectedSlot`() =
         runTest {
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY))
+            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY))
 
-            viewModel.onIntent(AddJournalEntryIntent.SlotSelected(JournalDateSlot.YESTERDAY))
+            viewModel.onIntent(AddJournalEntryIntent.SlotSelected(JournalDateSlotUiState.YESTERDAY))
 
-            assertEquals(JournalDateSlot.YESTERDAY, viewModel.uiState.value.selectedSlot)
+            assertEquals(JournalDateSlotUiState.YESTERDAY, viewModel.uiState.value.selectedSlot)
         }
 
     @Test
     fun `TextChanged updates text`() =
         runTest {
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlot.TODAY))
+            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY))
 
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
 
@@ -92,7 +92,7 @@ class AddJournalEntryViewModelTest {
     fun `SaveClicked success clears isSaving and emits Saved`() =
         runTest {
             val repository = FakeJournalRepository()
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlot.TODAY), repository = repository)
+            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY), repository = repository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
@@ -112,7 +112,7 @@ class AddJournalEntryViewModelTest {
         runTest {
             val repository = FakeJournalRepository()
             repository.addEntryResult = Result.failure(RuntimeException("write failed"))
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlot.TODAY), repository = repository)
+            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY), repository = repository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
@@ -129,7 +129,7 @@ class AddJournalEntryViewModelTest {
     @Test
     fun `CancelClicked emits Cancelled`() =
         runTest {
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlot.TODAY))
+            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY))
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 

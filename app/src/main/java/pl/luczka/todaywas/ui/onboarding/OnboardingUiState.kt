@@ -1,11 +1,13 @@
 package pl.luczka.todaywas.ui.onboarding
 
-import pl.luczka.todaywas.domain.model.Focus
+import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.ui.model.FocusUiState
 
+@Immutable
 data class OnboardingUiState(
     val step: OnboardingStep,
-    val selectedFocus: Focus?,
-    val confirmedFocus: Focus?,
+    val selectedFocus: FocusUiState?,
+    val confirmedFocus: FocusUiState?,
     val isSaving: Boolean,
     val saveError: Boolean,
 )

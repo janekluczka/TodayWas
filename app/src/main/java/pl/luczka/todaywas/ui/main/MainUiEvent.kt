@@ -1,15 +1,15 @@
 package pl.luczka.todaywas.ui.main
 
-import pl.luczka.todaywas.domain.model.JournalDateSlot
-import pl.luczka.todaywas.domain.model.JournalEntry
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.ui.model.JournalEntryUiState
 
 sealed interface MainUiEvent {
 
     data class NavigateToAddEntry(
-        val availableSlots: List<JournalDateSlot>,
+        val availableSlots: List<JournalDateSlotUiState>,
     ) : MainUiEvent
 
     data class NavigateToJournalDetail(
-        val entry: JournalEntry,
+        val entry: JournalEntryUiState,
     ) : MainUiEvent
 }

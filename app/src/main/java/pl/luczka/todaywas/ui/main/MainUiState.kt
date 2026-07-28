@@ -1,11 +1,16 @@
 package pl.luczka.todaywas.ui.main
 
-import pl.luczka.todaywas.domain.model.Focus
-import pl.luczka.todaywas.domain.model.JournalDateSlot
-import pl.luczka.todaywas.domain.model.JournalEntry
+import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.ui.model.FabActionUiState
+import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.ui.model.JournalEntryUiState
 
+@Immutable
 data class MainUiState(
-    val focus: Focus?,
-    val journalEntries: List<JournalEntry>,
-    val addableSlots: List<JournalDateSlot>,
+    val focus: FocusUiState?,
+    val journalEntries: List<JournalEntryUiState>,
+    val addableSlots: List<JournalDateSlotUiState>,
+    val fabActions: List<FabActionUiState>,
+    val fabExpanded: Boolean,
 )

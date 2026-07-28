@@ -28,7 +28,7 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
 import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTextButton
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
-import pl.luczka.todaywas.domain.model.Focus
+import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 
 @Composable
@@ -147,7 +147,7 @@ private fun FocusPickStepBody(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         TodayWasText(text = stringResource(R.string.onboarding_focus_pick_title))
-        for (focus in Focus.entries) {
+        for (focus in FocusUiState.entries) {
             TodayWasRadioOption(
                 text = focus.label(),
                 selected = uiState.selectedFocus == focus,
@@ -178,11 +178,11 @@ private fun AllSetStepBody() {
 }
 
 @Composable
-private fun Focus.label(): String =
+private fun FocusUiState.label(): String =
     when (this) {
-        Focus.JOURNAL -> stringResource(R.string.focus_journal)
-        Focus.HABIT -> stringResource(R.string.focus_habit)
-        Focus.BOTH -> stringResource(R.string.focus_both)
+        FocusUiState.JOURNAL -> stringResource(R.string.focus_journal)
+        FocusUiState.HABIT -> stringResource(R.string.focus_habit)
+        FocusUiState.BOTH -> stringResource(R.string.focus_both)
     }
 
 private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<OnboardingUiState> {
@@ -190,18 +190,18 @@ private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<On
         sequenceOf(
             previewState(step = OnboardingStep.WELCOME),
             previewState(step = OnboardingStep.FOCUS_PICK),
-            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = Focus.JOURNAL),
-            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = Focus.HABIT, isSaving = true),
-            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = Focus.BOTH, saveError = true),
-            previewState(step = OnboardingStep.ACCOUNT_INFO, confirmedFocus = Focus.JOURNAL),
-            previewState(step = OnboardingStep.ALL_SET, confirmedFocus = Focus.JOURNAL),
+            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = FocusUiState.JOURNAL),
+            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = FocusUiState.HABIT, isSaving = true),
+            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = FocusUiState.BOTH, saveError = true),
+            previewState(step = OnboardingStep.ACCOUNT_INFO, confirmedFocus = FocusUiState.JOURNAL),
+            previewState(step = OnboardingStep.ALL_SET, confirmedFocus = FocusUiState.JOURNAL),
         )
 }
 
 private fun previewState(
     step: OnboardingStep,
-    selectedFocus: Focus? = null,
-    confirmedFocus: Focus? = null,
+    selectedFocus: FocusUiState? = null,
+    confirmedFocus: FocusUiState? = null,
     isSaving: Boolean = false,
     saveError: Boolean = false,
 ) = OnboardingUiState(

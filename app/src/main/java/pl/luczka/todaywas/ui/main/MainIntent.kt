@@ -1,12 +1,17 @@
 package pl.luczka.todaywas.ui.main
 
-import pl.luczka.todaywas.domain.model.JournalEntry
+import pl.luczka.todaywas.ui.model.FabActionUiState
+import pl.luczka.todaywas.ui.model.JournalEntryUiState
 
 sealed interface MainIntent {
 
-    data object AddEntryClicked : MainIntent
+    data class FabActionClicked(
+        val action: FabActionUiState,
+    ) : MainIntent
+
+    data object FabToggled : MainIntent
 
     data class JournalEntryClicked(
-        val entry: JournalEntry,
+        val entry: JournalEntryUiState,
     ) : MainIntent
 }

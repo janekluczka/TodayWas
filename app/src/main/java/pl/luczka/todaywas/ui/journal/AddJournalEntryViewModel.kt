@@ -14,20 +14,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.domain.model.JournalDateSlot
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.ui.model.toDomain
 
 @HiltViewModel(assistedFactory = AddJournalEntryViewModel.Factory::class)
 class AddJournalEntryViewModel
     @AssistedInject
     constructor(
-        @Assisted availableSlots: List<JournalDateSlot>,
+        @Assisted availableSlots: List<JournalDateSlotUiState>,
         private val addJournalEntry: AddJournalEntryUseCase,
     ) : ViewModel() {
 
         @AssistedFactory
         interface Factory {
-            fun create(availableSlots: List<JournalDateSlot>): AddJournalEntryViewModel
+            fun create(availableSlots: List<JournalDateSlotUiState>): AddJournalEntryViewModel
         }
 
         init {
@@ -66,7 +67,7 @@ class AddJournalEntryViewModel
             val state = _uiState.value
             viewModelScope.launch {
                 _uiState.update { it.copy(isSaving = true, saveError = false) }
-                val result = addJournalEntry(state.selectedSlot, state.text)
+                val result = addJournalEntry(state.selectedSlot.toDomain(), state.text)
                 if (result.isSuccess) {
                     _uiState.update { it.copy(isSaving = false) }
                     eventChannel.trySend(AddJournalEntryUiEvent.Saved)

@@ -11,9 +11,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.usecase.SelectFocusUseCase
 import pl.luczka.todaywas.domain.usecase.SkipOnboardingUseCase
+import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.toDomain
 import javax.inject.Inject
 
 @HiltViewModel
@@ -62,7 +63,7 @@ class OnboardingViewModel @Inject constructor(
         val focus = _uiState.value.selectedFocus ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, saveError = false) }
-            val result = selectFocus(focus)
+            val result = selectFocus(focus.toDomain())
             _uiState.update { current ->
                 if (result.isSuccess) {
                     current.copy(isSaving = false, confirmedFocus = focus, step = OnboardingStep.ACCOUNT_INFO)
@@ -73,7 +74,7 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    private fun onFocusOptionSelected(focus: Focus) {
+    private fun onFocusOptionSelected(focus: FocusUiState) {
         _uiState.update { it.copy(selectedFocus = focus) }
     }
 

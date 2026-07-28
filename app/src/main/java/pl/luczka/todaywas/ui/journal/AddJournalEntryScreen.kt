@@ -40,7 +40,7 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTextField
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
-import pl.luczka.todaywas.domain.model.JournalDateSlot
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -48,7 +48,7 @@ import java.util.Locale
 
 @Composable
 fun AddJournalEntryScreen(
-    availableSlots: List<JournalDateSlot>,
+    availableSlots: List<JournalDateSlotUiState>,
     onSaved: () -> Unit,
     onCancelled: () -> Unit,
     viewModel: AddJournalEntryViewModel =
@@ -140,7 +140,7 @@ private fun DayStrip(
 ) {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
-    val selectedDate = if (uiState.selectedSlot == JournalDateSlot.TODAY) today else yesterday
+    val selectedDate = if (uiState.selectedSlot == JournalDateSlotUiState.TODAY) today else yesterday
     val selectedPage = selectedDate.toEpochDay().toInt()
 
     val pagerState = rememberPagerState(initialPage = selectedPage) { Int.MAX_VALUE }
@@ -161,8 +161,8 @@ private fun DayStrip(
             val date = LocalDate.ofEpochDay(page.toLong())
             val slot =
                 when (date) {
-                    today -> JournalDateSlot.TODAY
-                    yesterday -> JournalDateSlot.YESTERDAY
+                    today -> JournalDateSlotUiState.TODAY
+                    yesterday -> JournalDateSlotUiState.YESTERDAY
                     else -> null
                 }
             val available = slot != null && slot in uiState.availableSlots
@@ -220,29 +220,29 @@ private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvid
     override val values =
         sequenceOf(
             AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY),
-                selectedSlot = JournalDateSlot.TODAY,
+                availableSlots = listOf(JournalDateSlotUiState.TODAY),
+                selectedSlot = JournalDateSlotUiState.TODAY,
                 text = "",
                 isSaving = false,
                 saveError = false,
             ),
             AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY),
-                selectedSlot = JournalDateSlot.TODAY,
+                availableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+                selectedSlot = JournalDateSlotUiState.TODAY,
                 text = "Today was a good day.",
                 isSaving = false,
                 saveError = false,
             ),
             AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY),
-                selectedSlot = JournalDateSlot.YESTERDAY,
+                availableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+                selectedSlot = JournalDateSlotUiState.YESTERDAY,
                 text = "Today was a good day.",
                 isSaving = true,
                 saveError = false,
             ),
             AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY),
-                selectedSlot = JournalDateSlot.TODAY,
+                availableSlots = listOf(JournalDateSlotUiState.TODAY),
+                selectedSlot = JournalDateSlotUiState.TODAY,
                 text = "Today was a good day.",
                 isSaving = false,
                 saveError = true,

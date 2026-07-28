@@ -22,6 +22,7 @@ import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.OnboardingState
 import pl.luczka.todaywas.domain.usecase.SelectFocusUseCase
 import pl.luczka.todaywas.domain.usecase.SkipOnboardingUseCase
+import pl.luczka.todaywas.ui.model.FocusUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OnboardingViewModelTest {
@@ -90,12 +91,12 @@ class OnboardingViewModelTest {
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.JOURNAL))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
 
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
             val state = viewModel.uiState.value
-            assertEquals(Focus.JOURNAL, state.confirmedFocus)
+            assertEquals(FocusUiState.JOURNAL, state.confirmedFocus)
             assertEquals(OnboardingStep.ACCOUNT_INFO, state.step)
             assertFalse(state.isSaving)
             assertFalse(state.saveError)
@@ -108,7 +109,7 @@ class OnboardingViewModelTest {
             repository.saveFocusResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.BOTH))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.BOTH))
 
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
@@ -125,7 +126,7 @@ class OnboardingViewModelTest {
             repository.saveFocusResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.HABIT))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.HABIT))
             viewModel.onIntent(OnboardingIntent.NextClicked)
             assertTrue(viewModel.uiState.value.saveError)
             repository.saveFocusResult = Result.success(Unit)
@@ -134,7 +135,7 @@ class OnboardingViewModelTest {
 
             val state = viewModel.uiState.value
             assertFalse(state.saveError)
-            assertEquals(Focus.HABIT, state.confirmedFocus)
+            assertEquals(FocusUiState.HABIT, state.confirmedFocus)
             assertEquals(OnboardingStep.ACCOUNT_INFO, state.step)
         }
 
@@ -143,7 +144,7 @@ class OnboardingViewModelTest {
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.JOURNAL))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
             viewModel.onIntent(OnboardingIntent.NextClicked)
             val stateBefore = viewModel.uiState.value
 
@@ -157,7 +158,7 @@ class OnboardingViewModelTest {
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.JOURNAL))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
             viewModel.onIntent(OnboardingIntent.NextClicked)
@@ -170,7 +171,7 @@ class OnboardingViewModelTest {
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.JOURNAL))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.NextClicked)
             val events = mutableListOf<OnboardingUiEvent>()
@@ -199,14 +200,14 @@ class OnboardingViewModelTest {
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.HABIT))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.HABIT))
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
             viewModel.onIntent(OnboardingIntent.StepBack)
 
             val state = viewModel.uiState.value
             assertEquals(OnboardingStep.FOCUS_PICK, state.step)
-            assertEquals(Focus.HABIT, state.selectedFocus)
+            assertEquals(FocusUiState.HABIT, state.selectedFocus)
         }
 
     @Test
@@ -214,7 +215,7 @@ class OnboardingViewModelTest {
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.HABIT))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.HABIT))
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
@@ -260,7 +261,7 @@ class OnboardingViewModelTest {
             val repository = FakeOnboardingRepository()
             val viewModel = viewModel(repository)
             viewModel.onIntent(OnboardingIntent.NextClicked)
-            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(Focus.JOURNAL))
+            viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
             viewModel.onIntent(OnboardingIntent.NextClicked)
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
@@ -269,7 +270,7 @@ class OnboardingViewModelTest {
             runCurrent()
 
             assertEquals(1, repository.saveFocusCallCount)
-            assertEquals(Focus.JOURNAL, viewModel.uiState.value.confirmedFocus)
+            assertEquals(FocusUiState.JOURNAL, viewModel.uiState.value.confirmedFocus)
             assertEquals(listOf(OnboardingUiEvent.Finished), events)
             collectJob.cancel()
         }
