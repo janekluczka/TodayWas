@@ -30,6 +30,9 @@ fun TodayWasIcon(
 @Composable
 private fun TodayWasIconPreview() {
     DesignSystemPreviewTheme {
-        TodayWasIcon(imageVector = Icons.Default.Edit, contentDescription = "Change focus")
+        TodayWasIcon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Change focus",
+        )
     }
 }

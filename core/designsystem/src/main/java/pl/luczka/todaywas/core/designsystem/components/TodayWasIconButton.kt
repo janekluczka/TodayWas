@@ -31,8 +31,14 @@ private fun TodayWasIconButtonPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasIconButton(onClick = {}, enabled = enabled) {
-            TodayWasIcon(imageVector = Icons.Default.Edit, contentDescription = "Change focus")
+        TodayWasIconButton(
+            onClick = {},
+            enabled = enabled,
+        ) {
+            TodayWasIcon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Change focus",
+            )
         }
     }
 }

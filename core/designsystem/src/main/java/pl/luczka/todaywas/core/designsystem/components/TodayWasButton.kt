@@ -40,6 +40,10 @@ private fun TodayWasButtonPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasButton(text = "Get started", onClick = {}, enabled = enabled)
+        TodayWasButton(
+            text = "Get started",
+            onClick = {},
+            enabled = enabled,
+        )
     }
 }

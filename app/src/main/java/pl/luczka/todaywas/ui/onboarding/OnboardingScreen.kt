@@ -48,7 +48,10 @@ fun OnboardingScreen(
         }
     }
 
-    OnboardingScreenContent(uiState = uiState, onIntent = viewModel::onIntent)
+    OnboardingScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+    )
 }
 
 @Composable
@@ -58,8 +61,7 @@ private fun OnboardingScreenContent(
 ) {
     BackHandler(enabled = true) { onIntent(OnboardingIntent.StepBack) }
 
-    val pagerState =
-        rememberPagerState(initialPage = uiState.step.ordinal) { OnboardingStep.entries.size }
+    val pagerState = rememberPagerState(initialPage = uiState.step.ordinal) { OnboardingStep.entries.size }
     LaunchedEffect(uiState.step) {
         pagerState.animateScrollToPage(uiState.step.ordinal)
     }
@@ -67,15 +69,19 @@ private fun OnboardingScreenContent(
     TodayWasScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { TodayWasTopBar(title = "") },
-        bottomBar = { OnboardingBottomBar(uiState = uiState, onIntent = onIntent) },
+        bottomBar = {
+            OnboardingBottomBar(
+                uiState = uiState,
+                onIntent = onIntent,
+            )
+        },
     ) { innerPadding ->
         HorizontalPager(
             state = pagerState,
             userScrollEnabled = false,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
         ) { page ->
             Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
                 when (OnboardingStep.entries[page]) {
@@ -186,16 +192,32 @@ private fun FocusUiState.label(): String =
     }
 
 private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<OnboardingUiState> {
-    override val values =
-        sequenceOf(
-            previewState(step = OnboardingStep.WELCOME),
-            previewState(step = OnboardingStep.FOCUS_PICK),
-            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = FocusUiState.JOURNAL),
-            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = FocusUiState.HABIT, isSaving = true),
-            previewState(step = OnboardingStep.FOCUS_PICK, selectedFocus = FocusUiState.BOTH, saveError = true),
-            previewState(step = OnboardingStep.ACCOUNT_INFO, confirmedFocus = FocusUiState.JOURNAL),
-            previewState(step = OnboardingStep.ALL_SET, confirmedFocus = FocusUiState.JOURNAL),
-        )
+    override val values = sequenceOf(
+        previewState(step = OnboardingStep.WELCOME),
+        previewState(step = OnboardingStep.FOCUS_PICK),
+        previewState(
+            step = OnboardingStep.FOCUS_PICK,
+            selectedFocus = FocusUiState.JOURNAL,
+        ),
+        previewState(
+            step = OnboardingStep.FOCUS_PICK,
+            selectedFocus = FocusUiState.HABIT,
+            isSaving = true,
+        ),
+        previewState(
+            step = OnboardingStep.FOCUS_PICK,
+            selectedFocus = FocusUiState.BOTH,
+            saveError = true,
+        ),
+        previewState(
+            step = OnboardingStep.ACCOUNT_INFO,
+            confirmedFocus = FocusUiState.JOURNAL,
+        ),
+        previewState(
+            step = OnboardingStep.ALL_SET,
+            confirmedFocus = FocusUiState.JOURNAL,
+        ),
+    )
 }
 
 private fun previewState(
@@ -218,6 +240,9 @@ private fun OnboardingScreenPreview(
     @PreviewParameter(OnboardingScreenPreviewStateProvider::class) state: OnboardingUiState,
 ) {
     TodayWasTheme {
-        OnboardingScreenContent(uiState = state, onIntent = {})
+        OnboardingScreenContent(
+            uiState = state,
+            onIntent = {},
+        )
     }
 }

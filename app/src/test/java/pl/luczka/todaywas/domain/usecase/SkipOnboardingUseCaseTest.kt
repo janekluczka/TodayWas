@@ -29,12 +29,20 @@ class SkipOnboardingUseCaseTest {
     @Test
     fun `invoke saves Both regardless of prior state`() =
         runTest {
-            val priorStates =
-                listOf(
-                    OnboardingState(completed = false, focus = null),
-                    OnboardingState(completed = true, focus = Focus.JOURNAL),
-                    OnboardingState(completed = true, focus = Focus.HABIT),
-                )
+            val priorStates = listOf(
+                OnboardingState(
+                    completed = false,
+                    focus = null,
+                ),
+                OnboardingState(
+                    completed = true,
+                    focus = Focus.JOURNAL,
+                ),
+                OnboardingState(
+                    completed = true,
+                    focus = Focus.HABIT,
+                ),
+            )
 
             for (priorState in priorStates) {
                 val repository = FakeRepository(priorState)

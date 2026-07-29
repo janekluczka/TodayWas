@@ -47,7 +47,14 @@ class RootViewModelTest {
     @Test
     fun `resolves to OnboardingKey when initial state is incomplete`() =
         runTest {
-            val viewModel = viewModel(FakeOnboardingRepository(OnboardingState(completed = false, focus = null)))
+            val viewModel = viewModel(
+                FakeOnboardingRepository(
+                    OnboardingState(
+                        completed = false,
+                        focus = null,
+                    ),
+                ),
+            )
 
             assertEquals(OnboardingKey, viewModel.initialDestination.value)
         }
@@ -55,8 +62,14 @@ class RootViewModelTest {
     @Test
     fun `resolves to MainKey when initial state is already completed`() =
         runTest {
-            val viewModel =
-                viewModel(FakeOnboardingRepository(OnboardingState(completed = true, focus = Focus.BOTH)))
+            val viewModel = viewModel(
+                FakeOnboardingRepository(
+                    OnboardingState(
+                        completed = true,
+                        focus = Focus.BOTH,
+                    ),
+                ),
+            )
 
             assertEquals(MainKey, viewModel.initialDestination.value)
         }
@@ -64,12 +77,20 @@ class RootViewModelTest {
     @Test
     fun `a later emission flipping completed to true does not change the resolved destination`() =
         runTest {
-            val repository = FakeOnboardingRepository(OnboardingState(completed = false, focus = null))
+            val repository = FakeOnboardingRepository(
+                OnboardingState(
+                    completed = false,
+                    focus = null,
+                ),
+            )
             val viewModel = viewModel(repository)
             assertEquals(OnboardingKey, viewModel.initialDestination.value)
 
             // Mirrors selecting a focus mid-flow: Room flips `completed` before Account/All-set show.
-            repository.stateFlow.value = OnboardingState(completed = true, focus = Focus.JOURNAL)
+            repository.stateFlow.value = OnboardingState(
+                completed = true,
+                focus = Focus.JOURNAL,
+            )
 
             assertEquals(OnboardingKey, viewModel.initialDestination.value)
         }

@@ -28,16 +28,15 @@ class MainViewModel @Inject constructor(
     observeJournalEntries: ObserveJournalEntriesUseCase,
 ) : ViewModel() {
 
-    private val _uiState =
-        MutableStateFlow(
-            MainUiState(
-                focus = null,
-                journalEntries = emptyList(),
-                addableSlots = emptyList(),
-                fabActions = emptyList(),
-                fabExpanded = false,
-            ),
-        )
+    private val _uiState = MutableStateFlow(
+        MainUiState(
+            focus = null,
+            journalEntries = emptyList(),
+            addableSlots = emptyList(),
+            fabActions = emptyList(),
+            fabExpanded = false,
+        ),
+    )
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     private val eventChannel = Channel<MainUiEvent>(Channel.BUFFERED)

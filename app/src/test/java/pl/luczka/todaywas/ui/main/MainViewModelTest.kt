@@ -60,13 +60,25 @@ class MainViewModelTest {
     private fun entry(
         date: LocalDate,
         text: String = "entry",
-    ) = JournalEntry(id = date.hashCode().toLong(), date = date, text = text, createdAt = Instant.now())
+    ) = JournalEntry(
+        id = date.hashCode().toLong(),
+        date = date,
+        text = text,
+        createdAt = Instant.now(),
+    )
 
     private fun viewModel(
         focus: Focus? = Focus.JOURNAL,
         entries: List<JournalEntry> = emptyList(),
     ) = MainViewModel(
-        observeOnboardingState = ObserveOnboardingStateUseCase(FakeOnboardingRepository(OnboardingState(completed = true, focus = focus))),
+        observeOnboardingState = ObserveOnboardingStateUseCase(
+            FakeOnboardingRepository(
+                OnboardingState(
+                    completed = true,
+                    focus = focus,
+                ),
+            ),
+        ),
         observeJournalEntries = ObserveJournalEntriesUseCase(FakeJournalRepository(entries)),
     )
 
@@ -84,7 +96,10 @@ class MainViewModelTest {
     fun `uiState reflects focus and entries from both sources`() =
         runTest {
             val today = entry(LocalDate.now())
-            val viewModel = viewModel(focus = Focus.JOURNAL, entries = listOf(today))
+            val viewModel = viewModel(
+                focus = Focus.JOURNAL,
+                entries = listOf(today),
+            )
 
             val state = viewModel.uiState.value
 
@@ -97,7 +112,10 @@ class MainViewModelTest {
         runTest {
             val viewModel = viewModel(entries = emptyList())
 
-            assertEquals(listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY), viewModel.uiState.value.addableSlots)
+            assertEquals(
+                listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+                viewModel.uiState.value.addableSlots,
+            )
         }
 
     @Test
@@ -105,7 +123,10 @@ class MainViewModelTest {
         runTest {
             val viewModel = viewModel(entries = listOf(entry(LocalDate.now())))
 
-            assertEquals(listOf(JournalDateSlotUiState.YESTERDAY), viewModel.uiState.value.addableSlots)
+            assertEquals(
+                listOf(JournalDateSlotUiState.YESTERDAY),
+                viewModel.uiState.value.addableSlots,
+            )
         }
 
     @Test
@@ -131,16 +152,25 @@ class MainViewModelTest {
     @Test
     fun `fabActions includes ADD_JOURNAL_ENTRY when focus is JOURNAL and a slot is addable`() =
         runTest {
-            val viewModel = viewModel(focus = Focus.JOURNAL, entries = emptyList())
+            val viewModel = viewModel(
+                focus = Focus.JOURNAL,
+                entries = emptyList(),
+            )
 
-            assertEquals(listOf(FabActionUiState.ADD_JOURNAL_ENTRY), viewModel.uiState.value.fabActions)
+            assertEquals(
+                listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
+                viewModel.uiState.value.fabActions,
+            )
         }
 
     @Test
     fun `fabActions is empty when no slots are addable`() =
         runTest {
             val entries = listOf(entry(LocalDate.now()), entry(LocalDate.now().minusDays(1)))
-            val viewModel = viewModel(focus = Focus.JOURNAL, entries = entries)
+            val viewModel = viewModel(
+                focus = Focus.JOURNAL,
+                entries = entries,
+            )
 
             assertTrue(
                 viewModel.uiState.value.fabActions
@@ -151,7 +181,10 @@ class MainViewModelTest {
     @Test
     fun `fabActions is empty when focus is HABIT`() =
         runTest {
-            val viewModel = viewModel(focus = Focus.HABIT, entries = emptyList())
+            val viewModel = viewModel(
+                focus = Focus.HABIT,
+                entries = emptyList(),
+            )
 
             assertTrue(
                 viewModel.uiState.value.fabActions
@@ -170,7 +203,10 @@ class MainViewModelTest {
             viewModel.onIntent(MainIntent.FabActionClicked(FabActionUiState.ADD_JOURNAL_ENTRY))
             runCurrent()
 
-            assertEquals(listOf(MainUiEvent.NavigateToAddEntry(listOf(JournalDateSlotUiState.YESTERDAY))), events)
+            assertEquals(
+                listOf(MainUiEvent.NavigateToAddEntry(listOf(JournalDateSlotUiState.YESTERDAY))),
+                events,
+            )
             assertEquals(false, viewModel.uiState.value.fabExpanded)
             collectJob.cancel()
         }

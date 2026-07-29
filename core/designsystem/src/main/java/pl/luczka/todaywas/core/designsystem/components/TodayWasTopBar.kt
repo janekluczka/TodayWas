@@ -39,14 +39,20 @@ private fun TodayWasTopBarPreview(
             navigationIcon = {
                 if (withAction) {
                     TodayWasIconButton(onClick = {}) {
-                        TodayWasIcon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        TodayWasIcon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                        )
                     }
                 }
             },
             actions = {
                 if (withAction) {
                     TodayWasIconButton(onClick = {}) {
-                        TodayWasIcon(imageVector = Icons.Default.Edit, contentDescription = "Change focus")
+                        TodayWasIcon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Change focus",
+                        )
                     }
                 }
             },

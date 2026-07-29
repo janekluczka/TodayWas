@@ -37,12 +37,11 @@ fun TodayWasButtonWithLoading(
 }
 
 private class TodayWasButtonWithLoadingPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
-    override val values =
-        sequenceOf(
-            true to false,
-            false to false,
-            true to true,
-        )
+    override val values = sequenceOf(
+        true to false,
+        false to false,
+        true to true,
+    )
 }
 
 @PreviewLightDark

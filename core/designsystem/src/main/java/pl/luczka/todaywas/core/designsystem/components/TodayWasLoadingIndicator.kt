@@ -13,7 +13,10 @@ fun TodayWasLoadingIndicator(
     modifier: Modifier = Modifier,
     color: Color = ProgressIndicatorDefaults.circularColor,
 ) {
-    CircularProgressIndicator(modifier = modifier, color = color)
+    CircularProgressIndicator(
+        modifier = modifier,
+        color = color,
+    )
 }
 
 @PreviewLightDark

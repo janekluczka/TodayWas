@@ -19,21 +19,23 @@ class JournalEntryDaoTest {
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
 
-            val db1 =
-                Room
-                    .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
-                    .allowMainThreadQueries()
-                    .build()
+            val db1 = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .build()
             db1.journalEntryDao().insert(
-                JournalEntryEntity(date = "2026-07-27", text = "Today was good.", createdAt = 1_000L),
+                JournalEntryEntity(
+                    date = "2026-07-27",
+                    text = "Today was good.",
+                    createdAt = 1_000L,
+                ),
             )
             db1.close()
 
-            val db2 =
-                Room
-                    .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
-                    .allowMainThreadQueries()
-                    .build()
+            val db2 = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .build()
             val persisted = db2.journalEntryDao().observeAll().first()
             db2.close()
 
@@ -49,14 +51,31 @@ class JournalEntryDaoTest {
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
 
-            val db =
-                Room
-                    .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
-                    .allowMainThreadQueries()
-                    .build()
-            db.journalEntryDao().insert(JournalEntryEntity(date = "2026-07-25", text = "Older", createdAt = 1L))
-            db.journalEntryDao().insert(JournalEntryEntity(date = "2026-07-27", text = "Newest", createdAt = 3L))
-            db.journalEntryDao().insert(JournalEntryEntity(date = "2026-07-26", text = "Middle", createdAt = 2L))
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .build()
+            db.journalEntryDao().insert(
+                JournalEntryEntity(
+                    date = "2026-07-25",
+                    text = "Older",
+                    createdAt = 1L,
+                ),
+            )
+            db.journalEntryDao().insert(
+                JournalEntryEntity(
+                    date = "2026-07-27",
+                    text = "Newest",
+                    createdAt = 3L,
+                ),
+            )
+            db.journalEntryDao().insert(
+                JournalEntryEntity(
+                    date = "2026-07-26",
+                    text = "Middle",
+                    createdAt = 2L,
+                ),
+            )
 
             val entries = db.journalEntryDao().observeAll().first()
             db.close()

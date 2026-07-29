@@ -29,7 +29,12 @@ class OnboardingViewModelTest {
 
     private class FakeOnboardingRepository : OnboardingRepository {
 
-        private val stateFlow = MutableStateFlow(OnboardingState(completed = false, focus = null))
+        private val stateFlow = MutableStateFlow(
+            OnboardingState(
+                completed = false,
+                focus = null,
+            ),
+        )
 
         var saveFocusResult: Result<Unit> = Result.success(Unit)
         var saveFocusCallCount = 0
@@ -40,7 +45,10 @@ class OnboardingViewModelTest {
         override suspend fun saveFocus(focus: Focus): Result<Unit> {
             saveFocusCallCount++
             if (saveFocusResult.isSuccess) {
-                stateFlow.value = OnboardingState(completed = true, focus = focus)
+                stateFlow.value = OnboardingState(
+                    completed = true,
+                    focus = focus,
+                )
             }
             return saveFocusResult
         }

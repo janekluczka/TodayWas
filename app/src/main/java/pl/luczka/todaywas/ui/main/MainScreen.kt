@@ -151,11 +151,10 @@ private fun JournalEntryListItem(
     onClick: () -> Unit,
 ) {
     Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
     ) {
         TodayWasText(text = entry.formattedDate)
         TodayWasText(
@@ -167,53 +166,51 @@ private fun JournalEntryListItem(
 }
 
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
-    override val values =
-        sequenceOf(
-            MainUiState(
-                focus = null,
-                journalEntries = emptyList(),
-                addableSlots = emptyList(),
-                fabActions = emptyList(),
-                fabExpanded = false,
+    override val values = sequenceOf(
+        MainUiState(
+            focus = null,
+            journalEntries = emptyList(),
+            addableSlots = emptyList(),
+            fabActions = emptyList(),
+            fabExpanded = false,
+        ),
+        MainUiState(
+            focus = FocusUiState.JOURNAL,
+            journalEntries = emptyList(),
+            addableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+            fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
+            fabExpanded = false,
+        ),
+        MainUiState(
+            focus = FocusUiState.BOTH,
+            journalEntries = listOf(
+                JournalEntryUiState(
+                    id = 1,
+                    date = LocalDate.now(),
+                    formattedDate = "Jul 27, 2026",
+                    text = "Today was a good day.",
+                    createdAt = Instant.now(),
+                ),
+                JournalEntryUiState(
+                    id = 2,
+                    date = LocalDate.now().minusDays(1),
+                    formattedDate = "Jul 26, 2026",
+                    text = "A long entry that should get truncated in the list preview once it wraps past two lines of text.",
+                    createdAt = Instant.now(),
+                ),
             ),
-            MainUiState(
-                focus = FocusUiState.JOURNAL,
-                journalEntries = emptyList(),
-                addableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
-                fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
-                fabExpanded = false,
-            ),
-            MainUiState(
-                focus = FocusUiState.BOTH,
-                journalEntries =
-                    listOf(
-                        JournalEntryUiState(
-                            id = 1,
-                            date = LocalDate.now(),
-                            formattedDate = "Jul 27, 2026",
-                            text = "Today was a good day.",
-                            createdAt = Instant.now(),
-                        ),
-                        JournalEntryUiState(
-                            id = 2,
-                            date = LocalDate.now().minusDays(1),
-                            formattedDate = "Jul 26, 2026",
-                            text = "A long entry that should get truncated in the list preview once it wraps past two lines of text.",
-                            createdAt = Instant.now(),
-                        ),
-                    ),
-                addableSlots = emptyList(),
-                fabActions = emptyList(),
-                fabExpanded = false,
-            ),
-            MainUiState(
-                focus = FocusUiState.HABIT,
-                journalEntries = emptyList(),
-                addableSlots = emptyList(),
-                fabActions = emptyList(),
-                fabExpanded = false,
-            ),
-        )
+            addableSlots = emptyList(),
+            fabActions = emptyList(),
+            fabExpanded = false,
+        ),
+        MainUiState(
+            focus = FocusUiState.HABIT,
+            journalEntries = emptyList(),
+            addableSlots = emptyList(),
+            fabActions = emptyList(),
+            fabExpanded = false,
+        ),
+    )
 }
 
 @PreviewLightDark

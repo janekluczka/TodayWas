@@ -21,14 +21,21 @@ fun TodayWasRadioOption(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier =
-            modifier
-                .selectable(selected = selected, onClick = onClick)
-                .padding(vertical = 8.dp),
+        modifier = modifier
+            .selectable(
+                selected = selected,
+                onClick = onClick,
+            ).padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        RadioButton(selected = selected, onClick = onClick)
-        TodayWasText(text = text, modifier = Modifier.padding(start = 8.dp))
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+        )
+        TodayWasText(
+            text = text,
+            modifier = Modifier.padding(start = 8.dp),
+        )
     }
 }
 
@@ -38,6 +45,10 @@ private fun TodayWasRadioOptionPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasRadioOption(text = "Journaling", selected = selected, onClick = {})
+        TodayWasRadioOption(
+            text = "Journaling",
+            selected = selected,
+            onClick = {},
+        )
     }
 }
