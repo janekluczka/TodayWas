@@ -10,3 +10,9 @@ ktlint_standard_no-empty-first-line-in-class-body = disabled
 # Allow `class Foo @Inject constructor(...)` on one line instead of forcing the
 # annotation and `constructor` keyword onto their own lines.
 ktlint_standard_annotation = disabled
+# Project style: `val x = call(` stays on one line with the call's arguments
+# wrapped below it, rather than forcing `val x =` / newline / indented call.
+ktlint_standard_multiline-expression-wrapping = disabled
+# Project style: a function with a multi-line parameter list can still start
+# its expression body on the same line as the closing `) : Type =`.
+ktlint_standard_function-signature = disabled

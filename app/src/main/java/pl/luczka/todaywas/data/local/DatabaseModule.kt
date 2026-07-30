@@ -17,11 +17,10 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context,
-    ): TodayWasDatabase =
-        Room
-            .databaseBuilder(context, TodayWasDatabase::class.java, "todaywas.db")
-            .fallbackToDestructiveMigration(dropAllTables = true)
-            .build()
+    ): TodayWasDatabase = Room
+        .databaseBuilder(context, TodayWasDatabase::class.java, "todaywas.db")
+        .fallbackToDestructiveMigration(dropAllTables = true)
+        .build()
 
     @Provides
     fun provideUserPreferencesDao(database: TodayWasDatabase): UserPreferencesDao = database.userPreferencesDao()

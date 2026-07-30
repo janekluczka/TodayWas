@@ -13,11 +13,10 @@ class AddJournalEntryUseCase @Inject constructor(
         slot: JournalDateSlot,
         text: String,
     ): Result<Unit> {
-        val date =
-            when (slot) {
-                JournalDateSlot.TODAY -> LocalDate.now()
-                JournalDateSlot.YESTERDAY -> LocalDate.now().minusDays(1)
-            }
+        val date = when (slot) {
+            JournalDateSlot.TODAY -> LocalDate.now()
+            JournalDateSlot.YESTERDAY -> LocalDate.now().minusDays(1)
+        }
         return repository.addEntry(date, text)
     }
 }

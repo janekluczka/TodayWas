@@ -18,12 +18,12 @@ fun TodayWasScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
-        modifier = modifier,
         topBar = topBar,
         bottomBar = bottomBar,
         snackbarHost = snackbarHost,
         floatingActionButton = floatingActionButton,
         content = content,
+        modifier = modifier,
     )
 }
 
@@ -34,7 +34,10 @@ private fun TodayWasScaffoldPreview() {
         TodayWasScaffold(
             topBar = { TodayWasTopBar(title = "TodayWas") },
         ) { innerPadding ->
-            TodayWasText(text = "No entries yet", modifier = Modifier.padding(innerPadding))
+            TodayWasText(
+                text = "No entries yet",
+                modifier = Modifier.padding(innerPadding),
+            )
         }
     }
 }

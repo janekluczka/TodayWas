@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.onboarding
 
-import pl.luczka.todaywas.domain.model.Focus
+import pl.luczka.todaywas.ui.model.FocusUiState
 
 sealed interface OnboardingIntent {
 
@@ -11,7 +11,7 @@ sealed interface OnboardingIntent {
     data object StepBack : OnboardingIntent
 
     data class FocusOptionSelected(
-        val focus: Focus,
+        val focus: FocusUiState,
     ) : OnboardingIntent
 
     data object CreateAccountClicked : OnboardingIntent

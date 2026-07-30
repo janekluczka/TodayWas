@@ -20,12 +20,11 @@ class JournalRepositoryImpl @Inject constructor(
         date: LocalDate,
         text: String,
     ): Result<Unit> {
-        val entity =
-            JournalEntryEntity(
-                date = date.toString(),
-                text = text,
-                createdAt = Instant.now().toEpochMilli(),
-            )
+        val entity = JournalEntryEntity(
+            date = date.toString(),
+            text = text,
+            createdAt = Instant.now().toEpochMilli(),
+        )
         return try {
             dao.insert(entity)
             Result.success(Unit)

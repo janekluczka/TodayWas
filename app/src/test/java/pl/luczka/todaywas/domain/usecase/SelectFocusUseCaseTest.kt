@@ -16,7 +16,13 @@ class SelectFocusUseCaseTest {
         var lastSavedFocus: Focus? = null
             private set
 
-        override fun observeState(): Flow<OnboardingState> = flowOf(OnboardingState(completed = false, focus = null))
+        override fun observeState(): Flow<OnboardingState> =
+            flowOf(
+                OnboardingState(
+                    completed = false,
+                    focus = null,
+                ),
+            )
 
         override suspend fun saveFocus(focus: Focus): Result<Unit> {
             lastSavedFocus = focus

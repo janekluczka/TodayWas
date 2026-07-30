@@ -28,7 +28,6 @@ fun JournalEntryDetailScreen(
     onBack: () -> Unit,
 ) {
     TodayWasScaffold(
-        modifier = Modifier.fillMaxSize(),
         topBar = {
             TodayWasTopBar(
                 title = stringResource(R.string.journal_detail_title),
@@ -42,13 +41,13 @@ fun JournalEntryDetailScreen(
                 },
             )
         },
+        modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(24.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
         ) {
             TodayWasText(text = LocalDate.parse(date).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
             TodayWasText(text = text)

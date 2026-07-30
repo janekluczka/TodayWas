@@ -12,6 +12,8 @@ import androidx.navigation3.ui.NavDisplay
 import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen
+import pl.luczka.todaywas.ui.model.toDomain
+import pl.luczka.todaywas.ui.model.toUiState
 import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
 
 @Composable
@@ -30,49 +32,49 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
-        entryDecorators =
-            listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-        entryProvider =
-            entryProvider {
-                entry<OnboardingKey> {
-                    OnboardingScreen(
-                        onFinished = {
-                            backStack.clear()
-                            backStack.add(MainKey)
-                        },
-                    )
-                }
-                entry<MainKey> {
-                    MainScreen(
-                        onAddEntryClicked = { availableSlots -> backStack.add(AddJournalEntryKey(availableSlots)) },
-                        onJournalEntryClicked = { entry ->
-                            backStack.add(
-                                JournalEntryDetailKey(
-                                    date = entry.date.toString(),
-                                    text = entry.text,
-                                    createdAt = entry.createdAt.toEpochMilli(),
-                                ),
-                            )
-                        },
-                    )
-                }
-                entry<AddJournalEntryKey> { key ->
-                    AddJournalEntryScreen(
-                        availableSlots = key.availableSlots,
-                        onSaved = { backStack.removeLastOrNull() },
-                        onCancelled = { backStack.removeLastOrNull() },
-                    )
-                }
-                entry<JournalEntryDetailKey> { key ->
-                    JournalEntryDetailScreen(
-                        date = key.date,
-                        text = key.text,
-                        onBack = { backStack.removeLastOrNull() },
-                    )
-                }
-            },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+        ),
+        entryProvider = entryProvider {
+            entry<OnboardingKey> {
+                OnboardingScreen(
+                    onFinished = {
+                        backStack.clear()
+                        backStack.add(MainKey)
+                    },
+                )
+            }
+            entry<MainKey> {
+                MainScreen(
+                    onAddEntryClicked = { availableSlots ->
+                        backStack.add(AddJournalEntryKey(availableSlots.map { it.toDomain() }))
+                    },
+                    onJournalEntryClicked = { entry ->
+                        backStack.add(
+                            JournalEntryDetailKey(
+                                date = entry.date.toString(),
+                                text = entry.text,
+                                createdAt = entry.createdAt.toEpochMilli(),
+                            ),
+                        )
+                    },
+                )
+            }
+            entry<AddJournalEntryKey> { key ->
+                AddJournalEntryScreen(
+                    availableSlots = key.availableSlots.map { it.toUiState() },
+                    onSaved = { backStack.removeLastOrNull() },
+                    onCancelled = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<JournalEntryDetailKey> { key ->
+                JournalEntryDetailScreen(
+                    date = key.date,
+                    text = key.text,
+                    onBack = { backStack.removeLastOrNull() },
+                )
+            }
+        },
     )
 }

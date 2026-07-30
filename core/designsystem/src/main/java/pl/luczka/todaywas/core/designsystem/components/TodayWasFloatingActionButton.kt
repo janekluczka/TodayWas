@@ -16,8 +16,8 @@ fun TodayWasFloatingActionButton(
 ) {
     FloatingActionButton(
         onClick = onClick,
-        modifier = modifier,
         content = content,
+        modifier = modifier,
     )
 }
 
@@ -26,7 +26,10 @@ fun TodayWasFloatingActionButton(
 private fun TodayWasFloatingActionButtonPreview() {
     DesignSystemPreviewTheme {
         TodayWasFloatingActionButton(onClick = {}) {
-            TodayWasIcon(imageVector = Icons.Default.Add, contentDescription = "Add")
+            TodayWasIcon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add",
+            )
         }
     }
 }

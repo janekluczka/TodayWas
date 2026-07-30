@@ -22,13 +22,13 @@ fun TodayWasButtonWithLoading(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.animateContentSize(),
         enabled = enabled && !loading,
+        modifier = modifier.animateContentSize(),
     ) {
         if (loading) {
             TodayWasLoadingIndicator(
-                modifier = Modifier.size(20.dp),
                 color = LocalContentColor.current,
+                modifier = Modifier.size(20.dp),
             )
         } else {
             TodayWasText(text = text)
@@ -37,12 +37,11 @@ fun TodayWasButtonWithLoading(
 }
 
 private class TodayWasButtonWithLoadingPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
-    override val values =
-        sequenceOf(
-            true to false,
-            false to false,
-            true to true,
-        )
+    override val values = sequenceOf(
+        true to false,
+        false to false,
+        true to true,
+    )
 }
 
 @PreviewLightDark

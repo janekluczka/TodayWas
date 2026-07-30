@@ -24,6 +24,9 @@ fun TodayWasExtendedFloatingActionButton(
 @Composable
 private fun TodayWasExtendedFloatingActionButtonPreview() {
     DesignSystemPreviewTheme {
-        TodayWasExtendedFloatingActionButton(text = "Add journal", onClick = {})
+        TodayWasExtendedFloatingActionButton(
+            text = "Add journal",
+            onClick = {},
+        )
     }
 }

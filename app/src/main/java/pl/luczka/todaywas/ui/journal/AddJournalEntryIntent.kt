@@ -1,11 +1,11 @@
 package pl.luczka.todaywas.ui.journal
 
-import pl.luczka.todaywas.domain.model.JournalDateSlot
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 
 sealed interface AddJournalEntryIntent {
 
     data class SlotSelected(
-        val slot: JournalDateSlot,
+        val slot: JournalDateSlotUiState,
     ) : AddJournalEntryIntent
 
     data class TextChanged(

@@ -14,9 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,19 +31,18 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
 import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
 import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
-import pl.luczka.todaywas.domain.model.Focus
-import pl.luczka.todaywas.domain.model.JournalDateSlot
-import pl.luczka.todaywas.domain.model.JournalEntry
+import pl.luczka.todaywas.ui.model.FabActionUiState
+import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 @Composable
 fun MainScreen(
-    onAddEntryClicked: (List<JournalDateSlot>) -> Unit,
-    onJournalEntryClicked: (JournalEntry) -> Unit,
+    onAddEntryClicked: (List<JournalDateSlotUiState>) -> Unit,
+    onJournalEntryClicked: (JournalEntryUiState) -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -60,7 +56,10 @@ fun MainScreen(
         }
     }
 
-    MainScreenContent(uiState = uiState, onIntent = viewModel::onIntent)
+    MainScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+    )
 }
 
 @Composable
@@ -69,68 +68,61 @@ private fun MainScreenContent(
     onIntent: (MainIntent) -> Unit,
 ) {
     TodayWasScaffold(
-        modifier = Modifier.fillMaxSize(),
         topBar = { TodayWasTopBar(title = stringResource(R.string.main_top_bar_title)) },
         floatingActionButton = { MainFab(uiState, onIntent) },
+        modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             when (uiState.focus) {
                 null -> TodayWasText(text = stringResource(R.string.main_empty_state))
-                Focus.JOURNAL, Focus.BOTH -> JournalSection(uiState, onIntent)
-                Focus.HABIT -> TodayWasText(text = stringResource(R.string.main_habit_placeholder))
+                FocusUiState.JOURNAL, FocusUiState.BOTH -> JournalSection(uiState, onIntent)
+                FocusUiState.HABIT -> TodayWasText(text = stringResource(R.string.main_habit_placeholder))
             }
         }
     }
 }
-
-private data class FabAction(
-    val label: String,
-    val onClick: () -> Unit,
-)
 
 @Composable
 private fun MainFab(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
 ) {
-    val addJournalLabel = stringResource(R.string.main_fab_add_journal)
-    val journalActionAvailable =
-        (uiState.focus == Focus.JOURNAL || uiState.focus == Focus.BOTH) && uiState.addableSlots.isNotEmpty()
-    // Habit tracking (S-03) has no destination yet, so it never contributes an action here.
-    val actions =
-        listOfNotNull(
-            FabAction(label = addJournalLabel, onClick = { onIntent(MainIntent.AddEntryClicked) }).takeIf { journalActionAvailable },
-        )
+    val actions = uiState.fabActions
     if (actions.isEmpty()) return
 
     // actions.size is always 1 today (only journal has a destination), so this FAB behaves as a
     // plain single-tap button and the expand branch below never triggers. It becomes a real
     // speed-dial automatically once a second action exists (e.g. habit tracking in S-03) — no
     // further changes needed here when that happens.
-    var expanded by remember { mutableStateOf(false) }
-
-    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (expanded) {
+    Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (uiState.fabExpanded) {
             for (action in actions) {
                 TodayWasExtendedFloatingActionButton(
-                    text = action.label,
-                    onClick = {
-                        expanded = false
-                        action.onClick()
-                    },
+                    text = stringResource(action.labelRes),
+                    onClick = { onIntent(MainIntent.FabActionClicked(action)) },
                 )
             }
         }
         TodayWasFloatingActionButton(
             onClick = {
                 if (actions.size == 1) {
-                    actions.single().onClick()
+                    onIntent(MainIntent.FabActionClicked(actions.single()))
                 } else {
-                    expanded = !expanded
+                    onIntent(MainIntent.FabToggled)
                 }
             },
         ) {
-            TodayWasIcon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.content_description_add))
+            TodayWasIcon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(R.string.content_description_add),
+            )
         }
     }
 }
@@ -140,7 +132,11 @@ private fun JournalSection(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+    ) {
         TodayWasText(text = stringResource(R.string.main_journal_section_title))
         if (uiState.journalEntries.isEmpty()) {
             TodayWasText(text = stringResource(R.string.main_journal_empty_state))
@@ -159,46 +155,70 @@ private fun JournalSection(
 
 @Composable
 private fun JournalEntryListItem(
-    entry: JournalEntry,
+    entry: JournalEntryUiState,
     onClick: () -> Unit,
 ) {
     Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
     ) {
-        TodayWasText(text = entry.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
-        TodayWasText(text = entry.text, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        TodayWasText(text = entry.formattedDate)
+        TodayWasText(
+            text = entry.text,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
-    override val values =
-        sequenceOf(
-            MainUiState(focus = null, journalEntries = emptyList(), addableSlots = emptyList()),
-            MainUiState(
-                focus = Focus.JOURNAL,
-                journalEntries = emptyList(),
-                addableSlots = listOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY),
+    override val values = sequenceOf(
+        MainUiState(
+            focus = null,
+            journalEntries = emptyList(),
+            addableSlots = emptyList(),
+            fabActions = emptyList(),
+            fabExpanded = false,
+        ),
+        MainUiState(
+            focus = FocusUiState.JOURNAL,
+            journalEntries = emptyList(),
+            addableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+            fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
+            fabExpanded = false,
+        ),
+        MainUiState(
+            focus = FocusUiState.BOTH,
+            journalEntries = listOf(
+                JournalEntryUiState(
+                    id = 1,
+                    date = LocalDate.now(),
+                    formattedDate = "Jul 27, 2026",
+                    text = "Today was a good day.",
+                    createdAt = Instant.now(),
+                ),
+                JournalEntryUiState(
+                    id = 2,
+                    date = LocalDate.now().minusDays(1),
+                    formattedDate = "Jul 26, 2026",
+                    text = "A long entry that should get truncated in the list preview once it wraps past two lines of text.",
+                    createdAt = Instant.now(),
+                ),
             ),
-            MainUiState(
-                focus = Focus.BOTH,
-                journalEntries =
-                    listOf(
-                        JournalEntry(id = 1, date = LocalDate.now(), text = "Today was a good day.", createdAt = Instant.now()),
-                        JournalEntry(
-                            id = 2,
-                            date = LocalDate.now().minusDays(1),
-                            text = "A long entry that should get truncated in the list preview once it wraps past two lines of text.",
-                            createdAt = Instant.now(),
-                        ),
-                    ),
-                addableSlots = emptyList(),
-            ),
-            MainUiState(focus = Focus.HABIT, journalEntries = emptyList(), addableSlots = emptyList()),
-        )
+            addableSlots = emptyList(),
+            fabActions = emptyList(),
+            fabExpanded = false,
+        ),
+        MainUiState(
+            focus = FocusUiState.HABIT,
+            journalEntries = emptyList(),
+            addableSlots = emptyList(),
+            fabActions = emptyList(),
+            fabExpanded = false,
+        ),
+    )
 }
 
 @PreviewLightDark
@@ -207,6 +227,9 @@ private fun MainScreenPreview(
     @PreviewParameter(MainScreenPreviewStateProvider::class) state: MainUiState,
 ) {
     TodayWasTheme {
-        MainScreenContent(uiState = state, onIntent = {})
+        MainScreenContent(
+            uiState = state,
+            onIntent = {},
+        )
     }
 }

@@ -22,7 +22,10 @@ class OnboardingRepositoryImpl @Inject constructor(
         }
 
     override suspend fun saveFocus(focus: Focus): Result<Unit> {
-        val entity = UserPreferencesEntity(focus = focus.name, onboardingCompleted = true)
+        val entity = UserPreferencesEntity(
+            focus = focus.name,
+            onboardingCompleted = true,
+        )
         return try {
             dao.upsert(entity)
             Result.success(Unit)

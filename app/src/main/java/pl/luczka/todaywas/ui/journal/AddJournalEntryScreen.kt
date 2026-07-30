@@ -40,7 +40,7 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTextField
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
-import pl.luczka.todaywas.domain.model.JournalDateSlot
+import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -48,13 +48,12 @@ import java.util.Locale
 
 @Composable
 fun AddJournalEntryScreen(
-    availableSlots: List<JournalDateSlot>,
+    availableSlots: List<JournalDateSlotUiState>,
     onSaved: () -> Unit,
     onCancelled: () -> Unit,
-    viewModel: AddJournalEntryViewModel =
-        hiltViewModel<AddJournalEntryViewModel, AddJournalEntryViewModel.Factory> { factory ->
-            factory.create(availableSlots)
-        },
+    viewModel: AddJournalEntryViewModel = hiltViewModel<AddJournalEntryViewModel, AddJournalEntryViewModel.Factory> { factory ->
+        factory.create(availableSlots)
+    },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -67,7 +66,10 @@ fun AddJournalEntryScreen(
         }
     }
 
-    AddJournalEntryScreenContent(uiState = uiState, onIntent = viewModel::onIntent)
+    AddJournalEntryScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+    )
 }
 
 @Composable
@@ -84,7 +86,6 @@ private fun AddJournalEntryScreenContent(
     }
 
     TodayWasScaffold(
-        modifier = Modifier.fillMaxSize(),
         topBar = {
             TodayWasTopBar(
                 title = stringResource(R.string.journal_add_entry_title),
@@ -107,20 +108,26 @@ private fun AddJournalEntryScreenContent(
             )
         },
         snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
         ) {
-            DayStrip(uiState = uiState, onIntent = onIntent)
+            DayStrip(
+                uiState = uiState,
+                onIntent = onIntent,
+            )
             TodayWasTextField(
                 value = uiState.text,
                 onValueChange = { onIntent(AddJournalEntryIntent.TextChanged(it)) },
                 label = stringResource(R.string.journal_add_entry_text_label),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 16.dp),
                 minLines = 6,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 24.dp),
             )
         }
     }
@@ -140,7 +147,7 @@ private fun DayStrip(
 ) {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
-    val selectedDate = if (uiState.selectedSlot == JournalDateSlot.TODAY) today else yesterday
+    val selectedDate = if (uiState.selectedSlot == JournalDateSlotUiState.TODAY) today else yesterday
     val selectedPage = selectedDate.toEpochDay().toInt()
 
     val pagerState = rememberPagerState(initialPage = selectedPage) { Int.MAX_VALUE }
@@ -159,12 +166,11 @@ private fun DayStrip(
             contentPadding = PaddingValues(horizontal = sideInset),
         ) { page ->
             val date = LocalDate.ofEpochDay(page.toLong())
-            val slot =
-                when (date) {
-                    today -> JournalDateSlot.TODAY
-                    yesterday -> JournalDateSlot.YESTERDAY
-                    else -> null
-                }
+            val slot = when (date) {
+                today -> JournalDateSlotUiState.TODAY
+                yesterday -> JournalDateSlotUiState.YESTERDAY
+                else -> null
+            }
             val available = slot != null && slot in uiState.availableSlots
             DayCard(
                 date = date,
@@ -185,69 +191,68 @@ private fun DayCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val containerColor =
-        when {
-            selected -> MaterialTheme.colorScheme.primary
-            available -> MaterialTheme.colorScheme.secondaryContainer
-            else -> MaterialTheme.colorScheme.surfaceVariant
-        }
-    val contentColor =
-        when {
-            selected -> MaterialTheme.colorScheme.onPrimary
-            available -> MaterialTheme.colorScheme.onSecondaryContainer
-            else -> MaterialTheme.colorScheme.onSurfaceVariant
-        }
+    val containerColor = when {
+        selected -> MaterialTheme.colorScheme.primary
+        available -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = when {
+        selected -> MaterialTheme.colorScheme.onPrimary
+        available -> MaterialTheme.colorScheme.onSecondaryContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
     Column(
-        modifier =
-            modifier
-                .padding(4.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(containerColor)
-                .let { if (available) it.clickable(onClick = onClick) else it }
-                .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .padding(4.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(containerColor)
+            .let { if (available) it.clickable(onClick = onClick) else it }
+            .padding(vertical = 8.dp),
     ) {
         TodayWasText(
             text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
             color = contentColor,
             fontSize = 10.sp,
         )
-        TodayWasText(text = date.dayOfMonth.toString(), color = contentColor)
+        TodayWasText(
+            text = date.dayOfMonth.toString(),
+            color = contentColor,
+        )
     }
 }
 
 private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<AddJournalEntryUiState> {
-    override val values =
-        sequenceOf(
-            AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY),
-                selectedSlot = JournalDateSlot.TODAY,
-                text = "",
-                isSaving = false,
-                saveError = false,
-            ),
-            AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY),
-                selectedSlot = JournalDateSlot.TODAY,
-                text = "Today was a good day.",
-                isSaving = false,
-                saveError = false,
-            ),
-            AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY),
-                selectedSlot = JournalDateSlot.YESTERDAY,
-                text = "Today was a good day.",
-                isSaving = true,
-                saveError = false,
-            ),
-            AddJournalEntryUiState(
-                availableSlots = listOf(JournalDateSlot.TODAY),
-                selectedSlot = JournalDateSlot.TODAY,
-                text = "Today was a good day.",
-                isSaving = false,
-                saveError = true,
-            ),
-        )
+    override val values = sequenceOf(
+        AddJournalEntryUiState(
+            availableSlots = listOf(JournalDateSlotUiState.TODAY),
+            selectedSlot = JournalDateSlotUiState.TODAY,
+            text = "",
+            isSaving = false,
+            saveError = false,
+        ),
+        AddJournalEntryUiState(
+            availableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+            selectedSlot = JournalDateSlotUiState.TODAY,
+            text = "Today was a good day.",
+            isSaving = false,
+            saveError = false,
+        ),
+        AddJournalEntryUiState(
+            availableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+            selectedSlot = JournalDateSlotUiState.YESTERDAY,
+            text = "Today was a good day.",
+            isSaving = true,
+            saveError = false,
+        ),
+        AddJournalEntryUiState(
+            availableSlots = listOf(JournalDateSlotUiState.TODAY),
+            selectedSlot = JournalDateSlotUiState.TODAY,
+            text = "Today was a good day.",
+            isSaving = false,
+            saveError = true,
+        ),
+    )
 }
 
 @PreviewLightDark
@@ -256,6 +261,9 @@ private fun AddJournalEntryScreenPreview(
     @PreviewParameter(AddJournalEntryScreenPreviewStateProvider::class) state: AddJournalEntryUiState,
 ) {
     TodayWasTheme {
-        AddJournalEntryScreenContent(uiState = state, onIntent = {})
+        AddJournalEntryScreenContent(
+            uiState = state,
+            onIntent = {},
+        )
     }
 }

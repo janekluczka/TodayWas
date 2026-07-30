@@ -11,9 +11,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.usecase.SelectFocusUseCase
 import pl.luczka.todaywas.domain.usecase.SkipOnboardingUseCase
+import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.toDomain
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,16 +23,15 @@ class OnboardingViewModel @Inject constructor(
     private val skipOnboarding: SkipOnboardingUseCase,
 ) : ViewModel() {
 
-    private val _uiState =
-        MutableStateFlow(
-            OnboardingUiState(
-                step = OnboardingStep.WELCOME,
-                selectedFocus = null,
-                confirmedFocus = null,
-                isSaving = false,
-                saveError = false,
-            ),
-        )
+    private val _uiState = MutableStateFlow(
+        OnboardingUiState(
+            step = OnboardingStep.WELCOME,
+            selectedFocus = null,
+            confirmedFocus = null,
+            isSaving = false,
+            saveError = false,
+        ),
+    )
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
     private val eventChannel = Channel<OnboardingUiEvent>(Channel.BUFFERED)
@@ -61,19 +61,31 @@ class OnboardingViewModel @Inject constructor(
         if (_uiState.value.isSaving) return
         val focus = _uiState.value.selectedFocus ?: return
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, saveError = false) }
-            val result = selectFocus(focus)
+            _uiState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                )
+            }
+            val result = selectFocus(focus.toDomain())
             _uiState.update { current ->
                 if (result.isSuccess) {
-                    current.copy(isSaving = false, confirmedFocus = focus, step = OnboardingStep.ACCOUNT_INFO)
+                    current.copy(
+                        isSaving = false,
+                        confirmedFocus = focus,
+                        step = OnboardingStep.ACCOUNT_INFO,
+                    )
                 } else {
-                    current.copy(isSaving = false, saveError = true)
+                    current.copy(
+                        isSaving = false,
+                        saveError = true,
+                    )
                 }
             }
         }
     }
 
-    private fun onFocusOptionSelected(focus: Focus) {
+    private fun onFocusOptionSelected(focus: FocusUiState) {
         _uiState.update { it.copy(selectedFocus = focus) }
     }
 
@@ -82,7 +94,10 @@ class OnboardingViewModel @Inject constructor(
             OnboardingStep.FOCUS_PICK -> _uiState.update { it.copy(step = OnboardingStep.WELCOME) }
             OnboardingStep.ACCOUNT_INFO ->
                 _uiState.update {
-                    it.copy(step = OnboardingStep.FOCUS_PICK, selectedFocus = it.confirmedFocus)
+                    it.copy(
+                        step = OnboardingStep.FOCUS_PICK,
+                        selectedFocus = it.confirmedFocus,
+                    )
                 }
             OnboardingStep.ALL_SET -> _uiState.update { it.copy(step = OnboardingStep.ACCOUNT_INFO) }
             OnboardingStep.WELCOME -> eventChannel.trySend(OnboardingUiEvent.ExitApp)
@@ -96,9 +111,19 @@ class OnboardingViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, saveError = false) }
+            _uiState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                )
+            }
             val result = skipOnboarding()
-            _uiState.update { it.copy(isSaving = false, saveError = result.isFailure) }
+            _uiState.update {
+                it.copy(
+                    isSaving = false,
+                    saveError = result.isFailure,
+                )
+            }
             if (result.isSuccess) {
                 eventChannel.trySend(OnboardingUiEvent.Finished)
             }
