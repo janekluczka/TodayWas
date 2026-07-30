@@ -68,7 +68,11 @@ type.
 
 ### Step 4 — Fill in the template
 
-Take the template read in Step 1 and fill its sections:
+Take the template read in Step 1 and fill its sections. The `<!-- -->`
+comment blocks under each heading are guidance for a human filling the
+template by hand in an editor — they never render on GitHub. Drop
+them from the composed body entirely; don't leave them in and don't
+treat them as content to preserve.
 
 - **`## Summary`** — one bullet per significant change across the
   whole branch, most important first. Each bullet is a single logical
