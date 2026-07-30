@@ -34,7 +34,10 @@ private fun TodayWasScaffoldPreview() {
         TodayWasScaffold(
             topBar = { TodayWasTopBar(title = "TodayWas") },
         ) { innerPadding ->
-            TodayWasText(text = "No entries yet", modifier = Modifier.padding(innerPadding))
+            TodayWasText(
+                text = "No entries yet",
+                modifier = Modifier.padding(innerPadding),
+            )
         }
     }
 }

@@ -92,7 +92,10 @@ class AddJournalEntryViewModelTest {
     fun `SaveClicked success clears isSaving and emits Saved`() =
         runTest {
             val repository = FakeJournalRepository()
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY), repository = repository)
+            val viewModel = viewModel(
+                availableSlots = listOf(JournalDateSlotUiState.TODAY),
+                repository = repository,
+            )
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
@@ -112,7 +115,10 @@ class AddJournalEntryViewModelTest {
         runTest {
             val repository = FakeJournalRepository()
             repository.addEntryResult = Result.failure(RuntimeException("write failed"))
-            val viewModel = viewModel(availableSlots = listOf(JournalDateSlotUiState.TODAY), repository = repository)
+            val viewModel = viewModel(
+                availableSlots = listOf(JournalDateSlotUiState.TODAY),
+                repository = repository,
+            )
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }

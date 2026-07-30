@@ -215,7 +215,10 @@ private fun DayCard(
             color = contentColor,
             fontSize = 10.sp,
         )
-        TodayWasText(text = date.dayOfMonth.toString(), color = contentColor)
+        TodayWasText(
+            text = date.dayOfMonth.toString(),
+            color = contentColor,
+        )
     }
 }
 
