@@ -108,6 +108,14 @@ Claude-Session: <the current session URL, same as used elsewhere this session>
 (Omit the blank-line-plus-bullets block entirely if Step 4 concluded
 there's no body.)
 
+The `Co-Authored-By`/`Claude-Session` trailer is the default — include
+it unless the user has said, in this session, that they don't want it
+(e.g. "commit without the co-author line", "no Claude trailer on these
+commits"). Treat that as standing for the rest of the session, not
+just the one commit it was said about, until the user says otherwise.
+When dropped, omit the trailer block entirely rather than leaving an
+empty line where it would have been.
+
 Write this **verbatim string** to a scratch file using the `Write`
 tool (not a shell heredoc, not `-m` with embedded `` `n`` / `\n``
 sequences) — e.g. `<scratchpad>/commit-message.txt`. Using `Write`
