@@ -21,8 +21,8 @@ fun TodayWasIcon(
     Icon(
         imageVector = imageVector,
         contentDescription = contentDescription,
-        modifier = modifier,
         tint = tint,
+        modifier = modifier,
     )
 }
 

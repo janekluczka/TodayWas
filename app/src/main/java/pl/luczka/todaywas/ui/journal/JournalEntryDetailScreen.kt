@@ -28,7 +28,6 @@ fun JournalEntryDetailScreen(
     onBack: () -> Unit,
 ) {
     TodayWasScaffold(
-        modifier = Modifier.fillMaxSize(),
         topBar = {
             TodayWasTopBar(
                 title = stringResource(R.string.journal_detail_title),
@@ -42,6 +41,7 @@ fun JournalEntryDetailScreen(
                 },
             )
         },
+        modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
             modifier = Modifier

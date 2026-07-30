@@ -19,9 +19,9 @@ fun TodayWasIconButton(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier,
         enabled = enabled,
         content = content,
+        modifier = modifier,
     )
 }
 

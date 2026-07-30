@@ -67,7 +67,6 @@ private fun OnboardingScreenContent(
     }
 
     TodayWasScaffold(
-        modifier = Modifier.fillMaxSize(),
         topBar = { TodayWasTopBar(title = "") },
         bottomBar = {
             OnboardingBottomBar(
@@ -75,6 +74,7 @@ private fun OnboardingScreenContent(
                 onIntent = onIntent,
             )
         },
+        modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         HorizontalPager(
             state = pagerState,
@@ -83,7 +83,11 @@ private fun OnboardingScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) { page ->
-            Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+            ) {
                 when (OnboardingStep.entries[page]) {
                     OnboardingStep.WELCOME -> WelcomeStepBody()
                     OnboardingStep.FOCUS_PICK -> FocusPickStepBody(uiState, onIntent)
@@ -101,8 +105,10 @@ private fun OnboardingBottomBar(
     onIntent: (OnboardingIntent) -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
     ) {
         TodayWasTextButton(
             text = stringResource(R.string.onboarding_skip),
@@ -119,24 +125,22 @@ private fun OnboardingBottomBar(
 }
 
 @Composable
-private fun nextButtonLabel(uiState: OnboardingUiState): String =
-    when (uiState.step) {
-        OnboardingStep.WELCOME -> stringResource(R.string.onboarding_welcome_cta)
-        OnboardingStep.FOCUS_PICK ->
-            if (uiState.saveError) {
-                stringResource(R.string.onboarding_focus_pick_retry)
-            } else {
-                stringResource(R.string.onboarding_focus_pick_confirm)
-            }
-        OnboardingStep.ACCOUNT_INFO -> stringResource(R.string.onboarding_account_continue_cta)
-        OnboardingStep.ALL_SET -> stringResource(R.string.onboarding_all_set_cta)
-    }
+private fun nextButtonLabel(uiState: OnboardingUiState): String = when (uiState.step) {
+    OnboardingStep.WELCOME -> stringResource(R.string.onboarding_welcome_cta)
+    OnboardingStep.FOCUS_PICK ->
+        if (uiState.saveError) {
+            stringResource(R.string.onboarding_focus_pick_retry)
+        } else {
+            stringResource(R.string.onboarding_focus_pick_confirm)
+        }
+    OnboardingStep.ACCOUNT_INFO -> stringResource(R.string.onboarding_account_continue_cta)
+    OnboardingStep.ALL_SET -> stringResource(R.string.onboarding_all_set_cta)
+}
 
-private fun nextButtonEnabled(uiState: OnboardingUiState): Boolean =
-    when (uiState.step) {
-        OnboardingStep.WELCOME, OnboardingStep.ACCOUNT_INFO, OnboardingStep.ALL_SET -> true
-        OnboardingStep.FOCUS_PICK -> !uiState.isSaving && (uiState.saveError || uiState.selectedFocus != null)
-    }
+private fun nextButtonEnabled(uiState: OnboardingUiState): Boolean = when (uiState.step) {
+    OnboardingStep.WELCOME, OnboardingStep.ACCOUNT_INFO, OnboardingStep.ALL_SET -> true
+    OnboardingStep.FOCUS_PICK -> !uiState.isSaving && (uiState.saveError || uiState.selectedFocus != null)
+}
 
 @Composable
 private fun WelcomeStepBody() {
@@ -184,12 +188,11 @@ private fun AllSetStepBody() {
 }
 
 @Composable
-private fun FocusUiState.label(): String =
-    when (this) {
-        FocusUiState.JOURNAL -> stringResource(R.string.focus_journal)
-        FocusUiState.HABIT -> stringResource(R.string.focus_habit)
-        FocusUiState.BOTH -> stringResource(R.string.focus_both)
-    }
+private fun FocusUiState.label(): String = when (this) {
+    FocusUiState.JOURNAL -> stringResource(R.string.focus_journal)
+    FocusUiState.HABIT -> stringResource(R.string.focus_habit)
+    FocusUiState.BOTH -> stringResource(R.string.focus_both)
+}
 
 private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<OnboardingUiState> {
     override val values = sequenceOf(

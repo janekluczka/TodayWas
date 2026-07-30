@@ -18,12 +18,12 @@ fun TodayWasScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
-        modifier = modifier,
         topBar = topBar,
         bottomBar = bottomBar,
         snackbarHost = snackbarHost,
         floatingActionButton = floatingActionButton,
         content = content,
+        modifier = modifier,
     )
 }
 

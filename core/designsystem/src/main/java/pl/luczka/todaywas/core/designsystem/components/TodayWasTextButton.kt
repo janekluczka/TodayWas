@@ -17,8 +17,8 @@ fun TodayWasTextButton(
 ) {
     TextButton(
         onClick = onClick,
-        modifier = modifier,
         enabled = enabled,
+        modifier = modifier,
     ) {
         TodayWasText(text = text)
     }

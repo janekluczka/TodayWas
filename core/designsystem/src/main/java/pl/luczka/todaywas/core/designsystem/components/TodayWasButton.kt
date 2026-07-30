@@ -24,11 +24,11 @@ fun TodayWasButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier,
         enabled = enabled,
         colors = colors,
         elevation = elevation,
         contentPadding = contentPadding,
+        modifier = modifier,
     ) {
         TodayWasText(text = text)
     }

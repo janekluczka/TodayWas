@@ -68,11 +68,15 @@ private fun MainScreenContent(
     onIntent: (MainIntent) -> Unit,
 ) {
     TodayWasScaffold(
-        modifier = Modifier.fillMaxSize(),
         topBar = { TodayWasTopBar(title = stringResource(R.string.main_top_bar_title)) },
         floatingActionButton = { MainFab(uiState, onIntent) },
+        modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             when (uiState.focus) {
                 null -> TodayWasText(text = stringResource(R.string.main_empty_state))
                 FocusUiState.JOURNAL, FocusUiState.BOTH -> JournalSection(uiState, onIntent)
@@ -128,7 +132,11 @@ private fun JournalSection(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+    ) {
         TodayWasText(text = stringResource(R.string.main_journal_section_title))
         if (uiState.journalEntries.isEmpty()) {
             TodayWasText(text = stringResource(R.string.main_journal_empty_state))

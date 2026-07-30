@@ -18,10 +18,10 @@ fun TodayWasTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier,
         label = label?.let { { TodayWasText(text = it) } },
         enabled = enabled,
         minLines = minLines,
+        modifier = modifier,
     )
 }
 

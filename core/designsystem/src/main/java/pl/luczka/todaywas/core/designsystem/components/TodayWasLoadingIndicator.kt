@@ -14,8 +14,8 @@ fun TodayWasLoadingIndicator(
     color: Color = ProgressIndicatorDefaults.circularColor,
 ) {
     CircularProgressIndicator(
-        modifier = modifier,
         color = color,
+        modifier = modifier,
     )
 }
 

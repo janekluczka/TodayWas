@@ -86,7 +86,6 @@ private fun AddJournalEntryScreenContent(
     }
 
     TodayWasScaffold(
-        modifier = Modifier.fillMaxSize(),
         topBar = {
             TodayWasTopBar(
                 title = stringResource(R.string.journal_add_entry_title),
@@ -109,6 +108,7 @@ private fun AddJournalEntryScreenContent(
             )
         },
         snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -123,8 +123,11 @@ private fun AddJournalEntryScreenContent(
                 value = uiState.text,
                 onValueChange = { onIntent(AddJournalEntryIntent.TextChanged(it)) },
                 label = stringResource(R.string.journal_add_entry_text_label),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 16.dp),
                 minLines = 6,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 24.dp),
             )
         }
     }
@@ -163,12 +166,11 @@ private fun DayStrip(
             contentPadding = PaddingValues(horizontal = sideInset),
         ) { page ->
             val date = LocalDate.ofEpochDay(page.toLong())
-            val slot =
-                when (date) {
-                    today -> JournalDateSlotUiState.TODAY
-                    yesterday -> JournalDateSlotUiState.YESTERDAY
-                    else -> null
-                }
+            val slot = when (date) {
+                today -> JournalDateSlotUiState.TODAY
+                yesterday -> JournalDateSlotUiState.YESTERDAY
+                else -> null
+            }
             val available = slot != null && slot in uiState.availableSlots
             DayCard(
                 date = date,
@@ -189,26 +191,24 @@ private fun DayCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val containerColor =
-        when {
-            selected -> MaterialTheme.colorScheme.primary
-            available -> MaterialTheme.colorScheme.secondaryContainer
-            else -> MaterialTheme.colorScheme.surfaceVariant
-        }
-    val contentColor =
-        when {
-            selected -> MaterialTheme.colorScheme.onPrimary
-            available -> MaterialTheme.colorScheme.onSecondaryContainer
-            else -> MaterialTheme.colorScheme.onSurfaceVariant
-        }
+    val containerColor = when {
+        selected -> MaterialTheme.colorScheme.primary
+        available -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = when {
+        selected -> MaterialTheme.colorScheme.onPrimary
+        available -> MaterialTheme.colorScheme.onSecondaryContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .padding(4.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(containerColor)
             .let { if (available) it.clickable(onClick = onClick) else it }
             .padding(vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TodayWasText(
             text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),

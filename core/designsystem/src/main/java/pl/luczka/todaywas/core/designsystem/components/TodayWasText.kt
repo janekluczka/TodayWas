@@ -23,12 +23,12 @@ fun TodayWasText(
 ) {
     Text(
         text = text,
-        modifier = modifier,
         color = color,
         fontSize = fontSize,
         style = style,
         maxLines = maxLines,
         overflow = overflow,
+        modifier = modifier,
     )
 }
 

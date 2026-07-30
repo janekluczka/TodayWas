@@ -21,12 +21,12 @@ fun TodayWasRadioOption(
     modifier: Modifier = Modifier,
 ) {
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .selectable(
                 selected = selected,
                 onClick = onClick,
             ).padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
             selected = selected,

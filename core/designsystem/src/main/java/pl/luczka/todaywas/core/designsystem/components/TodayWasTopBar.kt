@@ -22,9 +22,9 @@ fun TodayWasTopBar(
 ) {
     TopAppBar(
         title = { TodayWasText(text = title) },
-        modifier = modifier,
         navigationIcon = navigationIcon,
         actions = { actions() },
+        modifier = modifier,
     )
 }
 

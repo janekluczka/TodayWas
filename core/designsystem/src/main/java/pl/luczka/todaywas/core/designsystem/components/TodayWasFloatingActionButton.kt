@@ -16,8 +16,8 @@ fun TodayWasFloatingActionButton(
 ) {
     FloatingActionButton(
         onClick = onClick,
-        modifier = modifier,
         content = content,
+        modifier = modifier,
     )
 }
 
