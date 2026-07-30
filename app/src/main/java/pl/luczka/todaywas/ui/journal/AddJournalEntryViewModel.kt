@@ -52,11 +52,23 @@ class AddJournalEntryViewModel @AssistedInject constructor(
 
     fun onIntent(intent: AddJournalEntryIntent) {
         when (intent) {
-            is AddJournalEntryIntent.SlotSelected -> _uiState.update { it.copy(selectedSlot = intent.slot) }
-            is AddJournalEntryIntent.TextChanged -> _uiState.update { it.copy(text = intent.text) }
+            is AddJournalEntryIntent.SlotSelected -> onSlotSelected(intent.slot)
+            is AddJournalEntryIntent.TextChanged -> onTextChanged(intent.text)
             AddJournalEntryIntent.SaveClicked -> onSaveClicked()
-            AddJournalEntryIntent.CancelClicked -> eventChannel.trySend(AddJournalEntryUiEvent.Cancelled)
+            AddJournalEntryIntent.CancelClicked -> onCancelClicked()
         }
+    }
+
+    private fun onSlotSelected(slot: JournalDateSlotUiState) {
+        _uiState.update { it.copy(selectedSlot = slot) }
+    }
+
+    private fun onTextChanged(text: String) {
+        _uiState.update { it.copy(text = text) }
+    }
+
+    private fun onCancelClicked() {
+        eventChannel.trySend(AddJournalEntryUiEvent.Cancelled)
     }
 
     private fun onSaveClicked() {

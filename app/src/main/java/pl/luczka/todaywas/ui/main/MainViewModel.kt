@@ -64,18 +64,26 @@ class MainViewModel @Inject constructor(
 
     fun onIntent(intent: MainIntent) {
         when (intent) {
-            is MainIntent.FabActionClicked -> {
-                _uiState.update { it.copy(fabExpanded = false) }
-                when (intent.action) {
-                    FabActionUiState.ADD_JOURNAL_ENTRY ->
-                        eventChannel.trySend(MainUiEvent.NavigateToAddEntry(_uiState.value.addableSlots))
-                }
-            }
-            MainIntent.FabToggled ->
-                _uiState.update { it.copy(fabExpanded = !it.fabExpanded) }
-            is MainIntent.JournalEntryClicked ->
-                eventChannel.trySend(MainUiEvent.NavigateToJournalDetail(intent.entry))
+            is MainIntent.FabActionClicked -> onFabActionClicked(intent.action)
+            MainIntent.FabToggled -> onFabToggled()
+            is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
         }
+    }
+
+    private fun onFabActionClicked(action: FabActionUiState) {
+        _uiState.update { it.copy(fabExpanded = false) }
+        when (action) {
+            FabActionUiState.ADD_JOURNAL_ENTRY ->
+                eventChannel.trySend(MainUiEvent.NavigateToAddEntry(_uiState.value.addableSlots))
+        }
+    }
+
+    private fun onFabToggled() {
+        _uiState.update { it.copy(fabExpanded = !it.fabExpanded) }
+    }
+
+    private fun onJournalEntryClicked(entry: JournalEntryUiState) {
+        eventChannel.trySend(MainUiEvent.NavigateToJournalDetail(entry))
     }
 
     private fun FocusUiState?.toFabActions(addableSlots: List<JournalDateSlotUiState>): List<FabActionUiState> {
