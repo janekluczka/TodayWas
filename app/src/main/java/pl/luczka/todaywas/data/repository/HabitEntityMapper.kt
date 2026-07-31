@@ -1,0 +1,16 @@
+package pl.luczka.todaywas.data.repository
+
+import pl.luczka.todaywas.data.local.HabitEntity
+import pl.luczka.todaywas.domain.model.Habit
+import pl.luczka.todaywas.domain.model.HabitType
+import java.time.Instant
+
+fun HabitEntity.toDomain(): Habit = Habit(
+    id = id,
+    name = name,
+    description = description,
+    type = HabitType.valueOf(type),
+    scaleMin = scaleMin,
+    scaleMax = scaleMax,
+    createdAt = Instant.ofEpochMilli(createdAt),
+)

@@ -27,4 +27,10 @@ object DatabaseModule {
 
     @Provides
     fun provideJournalEntryDao(database: TodayWasDatabase): JournalEntryDao = database.journalEntryDao()
+
+    @Provides
+    fun provideHabitDao(database: TodayWasDatabase): HabitDao = database.habitDao()
+
+    @Provides
+    fun provideHabitCheckInDao(database: TodayWasDatabase): HabitCheckInDao = database.habitCheckInDao()
 }
