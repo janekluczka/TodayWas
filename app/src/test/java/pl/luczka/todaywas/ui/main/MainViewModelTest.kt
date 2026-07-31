@@ -15,7 +15,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.data.repository.JournalRepository
+import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.data.repository.OnboardingRepository
 import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.JournalEntry
@@ -41,20 +41,6 @@ class MainViewModelTest {
         override fun observeState(): Flow<OnboardingState> = stateFlow
 
         override suspend fun saveFocus(focus: Focus): Result<Unit> = Result.success(Unit)
-    }
-
-    private class FakeJournalRepository(
-        initialEntries: List<JournalEntry> = emptyList(),
-    ) : JournalRepository {
-
-        private val entriesFlow = MutableStateFlow(initialEntries)
-
-        override fun observeEntries(): Flow<List<JournalEntry>> = entriesFlow
-
-        override suspend fun addEntry(
-            date: LocalDate,
-            text: String,
-        ): Result<Unit> = Result.success(Unit)
     }
 
     private fun entry(

@@ -99,22 +99,25 @@ of the existing journal flow, is described next.
   it pre-computed through a nav key.** In S-02, `MainViewModel` computed `addableSlots` and passed
   it into `AddJournalEntryKey`, requiring `AddJournalEntryViewModel` to take it via
   `@AssistedInject`. This slice removes that: a new `ObserveAddableJournalDateSlotsUseCase`
-  (combining `ObserveJournalEntriesUseCase`'s flow into a derived `Flow<List<JournalDateSlot>>` of
-  not-yet-logged slots) is injected directly into **both** `MainViewModel` (to decide whether the
+  (mapping `JournalRepository.observeEntries()` directly into a derived `Flow<List<JournalDateSlot>>`
+  of not-yet-logged slots) is injected directly into **both** `MainViewModel` (to decide whether the
   "Add journal entry" FAB action shows) and the retrofitted `AddJournalEntryViewModel` (to decide
   which slots to render as inputs). Neither passes data to the other through navigation.
   `AddJournalEntryKey` becomes a plain `data object` with no fields, and
   `AddJournalEntryViewModel` becomes a plain `@HiltViewModel` (no assisted injection at all).
   The same shape applies to habits: a new `ObserveHabitCheckInBoardUseCase` (combining
-  `ObserveHabitsUseCase` + `ObserveHabitCheckInsUseCase` into one `Flow<HabitCheckInBoard>`) is
-  injected into both `MainViewModel` (derives each habit's *today* status) and
+  `HabitRepository.observeHabits()` + `.observeCheckIns()` directly into one `Flow<HabitCheckInBoard>`)
+  is injected into both `MainViewModel` (derives each habit's *today* status) and
   `LogHabitCheckInsViewModel` (derives, per whichever date is currently selected on its date strip,
   which habits are logged vs. still need input) — each ViewModel does its own date-specific
   derivation from the same shared observational use case, since that derivation depends on
-  transient UI state (the selected date) the use case itself can't own. `CreateHabitKey` and
-  `LogHabitCheckInsKey` are likewise plain `data object`s, and `CreateHabitViewModel` /
-  `LogHabitCheckInsViewModel` are plain `@HiltViewModel`s with no assisted-injected constructor
-  parameters.
+  transient UI state (the selected date) the use case itself can't own. Both combinator use cases
+  depend directly on their repository, not on another use case, so there's no
+  use-case-wrapping-use-case chain — `ObserveHabitsUseCase`/`ObserveHabitCheckInsUseCase` were
+  considered but skipped since nothing needs the `Habit`/`HabitCheckIn` flows individually.
+  `CreateHabitKey` and `LogHabitCheckInsKey` are likewise plain `data object`s, and
+  `CreateHabitViewModel`/`LogHabitCheckInsViewModel` are plain `@HiltViewModel`s with no
+  assisted-injected constructor parameters.
 - **All-or-nothing batch check-in save uses Room's `@Transaction`-default-method pattern, not a
   bare `@Insert(list)`.** A plain `@Insert suspend fun insertAll(items: List<HabitCheckInEntity>)`
   does not guarantee that a mid-batch failure leaves zero rows committed. `HabitCheckInDao` instead
@@ -228,23 +231,22 @@ here for manual confirmation from the human that the manual testing was successf
 
 ### Overview
 
-Thin use cases wrapping the repository, plus the two combinator use cases from Critical
-Implementation Details that let `MainViewModel` and the input-flow ViewModels each derive their own
-state from the same shared observational source.
+Thin use cases wrapping the repository, plus two combinator use cases that let `MainViewModel` and
+the input-flow ViewModels each derive their own state from the same shared observational source.
+Every use case in this phase depends directly on its repository — never on another use case — so
+there's no use-case-wrapping-use-case chain to reason about.
 
 ### Changes Required:
 
 #### 1. Habit use cases
 
-**File**: `app/src/main/java/pl/luczka/todaywas/domain/usecase/ObserveHabitsUseCase.kt`,
-`app/src/main/java/pl/luczka/todaywas/domain/usecase/CreateHabitUseCase.kt`,
-`app/src/main/java/pl/luczka/todaywas/domain/usecase/ObserveHabitCheckInsUseCase.kt`,
+**File**: `app/src/main/java/pl/luczka/todaywas/domain/usecase/CreateHabitUseCase.kt`,
 `app/src/main/java/pl/luczka/todaywas/domain/usecase/LogHabitCheckInsUseCase.kt`
 
-**Intent**: `ObserveHabitsUseCase`/`ObserveHabitCheckInsUseCase` are thin passthroughs (no dedicated
-unit test, matching `ObserveJournalEntriesUseCase`'s precedent). `CreateHabitUseCase` and
-`LogHabitCheckInsUseCase` are also thin passthroughs — validation lives in the UI layer per Critical
-Implementation Details.
+**Intent**: Thin passthroughs — validation lives in the UI layer per Critical Implementation
+Details. (No standalone `ObserveHabitsUseCase`/`ObserveHabitCheckInsUseCase` — nothing needs the
+`Habit`/`HabitCheckIn` flows individually, only combined via `ObserveHabitCheckInBoardUseCase`
+below, so those two would-be passthroughs are skipped rather than left unused.)
 
 **Contract**: `class CreateHabitUseCase @Inject constructor(private val repository: HabitRepository) { suspend operator fun invoke(name: String, description: String?, type: HabitType, scaleMin: Int?, scaleMax: Int?): Result<Unit> }`. `class LogHabitCheckInsUseCase @Inject constructor(private val repository: HabitRepository) { suspend operator fun invoke(date: LocalDate, values: Map<Long, Int>): Result<Unit> }`.
 
@@ -254,15 +256,16 @@ Implementation Details.
 `app/src/main/java/pl/luczka/todaywas/domain/usecase/ObserveHabitCheckInBoardUseCase.kt`,
 `app/src/main/java/pl/luczka/todaywas/domain/usecase/ObserveAddableJournalDateSlotsUseCase.kt`
 
-**Intent**: `ObserveHabitCheckInBoardUseCase` combines `ObserveHabitsUseCase` +
-`ObserveHabitCheckInsUseCase` into one reactive `Flow<HabitCheckInBoard>`, the single source both
+**Intent**: `ObserveHabitCheckInBoardUseCase` combines `HabitRepository.observeHabits()` +
+`.observeCheckIns()` directly into one reactive `Flow<HabitCheckInBoard>`, the single source both
 `MainViewModel` and `LogHabitCheckInsViewModel` observe. `ObserveAddableJournalDateSlotsUseCase`
-combines `ObserveJournalEntriesUseCase`'s flow into a derived `Flow<List<JournalDateSlot>>` (a slot
-is addable unless an entry already exists for that resolved date) — the single source both
+maps `JournalRepository.observeEntries()` directly into a derived `Flow<List<JournalDateSlot>>` (a
+slot is addable unless an entry already exists for that resolved date) — the single source both
 `MainViewModel` and `AddJournalEntryViewModel` observe, replacing the derivation logic that
-currently lives only inside `MainViewModel`.
+currently lives only inside `MainViewModel`. Both inject their repository directly rather than
+routing through another use case.
 
-**Contract**: `data class HabitCheckInBoard(val habits: List<Habit>, val checkIns: List<HabitCheckIn>)`. `class ObserveHabitCheckInBoardUseCase @Inject constructor(private val observeHabits: ObserveHabitsUseCase, private val observeCheckIns: ObserveHabitCheckInsUseCase) { operator fun invoke(): Flow<HabitCheckInBoard> }` (built with `combine`). `class ObserveAddableJournalDateSlotsUseCase @Inject constructor(private val observeEntries: ObserveJournalEntriesUseCase) { operator fun invoke(): Flow<List<JournalDateSlot>> }`.
+**Contract**: `data class HabitCheckInBoard(val habits: List<Habit>, val checkIns: List<HabitCheckIn>)`. `class ObserveHabitCheckInBoardUseCase @Inject constructor(private val repository: HabitRepository) { operator fun invoke(): Flow<HabitCheckInBoard> }` (built with `combine`). `class ObserveAddableJournalDateSlotsUseCase @Inject constructor(private val repository: JournalRepository) { operator fun invoke(): Flow<List<JournalDateSlot>> }`.
 
 ### Success Criteria:
 
@@ -580,21 +583,21 @@ strategy.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [x] 1.4 Robolectric round-trip test passes for `HabitDao` and `HabitCheckInDao`
-- [x] 1.5 Batch-insert atomicity test passes for `HabitCheckInDao.insertAll`
-- [x] 1.6 Repository retry-once-then-fail tests pass for `HabitRepositoryImpl`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 87e19eb
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — 87e19eb
+- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug` — 87e19eb
+- [x] 1.4 Robolectric round-trip test passes for `HabitDao` and `HabitCheckInDao` — 87e19eb
+- [x] 1.5 Batch-insert atomicity test passes for `HabitCheckInDao.insertAll` — 87e19eb
+- [x] 1.6 Repository retry-once-then-fail tests pass for `HabitRepositoryImpl` — 87e19eb
 
 ### Phase 2: Domain (use cases)
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.3 `ObserveHabitCheckInBoardUseCase` test passes
-- [ ] 2.4 `ObserveAddableJournalDateSlotsUseCase` test passes (three availability states)
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.3 `ObserveHabitCheckInBoardUseCase` test passes
+- [x] 2.4 `ObserveAddableJournalDateSlotsUseCase` test passes (three availability states)
 
 ### Phase 3: Presentation (ViewModels)
 

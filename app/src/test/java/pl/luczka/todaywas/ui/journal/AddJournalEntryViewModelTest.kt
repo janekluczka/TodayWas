@@ -2,8 +2,6 @@ package pl.luczka.todaywas.ui.journal
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -16,31 +14,13 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.data.repository.JournalRepository
-import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
-import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddJournalEntryViewModelTest {
-
-    private class FakeJournalRepository : JournalRepository {
-
-        var addEntryResult: Result<Unit> = Result.success(Unit)
-        var addEntryCallCount = 0
-            private set
-
-        override fun observeEntries(): Flow<List<JournalEntry>> = flowOf(emptyList())
-
-        override suspend fun addEntry(
-            date: LocalDate,
-            text: String,
-        ): Result<Unit> {
-            addEntryCallCount++
-            return addEntryResult
-        }
-    }
 
     private fun viewModel(
         availableSlots: List<JournalDateSlotUiState>,
