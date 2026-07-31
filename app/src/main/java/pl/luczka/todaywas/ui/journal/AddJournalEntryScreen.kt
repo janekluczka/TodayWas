@@ -48,12 +48,9 @@ import java.util.Locale
 
 @Composable
 fun AddJournalEntryScreen(
-    availableSlots: List<JournalDateSlotUiState>,
     onSaved: () -> Unit,
     onCancelled: () -> Unit,
-    viewModel: AddJournalEntryViewModel = hiltViewModel<AddJournalEntryViewModel, AddJournalEntryViewModel.Factory> { factory ->
-        factory.create(availableSlots)
-    },
+    viewModel: AddJournalEntryViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

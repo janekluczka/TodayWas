@@ -296,6 +296,15 @@ Update `MainViewModel` to show habits and gate two new FAB actions, add `CreateH
 `LogHabitCheckInsViewModel` in a new `ui/habit/` package, and retrofit `AddJournalEntryViewModel` to
 self-derive its addable slots instead of receiving them via assisted injection.
 
+**As built**: since `MainScreen.kt`, `AddJournalEntryScreen.kt`, `TodayWasKey.kt`, and
+`TodayWasApp.kt` already exist (built in S-02) and reference the contracts changed in this phase
+(the old `NavigateToAddEntry(slots)` payload, `MainUiState.addableSlots`, the assisted-injection
+factory), this single-module project can't compile — let alone run `testDebugUnitTest` — without
+also mechanically updating those four files' call sites. Minimal fixes only were made here (updated
+signatures, `when` branches, temporary no-op `onCreateHabitClicked`/`onLogCheckInsClicked` stubs in
+`TodayWasApp.kt`); the real UI (habit section rendering, the two new screens, and wiring the stubs
+to real nav entries) is still built in Phase 4 as planned.
+
 ### Changes Required:
 
 #### 1. Main screen state
@@ -594,21 +603,21 @@ strategy.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.3 `ObserveHabitCheckInBoardUseCase` test passes
-- [x] 2.4 `ObserveAddableJournalDateSlotsUseCase` test passes (three availability states)
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 0a98403
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — 0a98403
+- [x] 2.3 `ObserveHabitCheckInBoardUseCase` test passes — 0a98403
+- [x] 2.4 `ObserveAddableJournalDateSlotsUseCase` test passes (three availability states) — 0a98403
 
 ### Phase 3: Presentation (ViewModels)
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 `MainViewModelTest` passes (habit mapping, fab-gating, intent→event mapping)
-- [ ] 3.4 `CreateHabitViewModelTest` passes (field updates, save success/failure, events)
-- [ ] 3.5 `LogHabitCheckInsViewModelTest` passes (row derivation, date switching, batch save)
-- [ ] 3.6 `AddJournalEntryViewModelTest` passes (self-derived addable slots)
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 `MainViewModelTest` passes (habit mapping, fab-gating, intent→event mapping)
+- [x] 3.4 `CreateHabitViewModelTest` passes (field updates, save success/failure, events)
+- [x] 3.5 `LogHabitCheckInsViewModelTest` passes (row derivation, date switching, batch save)
+- [x] 3.6 `AddJournalEntryViewModelTest` passes (self-derived addable slots)
 
 ### Phase 4: UI
 

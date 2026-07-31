@@ -12,8 +12,6 @@ import androidx.navigation3.ui.NavDisplay
 import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen
-import pl.luczka.todaywas.ui.model.toDomain
-import pl.luczka.todaywas.ui.model.toUiState
 import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
 
 @Composable
@@ -47,9 +45,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
             }
             entry<MainKey> {
                 MainScreen(
-                    onAddEntryClicked = { availableSlots ->
-                        backStack.add(AddJournalEntryKey(availableSlots.map { it.toDomain() }))
-                    },
+                    onAddEntryClicked = { backStack.add(AddJournalEntryKey) },
                     onJournalEntryClicked = { entry ->
                         backStack.add(
                             JournalEntryDetailKey(
@@ -59,11 +55,13 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                             ),
                         )
                     },
+                    // TODO(S-03 Phase 4): wire to CreateHabitKey/LogHabitCheckInsKey nav entries.
+                    onCreateHabitClicked = {},
+                    onLogCheckInsClicked = {},
                 )
             }
-            entry<AddJournalEntryKey> { key ->
+            entry<AddJournalEntryKey> {
                 AddJournalEntryScreen(
-                    availableSlots = key.availableSlots.map { it.toUiState() },
                     onSaved = { backStack.removeLastOrNull() },
                     onCancelled = { backStack.removeLastOrNull() },
                 )

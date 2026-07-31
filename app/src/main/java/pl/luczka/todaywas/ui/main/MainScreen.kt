@@ -33,7 +33,6 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
-import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
@@ -41,8 +40,10 @@ import java.time.LocalDate
 
 @Composable
 fun MainScreen(
-    onAddEntryClicked: (List<JournalDateSlotUiState>) -> Unit,
+    onAddEntryClicked: () -> Unit,
     onJournalEntryClicked: (JournalEntryUiState) -> Unit,
+    onCreateHabitClicked: () -> Unit,
+    onLogCheckInsClicked: () -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -50,8 +51,10 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is MainUiEvent.NavigateToAddEntry -> onAddEntryClicked(event.availableSlots)
+                MainUiEvent.NavigateToAddEntry -> onAddEntryClicked()
                 is MainUiEvent.NavigateToJournalDetail -> onJournalEntryClicked(event.entry)
+                MainUiEvent.NavigateToCreateHabit -> onCreateHabitClicked()
+                MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
             }
         }
     }
@@ -178,14 +181,14 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
         MainUiState(
             focus = null,
             journalEntries = emptyList(),
-            addableSlots = emptyList(),
+            habits = emptyList(),
             fabActions = emptyList(),
             fabExpanded = false,
         ),
         MainUiState(
             focus = FocusUiState.JOURNAL,
             journalEntries = emptyList(),
-            addableSlots = listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
+            habits = emptyList(),
             fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
             fabExpanded = false,
         ),
@@ -207,14 +210,14 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     createdAt = Instant.now(),
                 ),
             ),
-            addableSlots = emptyList(),
+            habits = emptyList(),
             fabActions = emptyList(),
             fabExpanded = false,
         ),
         MainUiState(
             focus = FocusUiState.HABIT,
             journalEntries = emptyList(),
-            addableSlots = emptyList(),
+            habits = emptyList(),
             fabActions = emptyList(),
             fabExpanded = false,
         ),

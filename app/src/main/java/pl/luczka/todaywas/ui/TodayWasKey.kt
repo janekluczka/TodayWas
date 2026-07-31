@@ -2,7 +2,6 @@ package pl.luczka.todaywas.ui
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
-import pl.luczka.todaywas.domain.model.JournalDateSlot
 
 @Serializable
 sealed interface TodayWasKey : NavKey
@@ -14,9 +13,7 @@ data object OnboardingKey : TodayWasKey
 data object MainKey : TodayWasKey
 
 @Serializable
-data class AddJournalEntryKey(
-    val availableSlots: List<JournalDateSlot>,
-) : TodayWasKey
+data object AddJournalEntryKey : TodayWasKey
 
 @Serializable
 data class JournalEntryDetailKey(

@@ -9,6 +9,8 @@
     <string name="main_habit_placeholder">Habit tracking is coming soon.</string>
 
     <string name="main_fab_add_journal">Add journal</string>
+    <string name="main_fab_create_habit">Create habit</string>
+    <string name="main_fab_log_check_ins">Log check-ins</string>
     <string name="content_description_add">Add</string>
     <string name="content_description_back">Back</string>
 
