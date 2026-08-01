@@ -48,7 +48,7 @@ class UpdateJournalEntryUseCaseTest {
         runTest {
             val clock = Clock.fixed(
                 createdAt.plus(Duration.ofHours(24).plusSeconds(1)),
-                ZoneOffset.UTC
+                ZoneOffset.UTC,
             )
             val repository = FakeJournalRepository()
             val useCase = UpdateJournalEntryUseCase(repository, clock)

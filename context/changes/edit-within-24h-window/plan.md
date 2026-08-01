@@ -722,18 +722,18 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 `GetJournalEntryUseCaseTest` passes
-- [x] 3.4 `UpdateJournalEntryUseCaseTest` passes (window-boundary cases via `Clock.fixed`)
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — c75b1be
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — c75b1be
+- [x] 3.3 `GetJournalEntryUseCaseTest` passes — c75b1be
+- [x] 3.4 `UpdateJournalEntryUseCaseTest` passes (window-boundary cases via `Clock.fixed`) — c75b1be
 
 ### Phase 4: Journal — Presentation
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 `JournalEntryDetailViewModelTest` passes (load, edit/save success, generic failure,
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 `JournalEntryDetailViewModelTest` passes (load, edit/save success, generic failure,
       expired failure)
 
 ### Phase 5: Journal — UI
