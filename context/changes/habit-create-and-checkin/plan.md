@@ -661,12 +661,12 @@ strategy.
 
 #### Manual
 
-- [ ] 4.4 Main screen shows Habit section + "Create habit" (empty state) for Habit/Both focus
-- [ ] 4.5 Creating binary + scale habits shows them as not-logged-today; "Log check-ins" appears
-- [ ] 4.6 Logging both habits for today saves and updates the main screen immediately
-- [ ] 4.7 Habits and today's values persist across relaunch
-- [ ] 4.8 Already-logged rows show read-only "Done" on re-open
-- [ ] 4.9 Backfilling a prior day via the date strip works and shows read-only on re-open
-- [ ] 4.10 Forced write failure shows an inline error with zero partial rows committed; retry works
-- [ ] 4.11 Journal-only focus shows no habit UI anywhere
-- [ ] 4.12 Journal's Add-entry flow still works end-to-end after the Phase 3 retrofit
+- [x] 4.4 Main screen shows Habit section + "Create habit" (empty state) for Habit/Both focus
+- [x] 4.5 Creating binary + scale habits shows them as not-logged-today; "Log check-ins" appears
+- [x] 4.6 Logging both habits for today saves and updates the main screen immediately
+- [x] 4.7 Habits and today's values persist across relaunch
+- [x] 4.8 Already-logged rows show read-only "Done" on re-open
+- [x] 4.9 Backfilling a prior day via the date strip works and shows read-only on re-open
+- [x] 4.10 Forced write failure shows an inline error with zero partial rows committed; retry works
+- [x] 4.11 Journal-only focus shows no habit UI anywhere
+- [x] 4.12 Journal's Add-entry flow still works end-to-end after the Phase 3 retrofit
