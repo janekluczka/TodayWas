@@ -761,26 +761,26 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 0939fb9
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck` — 0939fb9
+- [x] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — 0939fb9
 
 #### Manual
 
-- [x] 5.4 Editing a just-created entry updates it and returns to read-only with new text
-- [x] 5.5 Cancelling an in-progress edit discards the change
-- [x] 5.6 An entry older than 24h shows no "Edit" action
-- [x] 5.7 A mid-session expiry shows an inline error on Save and reverts to read-only
+- [x] 5.4 Editing a just-created entry updates it and returns to read-only with new text — 0939fb9
+- [x] 5.5 Cancelling an in-progress edit discards the change — 0939fb9
+- [x] 5.6 An entry older than 24h shows no "Edit" action — 0939fb9
+- [x] 5.7 A mid-session expiry shows an inline error on Save and reverts to read-only — 0939fb9
 
 ### Phase 6: Habit — Data layer
 
 #### Automated
 
-- [ ] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 6.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 6.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [ ] 6.4 Robolectric round-trip test passes for `HabitCheckInDao.getByHabitAndDate`/`update`
-- [ ] 6.5 `HabitRepositoryImplTest` passes (updateCheckIn retry-once, not-found)
+- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 6.3 Debug build compiles: `./gradlew.bat assembleDebug`
+- [x] 6.4 Robolectric round-trip test passes for `HabitCheckInDao.getByHabitAndDate`/`update`
+- [x] 6.5 `HabitRepositoryImplTest` passes (updateCheckIn retry-once, not-found)
 
 ### Phase 7: Habit — Domain
 

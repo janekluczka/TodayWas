@@ -1,6 +1,5 @@
 package pl.luczka.todaywas.data.repository
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.HabitCheckInDao
@@ -38,22 +37,7 @@ class HabitRepositoryImpl @Inject constructor(
             scaleMax = scaleMax,
             createdAt = Instant.now().toEpochMilli(),
         )
-        return try {
-            habitDao.insert(entity)
-            Result.success(Unit)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            // Retry once before giving up, per the plan's write-resilience contract.
-            try {
-                habitDao.insert(entity)
-                Result.success(Unit)
-            } catch (retryException: CancellationException) {
-                throw retryException
-            } catch (retryException: Exception) {
-                Result.failure(retryException)
-            }
-        }
+        return safeDbCall { habitDao.insert(entity) }
     }
 
     override fun observeCheckIns(): Flow<List<HabitCheckIn>> =
@@ -72,21 +56,17 @@ class HabitRepositoryImpl @Inject constructor(
                 createdAt = createdAt,
             )
         }
-        return try {
-            habitCheckInDao.insertAll(entities)
-            Result.success(Unit)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            // Retry once before giving up, per the plan's write-resilience contract.
-            try {
-                habitCheckInDao.insertAll(entities)
-                Result.success(Unit)
-            } catch (retryException: CancellationException) {
-                throw retryException
-            } catch (retryException: Exception) {
-                Result.failure(retryException)
-            }
-        }
+        return safeDbCall { habitCheckInDao.insertAll(entities) }
+    }
+
+    override suspend fun updateCheckIn(
+        habitId: Long,
+        date: LocalDate,
+        value: Int,
+    ): Result<Unit> {
+        val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
+            ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
+        val entity = existing.copy(value = value)
+        return safeDbCall { habitCheckInDao.update(entity) }
     }
 }

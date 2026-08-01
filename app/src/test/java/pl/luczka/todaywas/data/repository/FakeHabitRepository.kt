@@ -31,6 +31,16 @@ class FakeHabitRepository(
     var lastLoggedValues: Map<Long, Int>? = null
         private set
 
+    var updateCheckInResult: Result<Unit> = Result.success(Unit)
+    var updateCheckInCallCount = 0
+        private set
+    var lastUpdatedHabitId: Long? = null
+        private set
+    var lastUpdatedDate: LocalDate? = null
+        private set
+    var lastUpdatedValue: Int? = null
+        private set
+
     override fun observeHabits(): Flow<List<Habit>> = habitsFlow
 
     override suspend fun createHabit(
@@ -56,5 +66,17 @@ class FakeHabitRepository(
         lastLoggedDate = date
         lastLoggedValues = values
         return addCheckInsResult
+    }
+
+    override suspend fun updateCheckIn(
+        habitId: Long,
+        date: LocalDate,
+        value: Int,
+    ): Result<Unit> {
+        updateCheckInCallCount++
+        lastUpdatedHabitId = habitId
+        lastUpdatedDate = date
+        lastUpdatedValue = value
+        return updateCheckInResult
     }
 }

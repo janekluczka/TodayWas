@@ -24,4 +24,10 @@ interface HabitRepository {
         date: LocalDate,
         values: Map<Long, Int>,
     ): Result<Unit>
+
+    suspend fun updateCheckIn(
+        habitId: Long,
+        date: LocalDate,
+        value: Int,
+    ): Result<Unit>
 }
