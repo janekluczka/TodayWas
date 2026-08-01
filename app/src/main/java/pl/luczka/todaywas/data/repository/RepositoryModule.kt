@@ -14,4 +14,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindJournalRepository(impl: JournalRepositoryImpl): JournalRepository
+
+    @Binds
+    abstract fun bindHabitRepository(impl: HabitRepositoryImpl): HabitRepository
 }

@@ -9,11 +9,11 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import pl.luczka.todaywas.ui.habit.CreateHabitScreen
+import pl.luczka.todaywas.ui.habit.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen
-import pl.luczka.todaywas.ui.model.toDomain
-import pl.luczka.todaywas.ui.model.toUiState
 import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
 
 @Composable
@@ -47,9 +47,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
             }
             entry<MainKey> {
                 MainScreen(
-                    onAddEntryClicked = { availableSlots ->
-                        backStack.add(AddJournalEntryKey(availableSlots.map { it.toDomain() }))
-                    },
+                    onAddEntryClicked = { backStack.add(AddJournalEntryKey) },
                     onJournalEntryClicked = { entry ->
                         backStack.add(
                             JournalEntryDetailKey(
@@ -59,11 +57,12 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                             ),
                         )
                     },
+                    onCreateHabitClicked = { backStack.add(CreateHabitKey) },
+                    onLogCheckInsClicked = { backStack.add(LogHabitCheckInsKey) },
                 )
             }
-            entry<AddJournalEntryKey> { key ->
+            entry<AddJournalEntryKey> {
                 AddJournalEntryScreen(
-                    availableSlots = key.availableSlots.map { it.toUiState() },
                     onSaved = { backStack.removeLastOrNull() },
                     onCancelled = { backStack.removeLastOrNull() },
                 )
@@ -73,6 +72,18 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                     date = key.date,
                     text = key.text,
                     onBack = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<CreateHabitKey> {
+                CreateHabitScreen(
+                    onSaved = { backStack.removeLastOrNull() },
+                    onCancelled = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<LogHabitCheckInsKey> {
+                LogHabitCheckInsScreen(
+                    onSaved = { backStack.removeLastOrNull() },
+                    onCancelled = { backStack.removeLastOrNull() },
                 )
             }
         },

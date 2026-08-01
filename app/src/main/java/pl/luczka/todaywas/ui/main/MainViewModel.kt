@@ -12,27 +12,32 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.ui.model.toHabitUiStates
 import pl.luczka.todaywas.ui.model.toUiState
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     observeOnboardingState: ObserveOnboardingStateUseCase,
     observeJournalEntries: ObserveJournalEntriesUseCase,
+    observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
+    observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         MainUiState(
             focus = null,
             journalEntries = emptyList(),
-            addableSlots = emptyList(),
+            habits = emptyList(),
             fabActions = emptyList(),
             fabExpanded = false,
         ),
@@ -44,18 +49,25 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            combine(observeOnboardingState(), observeJournalEntries()) { onboardingState, entries ->
-                onboardingState.focus to entries
-            }.collect { (focus, entries) ->
-                val focusUiState = focus?.toUiState()
-                val journalEntries = entries.map { it.toUiState() }
-                val addableSlots = journalEntries.toAddableSlots()
+            combine(
+                observeOnboardingState(),
+                observeJournalEntries(),
+                observeAddableJournalDateSlots(),
+                observeHabitCheckInBoard(),
+            ) { onboardingState, entries, addableSlots, board ->
+                CombinedMainState(
+                    focus = onboardingState.focus?.toUiState(),
+                    journalEntries = entries.map { it.toUiState() },
+                    addableSlots = addableSlots.map { it.toUiState() },
+                    habits = board.toHabitUiStates(),
+                )
+            }.collect { combined ->
                 _uiState.update {
                     it.copy(
-                        focus = focusUiState,
-                        journalEntries = journalEntries,
-                        addableSlots = addableSlots,
-                        fabActions = focusUiState.toFabActions(addableSlots),
+                        focus = combined.focus,
+                        journalEntries = combined.journalEntries,
+                        habits = combined.habits,
+                        fabActions = combined.focus.toFabActions(combined.addableSlots, combined.habits),
                     )
                 }
             }
@@ -73,8 +85,9 @@ class MainViewModel @Inject constructor(
     private fun onFabActionClicked(action: FabActionUiState) {
         _uiState.update { it.copy(fabExpanded = false) }
         when (action) {
-            FabActionUiState.ADD_JOURNAL_ENTRY ->
-                eventChannel.trySend(MainUiEvent.NavigateToAddEntry(_uiState.value.addableSlots))
+            FabActionUiState.ADD_JOURNAL_ENTRY -> eventChannel.trySend(MainUiEvent.NavigateToAddEntry)
+            FabActionUiState.CREATE_HABIT -> eventChannel.trySend(MainUiEvent.NavigateToCreateHabit)
+            FabActionUiState.LOG_HABIT_CHECK_INS -> eventChannel.trySend(MainUiEvent.NavigateToLogHabitCheckIns)
         }
     }
 
@@ -86,22 +99,24 @@ class MainViewModel @Inject constructor(
         eventChannel.trySend(MainUiEvent.NavigateToJournalDetail(entry))
     }
 
-    private fun FocusUiState?.toFabActions(addableSlots: List<JournalDateSlotUiState>): List<FabActionUiState> {
+    private fun FocusUiState?.toFabActions(
+        addableSlots: List<JournalDateSlotUiState>,
+        habits: List<HabitUiState>,
+    ): List<FabActionUiState> {
         val journalActionAvailable =
             (this == FocusUiState.JOURNAL || this == FocusUiState.BOTH) && addableSlots.isNotEmpty()
-        // Habit tracking (S-03) has no destination yet, so it never contributes an action here.
+        val habitFocusActive = this == FocusUiState.HABIT || this == FocusUiState.BOTH
         return listOfNotNull(
             FabActionUiState.ADD_JOURNAL_ENTRY.takeIf { journalActionAvailable },
+            FabActionUiState.CREATE_HABIT.takeIf { habitFocusActive },
+            FabActionUiState.LOG_HABIT_CHECK_INS.takeIf { habitFocusActive && habits.isNotEmpty() },
         )
     }
 
-    private fun List<JournalEntryUiState>.toAddableSlots(): List<JournalDateSlotUiState> {
-        val today = LocalDate.now()
-        val yesterday = today.minusDays(1)
-        val loggedDates = map { it.date }.toSet()
-        return listOfNotNull(
-            JournalDateSlotUiState.TODAY.takeIf { today !in loggedDates },
-            JournalDateSlotUiState.YESTERDAY.takeIf { yesterday !in loggedDates },
-        )
-    }
+    private data class CombinedMainState(
+        val focus: FocusUiState?,
+        val journalEntries: List<JournalEntryUiState>,
+        val addableSlots: List<JournalDateSlotUiState>,
+        val habits: List<HabitUiState>,
+    )
 }

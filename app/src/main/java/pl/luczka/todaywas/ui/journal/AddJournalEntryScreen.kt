@@ -1,59 +1,42 @@
 package pl.luczka.todaywas.ui.journal
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.TodayWasDateStrip
 import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
 import pl.luczka.todaywas.core.designsystem.components.TodayWasIconButton
 import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
 import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTextField
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
-import java.time.format.TextStyle
-import java.util.Locale
 
 @Composable
 fun AddJournalEntryScreen(
-    availableSlots: List<JournalDateSlotUiState>,
     onSaved: () -> Unit,
     onCancelled: () -> Unit,
-    viewModel: AddJournalEntryViewModel = hiltViewModel<AddJournalEntryViewModel, AddJournalEntryViewModel.Factory> { factory ->
-        factory.create(availableSlots)
-    },
+    viewModel: AddJournalEntryViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -115,7 +98,7 @@ private fun AddJournalEntryScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            DayStrip(
+            JournalDateStrip(
                 uiState = uiState,
                 onIntent = onIntent,
             )
@@ -133,93 +116,30 @@ private fun AddJournalEntryScreenContent(
     }
 }
 
-// Cards are a fixed width, purely for calendar-strip context — only the TODAY/YESTERDAY
-// cards are ever actually selectable. However many fit the available width is fine;
-// partial/hidden cards at the edges are expected, not a bug. Page index is the date's
-// epoch-day, so the pager never needs true infinite pages: today's epoch-day is a small
-// positive Int for any realistic date, and Int.MAX_VALUE pages comfortably covers it.
-private val DAY_STRIP_CARD_WIDTH = 56.dp
-
 @Composable
-private fun DayStrip(
+private fun JournalDateStrip(
     uiState: AddJournalEntryUiState,
     onIntent: (AddJournalEntryIntent) -> Unit,
 ) {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
     val selectedDate = if (uiState.selectedSlot == JournalDateSlotUiState.TODAY) today else yesterday
-    val selectedPage = selectedDate.toEpochDay().toInt()
 
-    val pagerState = rememberPagerState(initialPage = selectedPage) { Int.MAX_VALUE }
-    LaunchedEffect(selectedPage) {
-        pagerState.animateScrollToPage(selectedPage)
-    }
-
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        val cardWidth = DAY_STRIP_CARD_WIDTH
-        val sideInset = (maxWidth - cardWidth) / 2
-
-        HorizontalPager(
-            state = pagerState,
-            userScrollEnabled = false,
-            pageSize = PageSize.Fixed(cardWidth),
-            contentPadding = PaddingValues(horizontal = sideInset),
-        ) { page ->
-            val date = LocalDate.ofEpochDay(page.toLong())
-            val slot = when (date) {
-                today -> JournalDateSlotUiState.TODAY
-                yesterday -> JournalDateSlotUiState.YESTERDAY
-                else -> null
-            }
-            val available = slot != null && slot in uiState.availableSlots
-            DayCard(
-                date = date,
-                selected = date == selectedDate,
-                available = available,
-                onClick = { slot?.let { onIntent(AddJournalEntryIntent.SlotSelected(it)) } },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
+    TodayWasDateStrip(
+        selectedDate = selectedDate,
+        isSelectable = { date -> date.toSlot(today, yesterday)?.let { it in uiState.availableSlots } ?: false },
+        onDateSelected = { date -> date.toSlot(today, yesterday)?.let { onIntent(AddJournalEntryIntent.SlotSelected(it)) } },
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
-@Composable
-private fun DayCard(
-    date: LocalDate,
-    selected: Boolean,
-    available: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val containerColor = when {
-        selected -> MaterialTheme.colorScheme.primary
-        available -> MaterialTheme.colorScheme.secondaryContainer
-        else -> MaterialTheme.colorScheme.surfaceVariant
-    }
-    val contentColor = when {
-        selected -> MaterialTheme.colorScheme.onPrimary
-        available -> MaterialTheme.colorScheme.onSecondaryContainer
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .padding(4.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(containerColor)
-            .let { if (available) it.clickable(onClick = onClick) else it }
-            .padding(vertical = 8.dp),
-    ) {
-        TodayWasText(
-            text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-            color = contentColor,
-            fontSize = 10.sp,
-        )
-        TodayWasText(
-            text = date.dayOfMonth.toString(),
-            color = contentColor,
-        )
-    }
+private fun LocalDate.toSlot(
+    today: LocalDate,
+    yesterday: LocalDate,
+): JournalDateSlotUiState? = when (this) {
+    today -> JournalDateSlotUiState.TODAY
+    yesterday -> JournalDateSlotUiState.YESTERDAY
+    else -> null
 }
 
 private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<AddJournalEntryUiState> {

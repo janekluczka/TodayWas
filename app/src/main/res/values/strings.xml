@@ -6,11 +6,16 @@
 
     <string name="main_journal_section_title">Journal</string>
     <string name="main_journal_empty_state">No entries yet — add one to get started.</string>
-    <string name="main_habit_placeholder">Habit tracking is coming soon.</string>
+    <string name="main_habit_section_title">Habits</string>
+    <string name="main_habit_empty_state">No habits yet — create one to get started.</string>
 
     <string name="main_fab_add_journal">Add journal</string>
+    <string name="main_fab_create_habit">Create habit</string>
+    <string name="main_fab_log_check_ins">Log check-ins</string>
     <string name="content_description_add">Add</string>
     <string name="content_description_back">Back</string>
+    <string name="content_description_decrease">Decrease</string>
+    <string name="content_description_increase">Increase</string>
 
     <string name="focus_journal">Journaling</string>
     <string name="focus_habit">Habit tracking</string>
@@ -40,4 +45,18 @@
     <string name="journal_add_entry_error">Something went wrong. Please try again.</string>
 
     <string name="journal_detail_title">Journal entry</string>
+
+    <string name="habit_create_title">New habit</string>
+    <string name="habit_create_name_label">Title</string>
+    <string name="habit_create_scale_steps_label">Steps</string>
+    <string name="habit_create_preview_title">Preview</string>
+    <string name="habit_create_description_label">Description (optional)</string>
+    <string name="habit_create_save_cta">Save</string>
+    <string name="habit_create_error">Something went wrong. Please try again.</string>
+
+    <string name="habit_checkin_title">Log Habits</string>
+    <string name="habit_checkin_save_cta">Save</string>
+    <string name="habit_checkin_error">Something went wrong. Please try again.</string>
+    <string name="habit_checkin_done_label">Done</string>
+    <string name="habit_checkin_not_done_label">Not done</string>
 </resources>

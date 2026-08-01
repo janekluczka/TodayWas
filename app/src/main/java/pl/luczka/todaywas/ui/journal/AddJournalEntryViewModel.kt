@@ -2,9 +2,6 @@ package pl.luczka.todaywas.ui.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -15,31 +12,22 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.toDomain
+import pl.luczka.todaywas.ui.model.toUiState
+import javax.inject.Inject
 
-@HiltViewModel(assistedFactory = AddJournalEntryViewModel.Factory::class)
-class AddJournalEntryViewModel @AssistedInject constructor(
-    @Assisted availableSlots: List<JournalDateSlotUiState>,
+@HiltViewModel
+class AddJournalEntryViewModel @Inject constructor(
+    observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     private val addJournalEntry: AddJournalEntryUseCase,
 ) : ViewModel() {
 
-    @AssistedFactory
-    interface Factory {
-        fun create(availableSlots: List<JournalDateSlotUiState>): AddJournalEntryViewModel
-    }
-
-    init {
-        require(availableSlots.isNotEmpty()) {
-            "AddJournalEntryViewModel requires at least one available slot; the caller " +
-                "(MainScreen's FAB) should never navigate here otherwise."
-        }
-    }
-
     private val _uiState = MutableStateFlow(
         AddJournalEntryUiState(
-            availableSlots = availableSlots,
-            selectedSlot = availableSlots.first(),
+            availableSlots = emptyList(),
+            selectedSlot = JournalDateSlotUiState.TODAY,
             text = "",
             isSaving = false,
             saveError = false,
@@ -49,6 +37,25 @@ class AddJournalEntryViewModel @AssistedInject constructor(
 
     private val eventChannel = Channel<AddJournalEntryUiEvent>(Channel.BUFFERED)
     val events: Flow<AddJournalEntryUiEvent> = eventChannel.receiveAsFlow()
+
+    init {
+        viewModelScope.launch {
+            observeAddableJournalDateSlots().collect { slots ->
+                val availableSlots = slots.map { it.toUiState() }
+                _uiState.update { current ->
+                    val selectedSlot = if (current.selectedSlot in availableSlots) {
+                        current.selectedSlot
+                    } else {
+                        availableSlots.firstOrNull() ?: current.selectedSlot
+                    }
+                    current.copy(
+                        availableSlots = availableSlots,
+                        selectedSlot = selectedSlot,
+                    )
+                }
+            }
+        }
+    }
 
     fun onIntent(intent: AddJournalEntryIntent) {
         when (intent) {
