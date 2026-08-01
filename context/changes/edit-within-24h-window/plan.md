@@ -776,19 +776,19 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 6.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [x] 6.4 Robolectric round-trip test passes for `HabitCheckInDao.getByHabitAndDate`/`update`
-- [x] 6.5 `HabitRepositoryImplTest` passes (updateCheckIn retry-once, not-found)
+- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 3a996ab
+- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck` — 3a996ab
+- [x] 6.3 Debug build compiles: `./gradlew.bat assembleDebug` — 3a996ab
+- [x] 6.4 Robolectric round-trip test passes for `HabitCheckInDao.getByHabitAndDate`/`update` — 3a996ab
+- [x] 6.5 `HabitRepositoryImplTest` passes (updateCheckIn retry-once, not-found) — 3a996ab
 
 ### Phase 7: Habit — Domain
 
 #### Automated
 
-- [ ] 7.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 7.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 7.3 `UpdateHabitCheckInUseCaseTest` passes (window-boundary cases via `Clock.fixed`)
+- [x] 7.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 7.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 7.3 `UpdateHabitCheckInUseCaseTest` passes (window-boundary cases via `Clock.fixed`)
 
 ### Phase 8: Habit — Presentation
 
