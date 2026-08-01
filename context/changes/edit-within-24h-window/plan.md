@@ -421,8 +421,10 @@ re-fetching it.
 Int): Result<Unit>`. Implementation looks up the existing entity via
 `habitCheckInDao.getByHabitAndDate(habitId, date.toString())` (returns `Result.failure` if not
 found — this is internal plumbing to preserve the row's `id`/`createdAt` for `@Update`, not a
-window check), copies in the new `value`, and calls `habitCheckInDao.update(...)` with the same
-retry-once pattern as `addCheckIns` (`HabitRepositoryImpl.kt:75-91`).
+window check), copies in the new `value`, and calls `habitCheckInDao.update(...)` via the shared
+`safeDbCall` helper (`data/repository/SafeDbCall.kt`, extracted in Phase 2) rather than duplicating
+the retry-once try/catch inline. While in this file, also refactor `createHabit` and `addCheckIns`
+(`HabitRepositoryImpl.kt:26-57,62-91`) to use `safeDbCall` too, so the whole file is consistent.
 
 ### Success Criteria:
 
@@ -701,20 +703,20 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [x] 1.4 `EditWindowTest` passes covering just-created / 23h59m59s / exactly-24h / past-24h
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 6348384
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — 6348384
+- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug` — 6348384
+- [x] 1.4 `EditWindowTest` passes covering just-created / 23h59m59s / exactly-24h / past-24h — 6348384
 
 ### Phase 2: Journal — Data layer
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [ ] 2.4 Robolectric round-trip test passes for `JournalEntryDao.getById`/`update`
-- [ ] 2.5 `JournalRepositoryImplTest` passes (updateEntry retry-once, missing-id, getEntry)
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.3 Debug build compiles: `./gradlew.bat assembleDebug`
+- [x] 2.4 Robolectric round-trip test passes for `JournalEntryDao.getById`/`update`
+- [x] 2.5 `JournalRepositoryImplTest` passes (updateEntry retry-once, missing-id, getEntry)
 
 ### Phase 3: Journal — Domain
 

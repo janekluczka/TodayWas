@@ -8,8 +8,15 @@ interface JournalRepository {
 
     fun observeEntries(): Flow<List<JournalEntry>>
 
+    suspend fun getEntry(id: Long): JournalEntry?
+
     suspend fun addEntry(
         date: LocalDate,
+        text: String,
+    ): Result<Unit>
+
+    suspend fun updateEntry(
+        id: Long,
         text: String,
     ): Result<Unit>
 }
