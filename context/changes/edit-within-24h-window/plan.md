@@ -712,20 +712,20 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [x] 2.4 Robolectric round-trip test passes for `JournalEntryDao.getById`/`update`
-- [x] 2.5 `JournalRepositoryImplTest` passes (updateEntry retry-once, missing-id, getEntry)
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 30aaa9f
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — 30aaa9f
+- [x] 2.3 Debug build compiles: `./gradlew.bat assembleDebug` — 30aaa9f
+- [x] 2.4 Robolectric round-trip test passes for `JournalEntryDao.getById`/`update` — 30aaa9f
+- [x] 2.5 `JournalRepositoryImplTest` passes (updateEntry retry-once, missing-id, getEntry) — 30aaa9f
 
 ### Phase 3: Journal — Domain
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 `GetJournalEntryUseCaseTest` passes
-- [ ] 3.4 `UpdateJournalEntryUseCaseTest` passes (window-boundary cases via `Clock.fixed`)
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 `GetJournalEntryUseCaseTest` passes
+- [x] 3.4 `UpdateJournalEntryUseCaseTest` passes (window-boundary cases via `Clock.fixed`)
 
 ### Phase 4: Journal — Presentation
 
