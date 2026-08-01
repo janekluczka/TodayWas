@@ -3,7 +3,7 @@ change_id: habit-create-and-checkin
 title: Habit creation and check-in
 status: implementing
 created: 2026-07-31
-updated: 2026-07-31
+updated: 2026-08-01
 archived_at: null
 ---
 

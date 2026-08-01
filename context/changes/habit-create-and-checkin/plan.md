@@ -655,9 +655,9 @@ strategy.
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 58783ca
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — 58783ca
+- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — 58783ca
 
 #### Manual
 
