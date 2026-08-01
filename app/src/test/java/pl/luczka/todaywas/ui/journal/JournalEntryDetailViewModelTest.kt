@@ -33,7 +33,9 @@ class JournalEntryDetailViewModelTest {
     private fun viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
         clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC),
+        id: Long = 1L,
     ) = JournalEntryDetailViewModel(
+        id = id,
         getJournalEntry = GetJournalEntryUseCase(repository),
         updateJournalEntry = UpdateJournalEntryUseCase(repository, clock),
         clock = clock,
@@ -50,11 +52,9 @@ class JournalEntryDetailViewModelTest {
     }
 
     @Test
-    fun `Load populates entry and isEditable when within the window`() =
+    fun `construction loads the entry and populates isEditable when within the window`() =
         runTest {
             val viewModel = viewModel()
-
-            viewModel.onIntent(JournalEntryDetailIntent.Load(1L))
             runCurrent()
 
             assertFalse(viewModel.uiState.value.isLoading)
@@ -67,12 +67,10 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `Load derives isEditable false past the 24h window`() =
+    fun `construction derives isEditable false past the 24h window`() =
         runTest {
             val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneOffset.UTC)
             val viewModel = viewModel(clock = expiredClock)
-
-            viewModel.onIntent(JournalEntryDetailIntent.Load(1L))
             runCurrent()
 
             assertFalse(viewModel.uiState.value.isEditable)
@@ -83,7 +81,6 @@ class JournalEntryDetailViewModelTest {
         runTest {
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(JournalEntryDetailIntent.Load(1L))
             runCurrent()
 
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
@@ -107,7 +104,6 @@ class JournalEntryDetailViewModelTest {
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             repository.updateEntryResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(JournalEntryDetailIntent.Load(1L))
             runCurrent()
 
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
@@ -126,7 +122,6 @@ class JournalEntryDetailViewModelTest {
         runTest {
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(JournalEntryDetailIntent.Load(1L))
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
             viewModel.onIntent(JournalEntryDetailIntent.TextChanged("Edited text."))

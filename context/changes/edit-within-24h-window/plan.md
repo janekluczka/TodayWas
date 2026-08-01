@@ -65,9 +65,16 @@ codebase today.
   directly (`JournalRepositoryImpl.kt:26`, `HabitRepositoryImpl.kt:39,66`). This change introduces
   the first `Clock` seam so the 24h boundary is testable with `Clock.fixed(...)`.
 - No `@AssistedInject`/`SavedStateHandle` pattern exists for passing per-entry nav data into a Hilt
-  ViewModel in this codebase. `JournalEntryDetailScreen` will follow the same pattern already used
-  for one-shot loads elsewhere: the nav key's `id` is passed as a plain Composable parameter, and a
-  `LaunchedEffect(id)` dispatches a `Load(id)` intent once on screen entry.
+  ViewModel in this codebase yet, but `androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel`
+  (the wrapper already in use here, distinct from `androidx.hilt.navigation.compose.hiltViewModel`)
+  has a `creationCallback` overload built exactly for this, backed by Hilt's
+  `@HiltViewModel(assistedFactory = ...)` + `@AssistedInject`/`@Assisted`. `id` is injected
+  directly into `JournalEntryDetailViewModel`'s constructor and loaded in `init {}` — no
+  `LaunchedEffect`-dispatched `Load` intent needed. Verified by reading both libraries' sources
+  jars (`hilt-lifecycle-viewmodel-compose:1.3.0`, `hilt-android:2.60.1`) rather than assuming, per
+  this area's own "verify the current API shape before coding" caveat. This is the first assisted
+  Hilt ViewModel in the codebase; `HabitDetailViewModel` (Phase 8) follows the same pattern for
+  `habitId`.
 
 ## What We're NOT Doing
 
@@ -114,6 +121,17 @@ called with a single-entry map here); an already-logged, in-window row's saved v
 `alreadyLogged` flag to decide) and combine both outcomes into one saving/error state — the same
 kind of partitioning that would have been needed on the full multi-habit board, but bounded to at
 most 2 calls instead of N, since this screen only ever shows one habit.
+
+**Loading via assisted injection, not a `Load` intent.** The nav-key `id` is the ViewModel's own
+identity, not runtime UI state — so it's injected directly into the constructor via Hilt's
+assisted-injection support (`@HiltViewModel(assistedFactory = ...)` + `@AssistedInject`/
+`@Assisted`, surfaced to Compose via `androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel`'s
+`creationCallback` overload) rather than passed as a `Load(id)` intent dispatched from a
+`LaunchedEffect(id)`. The `init {}` block loads immediately on construction. This works safely
+with per-entry `ViewModelStore` scoping (`rememberViewModelStoreNavEntryDecorator()`, already
+wired in `TodayWasApp.kt`): each nav-key push gets its own back-stack entry and thus its own
+`ViewModelStore`, so a fresh, correctly-`id`'d ViewModel is created per navigation, not reused
+across different ids. `HabitDetailViewModel` (Phase 8) uses the same pattern for `habitId`.
 
 **Distinguishing "window just expired" from "transient failure" on save.** A generic write failure
 (e.g. a flaky DB write) should leave the journal edit screen in edit mode so the user can retry
@@ -284,22 +302,23 @@ machine.
 (null while loading — reuses the existing `ui.model.JournalEntryUiState`/`JournalEntryMapper`
 rather than re-deriving `formattedDate` locally), `editedText: String`, `isEditable: Boolean`,
 `isEditing: Boolean`, `isSaving: Boolean`, `saveError: Boolean`. `JournalEntryDetailIntent` is a
-sealed interface: `Load(id: Long)`, `EditClicked`, `TextChanged(text: String)`, `SaveClicked`,
-`CancelEditClicked`, `BackClicked`. `JournalEntryDetailUiEvent` is a sealed interface with one
-member: `NavigatedBack`.
+sealed interface: `EditClicked`, `TextChanged(text: String)`, `SaveClicked`, `CancelEditClicked`,
+`BackClicked` (no `Load` — see ViewModel below). `JournalEntryDetailUiEvent` is a sealed interface
+with one member: `NavigatedBack`.
 
 #### 2. ViewModel
 
 **File**: `app/src/main/java/pl/luczka/todaywas/ui/journal/JournalEntryDetailViewModel.kt` (new)
 
-**Intent**: Load the entry once on `Load(id)`, compute initial editability, and drive the
+**Intent**: Load the entry once on construction, compute initial editability, and drive the
 edit/save/cancel state machine described in Critical Implementation Details.
 
-**Contract**: `@HiltViewModel` injecting `GetJournalEntryUseCase`, `UpdateJournalEntryUseCase`,
-`Clock`. `onLoad` guards against reloading if already loaded for the same id (Composable may
-recompose `LaunchedEffect(id)` is keyed on `id` so this is a light safety net, not the primary
-guard), fetches via `GetJournalEntryUseCase`, and sets `entry`/`isEditable` (via
-`EditWindow.isEditable(entry.createdAt, clock.instant())`). `onSaveClicked` calls
+**Contract**: `@HiltViewModel(assistedFactory = JournalEntryDetailViewModel.Factory::class)` with
+an `@AssistedInject` constructor taking `@Assisted id: Long` alongside `GetJournalEntryUseCase`,
+`UpdateJournalEntryUseCase`, `Clock` (see Critical Implementation Details for why `id` is assisted
+rather than passed via a `Load` intent). `init` fetches via `GetJournalEntryUseCase`, and sets
+`entry`/`isEditable` (via `EditWindow.isEditable(entry.createdAt, clock.instant())`).
+`onSaveClicked` calls
 `UpdateJournalEntryUseCase(id, editedText, entry.createdAt)`; on success updates `entry.text` and
 exits edit mode; on failure sets `saveError = true`, and additionally exits edit mode and sets
 `isEditable = false` only when the failure is `EditWindowExpiredException` (a generic failure
@@ -354,7 +373,9 @@ id: Long)`.
 supports the edit flow.
 
 **Contract**: `JournalEntryDetailScreen(id: Long, onBack: () -> Unit, viewModel:
-JournalEntryDetailViewModel = hiltViewModel())` dispatches `Load(id)` in a `LaunchedEffect(id)` and
+JournalEntryDetailViewModel = hiltViewModel<JournalEntryDetailViewModel,
+JournalEntryDetailViewModel.Factory> { it.create(id) })` — the assisted-injection `hiltViewModel`
+overload creates the ViewModel with `id` already wired in, so it loads itself; the screen only
 collects `viewModel.events` for `NavigatedBack -> onBack()`. Top bar: back nav icon dispatches
 `BackClicked`; actions show nothing while `!isEditable`, an "Edit" `TodayWasIconButton` when
 `isEditable && !isEditing`, and Save (`TodayWasButtonWithLoading`, loading = `isSaving`) +
@@ -731,25 +752,25 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 7b77d04
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — 7b77d04
 - [x] 4.3 `JournalEntryDetailViewModelTest` passes (load, edit/save success, generic failure,
-      expired failure)
+      expired failure) — 7b77d04
 
 ### Phase 5: Journal — UI
 
 #### Automated
 
-- [ ] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 5.4 Editing a just-created entry updates it and returns to read-only with new text
-- [ ] 5.5 Cancelling an in-progress edit discards the change
-- [ ] 5.6 An entry older than 24h shows no "Edit" action
-- [ ] 5.7 A mid-session expiry shows an inline error on Save and reverts to read-only
+- [x] 5.4 Editing a just-created entry updates it and returns to read-only with new text
+- [x] 5.5 Cancelling an in-progress edit discards the change
+- [x] 5.6 An entry older than 24h shows no "Edit" action
+- [x] 5.7 A mid-session expiry shows an inline error on Save and reverts to read-only
 
 ### Phase 6: Habit — Data layer
 

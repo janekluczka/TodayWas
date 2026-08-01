@@ -48,15 +48,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
             entry<MainKey> {
                 MainScreen(
                     onAddEntryClicked = { backStack.add(AddJournalEntryKey) },
-                    onJournalEntryClicked = { entry ->
-                        backStack.add(
-                            JournalEntryDetailKey(
-                                date = entry.date.toString(),
-                                text = entry.text,
-                                createdAt = entry.createdAt.toEpochMilli(),
-                            ),
-                        )
-                    },
+                    onJournalEntryClicked = { entry -> backStack.add(JournalEntryDetailKey(id = entry.id)) },
                     onCreateHabitClicked = { backStack.add(CreateHabitKey) },
                     onLogCheckInsClicked = { backStack.add(LogHabitCheckInsKey) },
                 )
@@ -69,8 +61,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
             }
             entry<JournalEntryDetailKey> { key ->
                 JournalEntryDetailScreen(
-                    date = key.date,
-                    text = key.text,
+                    id = key.id,
                     onBack = { backStack.removeLastOrNull() },
                 )
             }

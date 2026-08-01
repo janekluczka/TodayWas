@@ -45,6 +45,11 @@
     <string name="journal_add_entry_error">Something went wrong. Please try again.</string>
 
     <string name="journal_detail_title">Journal entry</string>
+    <string name="journal_detail_edit_action">Edit</string>
+    <string name="journal_detail_save_cta">Save</string>
+    <string name="journal_detail_cancel_edit_action">Cancel</string>
+    <string name="journal_detail_error">Something went wrong. Please try again.</string>
+    <string name="journal_detail_edit_window_expired_error">This entry can no longer be edited.</string>
 
     <string name="habit_create_title">New habit</string>
     <string name="habit_create_name_label">Title</string>

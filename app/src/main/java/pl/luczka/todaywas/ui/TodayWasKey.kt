@@ -17,9 +17,7 @@ data object AddJournalEntryKey : TodayWasKey
 
 @Serializable
 data class JournalEntryDetailKey(
-    val date: String,
-    val text: String,
-    val createdAt: Long,
+    val id: Long,
 ) : TodayWasKey
 
 @Serializable

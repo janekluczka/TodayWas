@@ -2,6 +2,9 @@ package pl.luczka.todaywas.ui.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -17,16 +20,14 @@ import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.ui.model.toUiState
 import java.time.Clock
-import javax.inject.Inject
 
-@HiltViewModel
-class JournalEntryDetailViewModel @Inject constructor(
+@HiltViewModel(assistedFactory = JournalEntryDetailViewModel.Factory::class)
+class JournalEntryDetailViewModel @AssistedInject constructor(
+    @Assisted private val id: Long,
     private val getJournalEntry: GetJournalEntryUseCase,
     private val updateJournalEntry: UpdateJournalEntryUseCase,
     private val clock: Clock,
 ) : ViewModel() {
-
-    private var loadedId: Long? = null
 
     private val _uiState = MutableStateFlow(
         JournalEntryDetailUiState(
@@ -44,20 +45,7 @@ class JournalEntryDetailViewModel @Inject constructor(
     private val eventChannel = Channel<JournalEntryDetailUiEvent>(Channel.BUFFERED)
     val events: Flow<JournalEntryDetailUiEvent> = eventChannel.receiveAsFlow()
 
-    fun onIntent(intent: JournalEntryDetailIntent) {
-        when (intent) {
-            is JournalEntryDetailIntent.Load -> onLoad(intent.id)
-            JournalEntryDetailIntent.EditClicked -> onEditClicked()
-            is JournalEntryDetailIntent.TextChanged -> onTextChanged(intent.text)
-            JournalEntryDetailIntent.SaveClicked -> onSaveClicked()
-            JournalEntryDetailIntent.CancelEditClicked -> onCancelEditClicked()
-            JournalEntryDetailIntent.BackClicked -> onBackClicked()
-        }
-    }
-
-    private fun onLoad(id: Long) {
-        if (loadedId == id) return
-        loadedId = id
+    init {
         viewModelScope.launch {
             val entry = getJournalEntry(id) ?: return@launch
             _uiState.update {
@@ -68,6 +56,16 @@ class JournalEntryDetailViewModel @Inject constructor(
                     isEditable = EditWindow.isEditable(entry.createdAt, clock.instant()),
                 )
             }
+        }
+    }
+
+    fun onIntent(intent: JournalEntryDetailIntent) {
+        when (intent) {
+            JournalEntryDetailIntent.EditClicked -> onEditClicked()
+            is JournalEntryDetailIntent.TextChanged -> onTextChanged(intent.text)
+            JournalEntryDetailIntent.SaveClicked -> onSaveClicked()
+            JournalEntryDetailIntent.CancelEditClicked -> onCancelEditClicked()
+            JournalEntryDetailIntent.BackClicked -> onBackClicked()
         }
     }
 
@@ -114,5 +112,12 @@ class JournalEntryDetailViewModel @Inject constructor(
 
     private fun onBackClicked() {
         eventChannel.trySend(JournalEntryDetailUiEvent.NavigatedBack)
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted id: Long,
+        ): JournalEntryDetailViewModel
     }
 }
