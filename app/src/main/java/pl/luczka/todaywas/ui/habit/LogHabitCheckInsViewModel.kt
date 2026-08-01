@@ -12,13 +12,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.domain.model.Habit
-import pl.luczka.todaywas.domain.model.HabitCheckIn
-import pl.luczka.todaywas.domain.model.HabitCheckInBoard
-import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.ui.model.toUiState
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -116,31 +111,4 @@ class LogHabitCheckInsViewModel @Inject constructor(
             }
         }
     }
-
-    private fun HabitCheckInBoard.toRows(
-        selectedDate: LocalDate,
-        pendingValues: Map<Long, Int>,
-    ): List<HabitCheckInRowUiState> = habits.map { habit ->
-        val existing = checkIns.find { it.habitId == habit.id && it.date == selectedDate }
-        if (existing != null) habit.toAlreadyLoggedRow(existing) else habit.toEditableRow(pendingValues[habit.id])
-    }
-
-    private fun Habit.toAlreadyLoggedRow(checkIn: HabitCheckIn): HabitCheckInRowUiState.AlreadyLogged =
-        HabitCheckInRowUiState.AlreadyLogged(
-            habitId = id,
-            name = name,
-            range = habitRange(),
-            type = type.toUiState(),
-            value = checkIn.value,
-        )
-
-    private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable = HabitCheckInRowUiState.Editable(
-        habitId = id,
-        name = name,
-        range = habitRange(),
-        type = type.toUiState(),
-        value = pendingValue,
-    )
-
-    private fun Habit.habitRange(): IntRange = if (type == HabitType.BINARY) 0..1 else (scaleMin ?: 0)..(scaleMax ?: 0)
 }

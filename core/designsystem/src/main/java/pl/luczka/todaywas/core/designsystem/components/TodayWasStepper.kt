@@ -2,6 +2,9 @@ package pl.luczka.todaywas.core.designsystem.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +18,8 @@ fun TodayWasStepper(
     range: IntRange,
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    decreaseContentDescription: String? = null,
+    increaseContentDescription: String? = null,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -24,7 +29,10 @@ fun TodayWasStepper(
             onClick = { onValueChange(value - 1) },
             enabled = value > range.first,
         ) {
-            TodayWasText(text = "−")
+            TodayWasIcon(
+                imageVector = Icons.Default.Remove,
+                contentDescription = decreaseContentDescription,
+            )
         }
         TodayWasText(
             text = value.toString(),
@@ -34,7 +42,10 @@ fun TodayWasStepper(
             onClick = { onValueChange(value + 1) },
             enabled = value < range.last,
         ) {
-            TodayWasText(text = "+")
+            TodayWasIcon(
+                imageVector = Icons.Default.Add,
+                contentDescription = increaseContentDescription,
+            )
         }
     }
 }
@@ -47,6 +58,8 @@ private fun TodayWasStepperPreview() {
             value = 4,
             range = 2..7,
             onValueChange = {},
+            decreaseContentDescription = "Decrease",
+            increaseContentDescription = "Increase",
         )
     }
 }

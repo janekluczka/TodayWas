@@ -1,5 +1,6 @@
 package pl.luczka.todaywas.ui.habit
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -35,11 +35,12 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.ui.theme.SuccessContainerDark
+import pl.luczka.todaywas.ui.theme.SuccessContainerLight
+import pl.luczka.todaywas.ui.theme.SuccessLabelDark
+import pl.luczka.todaywas.ui.theme.SuccessLabelLight
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
-
-private val DoneChipContainerColor = Color(0xFFC8E6C9)
-private val DoneChipLabelColor = Color(0xFF2E7D32)
 
 @Composable
 fun LogHabitCheckInsScreen(
@@ -143,6 +144,9 @@ private fun HabitCheckInRow(
     } else {
         { value -> value.toString() }
     }
+    val isDarkTheme = isSystemInDarkTheme()
+    val doneChipContainerColor = if (isDarkTheme) SuccessContainerDark else SuccessContainerLight
+    val doneChipLabelColor = if (isDarkTheme) SuccessLabelDark else SuccessLabelLight
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -152,8 +156,8 @@ private fun HabitCheckInRow(
             if (row is HabitCheckInRowUiState.AlreadyLogged) {
                 TodayWasChip(
                     text = doneLabel,
-                    containerColor = DoneChipContainerColor,
-                    labelColor = DoneChipLabelColor,
+                    containerColor = doneChipContainerColor,
+                    labelColor = doneChipLabelColor,
                 )
             }
         }

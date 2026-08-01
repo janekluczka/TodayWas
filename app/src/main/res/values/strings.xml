@@ -14,6 +14,8 @@
     <string name="main_fab_log_check_ins">Log check-ins</string>
     <string name="content_description_add">Add</string>
     <string name="content_description_back">Back</string>
+    <string name="content_description_decrease">Decrease</string>
+    <string name="content_description_increase">Increase</string>
 
     <string name="focus_journal">Journaling</string>
     <string name="focus_habit">Habit tracking</string>

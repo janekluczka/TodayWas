@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
@@ -22,8 +21,8 @@ import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.ui.model.toHabitUiStates
 import pl.luczka.todaywas.ui.model.toUiState
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -112,14 +111,6 @@ class MainViewModel @Inject constructor(
             FabActionUiState.CREATE_HABIT.takeIf { habitFocusActive },
             FabActionUiState.LOG_HABIT_CHECK_INS.takeIf { habitFocusActive && habits.isNotEmpty() },
         )
-    }
-
-    private fun HabitCheckInBoard.toHabitUiStates(): List<HabitUiState> {
-        val today = LocalDate.now()
-        return habits.map { habit ->
-            val todayCheckIn = checkIns.find { it.habitId == habit.id && it.date == today }
-            habit.toUiState(todayCheckIn)
-        }
     }
 
     private data class CombinedMainState(

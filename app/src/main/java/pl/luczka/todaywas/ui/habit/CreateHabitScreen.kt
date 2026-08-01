@@ -116,6 +116,8 @@ private fun CreateHabitScreenContent(
                 range = HabitScaleStepsRange,
                 onValueChange = { onIntent(CreateHabitIntent.ScaleStepsChanged(it)) },
                 modifier = Modifier.padding(top = 4.dp),
+                decreaseContentDescription = stringResource(R.string.content_description_decrease),
+                increaseContentDescription = stringResource(R.string.content_description_increase),
             )
             TodayWasText(
                 text = stringResource(R.string.habit_create_preview_title),

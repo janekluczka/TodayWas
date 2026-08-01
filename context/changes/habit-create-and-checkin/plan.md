@@ -240,6 +240,14 @@ the input-flow ViewModels each derive their own state from the same shared obser
 Every use case in this phase depends directly on its repository — never on another use case — so
 there's no use-case-wrapping-use-case chain to reason about.
 
+**As built**: while migrating tests onto the new combinator use cases, consolidated ~5 near-duplicate
+private in-file fakes (`FakeHabitRepository`, `FakeJournalRepository` variants scattered across
+`ObserveHabitCheckInBoardUseCaseTest`, `ObserveAddableJournalDateSlotsUseCaseTest`,
+`AddJournalEntryUseCaseTest`, `MainViewModelTest`, `AddJournalEntryViewModelTest`) into two shared
+fakes at `app/src/test/java/pl/luczka/todaywas/data/repository/FakeJournalRepository.kt` and
+`FakeHabitRepository.kt`, reused across all 7 affected test files. Not in the original plan; done in
+response to a live question about whether shared test fakes already existed in the codebase.
+
 ### Changes Required:
 
 #### 1. Habit use cases

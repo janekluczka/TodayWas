@@ -98,7 +98,7 @@ private fun AddJournalEntryScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            DayStrip(
+            JournalDateStrip(
                 uiState = uiState,
                 onIntent = onIntent,
             )
@@ -117,7 +117,7 @@ private fun AddJournalEntryScreenContent(
 }
 
 @Composable
-private fun DayStrip(
+private fun JournalDateStrip(
     uiState: AddJournalEntryUiState,
     onIntent: (AddJournalEntryIntent) -> Unit,
 ) {
