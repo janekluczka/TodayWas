@@ -1,10 +1,10 @@
 ---
 change_id: journal-daily-entry
 title: Journal daily entry
-status: impl_reviewed
+status: archived
 created: 2026-07-27
-updated: 2026-07-27
-archived_at: null
+updated: 2026-08-01
+archived_at: 2026-08-01T15:47:49Z
 ---
 
 ## Notes
