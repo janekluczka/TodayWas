@@ -39,7 +39,7 @@ Vision frames daily journaling as the primary act and habit tracking as optional
 | F-01 | supabase-auth-foundation       | (foundation) Supabase project + email/Google sign-in scaffold live | —              | FR-007, Access Control section | ready    |
 | S-01 | onboarding-focus-pick          | complete onboarding and pick a focus (journaling / habits / both)  | —              | FR-001                | done    |
 | S-02 | journal-daily-entry            | add a daily journal entry and see it on the main screen            | S-01           | US-01, FR-003, FR-005, FR-008 | done |
-| S-03 | habit-create-and-checkin       | create a habit and log check-ins for it, seen on the main screen   | S-01           | US-02, FR-002, FR-004, FR-005, FR-008 | proposed |
+| S-03 | habit-create-and-checkin       | create a habit and log check-ins for it, seen on the main screen   | S-01           | US-02, FR-002, FR-004, FR-005, FR-008 | done |
 | S-04 | edit-within-24h-window         | edit a recent journal entry or habit check-in within 24 hours      | S-02, S-03     | US-03, FR-006         | proposed |
 | S-05 | detailed-contribution-history  | drill into a detailed contribution history for a journal or habit  | S-02, S-03     | FR-011                | proposed |
 | S-06 | account-creation-and-sync      | create an account and have existing local data sync automatically  | F-01, S-02, S-03 | US-04, FR-007        | proposed |
@@ -152,7 +152,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Habit creation (FR-002) and check-in (FR-004/US-02) are combined into one slice since
   a check-in cannot exist without a habit to log against — the same "create + use" coupling the
   skill treats as one slice rather than two.
-- **Status:** proposed
+- **Status:** done
 
 ### S-04: Edit within the 24-hour window
 
@@ -270,3 +270,4 @@ to `done` — when a change whose `Change ID` matches the item is archived.)
 
 - **S-01: User completes onboarding and picks a focus (journaling, habit tracking, or both).** — Archived 2026-07-27 → `context/archive/2026-07-25-onboarding-focus-pick/`. Lesson: —.
 - **S-02: User adds a daily journal entry, independent of any habit tracking, and sees it reflected on the main screen as a colored contribution cell.** — Archived 2026-08-01 → `context/archive/2026-07-27-journal-daily-entry/`. Lesson: —.
+- **S-03: User creates a habit (binary or scale value) and logs check-ins for it, independent of journaling, seen on the main screen as a colored contribution cell.** — Archived 2026-08-01 → `context/archive/2026-07-31-habit-create-and-checkin/`. Lesson: —.
