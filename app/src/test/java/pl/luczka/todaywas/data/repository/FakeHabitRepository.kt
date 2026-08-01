@@ -18,6 +18,12 @@ class FakeHabitRepository(
     var createHabitResult: Result<Unit> = Result.success(Unit)
     var createHabitCallCount = 0
         private set
+    var lastCreatedType: HabitType? = null
+        private set
+    var lastCreatedScaleMin: Int? = null
+        private set
+    var lastCreatedScaleMax: Int? = null
+        private set
 
     var addCheckInsResult: Result<Unit> = Result.success(Unit)
     var lastLoggedDate: LocalDate? = null
@@ -35,6 +41,9 @@ class FakeHabitRepository(
         scaleMax: Int?,
     ): Result<Unit> {
         createHabitCallCount++
+        lastCreatedType = type
+        lastCreatedScaleMin = scaleMin
+        lastCreatedScaleMax = scaleMax
         return createHabitResult
     }
 

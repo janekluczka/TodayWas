@@ -8,14 +8,9 @@ sealed interface LogHabitCheckInsIntent {
         val date: LocalDate,
     ) : LogHabitCheckInsIntent
 
-    data class BinaryValueChanged(
+    data class ValueChanged(
         val habitId: Long,
-        val value: Boolean,
-    ) : LogHabitCheckInsIntent
-
-    data class ScaleValueChanged(
-        val habitId: Long,
-        val value: Int,
+        val value: Int?,
     ) : LogHabitCheckInsIntent
 
     data object SaveClicked : LogHabitCheckInsIntent

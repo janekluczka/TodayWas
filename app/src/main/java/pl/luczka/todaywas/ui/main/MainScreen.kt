@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,6 +34,9 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
@@ -82,8 +86,13 @@ private fun MainScreenContent(
         ) {
             when (uiState.focus) {
                 null -> TodayWasText(text = stringResource(R.string.main_empty_state))
-                FocusUiState.JOURNAL, FocusUiState.BOTH -> JournalSection(uiState, onIntent)
-                FocusUiState.HABIT -> TodayWasText(text = stringResource(R.string.main_habit_placeholder))
+                FocusUiState.JOURNAL -> JournalSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
+                FocusUiState.HABIT -> HabitSection(uiState, modifier = Modifier.fillMaxSize())
+                FocusUiState.BOTH ->
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        JournalSection(uiState, onIntent, modifier = Modifier.weight(1f))
+                        HabitSection(uiState, modifier = Modifier.weight(1f))
+                    }
             }
         }
     }
@@ -97,10 +106,6 @@ private fun MainFab(
     val actions = uiState.fabActions
     if (actions.isEmpty()) return
 
-    // actions.size is always 1 today (only journal has a destination), so this FAB behaves as a
-    // plain single-tap button and the expand branch below never triggers. It becomes a real
-    // speed-dial automatically once a second action exists (e.g. habit tracking in S-03) — no
-    // further changes needed here when that happens.
     Column(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -134,11 +139,10 @@ private fun MainFab(
 private fun JournalSection(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.padding(24.dp),
     ) {
         TodayWasText(text = stringResource(R.string.main_journal_section_title))
         if (uiState.journalEntries.isEmpty()) {
@@ -174,6 +178,48 @@ private fun JournalEntryListItem(
             overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+@Composable
+private fun HabitSection(
+    uiState: MainUiState,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.padding(24.dp),
+    ) {
+        TodayWasText(text = stringResource(R.string.main_habit_section_title))
+        if (uiState.habits.isEmpty()) {
+            TodayWasText(text = stringResource(R.string.main_habit_empty_state))
+        } else {
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(uiState.habits) { habit ->
+                    HabitListItem(habit)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HabitListItem(habit: HabitUiState) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+    ) {
+        TodayWasText(text = habit.name)
+        TodayWasText(text = habit.todayStatus.displayText())
+    }
+}
+
+@Composable
+private fun HabitCheckInStatusUiState.displayText(): String = when (this) {
+    HabitCheckInStatusUiState.NotLogged -> ""
+    is HabitCheckInStatusUiState.LoggedBinary ->
+        stringResource(if (done) R.string.habit_checkin_done_label else R.string.habit_checkin_not_done_label)
+    is HabitCheckInStatusUiState.LoggedScale -> value.toString()
 }
 
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
@@ -217,8 +263,21 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
         MainUiState(
             focus = FocusUiState.HABIT,
             journalEntries = emptyList(),
-            habits = emptyList(),
-            fabActions = emptyList(),
+            habits = listOf(
+                HabitUiState(
+                    id = 1,
+                    name = "Drink water",
+                    type = HabitTypeUiState.BINARY,
+                    todayStatus = HabitCheckInStatusUiState.NotLogged,
+                ),
+                HabitUiState(
+                    id = 2,
+                    name = "Mood",
+                    type = HabitTypeUiState.SCALE,
+                    todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 4),
+                ),
+            ),
+            fabActions = listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
             fabExpanded = false,
         ),
     )

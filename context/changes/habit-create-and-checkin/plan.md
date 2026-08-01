@@ -137,14 +137,18 @@ of the existing journal flow, is described next.
   ```
   `HabitRepositoryImpl.addCheckIns` calls `insertAll` once inside the existing retry-once-then-fail
   shape (retry re-attempts the whole batch, not individual rows).
-- **The generalized date-strip component drops the infinite-pager hack, keeps the swipeable/
-  centered feel.** The existing `DayStrip` uses an `Int.MAX_VALUE`-page `HorizontalPager` because a
-  fixed 2-value universe (today/yesterday) still needed to visually feel like an infinite calendar
-  strip. Both consumers of the new shared component (`AddJournalEntryScreen`: 2 dates,
-  `LogHabitCheckInsScreen`: 7 dates) have small, *finite* date sets, so `TodayWasDateStrip` uses a
-  finite `HorizontalPager(pageCount = { dates.size })` over the supplied `dates: List<LocalDate>`,
-  initial page = `dates.indexOf(selectedDate)`. This keeps the swipe/centering UX intentionally,
-  just without the infinite-scroll machinery that was only ever needed to fake a bigger universe.
+- **The generalized date-strip component keeps the infinite (epoch-day-indexed) pager — this was
+  tried as a finite `HorizontalPager(pageCount = { dates.size })` first and reverted.** A finite
+  pager over just the selectable dates (2 for journal, 7 for habits) breaks the centered feel
+  whenever the selected date sits at an edge of that set — e.g. selecting YESTERDAY has nothing
+  before it to page 0, so it can't visually center; same for day 7 of the habit backfill window.
+  `TodayWasDateStrip` therefore keeps `DayStrip`'s original `Int.MAX_VALUE`-page,
+  `LocalDate.ofEpochDay(page)`-indexed approach: it always renders however many context days fit
+  the available width around `selectedDate`, all disabled except the ones `isSelectable` accepts,
+  so a selectable date at the edge of its "real" window still has flanking (non-interactive) days
+  either side. The generalization that *is* real: `isSelectable`/`onDateSelected` take an arbitrary
+  `LocalDate` predicate/callback instead of a hardcoded `JournalDateSlotUiState` — no `dates: List<LocalDate>`
+  parameter exists on the component at all.
 - **Scale-range validation is UI-only, not a use-case business rule** — matching the existing
   precedent where `AddJournalEntryScreen` disables Save on blank text with no use-case-level check.
   `CreateHabitUseCase` is a thin passthrough; `CreateHabitScreen` disables Save until name is
@@ -366,7 +370,9 @@ currently selected date are held in local state until save. `SaveClicked` calls
 unlogged rows; success re-derives the board reactively (newly-logged rows flip to read-only) and
 clears the in-progress input state; failure sets `saveError`.
 
-**Contract**: `LogHabitCheckInsUiState(selectableDates: List<LocalDate>, selectedDate: LocalDate, rows: List<HabitCheckInRowUiState>, isSaving: Boolean, saveError: Boolean)` where `selectableDates` is always the fixed 7-entry today-back-to-6-days-prior list. `HabitCheckInRowUiState` sealed interface: `Editable.Binary(habitId, name, value: Boolean?)`, `Editable.Scale(habitId, name, value: Int?, range: IntRange)`, `AlreadyLogged(habitId, name, displayValue: String)`. `LogHabitCheckInsIntent`: `DateSelected(date)`, `BinaryValueChanged(habitId, value)`, `ScaleValueChanged(habitId, value)`, `SaveClicked`, `CancelClicked`. `LogHabitCheckInsUiEvent`: `Saved`, `Cancelled`. `@HiltViewModel class LogHabitCheckInsViewModel @Inject constructor(private val observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase, private val logHabitCheckIns: LogHabitCheckInsUseCase) : ViewModel()`.
+**Contract**: `LogHabitCheckInsUiState(selectableDates: List<LocalDate>, selectedDate: LocalDate, rows: List<HabitCheckInRowUiState>, isSaving: Boolean, saveError: Boolean)` where `selectableDates` is always the fixed 7-entry today-back-to-6-days-prior list. `HabitCheckInRowUiState` sealed interface: `Editable(habitId, name, value: Int?, range: IntRange, type: HabitTypeUiState)`, `AlreadyLogged(habitId, name, status: HabitCheckInStatusUiState)`. `LogHabitCheckInsIntent`: `DateSelected(date)`, `ValueChanged(habitId, value: Int?)`, `SaveClicked`, `CancelClicked`. `LogHabitCheckInsUiEvent`: `Saved`, `Cancelled`. `@HiltViewModel class LogHabitCheckInsViewModel @Inject constructor(private val observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase, private val logHabitCheckIns: LogHabitCheckInsUseCase) : ViewModel()`.
+
+**As built** (superseded during Phase 4 manual verification, per live UI feedback): `Editable.Binary`/`Editable.Scale` collapsed into one `Editable(value: Int?, range: IntRange, type: HabitTypeUiState)` — a binary habit is just a `0..1` range, so one segmented-row input (see Phase 4 item 1) renders both variants instead of a toggle widget for one and a stepper for the other; `type` is kept (rather than inferred from `range == 0..1`) purely so the screen can pick "Done"/"Not done" labels for binary segments instead of literal "0"/"1" digits, without guessing from the range's shape. `BinaryValueChanged`/`ScaleValueChanged` likewise collapsed into one `ValueChanged(habitId, value: Int?)` — nullable so a segment can be deselected (tapping the already-selected segment clears it back to unselected, per further live feedback), not just selected; the ViewModel removes the habit's entry from its pending-values map on `null` instead of writing one. `AlreadyLogged.displayValue: String` first became `status: HabitCheckInStatusUiState`, then (per one more round of live feedback) `range: IntRange`/`type: HabitTypeUiState`/`value: Int` — the same three fields `Editable` carries (`range`/`type` promoted onto the sealed interface itself since both variants need them), so an already-logged habit renders the exact same (disabled, `enabled = false`) `TodayWasSegmentedRow` as an editable one, with a status chip (new `TodayWasChip` design-system component, wrapping M3 `SuggestionChip`) next to the habit name, instead of a plain "Done" text substitute or a hand-rolled colored `Box`. `TodayWasSegmentedRow`'s disabled (`enabled = false`) colors follow M3's standard disabled-content convention (`onSurface` at 12%/38% alpha for container/content) rather than dimmed selected/unselected colors, matching how M3's own chips and buttons render disabled state. The original plan's `value = row.value ?: row.range.first` fallback (shown in an earlier build of the screen) was a bug, not a feature — it visually pre-selected the range minimum before the user had chosen anything; the fix is `selectedValue: Int?` staying genuinely null until the user taps a segment.
 
 #### 5. Journal retrofit
 
@@ -411,7 +417,7 @@ here for manual confirmation from the human that the manual testing was successf
 
 ### Overview
 
-Two new design-system components (`TodayWasStepper`, `TodayWasDateStrip`), the Habit section on
+Two new design-system components (`TodayWasSegmentedRow`, `TodayWasDateStrip`), the Habit section on
 `MainScreen`, the two new habit screens, the journal screen's switch to the shared date-strip, and
 Navigation 3 wiring for it all.
 
@@ -419,14 +425,27 @@ Navigation 3 wiring for it all.
 
 #### 1. Design system
 
-**File**: `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/TodayWasStepper.kt`,
+**File**: `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/TodayWasSegmentedRow.kt`,
 `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/TodayWasDateStrip.kt`
 
-**Intent**: `TodayWasStepper` is a clamped +/- numeric stepper for scale-value input. `TodayWasDateStrip`
-generalizes the existing journal `DayStrip`/`DayCard` into a reusable, arbitrary-date-list component
-per Critical Implementation Details (finite `HorizontalPager`, no infinite-page hack).
+**Intent**: `TodayWasSegmentedRow` renders one tappable segment per value in an `IntRange` (2
+segments for a binary habit's `0..1`, N segments for a scale habit's range), with `selectedValue`
+staying `null` until the user taps one — no value is pre-selected. This replaced an earlier
+`TodayWasStepper` (+/- stepper) design once live UI feedback asked for one unified segmented
+control instead of a stepper for scale habits and a separate toggle for binary ones — see Phase 3
+item 4's As-built note. `TodayWasDateStrip`
+generalizes the existing journal `DayStrip`/`DayCard` into a reusable, arbitrary-date component,
+keeping the original `Int.MAX_VALUE`-page, epoch-day-indexed `HorizontalPager` per Critical
+Implementation Details (needed to keep the selected date visually centered even at the edge of its
+selectable window).
 
-**Contract**: `TodayWasStepper(value: Int, range: IntRange, onValueChange: (Int) -> Unit, modifier: Modifier = Modifier)` — decrement/increment buttons disabled at `range` bounds. `TodayWasDateStrip(dates: List<LocalDate>, selectedDate: LocalDate, isSelectable: (LocalDate) -> Boolean, onDateSelected: (LocalDate) -> Unit, modifier: Modifier = Modifier)`. Both ship `@PreviewLightDark` per the established lesson.
+**Contract**: `TodayWasSegmentedRow<T>(items: List<T>, selectedItem: T?, onItemSelected: (T?) -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, allowDeselect: Boolean = true, label: (T) -> String = { it.toString() })` — one segment per item; none highlighted when `selectedItem == null`; tapping the already-selected segment calls `onItemSelected(null)` when `allowDeselect` (default); `enabled = false` renders a non-interactive preview (used by `CreateHabitScreen`'s check-in preview, see Phase 4 item 4); `label` overrides the default `toString()` label (e.g. binary habits show "Done"/"Not done" instead of "1"/"0", or "Yes/No"/"Range" for the habit-type picker). Generic rather than `IntRange`-only so it serves both the numeric check-in value picker and the non-numeric habit-type picker. `TodayWasDateStrip(selectedDate: LocalDate, isSelectable: (LocalDate) -> Boolean, onDateSelected: (LocalDate) -> Unit, modifier: Modifier = Modifier)` — no `dates` list parameter; `isSelectable` alone determines which of the (many, rendered-for-context) days are interactive. Both ship `@PreviewLightDark` per the established lesson.
+
+**As built** (superseded during Phase 4 manual verification, per live UI feedback): both components' per-item spacing changed from per-card `.padding()` to `Arrangement.spacedBy()` (segmented row's `Row`) / `HorizontalPager`'s native `pageSpacing` param (date strip), and both now delegate their card rendering to a new shared `TodayWasSelectableCard` component (`enum class TodayWasCardVariant { NEUTRAL, PRIMARY, SECONDARY, TERTIARY }`; wraps M3 `Card`) instead of each hand-rolling `Box`/`Column` + `.background()`/`.clip()`/`.clickable()` — for a unified look as more selectable-card UI gets added later. `TodayWasSegmentedRow` passes `PRIMARY` for the selected segment and `NEUTRAL` otherwise; `TodayWasDateStrip` passes `PRIMARY` for the selected date and `SECONDARY` for other selectable-but-unselected dates (`TERTIARY` isn't consumed yet, added for future reuse). Disabled-state colors live once in `TodayWasSelectableCard` (the M3 `onSurface` 12%/38%-alpha convention) rather than being duplicated per component.
+
+One further round of live feedback changed how a scale habit's range is defined: `CreateHabitUiState.scaleMin: String`/`scaleMax: String` (free-text, independently validated) became a single `scaleSteps: Int` (bounded to a new `HabitScaleStepsRange = 2..7`, default `2`), adjusted via a revived `TodayWasStepper` (`[-][value][+]`, the same `[minus icon button][value][plus icon button]` shape planned for the check-in value picker before that was replaced by `TodayWasSegmentedRow` — it found a real use here instead). `CreateHabitIntent.ScaleMinChanged`/`ScaleMaxChanged` collapsed into one `ScaleStepsChanged(steps: Int)`, coerced into range in the ViewModel. The resulting habit's actual `scaleMin`/`scaleMax` sent to `CreateHabitUseCase` are always `1`/`scaleSteps` — the domain/data-layer contract (Phase 1) is untouched, only how the UI arrives at those two numbers changed. This also removed `CreateHabitScreen`'s scale-range validation entirely (`isSaveEnabled` no longer parses/checks min<max) since a stepper bounded to `2..7` can never produce an invalid range, and removed the "Enter a valid range to preview" placeholder from the check-in-input preview for the same reason.
+
+One final simplification removed the explicit Yes/No-vs-Range type picker entirely: `CreateHabitUiState.type: HabitTypeUiState` was dropped in favor of a computed `val isBinary: Boolean get() = scaleSteps == HabitScaleStepsRange.first` — a 2-step habit *is* binary, anything higher *is* a scale, with no separate choice for the user to make. `CreateHabitIntent.TypeChanged` was removed; the `TodayWasStepper` (previously only shown via `AnimatedVisibility` when Range was picked) is now always visible and is the only control the user interacts with for this. `TodayWasSegmentedRow` gained a `.animateContentSize()` on its `Row` so the check-in-input preview grows/shrinks smoothly (new segments ease in on the right) as the step count changes, instead of resizing abruptly — this benefits every consumer of the component, not just this preview.
 
 #### 2. Root navigation
 
@@ -460,15 +479,28 @@ keyboard) for scale min/max, shown only when Scale is selected.
 
 **Contract**: `CreateHabitScreen(onSaved: () -> Unit, onCancelled: () -> Unit, viewModel: CreateHabitViewModel = hiltViewModel())`.
 
+**As built** (superseded during Phase 4 manual verification, per live UI feedback): top-to-bottom
+order is Title (renamed from "Name") → "Scale type" section label + a `TodayWasSegmentedRow<HabitTypeUiState>`
+(2 segments, "Yes/No" / "Range", `allowDeselect = false` since a habit always has exactly one type)
+replacing the `TodayWasRadioOption` pair → the scale min/max fields, now wrapped in
+`AnimatedVisibility` (fade + expand/shrink vertically) instead of an abrupt `if` block → a "Preview"
+section showing a live, disabled (`enabled = false`) `TodayWasSegmentedRow` of what the check-in
+input will actually look like (Yes/No labels for binary; the typed min..max range for scale, or a
+placeholder string until the range is valid) — visible for both types, so the user sees the
+check-in UX before saving → Description moved to last position. `TodayWasSegmentedRow` itself
+became generic (`TodayWasSegmentedRow<T>(items: List<T>, ...)` instead of `IntRange`-only) plus
+`enabled`/`allowDeselect` params, so this screen's type-picker and preview reuse the same component
+as the log-check-ins screen's value picker.
+
 #### 5. Log-check-ins screen
 
 **File**: `app/src/main/java/pl/luczka/todaywas/ui/habit/LogHabitCheckInsScreen.kt`
 
 **Intent**: `TodayWasTopBar` with a back icon and save action, `TodayWasDateStrip` bound to
-`selectableDates`/`selectedDate`, then a `LazyColumn` of habit rows: `Editable.Binary` rows render a
-`TodayWasRadioOption` pair (Done/Not done), `Editable.Scale` rows render a `TodayWasStepper`,
-`AlreadyLogged` rows render the habit name plus a green "Done" label, non-interactive.
-`TodayWasSnackbarHost` reports `saveError`, matching `AddJournalEntryScreen`'s established pattern.
+`selectedDate` with `isSelectable = { it in uiState.selectableDates }`, then a `LazyColumn` of habit rows: `Editable` rows render a
+`TodayWasSegmentedRow` (2 segments for a binary habit's `0..1` range, N segments for a scale
+habit's range), `AlreadyLogged` rows render the habit name plus a green "Done" label,
+non-interactive. `TodayWasSnackbarHost` reports `saveError`, matching `AddJournalEntryScreen`'s established pattern.
 
 **Contract**: `LogHabitCheckInsScreen(onSaved: () -> Unit, onCancelled: () -> Unit, viewModel: LogHabitCheckInsViewModel = hiltViewModel())`.
 
@@ -612,20 +644,20 @@ strategy.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 `MainViewModelTest` passes (habit mapping, fab-gating, intent→event mapping)
-- [x] 3.4 `CreateHabitViewModelTest` passes (field updates, save success/failure, events)
-- [x] 3.5 `LogHabitCheckInsViewModelTest` passes (row derivation, date switching, batch save)
-- [x] 3.6 `AddJournalEntryViewModelTest` passes (self-derived addable slots)
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — cf90451
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — cf90451
+- [x] 3.3 `MainViewModelTest` passes (habit mapping, fab-gating, intent→event mapping) — cf90451
+- [x] 3.4 `CreateHabitViewModelTest` passes (field updates, save success/failure, events) — cf90451
+- [x] 3.5 `LogHabitCheckInsViewModelTest` passes (row derivation, date switching, batch save) — cf90451
+- [x] 3.6 `AddJournalEntryViewModelTest` passes (self-derived addable slots) — cf90451
 
 ### Phase 4: UI
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
 
 #### Manual
 

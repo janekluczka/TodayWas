@@ -20,7 +20,7 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import java.time.Instant
 import java.time.LocalDate
 
@@ -84,7 +84,7 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `unlogged habit renders as an editable binary row`() =
+    fun `unlogged binary habit renders as an editable row with a 0 to 1 range`() =
         runTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L, name = "Drink water")))
             val viewModel = viewModel(repository)
@@ -92,11 +92,20 @@ class LogHabitCheckInsViewModelTest {
             val row = viewModel.uiState.value.rows
                 .single()
 
-            assertEquals(HabitCheckInRowUiState.Editable.Binary(habitId = 1L, name = "Drink water", value = null), row)
+            assertEquals(
+                HabitCheckInRowUiState.Editable(
+                    habitId = 1L,
+                    name = "Drink water",
+                    value = null,
+                    range = 0..1,
+                    type = HabitTypeUiState.BINARY,
+                ),
+                row,
+            )
         }
 
     @Test
-    fun `unlogged scale habit renders as an editable scale row with its range`() =
+    fun `unlogged scale habit renders as an editable row with its range`() =
         runTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit(id = 1L, type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
@@ -104,7 +113,7 @@ class LogHabitCheckInsViewModelTest {
             val viewModel = viewModel(repository)
 
             val row = viewModel.uiState.value.rows
-                .single() as HabitCheckInRowUiState.Editable.Scale
+                .single() as HabitCheckInRowUiState.Editable
 
             assertEquals(1..5, row.range)
             assertEquals(null, row.value)
@@ -126,7 +135,9 @@ class LogHabitCheckInsViewModelTest {
                 HabitCheckInRowUiState.AlreadyLogged(
                     habitId = 1L,
                     name = "habit-1",
-                    status = HabitCheckInStatusUiState.LoggedBinary(done = true),
+                    range = 0..1,
+                    type = HabitTypeUiState.BINARY,
+                    value = 1,
                 ),
                 row,
             )
@@ -144,20 +155,34 @@ class LogHabitCheckInsViewModelTest {
             val rows = viewModel.uiState.value.rows
 
             assertTrue(rows[0] is HabitCheckInRowUiState.AlreadyLogged)
-            assertTrue(rows[1] is HabitCheckInRowUiState.Editable.Binary)
+            assertTrue(rows[1] is HabitCheckInRowUiState.Editable)
         }
 
     @Test
-    fun `BinaryValueChanged updates the pending value for that row`() =
+    fun `ValueChanged updates the pending value for that row`() =
         runTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             val viewModel = viewModel(repository)
 
-            viewModel.onIntent(LogHabitCheckInsIntent.BinaryValueChanged(habitId = 1L, value = true))
+            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
 
             val row = viewModel.uiState.value.rows
-                .single() as HabitCheckInRowUiState.Editable.Binary
-            assertEquals(true, row.value)
+                .single() as HabitCheckInRowUiState.Editable
+            assertEquals(1, row.value)
+        }
+
+    @Test
+    fun `ValueChanged with null clears a previously entered pending value`() =
+        runTest {
+            val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
+            val viewModel = viewModel(repository)
+            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
+
+            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = null))
+
+            val row = viewModel.uiState.value.rows
+                .single() as HabitCheckInRowUiState.Editable
+            assertEquals(null, row.value)
         }
 
     @Test
@@ -166,13 +191,13 @@ class LogHabitCheckInsViewModelTest {
             val yesterday = LocalDate.now().minusDays(1)
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.BinaryValueChanged(habitId = 1L, value = true))
+            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
 
             viewModel.onIntent(LogHabitCheckInsIntent.DateSelected(yesterday))
 
             assertEquals(yesterday, viewModel.uiState.value.selectedDate)
             val row = viewModel.uiState.value.rows
-                .single() as HabitCheckInRowUiState.Editable.Binary
+                .single() as HabitCheckInRowUiState.Editable
             assertEquals(null, row.value)
         }
 
@@ -181,7 +206,7 @@ class LogHabitCheckInsViewModelTest {
         runTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.BinaryValueChanged(habitId = 1L, value = true))
+            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
             val events = mutableListOf<LogHabitCheckInsUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
@@ -202,7 +227,7 @@ class LogHabitCheckInsViewModelTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             repository.addCheckInsResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.BinaryValueChanged(habitId = 1L, value = true))
+            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
             val events = mutableListOf<LogHabitCheckInsUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 

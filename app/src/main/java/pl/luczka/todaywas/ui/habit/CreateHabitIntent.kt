@@ -1,7 +1,5 @@
 package pl.luczka.todaywas.ui.habit
 
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
-
 sealed interface CreateHabitIntent {
 
     data class NameChanged(
@@ -12,16 +10,8 @@ sealed interface CreateHabitIntent {
         val description: String,
     ) : CreateHabitIntent
 
-    data class TypeChanged(
-        val type: HabitTypeUiState,
-    ) : CreateHabitIntent
-
-    data class ScaleMinChanged(
-        val scaleMin: String,
-    ) : CreateHabitIntent
-
-    data class ScaleMaxChanged(
-        val scaleMax: String,
+    data class ScaleStepsChanged(
+        val steps: Int,
     ) : CreateHabitIntent
 
     data object SaveClicked : CreateHabitIntent

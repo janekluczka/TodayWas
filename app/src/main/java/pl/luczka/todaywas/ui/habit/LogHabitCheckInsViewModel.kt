@@ -18,7 +18,7 @@ import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.ui.model.toUiState
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -67,8 +67,7 @@ class LogHabitCheckInsViewModel @Inject constructor(
     fun onIntent(intent: LogHabitCheckInsIntent) {
         when (intent) {
             is LogHabitCheckInsIntent.DateSelected -> onDateSelected(intent.date)
-            is LogHabitCheckInsIntent.BinaryValueChanged -> onValueChanged(intent.habitId, if (intent.value) 1 else 0)
-            is LogHabitCheckInsIntent.ScaleValueChanged -> onValueChanged(intent.habitId, intent.value)
+            is LogHabitCheckInsIntent.ValueChanged -> onValueChanged(intent.habitId, intent.value)
             LogHabitCheckInsIntent.SaveClicked -> onSaveClicked()
             LogHabitCheckInsIntent.CancelClicked -> onCancelClicked()
         }
@@ -81,9 +80,9 @@ class LogHabitCheckInsViewModel @Inject constructor(
 
     private fun onValueChanged(
         habitId: Long,
-        value: Int,
+        value: Int?,
     ) {
-        pendingValuesFlow.update { it + (habitId to value) }
+        pendingValuesFlow.update { if (value == null) it - habitId else it + (habitId to value) }
     }
 
     private fun onCancelClicked() {
@@ -130,26 +129,18 @@ class LogHabitCheckInsViewModel @Inject constructor(
         HabitCheckInRowUiState.AlreadyLogged(
             habitId = id,
             name = name,
-            status = if (type == HabitType.BINARY) {
-                HabitCheckInStatusUiState.LoggedBinary(done = checkIn.value == 1)
-            } else {
-                HabitCheckInStatusUiState.LoggedScale(value = checkIn.value)
-            },
+            range = habitRange(),
+            type = type.toUiState(),
+            value = checkIn.value,
         )
 
-    private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable = when (type) {
-        HabitType.BINARY ->
-            HabitCheckInRowUiState.Editable.Binary(
-                habitId = id,
-                name = name,
-                value = pendingValue?.let { it == 1 },
-            )
-        HabitType.SCALE ->
-            HabitCheckInRowUiState.Editable.Scale(
-                habitId = id,
-                name = name,
-                value = pendingValue,
-                range = (scaleMin ?: 0)..(scaleMax ?: 0),
-            )
-    }
+    private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable = HabitCheckInRowUiState.Editable(
+        habitId = id,
+        name = name,
+        range = habitRange(),
+        type = type.toUiState(),
+        value = pendingValue,
+    )
+
+    private fun Habit.habitRange(): IntRange = if (type == HabitType.BINARY) 0..1 else (scaleMin ?: 0)..(scaleMax ?: 0)
 }

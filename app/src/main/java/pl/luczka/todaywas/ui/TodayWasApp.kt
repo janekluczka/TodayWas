@@ -9,6 +9,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import pl.luczka.todaywas.ui.habit.CreateHabitScreen
+import pl.luczka.todaywas.ui.habit.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen
@@ -55,9 +57,8 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                             ),
                         )
                     },
-                    // TODO(S-03 Phase 4): wire to CreateHabitKey/LogHabitCheckInsKey nav entries.
-                    onCreateHabitClicked = {},
-                    onLogCheckInsClicked = {},
+                    onCreateHabitClicked = { backStack.add(CreateHabitKey) },
+                    onLogCheckInsClicked = { backStack.add(LogHabitCheckInsKey) },
                 )
             }
             entry<AddJournalEntryKey> {
@@ -71,6 +72,18 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                     date = key.date,
                     text = key.text,
                     onBack = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<CreateHabitKey> {
+                CreateHabitScreen(
+                    onSaved = { backStack.removeLastOrNull() },
+                    onCancelled = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<LogHabitCheckInsKey> {
+                LogHabitCheckInsScreen(
+                    onSaved = { backStack.removeLastOrNull() },
+                    onCancelled = { backStack.removeLastOrNull() },
                 )
             }
         },

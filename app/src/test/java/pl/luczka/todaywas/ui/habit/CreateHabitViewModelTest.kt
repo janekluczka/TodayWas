@@ -15,8 +15,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.usecase.CreateHabitUseCase
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateHabitViewModelTest {
@@ -35,7 +35,7 @@ class CreateHabitViewModelTest {
     }
 
     @Test
-    fun `initial state is blank and defaults to BINARY`() =
+    fun `initial state is blank, binary, and defaults to the minimum scale step count`() =
         runTest {
             val viewModel = viewModel()
 
@@ -43,7 +43,8 @@ class CreateHabitViewModelTest {
 
             assertEquals("", state.name)
             assertEquals("", state.description)
-            assertEquals(HabitTypeUiState.BINARY, state.type)
+            assertEquals(HabitScaleStepsRange.first, state.scaleSteps)
+            assertTrue(state.isBinary)
             assertFalse(state.isSaving)
             assertFalse(state.saveError)
         }
@@ -59,36 +60,44 @@ class CreateHabitViewModelTest {
         }
 
     @Test
-    fun `TypeChanged updates type`() =
+    fun `isBinary is false once steps grow past the minimum`() =
         runTest {
             val viewModel = viewModel()
 
-            viewModel.onIntent(CreateHabitIntent.TypeChanged(HabitTypeUiState.SCALE))
+            viewModel.onIntent(CreateHabitIntent.ScaleStepsChanged(3))
 
-            assertEquals(HabitTypeUiState.SCALE, viewModel.uiState.value.type)
+            assertFalse(viewModel.uiState.value.isBinary)
         }
 
     @Test
-    fun `ScaleMinChanged and ScaleMaxChanged update their fields`() =
+    fun `ScaleStepsChanged updates scaleSteps within bounds`() =
         runTest {
             val viewModel = viewModel()
 
-            viewModel.onIntent(CreateHabitIntent.ScaleMinChanged("1"))
-            viewModel.onIntent(CreateHabitIntent.ScaleMaxChanged("5"))
+            viewModel.onIntent(CreateHabitIntent.ScaleStepsChanged(5))
 
-            assertEquals("1", viewModel.uiState.value.scaleMin)
-            assertEquals("5", viewModel.uiState.value.scaleMax)
+            assertEquals(5, viewModel.uiState.value.scaleSteps)
         }
 
     @Test
-    fun `SaveClicked success passes parsed fields to the use case and emits Saved`() =
+    fun `ScaleStepsChanged coerces values outside the allowed range`() =
+        runTest {
+            val viewModel = viewModel()
+
+            viewModel.onIntent(CreateHabitIntent.ScaleStepsChanged(1))
+            assertEquals(HabitScaleStepsRange.first, viewModel.uiState.value.scaleSteps)
+
+            viewModel.onIntent(CreateHabitIntent.ScaleStepsChanged(9))
+            assertEquals(HabitScaleStepsRange.last, viewModel.uiState.value.scaleSteps)
+        }
+
+    @Test
+    fun `SaveClicked with more than the minimum steps saves a SCALE habit with 1 to scaleSteps as the range`() =
         runTest {
             val repository = FakeHabitRepository()
             val viewModel = viewModel(repository)
-            viewModel.onIntent(CreateHabitIntent.NameChanged("Drink water"))
-            viewModel.onIntent(CreateHabitIntent.TypeChanged(HabitTypeUiState.SCALE))
-            viewModel.onIntent(CreateHabitIntent.ScaleMinChanged("1"))
-            viewModel.onIntent(CreateHabitIntent.ScaleMaxChanged("5"))
+            viewModel.onIntent(CreateHabitIntent.NameChanged("Mood"))
+            viewModel.onIntent(CreateHabitIntent.ScaleStepsChanged(5))
             val events = mutableListOf<CreateHabitUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
@@ -98,8 +107,26 @@ class CreateHabitViewModelTest {
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.createHabitCallCount)
+            assertEquals(HabitType.SCALE, repository.lastCreatedType)
+            assertEquals(1, repository.lastCreatedScaleMin)
+            assertEquals(5, repository.lastCreatedScaleMax)
             assertEquals(listOf(CreateHabitUiEvent.Saved), events)
             collectJob.cancel()
+        }
+
+    @Test
+    fun `SaveClicked at the minimum step count saves a BINARY habit with null scaleMin and scaleMax`() =
+        runTest {
+            val repository = FakeHabitRepository()
+            val viewModel = viewModel(repository)
+            viewModel.onIntent(CreateHabitIntent.NameChanged("Drink water"))
+
+            viewModel.onIntent(CreateHabitIntent.SaveClicked)
+            runCurrent()
+
+            assertEquals(HabitType.BINARY, repository.lastCreatedType)
+            assertEquals(null, repository.lastCreatedScaleMin)
+            assertEquals(null, repository.lastCreatedScaleMax)
         }
 
     @Test

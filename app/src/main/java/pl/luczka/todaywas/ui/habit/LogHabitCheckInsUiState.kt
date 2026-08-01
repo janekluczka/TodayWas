@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.ui.habit
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import java.time.LocalDate
 
 @Immutable
@@ -18,25 +18,26 @@ sealed interface HabitCheckInRowUiState {
     val habitId: Long
     val name: String
 
-    sealed interface Editable : HabitCheckInRowUiState {
+    // A binary habit is just a 0..1 range under the hood — one segmented-row component handles
+    // both, rather than a separate toggle widget for binary and a stepper for scale. `range`/
+    // `type` are shared by both variants so an already-logged habit renders the exact same
+    // (disabled) segmented control as an editable one, instead of a plain text substitute.
+    val range: IntRange
+    val type: HabitTypeUiState
 
-        data class Binary(
-            override val habitId: Long,
-            override val name: String,
-            val value: Boolean?,
-        ) : Editable
-
-        data class Scale(
-            override val habitId: Long,
-            override val name: String,
-            val value: Int?,
-            val range: IntRange,
-        ) : Editable
-    }
+    data class Editable(
+        override val habitId: Long,
+        override val name: String,
+        override val range: IntRange,
+        override val type: HabitTypeUiState,
+        val value: Int?,
+    ) : HabitCheckInRowUiState
 
     data class AlreadyLogged(
         override val habitId: Long,
         override val name: String,
-        val status: HabitCheckInStatusUiState,
+        override val range: IntRange,
+        override val type: HabitTypeUiState,
+        val value: Int,
     ) : HabitCheckInRowUiState
 }

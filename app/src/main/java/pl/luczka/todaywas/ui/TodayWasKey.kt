@@ -21,3 +21,9 @@ data class JournalEntryDetailKey(
     val text: String,
     val createdAt: Long,
 ) : TodayWasKey
+
+@Serializable
+data object CreateHabitKey : TodayWasKey
+
+@Serializable
+data object LogHabitCheckInsKey : TodayWasKey

@@ -11,9 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.usecase.CreateHabitUseCase
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import pl.luczka.todaywas.ui.model.toDomain
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,9 +24,7 @@ class CreateHabitViewModel @Inject constructor(
         CreateHabitUiState(
             name = "",
             description = "",
-            type = HabitTypeUiState.BINARY,
-            scaleMin = "",
-            scaleMax = "",
+            scaleSteps = HabitScaleStepsRange.first,
             isSaving = false,
             saveError = false,
         ),
@@ -41,9 +38,7 @@ class CreateHabitViewModel @Inject constructor(
         when (intent) {
             is CreateHabitIntent.NameChanged -> onNameChanged(intent.name)
             is CreateHabitIntent.DescriptionChanged -> onDescriptionChanged(intent.description)
-            is CreateHabitIntent.TypeChanged -> onTypeChanged(intent.type)
-            is CreateHabitIntent.ScaleMinChanged -> onScaleMinChanged(intent.scaleMin)
-            is CreateHabitIntent.ScaleMaxChanged -> onScaleMaxChanged(intent.scaleMax)
+            is CreateHabitIntent.ScaleStepsChanged -> onScaleStepsChanged(intent.steps)
             CreateHabitIntent.SaveClicked -> onSaveClicked()
             CreateHabitIntent.CancelClicked -> onCancelClicked()
         }
@@ -57,16 +52,8 @@ class CreateHabitViewModel @Inject constructor(
         _uiState.update { it.copy(description = description) }
     }
 
-    private fun onTypeChanged(type: HabitTypeUiState) {
-        _uiState.update { it.copy(type = type) }
-    }
-
-    private fun onScaleMinChanged(scaleMin: String) {
-        _uiState.update { it.copy(scaleMin = scaleMin) }
-    }
-
-    private fun onScaleMaxChanged(scaleMax: String) {
-        _uiState.update { it.copy(scaleMax = scaleMax) }
+    private fun onScaleStepsChanged(steps: Int) {
+        _uiState.update { it.copy(scaleSteps = steps.coerceIn(HabitScaleStepsRange)) }
     }
 
     private fun onCancelClicked() {
@@ -86,9 +73,9 @@ class CreateHabitViewModel @Inject constructor(
             val result = createHabit(
                 name = state.name,
                 description = state.description.ifBlank { null },
-                type = state.type.toDomain(),
-                scaleMin = state.scaleMin.toIntOrNull(),
-                scaleMax = state.scaleMax.toIntOrNull(),
+                type = if (state.isBinary) HabitType.BINARY else HabitType.SCALE,
+                scaleMin = if (state.isBinary) null else 1,
+                scaleMax = if (state.isBinary) null else state.scaleSteps,
             )
             if (result.isSuccess) {
                 _uiState.update { it.copy(isSaving = false) }
