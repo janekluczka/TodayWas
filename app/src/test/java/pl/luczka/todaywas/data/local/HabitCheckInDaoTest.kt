@@ -134,4 +134,63 @@ class HabitCheckInDaoTest {
             assertEquals(1L, persisted[0].habitId)
             assertEquals(1_000L, persisted[0].createdAt)
         }
+
+    @Test
+    fun `getByHabitAndDate returns the matching entity or null`() =
+        runTest {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .build()
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(
+                    habitId = 1L,
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                ),
+            )
+
+            val found = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27")
+            val missingDate = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-26")
+            val missingHabit = db.habitCheckInDao().getByHabitAndDate(2L, "2026-07-27")
+            db.close()
+
+            assertEquals(1, found?.value)
+            assertEquals(null, missingDate)
+            assertEquals(null, missingHabit)
+        }
+
+    @Test
+    fun `update persists new value and leaves habitId, date, and createdAt untouched`() =
+        runTest {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .build()
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(
+                    habitId = 1L,
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                ),
+            )
+            val inserted = checkNotNull(db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27"))
+
+            db.habitCheckInDao().update(inserted.copy(value = 0))
+            val updated = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27")
+            db.close()
+
+            assertEquals(0, updated?.value)
+            assertEquals(1L, updated?.habitId)
+            assertEquals("2026-07-27", updated?.date)
+            assertEquals(1_000L, updated?.createdAt)
+        }
 }

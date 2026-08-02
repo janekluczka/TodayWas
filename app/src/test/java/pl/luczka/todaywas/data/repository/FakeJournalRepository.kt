@@ -19,7 +19,17 @@ class FakeJournalRepository(
     var lastSavedText: String? = null
         private set
 
+    var updateEntryResult: Result<Unit> = Result.success(Unit)
+    var updateEntryCallCount = 0
+        private set
+    var lastUpdatedId: Long? = null
+        private set
+    var lastUpdatedText: String? = null
+        private set
+
     override fun observeEntries(): Flow<List<JournalEntry>> = entriesFlow
+
+    override suspend fun getEntry(id: Long): JournalEntry? = entriesFlow.value.find { it.id == id }
 
     override suspend fun addEntry(
         date: LocalDate,
@@ -29,5 +39,15 @@ class FakeJournalRepository(
         lastSavedDate = date
         lastSavedText = text
         return addEntryResult
+    }
+
+    override suspend fun updateEntry(
+        id: Long,
+        text: String,
+    ): Result<Unit> {
+        updateEntryCallCount++
+        lastUpdatedId = id
+        lastUpdatedText = text
+        return updateEntryResult
     }
 }

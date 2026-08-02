@@ -1,10 +1,10 @@
 ---
-change_id: habit-create-and-checkin
-title: Habit creation and check-in
-status: impl_reviewed
-created: 2026-07-31
+change_id: journal-daily-entry
+title: Journal daily entry
+status: archived
+created: 2026-07-27
 updated: 2026-08-01
-archived_at: null
+archived_at: 2026-08-01T15:47:49Z
 ---
 
 ## Notes

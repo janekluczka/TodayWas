@@ -1,6 +1,5 @@
 package pl.luczka.todaywas.data.repository
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.JournalEntryDao
@@ -16,6 +15,8 @@ class JournalRepositoryImpl @Inject constructor(
 
     override fun observeEntries(): Flow<List<JournalEntry>> = dao.observeAll().map { entities -> entities.map { it.toDomain() } }
 
+    override suspend fun getEntry(id: Long): JournalEntry? = dao.getById(id)?.toDomain()
+
     override suspend fun addEntry(
         date: LocalDate,
         text: String,
@@ -25,21 +26,15 @@ class JournalRepositoryImpl @Inject constructor(
             text = text,
             createdAt = Instant.now().toEpochMilli(),
         )
-        return try {
-            dao.insert(entity)
-            Result.success(Unit)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            // Retry once before giving up, per the plan's write-resilience contract.
-            try {
-                dao.insert(entity)
-                Result.success(Unit)
-            } catch (retryException: CancellationException) {
-                throw retryException
-            } catch (retryException: Exception) {
-                Result.failure(retryException)
-            }
-        }
+        return safeDbCall { dao.insert(entity) }
+    }
+
+    override suspend fun updateEntry(
+        id: Long,
+        text: String,
+    ): Result<Unit> {
+        val existing = dao.getById(id) ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
+        val entity = existing.copy(text = text)
+        return safeDbCall { dao.update(entity) }
     }
 }

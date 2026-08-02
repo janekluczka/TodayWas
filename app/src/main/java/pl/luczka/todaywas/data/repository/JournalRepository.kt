@@ -8,8 +8,17 @@ interface JournalRepository {
 
     fun observeEntries(): Flow<List<JournalEntry>>
 
+    suspend fun getEntry(id: Long): JournalEntry?
+
     suspend fun addEntry(
         date: LocalDate,
+        text: String,
+    ): Result<Unit>
+
+    // Callers must check EditWindow.isEditable first - enforced by UpdateJournalEntryUseCase,
+    // not here.
+    suspend fun updateEntry(
+        id: Long,
         text: String,
     ): Result<Unit>
 }

@@ -79,6 +79,7 @@ class MainViewModel @Inject constructor(
             is MainIntent.FabActionClicked -> onFabActionClicked(intent.action)
             MainIntent.FabToggled -> onFabToggled()
             is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
+            is MainIntent.HabitClicked -> onHabitClicked(intent.habit)
         }
     }
 
@@ -97,6 +98,10 @@ class MainViewModel @Inject constructor(
 
     private fun onJournalEntryClicked(entry: JournalEntryUiState) {
         eventChannel.trySend(MainUiEvent.NavigateToJournalDetail(entry))
+    }
+
+    private fun onHabitClicked(habit: HabitUiState) {
+        eventChannel.trySend(MainUiEvent.NavigateToHabitDetail(habit.id))
     }
 
     private fun FocusUiState?.toFabActions(

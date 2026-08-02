@@ -1,9 +1,9 @@
 ---
-change_id: journal-daily-entry
-title: Journal daily entry
+change_id: edit-within-24h-window
+title: Edit within 24h window
 status: impl_reviewed
-created: 2026-07-27
-updated: 2026-07-27
+created: 2026-08-01
+updated: 2026-08-02
 archived_at: null
 ---
 

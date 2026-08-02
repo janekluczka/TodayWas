@@ -82,4 +82,67 @@ class JournalEntryDaoTest {
 
             assertEquals(listOf("2026-07-27", "2026-07-26", "2026-07-25"), entries.map { it.date })
         }
+
+    @Test
+    fun `getById returns the matching entry or null`() =
+        runTest {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .build()
+            db.journalEntryDao().insert(
+                JournalEntryEntity(
+                    date = "2026-07-27",
+                    text = "Today was good.",
+                    createdAt = 1_000L,
+                ),
+            )
+            val inserted = db
+                .journalEntryDao()
+                .observeAll()
+                .first()
+                .single()
+
+            val found = db.journalEntryDao().getById(inserted.id)
+            val missing = db.journalEntryDao().getById(inserted.id + 1)
+            db.close()
+
+            assertEquals(inserted, found)
+            assertEquals(null, missing)
+        }
+
+    @Test
+    fun `update persists new text and leaves date and createdAt untouched`() =
+        runTest {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .build()
+            db.journalEntryDao().insert(
+                JournalEntryEntity(
+                    date = "2026-07-27",
+                    text = "Original text.",
+                    createdAt = 1_000L,
+                ),
+            )
+            val inserted = db
+                .journalEntryDao()
+                .observeAll()
+                .first()
+                .single()
+
+            db.journalEntryDao().update(inserted.copy(text = "Edited text."))
+            val updated = db.journalEntryDao().getById(inserted.id)
+            db.close()
+
+            assertEquals("Edited text.", updated?.text)
+            assertEquals("2026-07-27", updated?.date)
+            assertEquals(1_000L, updated?.createdAt)
+        }
 }

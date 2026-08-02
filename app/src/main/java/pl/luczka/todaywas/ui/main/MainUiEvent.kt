@@ -13,4 +13,8 @@ sealed interface MainUiEvent {
     data object NavigateToCreateHabit : MainUiEvent
 
     data object NavigateToLogHabitCheckIns : MainUiEvent
+
+    data class NavigateToHabitDetail(
+        val habitId: Long,
+    ) : MainUiEvent
 }
