@@ -33,18 +33,17 @@ private data class HabitDetailViewModelState(
     val range: IntRange = 0..0,
     val checkIns: List<HabitCheckIn> = emptyList(),
     val pendingValues: Map<LocalDate, Int> = emptyMap(),
+    val isEditMode: Boolean = false,
     val isSaving: Boolean = false,
     val saveError: Boolean = false,
 ) {
-    fun toUiState(
-        dates: List<LocalDate>,
-        now: Instant,
-    ): HabitDetailUiState = HabitDetailUiState(
+    fun toUiState(now: Instant): HabitDetailUiState = HabitDetailUiState(
         isLoading = isLoading,
         habitName = habitName,
         type = type,
         range = range,
-        rows = checkIns.toHabitDetailRows(dates, pendingValues, now),
+        rows = checkIns.toHabitDetailRows(pendingValues, now),
+        isEditMode = isEditMode,
         isSaving = isSaving,
         saveError = saveError,
     )
@@ -59,19 +58,14 @@ class HabitDetailViewModel @AssistedInject constructor(
     private val clock: Clock,
 ) : ViewModel() {
 
-    private val dates = run {
-        val today = LocalDate.now()
-        listOf(today.minusDays(1), today)
-    }
-
     private val viewModelState = MutableStateFlow(HabitDetailViewModelState())
 
     val uiState: StateFlow<HabitDetailUiState> = viewModelState
-        .map { it.toUiState(dates, clock.instant()) }
+        .map { it.toUiState(clock.instant()) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = viewModelState.value.toUiState(dates, clock.instant()),
+            initialValue = viewModelState.value.toUiState(clock.instant()),
         )
 
     private val eventChannel = Channel<HabitDetailUiEvent>(Channel.BUFFERED)
@@ -97,10 +91,16 @@ class HabitDetailViewModel @AssistedInject constructor(
 
     fun onIntent(intent: HabitDetailIntent) {
         when (intent) {
+            HabitDetailIntent.EditClicked -> onEditClicked()
             is HabitDetailIntent.ValueChanged -> onValueChanged(intent.date, intent.value)
             HabitDetailIntent.SaveClicked -> onSaveClicked()
+            HabitDetailIntent.CancelEditClicked -> onCancelEditClicked()
             HabitDetailIntent.BackClicked -> onBackClicked()
         }
+    }
+
+    private fun onEditClicked() {
+        viewModelState.update { it.copy(isEditMode = true) }
     }
 
     private fun onValueChanged(
@@ -118,6 +118,10 @@ class HabitDetailViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onCancelEditClicked() {
+        viewModelState.update { it.copy(isEditMode = false, pendingValues = emptyMap()) }
+    }
+
     private fun onBackClicked() {
         eventChannel.trySend(HabitDetailUiEvent.NavigatedBack)
     }
@@ -126,7 +130,10 @@ class HabitDetailViewModel @AssistedInject constructor(
         val state = viewModelState.value
         if (state.isSaving) return
         val pending = state.pendingValues
-        if (pending.isEmpty()) return
+        if (pending.isEmpty()) {
+            viewModelState.update { it.copy(isEditMode = false) }
+            return
+        }
         val checkInsByDate = state.checkIns.associateBy { it.date }
         viewModelScope.launch {
             viewModelState.update {
@@ -147,6 +154,7 @@ class HabitDetailViewModel @AssistedInject constructor(
                 viewModelState.update {
                     it.copy(
                         isSaving = false,
+                        isEditMode = false,
                         pendingValues = emptyMap(),
                     )
                 }

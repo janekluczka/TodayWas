@@ -48,7 +48,7 @@ fun MainScreen(
     onJournalEntryClicked: (JournalEntryUiState) -> Unit,
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
-    onHabitClicked: (Long) -> Unit = {},
+    onHabitClicked: (Long) -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,11 +89,11 @@ private fun MainScreenContent(
             when (uiState.focus) {
                 null -> TodayWasText(text = stringResource(R.string.main_empty_state))
                 FocusUiState.JOURNAL -> JournalSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
-                FocusUiState.HABIT -> HabitSection(uiState, modifier = Modifier.fillMaxSize())
+                FocusUiState.HABIT -> HabitSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
                 FocusUiState.BOTH ->
                     Column(modifier = Modifier.fillMaxSize()) {
                         JournalSection(uiState, onIntent, modifier = Modifier.weight(1f))
-                        HabitSection(uiState, modifier = Modifier.weight(1f))
+                        HabitSection(uiState, onIntent, modifier = Modifier.weight(1f))
                     }
             }
         }
@@ -185,6 +185,7 @@ private fun JournalEntryListItem(
 @Composable
 private fun HabitSection(
     uiState: MainUiState,
+    onIntent: (MainIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -196,7 +197,10 @@ private fun HabitSection(
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.habits) { habit ->
-                    HabitListItem(habit)
+                    HabitListItem(
+                        habit = habit,
+                        onClick = { onIntent(MainIntent.HabitClicked(habit)) },
+                    )
                 }
             }
         }
@@ -204,11 +208,15 @@ private fun HabitSection(
 }
 
 @Composable
-private fun HabitListItem(habit: HabitUiState) {
+private fun HabitListItem(
+    habit: HabitUiState,
+    onClick: () -> Unit,
+) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
     ) {
         TodayWasText(text = habit.name)

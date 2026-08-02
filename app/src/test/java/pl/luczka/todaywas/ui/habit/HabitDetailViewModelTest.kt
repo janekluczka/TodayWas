@@ -66,7 +66,31 @@ class HabitDetailViewModelTest {
     }
 
     @Test
-    fun `a not-yet-logged day derives editable true and alreadyLogged false`() =
+    fun `rows include every logged date plus today and yesterday even if unlogged`() =
+        runTest {
+            val oldDate = today.minusDays(10)
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(id = 1L, habitId = 1L, date = oldDate, value = 1, createdAt = now.minus(Duration.ofDays(10))),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            val dates = viewModel.uiState.value.rows
+                .map { it.date }
+
+            assertTrue(dates.contains(oldDate))
+            assertTrue(dates.contains(today))
+            assertTrue(dates.contains(yesterday))
+            assertEquals(3, dates.size)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `a not-yet-logged day derives eligibleForEdit true and alreadyLogged false`() =
         runTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
@@ -77,24 +101,18 @@ class HabitDetailViewModelTest {
                 .find { it.date == today }
 
             assertEquals("Drink water", viewModel.uiState.value.habitName)
-            assertTrue(row?.editable == true)
+            assertTrue(row?.eligibleForEdit == true)
             assertFalse(row?.alreadyLogged == true)
             collectJob.cancel()
         }
 
     @Test
-    fun `a logged day within the window derives editable true and alreadyLogged true`() =
+    fun `a logged day within the window derives eligibleForEdit true and alreadyLogged true`() =
         runTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = 1L,
-                        habitId = 1L,
-                        date = today,
-                        value = 1,
-                        createdAt = now.minus(Duration.ofHours(1)),
-                    ),
+                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -106,23 +124,17 @@ class HabitDetailViewModelTest {
 
             assertEquals(1, row?.value)
             assertTrue(row?.alreadyLogged == true)
-            assertTrue(row?.editable == true)
+            assertTrue(row?.eligibleForEdit == true)
             collectJob.cancel()
         }
 
     @Test
-    fun `a logged day past the window derives editable false and alreadyLogged true`() =
+    fun `a logged day past the window derives eligibleForEdit false and alreadyLogged true`() =
         runTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = 1L,
-                        habitId = 1L,
-                        date = yesterday,
-                        value = 0,
-                        createdAt = now.minus(Duration.ofHours(25)),
-                    ),
+                    HabitCheckIn(id = 1L, habitId = 1L, date = yesterday, value = 0, createdAt = now.minus(Duration.ofHours(25))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -133,24 +145,82 @@ class HabitDetailViewModelTest {
                 .find { it.date == yesterday }
 
             assertTrue(row?.alreadyLogged == true)
-            assertFalse(row?.editable == true)
+            assertFalse(row?.eligibleForEdit == true)
             collectJob.cancel()
         }
 
     @Test
-    fun `Save touching only a not-yet-logged row calls only the insert path`() =
+    fun `EditClicked sets isEditMode true`() =
         runTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
 
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            runCurrent()
+
+            assertTrue(viewModel.uiState.value.isEditMode)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `CancelEditClicked exits edit mode and discards pending values`() =
+        runTest {
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+            viewModel.onIntent(HabitDetailIntent.CancelEditClicked)
+            runCurrent()
+
+            assertFalse(viewModel.uiState.value.isEditMode)
+            assertEquals(
+                null,
+                viewModel.uiState.value.rows
+                    .find { it.date == today }
+                    ?.value,
+            )
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `Save with nothing pending just exits edit mode without calling either use case`() =
+        runTest {
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            viewModel.onIntent(HabitDetailIntent.SaveClicked)
+            runCurrent()
+
+            assertFalse(viewModel.uiState.value.isEditMode)
+            assertEquals(null, repository.lastLoggedDate)
+            assertEquals(0, repository.updateCheckInCallCount)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `Save touching only a not-yet-logged row calls only the insert path and exits edit mode`() =
+        runTest {
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
+            assertFalse(viewModel.uiState.value.isEditMode)
             assertEquals(today, repository.lastLoggedDate)
             assertEquals(mapOf(1L to 1), repository.lastLoggedValues)
             assertEquals(0, repository.updateCheckInCallCount)
@@ -163,19 +233,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = 1L,
-                        habitId = 1L,
-                        date = today,
-                        value = 1,
-                        createdAt = now.minus(Duration.ofHours(1)),
-                    ),
+                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
                 ),
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
 
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
@@ -194,19 +259,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = 1L,
-                        habitId = 1L,
-                        date = today,
-                        value = 1,
-                        createdAt = now.minus(Duration.ofHours(1)),
-                    ),
+                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
                 ),
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
 
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
             viewModel.onIntent(HabitDetailIntent.ValueChanged(yesterday, 1))
             viewModel.onIntent(HabitDetailIntent.SaveClicked)

@@ -25,3 +25,8 @@ data object CreateHabitKey : TodayWasKey
 
 @Serializable
 data object LogHabitCheckInsKey : TodayWasKey
+
+@Serializable
+data class HabitDetailKey(
+    val habitId: Long,
+) : TodayWasKey

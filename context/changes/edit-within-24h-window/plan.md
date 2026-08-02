@@ -47,12 +47,16 @@ codebase today.
 - "Log check-ins" (Input) keeps its existing insert-only behavior exactly as it is today — an
   already-logged row still shows its label + value, non-interactive as a control — except its date
   strip narrows from 7 days to just Today and Yesterday.
-- Tapping a habit on the Main screen opens a new, minimal per-habit **Habit Detail** screen showing
-  that habit's Today and Yesterday rows. A not-yet-logged day is editable (saving inserts it); an
-  already-logged day is editable if it's within 24h of when it was logged (saving updates it), or
-  locked/read-only if not. This is intentionally a small placeholder for the future
-  detailed-contribution-history screen (FR-011, roadmap S-05, not part of this change) — just
-  enough surface to host editing.
+- Tapping a habit on the Main screen opens a new **Habit Detail** screen showing every check-in
+  ever logged for that habit (most recent first), plus Today and Yesterday even if unlogged, as a
+  plain unbounded list — no pagination yet (noted as a future follow-up once real usage volume
+  warrants it). The screen is read-only by default; an "Edit" top-bar action (shown only when at
+  least one row is currently eligible) flips it into edit mode, where eligible rows (not-yet-logged,
+  or logged within 24h) become interactive and a Cancel/Save pair appears, mirroring the journal
+  detail screen's Edit/Cancel/Save shape. Saving inserts not-yet-logged rows and updates in-window
+  logged rows, then exits edit mode; Cancel discards any staged changes and exits edit mode without
+  writing. This list is intentionally a placeholder for the future detailed-contribution-history
+  *grid* (FR-011, roadmap S-05, not part of this change) — a plain list now, a real grid later.
 - Verify via: create a journal entry and a habit check-in, edit both immediately (succeeds), then
   either wait past 24h or manually push a row's `createdAt` back via a debug write and confirm both
   become read-only/locked and a save attempt fails cleanly.
@@ -82,15 +86,17 @@ codebase today.
   (the date is unique-indexed and re-dating isn't required by FR-006).
 - No editing inside "Log check-ins" itself — that screen stays insert-only; all editing of existing
   habit check-ins happens on the new Habit Detail screen.
-- No full GitHub-style contribution grid for the Habit Detail screen — that's FR-011/roadmap S-05,
-  a separate future change. This change's Habit Detail screen only shows Today/Yesterday, just
-  enough to host editing; a future change can extend the same screen with a real history grid.
+- No full GitHub-style contribution *grid* for the Habit Detail screen — that's FR-011/roadmap S-05,
+  a separate future change. This change's Habit Detail screen shows the full history as a plain
+  list, just enough to host editing; a future change can turn the same screen into a real grid.
+- No pagination on the Habit Detail history list — a plain unbounded `LazyColumn` over whatever
+  check-ins exist. Flagged as a follow-up once real usage volume warrants it, not built now.
 - No "habit list" screen separate from Main — Main's existing Habit section already lists every
   habit; it just becomes tappable.
 - No extraction of a shared "Today/Yesterday" date-slot abstraction, even though this plan now has
   three independent places computing it (journal's addable slots, Log check-ins' narrowed window,
-  Habit Detail's two rows). Each stays a small local computation; unifying them is a
-  nice-to-have refactor, not required by this change.
+  Habit Detail's always-present Today/Yesterday rows). Each stays a small local computation;
+  unifying them is a nice-to-have refactor, not required by this change.
 - No DB migration / schema version bump — no entity columns change.
 - No continuous re-evaluation of the 24h boundary while a screen sits open (e.g. no periodic timer
   ticking the UI from editable to locked). The window is (re-)checked on screen load and again at
@@ -535,24 +541,34 @@ today.
 **Intent**: Standard per-screen MVI trio for the new minimal per-habit screen.
 
 **Contract**: `HabitDetailUiState` holds `isLoading: Boolean`, `habitName: String`, `type:
-HabitTypeUiState`, `range: IntRange`, `rows: List<HabitDetailRowUiState>` (always exactly 2 —
-yesterday, today, in that order), `isSaving: Boolean`, `saveError: Boolean`.
-`HabitDetailRowUiState` holds `date: LocalDate`, `value: Int?`, `editable: Boolean` (true if not
-yet logged, or logged and within the 24h window), `alreadyLogged: Boolean` (distinguishes an
-insert-on-save row from an update-on-save row for the partitioning described in Critical
-Implementation Details). No `label` field; the screen (Phase 9) derives "Today"/"Yesterday" text
-from `date` itself via `stringResource`, keeping all UI copy in `strings.xml` per project
-convention rather than baking it into UI state. `HabitDetailIntent` is a sealed interface:
-`ValueChanged(date: LocalDate, value: Int?)`, `SaveClicked`, `BackClicked` (no `Load` — `habitId` is
-assisted-injected, same as journal's `JournalEntryDetailViewModel`). `HabitDetailUiEvent` is a
-sealed interface with one member: `NavigatedBack`.
+HabitTypeUiState`, `range: IntRange`, `rows: List<HabitDetailRowUiState>` (every logged date plus
+Today/Yesterday even if unlogged, most-recent-first — not capped to 2, see the redesign note
+below), `isEditMode: Boolean`, `isSaving: Boolean`, `saveError: Boolean`. `HabitDetailRowUiState`
+holds `date: LocalDate`, `value: Int?`, `eligibleForEdit: Boolean` (true if not yet logged, or
+logged and within the 24h window — named `eligibleForEdit` rather than `editable` since actual
+interactivity also depends on `isEditMode`, a separate screen-level gate), `alreadyLogged: Boolean`
+(distinguishes an insert-on-save row from an update-on-save row for the partitioning described in
+Critical Implementation Details). No `label` field; the screen (Phase 9) derives "Today"/
+"Yesterday"/formatted-date text from `date` itself via `stringResource`, keeping all UI copy in
+`strings.xml` per project convention rather than baking it into UI state. `HabitDetailIntent` is a
+sealed interface: `EditClicked`, `ValueChanged(date: LocalDate, value: Int?)`, `SaveClicked`,
+`CancelEditClicked`, `BackClicked` (no `Load` — `habitId` is assisted-injected, same as journal's
+`JournalEntryDetailViewModel`). `HabitDetailUiEvent` is a sealed interface with one member:
+`NavigatedBack`.
+
+**Redesign note (mid-Phase-9 steer)**: the screen was originally scoped to a fixed 2-row
+Today/Yesterday shape with inline editing. Before Phase 9's manual verification completed, this was
+revised to show the *full* check-in history (foreshadowing the future S-05 contribution grid) with
+a separate read-only/edit-mode split — editing only becomes possible after an explicit "Edit"
+action, mirroring the journal detail screen's Edit/Cancel/Save shape at the whole-screen level
+instead of always-on inline controls. This section and Phase 9 describe the shape that shipped.
 
 #### 4. Habit Detail ViewModel
 
 **File**: `app/src/main/java/pl/luczka/todaywas/ui/habit/HabitDetailViewModel.kt` (new)
 
-**Intent**: Load one habit's Today/Yesterday rows from the existing board use case, and drive the
-per-row edit + mixed-save state machine.
+**Intent**: Load one habit's full check-in history from the existing board use case, and drive the
+edit-mode + mixed-save state machine.
 
 **Contract**: `@HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)` with an
 `@AssistedInject` constructor taking `@Assisted habitId: Long` alongside
@@ -560,23 +576,28 @@ per-row edit + mixed-save state machine.
 — same pattern as `JournalEntryDetailViewModel` (Phase 4). Internal state follows the
 "Now in Android"-style shape: a top-level (not nested — file-private, not inside the ViewModel
 class body) `HabitDetailViewModelState` data class (`isLoading`, `habitName`, `type`, `range`,
-`checkIns: List<HabitCheckIn>`, `pendingValues: Map<LocalDate, Int>`, `isSaving`, `saveError`) held
-in a private `MutableStateFlow`, with a `toUiState(dates, now)` method on that class doing the
-mapping (via `HabitDetailMapper.kt`'s `List<HabitCheckIn>.toHabitDetailRows(...)`).
-The public `val uiState: StateFlow<HabitDetailUiState>` is *derived*, not separately
-`.update{}`-driven: `viewModelState.map { it.toUiState(dates, clock.instant()) }.stateIn(scope =
-viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = ...)` — there is no
-private `_uiState` written to directly. `init` collects the board `Flow`, finds the matching
-`Habit`, and updates `viewModelState` with `habitName`/`type`/`range`/`checkIns` (raw, unmerged with
-pending edits — the mapping happens once, at the `uiState` derivation point). `onValueChanged`
-updates `viewModelState.pendingValues`. `onSaveClicked` partitions the pending entries by looking
-each date up in `viewModelState.value.checkIns` (associated by date): a hit means
-`updateHabitCheckIn(habitId, date, value, existing.createdAt)`; a miss means
+`checkIns: List<HabitCheckIn>`, `pendingValues: Map<LocalDate, Int>`, `isEditMode`, `isSaving`,
+`saveError`) held in a private `MutableStateFlow`, with a `toUiState(now)` method on that class
+doing the mapping (via `HabitDetailMapper.kt`'s `List<HabitCheckIn>.toHabitDetailRows(pendingValues,
+now)` — this function derives its own date set internally: every date with a check-in, unioned with
+Today/Yesterday, sorted descending; no `dates` parameter). The public `val uiState:
+StateFlow<HabitDetailUiState>` is *derived*, not separately `.update{}`-driven:
+`viewModelState.map { it.toUiState(clock.instant()) }.stateIn(scope = viewModelScope, started =
+SharingStarted.WhileSubscribed(5_000), initialValue = ...)` — there is no private `_uiState` written
+to directly. `init` collects the board `Flow`, finds the matching `Habit`, and updates
+`viewModelState` with `habitName`/`type`/`range`/`checkIns` (raw, unmerged with pending edits — the
+mapping happens once, at the `uiState` derivation point). `onEditClicked` sets `isEditMode = true`.
+`onValueChanged` updates `viewModelState.pendingValues`. `onCancelEditClicked` clears
+`pendingValues` and sets `isEditMode = false` (discards, does not write). `onSaveClicked` partitions
+the pending entries by looking each date up in `viewModelState.value.checkIns` (associated by
+date): a hit means `updateHabitCheckIn(habitId, date, value, existing.createdAt)`; a miss means
 `logHabitCheckIns(date, mapOf(habitId to value))` (one call per such row, since the use case takes
-one date at a time). `saveError = true` unless every call in the batch succeeds — on success the
-board's own live `Flow` naturally refreshes `checkIns` with the new persisted state, so no manual
-state patching is needed (unlike the journal detail screen, which has no live Flow and must patch
-`entry` locally on save success). `onBackClicked` sends `NavigatedBack`.
+one date at a time). If `pendingValues` is empty, `onSaveClicked` just exits edit mode without
+calling either use case. `saveError = true` unless every call in the batch succeeds; on success
+`isEditMode` is also cleared — the board's own live `Flow` naturally refreshes `checkIns` with the
+new persisted state, so no manual state patching is needed (unlike the journal detail screen, which
+has no live Flow and must patch `entry` locally on save success). `onBackClicked` sends
+`NavigatedBack`.
 
 **Test note**: `SharingStarted.WhileSubscribed` means `uiState.value` only updates while something
 is actively subscribed to it — a test that reads `.value` without first `launch { uiState.collect
@@ -593,11 +614,14 @@ elsewhere in this test suite for one-shot `events` Flow assertions.
 - `LogHabitCheckInsViewModelTest` passes (existing cases still pass; `selectableDates` is now
   exactly `[yesterday, today]`)
 - `MainViewModelTest` passes (`HabitClicked` → `NavigateToHabitDetail` with the habit's id)
-- `HabitDetailViewModelTest` passes: load derives correct `editable`/`alreadyLogged` per row for a
-  not-yet-logged day, an in-window logged day, and an expired logged day; Save with only a
-  not-yet-logged row touched calls only `logHabitCheckIns`; Save with only an in-window logged row
-  touched calls only `updateHabitCheckIn`; Save touching both calls both and only clears
-  pending/emits success if both succeed
+- `HabitDetailViewModelTest` passes: rows include every logged date plus Today/Yesterday even when
+  unlogged; correct `eligibleForEdit`/`alreadyLogged` derivation for a not-yet-logged day, an
+  in-window logged day, and an expired logged day; `EditClicked`/`CancelEditClicked` toggle
+  `isEditMode` and Cancel discards pending values; Save with nothing pending exits edit mode without
+  calling either use case; Save with only a not-yet-logged row touched calls only
+  `logHabitCheckIns`; Save with only an in-window logged row touched calls only
+  `updateHabitCheckIn`; Save touching both calls both and only clears pending/exits edit mode if
+  both succeed
 
 ---
 
@@ -646,19 +670,29 @@ added.
 
 **File**: `app/src/main/java/pl/luczka/todaywas/ui/habit/HabitDetailScreen.kt` (new)
 
-**Intent**: Minimal per-habit screen — title, two rows, per-row edit, one Save. This is the
-placeholder described in "What We're NOT Doing" for the future contribution-grid screen (S-05).
+**Intent**: Read-only-by-default history list with an explicit edit mode. This is the placeholder
+described in "What We're NOT Doing" for the future contribution-grid screen (S-05) — a list now,
+a grid later.
 
 **Contract**: `HabitDetailScreen(habitId: Long, onBack: () -> Unit, viewModel: HabitDetailViewModel
-= hiltViewModel())` dispatches `Load(habitId)` in a `LaunchedEffect(habitId)`, collects events for
-`NavigatedBack -> onBack()`. Top bar: back nav icon dispatches `BackClicked`; actions hold a Save
-`TodayWasButtonWithLoading` (loading = `isSaving`), following `LogHabitCheckInsScreen`'s top-bar
-shape (`LogHabitCheckInsScreen.kt:84-105`). Body: `habitName` as a heading, then each
-`HabitDetailRowUiState` rendered via the same `TodayWasSegmentedRow` pattern
-`LogHabitCheckInsScreen.HabitCheckInRow` already uses (`LogHabitCheckInsScreen.kt:134-190`) — one
-row with `enabled = row.editable`, dispatching `ValueChanged(row.date, it)` on selection, `enabled
-= false` when not `editable`. `saveError` drives a `TodayWasSnackbarHost`, matching
-`LogHabitCheckInsScreen.kt:76-82`. New strings: `habit_detail_title`, `habit_detail_save_cta`,
+= hiltViewModel<HabitDetailViewModel, HabitDetailViewModel.Factory> { it.create(habitId) })`
+(assisted-injection `hiltViewModel` overload, same as the journal detail screen) collects events for
+`NavigatedBack -> onBack()`. Top bar: back nav icon dispatches `BackClicked`; actions are
+mode-dependent, mirroring `JournalEntryDetailScreen`'s Edit/Cancel/Save shape at the whole-screen
+level — when `!isEditMode`, a single Edit `TodayWasIconButton` (shown only if `rows.any {
+it.eligibleForEdit }`, else no action at all); when `isEditMode`, a Cancel (`Icons.Filled.Close`)
+icon dispatching `CancelEditClicked` plus a Save `TodayWasButtonWithLoading` (loading = `isSaving`)
+dispatching `SaveClicked`. Body: `habitName` as a heading, then a `LazyColumn` over `uiState.rows`
+(not a plain `Column` — the list is now unbounded) — each row rendered via the same
+`TodayWasSegmentedRow` pattern `LogHabitCheckInsScreen.HabitCheckInRow` already uses
+(`LogHabitCheckInsScreen.kt:134-190`), with `enabled = uiState.isEditMode && row.eligibleForEdit`
+(both conditions, not `eligibleForEdit` alone) and `onItemSelected` dispatching
+`ValueChanged(row.date, it)`. Each row's date label is `stringResource(R.string
+.habit_detail_today_label)` / `..._yesterday_label` for those two dates, and
+`date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))` (same formatter the journal
+detail screen already uses) for every other date. `saveError` drives a `TodayWasSnackbarHost`,
+matching `LogHabitCheckInsScreen.kt:76-82`. New strings: `habit_detail_title`,
+`habit_detail_edit_action`, `habit_detail_save_cta`, `habit_detail_cancel_edit_action`,
 `habit_detail_error`, `habit_detail_today_label`, `habit_detail_yesterday_label`.
 
 ### Success Criteria:
@@ -671,11 +705,18 @@ row with `enabled = row.editable`, dispatching `ValueChanged(row.date, it)` on s
 
 #### Manual Verification:
 
-- Tapping a habit on the Main screen opens its Habit Detail screen showing Today/Yesterday
-- Setting a value for a not-yet-logged day and saving inserts it, persists across relaunch, and
-  shows correctly on next open
-- Changing an already-logged, in-window day's value and saving updates it and persists
-- (Debug-assisted) a day whose window has expired renders locked (no interaction) on this screen
+- Tapping a habit on the Main screen opens its Habit Detail screen showing its full history
+  (Today/Yesterday always present even unlogged, plus any older logged dates), read-only, with an
+  Edit action
+- Tapping Edit reveals interactive controls only on eligible rows (not-yet-logged, or logged within
+  24h); other rows stay visibly non-interactive
+- Setting a value for a not-yet-logged day, then Save, inserts it, exits edit mode, and persists
+  across relaunch
+- Changing an already-logged, in-window day's value, then Save, updates it, exits edit mode, and
+  persists
+- Entering edit mode, changing a value, then Cancel discards the change and exits edit mode without
+  writing anything
+- (Debug-assisted) a day whose window has expired never becomes interactive even in edit mode
 - Regression: journal's add-entry flow, Log check-ins' insert-only flow (now Today/Yesterday only),
   and first-time habit creation still work end-to-end
 
@@ -707,8 +748,9 @@ row with `enabled = row.editable`, dispatching `ValueChanged(row.date, it)` on s
    and returns to read-only.
 2. Cancel an in-progress journal edit → confirm the original text is shown, unchanged.
 3. Log a habit check-in for today via "Log check-ins" → confirm the row is now non-interactive
-   there → tap the habit from the Main screen → confirm Habit Detail shows today's value editable
-   → change it and save → confirm it persists across relaunch and shows correctly everywhere.
+   there → tap the habit from the Main screen → confirm Habit Detail shows the full history
+   read-only with an Edit action → tap Edit, change today's value, Save → confirm it exits edit
+   mode, persists across relaunch, and shows correctly everywhere.
 4. Using a debug-only backdated write (or system clock manipulation) push an entry's/check-in's
    `createdAt` more than 24h in the past → confirm the journal entry shows no "Edit" action and the
    habit's Habit Detail row for that day renders locked.
@@ -814,26 +856,26 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 8.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 8.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 8.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — b9900b1
+- [x] 8.2 Lint passes: `./gradlew.bat ktlintCheck` — b9900b1
 - [x] 8.3 `LogHabitCheckInsViewModelTest` passes (`selectableDates` now `[yesterday, today]`,
-      existing cases still pass)
-- [x] 8.4 `MainViewModelTest` passes (`HabitClicked` → `NavigateToHabitDetail`)
-- [x] 8.5 `HabitDetailViewModelTest` passes (row derivation, partitioned Save)
+      existing cases still pass) — b9900b1
+- [x] 8.4 `MainViewModelTest` passes (`HabitClicked` → `NavigateToHabitDetail`) — b9900b1
+- [x] 8.5 `HabitDetailViewModelTest` passes (row derivation, partitioned Save) — b9900b1
 
 ### Phase 9: Habit — UI
 
 #### Automated
 
-- [ ] 9.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 9.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 9.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 9.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 9.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 9.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 9.4 Tapping a habit on Main opens Habit Detail showing Today/Yesterday
-- [ ] 9.5 Setting a not-yet-logged day's value and saving inserts it and persists across relaunch
-- [ ] 9.6 Changing an in-window already-logged day's value and saving updates it and persists
-- [ ] 9.7 (Debug-assisted) an expired day renders locked on Habit Detail
-- [ ] 9.8 Regression: add-entry, Log check-ins' insert flow (now Today/Yesterday only), and habit
+- [x] 9.4 Tapping a habit on Main opens Habit Detail showing Today/Yesterday
+- [x] 9.5 Setting a not-yet-logged day's value and saving inserts it and persists across relaunch
+- [x] 9.6 Changing an in-window already-logged day's value and saving updates it and persists
+- [x] 9.7 (Debug-assisted) an expired day renders locked on Habit Detail
+- [x] 9.8 Regression: add-entry, Log check-ins' insert flow (now Today/Yesterday only), and habit
       creation still work end-to-end

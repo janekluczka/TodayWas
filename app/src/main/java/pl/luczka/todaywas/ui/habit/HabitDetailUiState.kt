@@ -11,6 +11,7 @@ data class HabitDetailUiState(
     val type: HabitTypeUiState,
     val range: IntRange,
     val rows: List<HabitDetailRowUiState>,
+    val isEditMode: Boolean,
     val isSaving: Boolean,
     val saveError: Boolean,
 )
@@ -18,6 +19,6 @@ data class HabitDetailUiState(
 data class HabitDetailRowUiState(
     val date: LocalDate,
     val value: Int?,
-    val editable: Boolean,
+    val eligibleForEdit: Boolean,
     val alreadyLogged: Boolean,
 )
