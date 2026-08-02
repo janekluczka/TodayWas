@@ -867,15 +867,15 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 9.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 9.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 9.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 9.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — b8c2965
+- [x] 9.2 Lint passes: `./gradlew.bat ktlintCheck` — b8c2965
+- [x] 9.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — b8c2965
 
 #### Manual
 
-- [x] 9.4 Tapping a habit on Main opens Habit Detail showing Today/Yesterday
-- [x] 9.5 Setting a not-yet-logged day's value and saving inserts it and persists across relaunch
-- [x] 9.6 Changing an in-window already-logged day's value and saving updates it and persists
-- [x] 9.7 (Debug-assisted) an expired day renders locked on Habit Detail
+- [x] 9.4 Tapping a habit on Main opens Habit Detail showing Today/Yesterday — b8c2965
+- [x] 9.5 Setting a not-yet-logged day's value and saving inserts it and persists across relaunch — b8c2965
+- [x] 9.6 Changing an in-window already-logged day's value and saving updates it and persists — b8c2965
+- [x] 9.7 (Debug-assisted) an expired day renders locked on Habit Detail — b8c2965
 - [x] 9.8 Regression: add-entry, Log check-ins' insert flow (now Today/Yesterday only), and habit
-      creation still work end-to-end
+      creation still work end-to-end — b8c2965
