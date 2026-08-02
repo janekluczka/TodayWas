@@ -1,10 +1,10 @@
 ---
 change_id: edit-within-24h-window
 title: Edit within 24h window
-status: impl_reviewed
+status: archived
 created: 2026-08-01
 updated: 2026-08-02
-archived_at: null
+archived_at: 2026-08-02T11:32:52Z
 ---
 
 ## Notes
