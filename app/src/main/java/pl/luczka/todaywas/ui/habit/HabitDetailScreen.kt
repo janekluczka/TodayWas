@@ -33,6 +33,8 @@ import pl.luczka.todaywas.core.designsystem.components.TodayWasSegmentedRow
 import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.TodayWasText
 import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
@@ -114,7 +116,7 @@ private fun HabitDetailScreenContent(
                         row = row,
                         type = uiState.type,
                         range = uiState.range,
-                        enabled = uiState.isEditMode && row.eligibleForEdit,
+                        enabled = uiState.isEditSheetOpen && row.eligibleForEdit,
                         onIntent = onIntent,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -131,7 +133,7 @@ private fun HabitDetailActions(
     uiState: HabitDetailUiState,
     onIntent: (HabitDetailIntent) -> Unit,
 ) {
-    if (uiState.isEditMode) {
+    if (uiState.isEditSheetOpen) {
         Row {
             TodayWasIconButton(onClick = { onIntent(HabitDetailIntent.CancelEditClicked) }) {
                 TodayWasIcon(
@@ -207,7 +209,14 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
                 HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 1, eligibleForEdit = false, alreadyLogged = true),
                 HabitDetailRowUiState(date = LocalDate.now().minusDays(5), value = 0, eligibleForEdit = false, alreadyLogged = true),
             ),
-            isEditMode = false,
+            contributionGrid = ContributionGridUiState(
+                startDate = LocalDate.now().minusDays(34),
+                endDate = LocalDate.now(),
+                cells = emptyMap(),
+            ),
+            availableWindows = listOf(ContributionWindowUiState.RollingTwelveMonths),
+            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+            isEditSheetOpen = false,
             isSaving = false,
             saveError = false,
             saveErrorIsWindowExpired = false,
@@ -221,7 +230,14 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
                 HabitDetailRowUiState(date = LocalDate.now(), value = 4, eligibleForEdit = true, alreadyLogged = true),
                 HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 3, eligibleForEdit = true, alreadyLogged = true),
             ),
-            isEditMode = true,
+            contributionGrid = ContributionGridUiState(
+                startDate = LocalDate.now().minusDays(34),
+                endDate = LocalDate.now(),
+                cells = emptyMap(),
+            ),
+            availableWindows = listOf(ContributionWindowUiState.RollingTwelveMonths),
+            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+            isEditSheetOpen = true,
             isSaving = false,
             saveError = true,
             saveErrorIsWindowExpired = false,

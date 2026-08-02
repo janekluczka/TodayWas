@@ -586,24 +586,24 @@ no-pagination-needed convention.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug`
-- [x] 1.4 `ContributionWindowTest` passes (dateRange both variants, availableWindows no/same/multi-year data)
-- [x] 1.5 `HabitContributionCalculatorTest` passes (empty, full-range spread, identical values, out-of-window dates)
-- [x] 1.6 `JournalContributionCalculatorTest` passes (presence, absence, window filtering)
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 2a2f33c
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — 2a2f33c
+- [x] 1.3 Debug build compiles: `./gradlew.bat assembleDebug` — 2a2f33c
+- [x] 1.4 `ContributionWindowTest` passes (dateRange both variants, availableWindows no/same/multi-year data) — 2a2f33c
+- [x] 1.5 `HabitContributionCalculatorTest` passes (empty, full-range spread, identical values, out-of-window dates) — 2a2f33c
+- [x] 1.6 `JournalContributionCalculatorTest` passes (presence, absence, window filtering) — 2a2f33c
 
 #### Manual
 
-- [ ] 1.7 `TodayWasContributionGrid` and `TodayWasChip` previews render correctly in light and dark mode
+- [x] 1.7 `TodayWasContributionGrid` and `TodayWasChip` previews render correctly in light and dark mode — 2a2f33c
 
 ### Phase 2: Habit — Presentation
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.3 `HabitDetailViewModelTest` passes (grid/window state, WindowSelected, existing edit/save/cancel cases under isEditSheetOpen rename)
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.3 `HabitDetailViewModelTest` passes (grid/window state, WindowSelected, existing edit/save/cancel cases under isEditSheetOpen rename)
 
 ### Phase 3: Habit — UI
 
