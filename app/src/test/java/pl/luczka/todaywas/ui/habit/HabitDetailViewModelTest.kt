@@ -279,4 +279,49 @@ class HabitDetailViewModelTest {
             assertEquals(mapOf(1L to 1), repository.lastLoggedValues)
             collectJob.cancel()
         }
+
+    @Test
+    fun `Save failing on a window-expired row sets saveErrorIsWindowExpired`() =
+        runTest {
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(25))),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            // Bypasses the UI's enabled gate on purpose, mirroring a real mid-session expiry.
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
+            viewModel.onIntent(HabitDetailIntent.SaveClicked)
+            runCurrent()
+
+            assertFalse(viewModel.uiState.value.isSaving)
+            assertTrue(viewModel.uiState.value.saveError)
+            assertTrue(viewModel.uiState.value.saveErrorIsWindowExpired)
+            assertEquals(0, repository.updateCheckInCallCount)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `Save failing for a generic reason clears saveErrorIsWindowExpired`() =
+        runTest {
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            repository.addCheckInsResult = Result.failure(RuntimeException("write failed"))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+            viewModel.onIntent(HabitDetailIntent.SaveClicked)
+            runCurrent()
+
+            assertTrue(viewModel.uiState.value.saveError)
+            assertFalse(viewModel.uiState.value.saveErrorIsWindowExpired)
+            collectJob.cancel()
+        }
 }

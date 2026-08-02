@@ -14,6 +14,7 @@ data class HabitDetailUiState(
     val isEditMode: Boolean,
     val isSaving: Boolean,
     val saveError: Boolean,
+    val saveErrorIsWindowExpired: Boolean,
 )
 
 data class HabitDetailRowUiState(

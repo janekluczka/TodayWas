@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
@@ -36,6 +37,7 @@ private data class HabitDetailViewModelState(
     val isEditMode: Boolean = false,
     val isSaving: Boolean = false,
     val saveError: Boolean = false,
+    val saveErrorIsWindowExpired: Boolean = false,
 ) {
     fun toUiState(now: Instant): HabitDetailUiState = HabitDetailUiState(
         isLoading = isLoading,
@@ -46,6 +48,7 @@ private data class HabitDetailViewModelState(
         isEditMode = isEditMode,
         isSaving = isSaving,
         saveError = saveError,
+        saveErrorIsWindowExpired = saveErrorIsWindowExpired,
     )
 }
 
@@ -140,6 +143,7 @@ class HabitDetailViewModel @AssistedInject constructor(
                 it.copy(
                     isSaving = true,
                     saveError = false,
+                    saveErrorIsWindowExpired = false,
                 )
             }
             val results = pending.map { (date, value) ->
@@ -159,10 +163,12 @@ class HabitDetailViewModel @AssistedInject constructor(
                     )
                 }
             } else {
+                val windowExpired = results.any { it.exceptionOrNull() is EditWindowExpiredException }
                 viewModelState.update {
                     it.copy(
                         isSaving = false,
                         saveError = true,
+                        saveErrorIsWindowExpired = windowExpired,
                     )
                 }
             }

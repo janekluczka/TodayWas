@@ -25,6 +25,8 @@ interface HabitRepository {
         values: Map<Long, Int>,
     ): Result<Unit>
 
+    // Callers must check EditWindow.isEditable first - enforced by UpdateHabitCheckInUseCase,
+    // not here.
     suspend fun updateCheckIn(
         habitId: Long,
         date: LocalDate,

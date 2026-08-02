@@ -69,10 +69,12 @@ private fun HabitDetailScreenContent(
     onIntent: (HabitDetailIntent) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val errorMessage = stringResource(R.string.habit_detail_error)
+    val genericErrorMessage = stringResource(R.string.habit_detail_error)
+    val expiredErrorMessage = stringResource(R.string.habit_detail_edit_window_expired_error)
     LaunchedEffect(uiState.saveError) {
         if (uiState.saveError) {
-            snackbarHostState.showSnackbar(errorMessage)
+            val message = if (uiState.saveErrorIsWindowExpired) expiredErrorMessage else genericErrorMessage
+            snackbarHostState.showSnackbar(message)
         }
     }
 
@@ -208,6 +210,7 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             isEditMode = false,
             isSaving = false,
             saveError = false,
+            saveErrorIsWindowExpired = false,
         ),
         HabitDetailUiState(
             isLoading = false,
@@ -221,6 +224,7 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             isEditMode = true,
             isSaving = false,
             saveError = true,
+            saveErrorIsWindowExpired = false,
         ),
     )
 }
