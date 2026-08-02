@@ -1,6 +1,8 @@
 package pl.luczka.todaywas.ui.habit
 
 import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import java.time.LocalDate
 
@@ -11,7 +13,10 @@ data class HabitDetailUiState(
     val type: HabitTypeUiState,
     val range: IntRange,
     val rows: List<HabitDetailRowUiState>,
-    val isEditMode: Boolean,
+    val contributionGrid: ContributionGridUiState,
+    val availableWindows: List<ContributionWindowUiState>,
+    val selectedWindow: ContributionWindowUiState,
+    val isEditSheetOpen: Boolean,
     val isSaving: Boolean,
     val saveError: Boolean,
     val saveErrorIsWindowExpired: Boolean,

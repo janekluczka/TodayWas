@@ -14,6 +14,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionLevel
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
@@ -21,6 +22,7 @@ import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
+import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -150,7 +152,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `EditClicked sets isEditMode true`() =
+    fun `EditClicked sets isEditSheetOpen true`() =
         runTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
@@ -160,7 +162,7 @@ class HabitDetailViewModelTest {
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             runCurrent()
 
-            assertTrue(viewModel.uiState.value.isEditMode)
+            assertTrue(viewModel.uiState.value.isEditSheetOpen)
             collectJob.cancel()
         }
 
@@ -177,7 +179,7 @@ class HabitDetailViewModelTest {
             viewModel.onIntent(HabitDetailIntent.CancelEditClicked)
             runCurrent()
 
-            assertFalse(viewModel.uiState.value.isEditMode)
+            assertFalse(viewModel.uiState.value.isEditSheetOpen)
             assertEquals(
                 null,
                 viewModel.uiState.value.rows
@@ -199,7 +201,7 @@ class HabitDetailViewModelTest {
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
-            assertFalse(viewModel.uiState.value.isEditMode)
+            assertFalse(viewModel.uiState.value.isEditSheetOpen)
             assertEquals(null, repository.lastLoggedDate)
             assertEquals(0, repository.updateCheckInCallCount)
             collectJob.cancel()
@@ -220,7 +222,7 @@ class HabitDetailViewModelTest {
 
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
-            assertFalse(viewModel.uiState.value.isEditMode)
+            assertFalse(viewModel.uiState.value.isEditSheetOpen)
             assertEquals(today, repository.lastLoggedDate)
             assertEquals(mapOf(1L to 1), repository.lastLoggedValues)
             assertEquals(0, repository.updateCheckInCallCount)
@@ -303,6 +305,51 @@ class HabitDetailViewModelTest {
             assertTrue(viewModel.uiState.value.saveError)
             assertTrue(viewModel.uiState.value.saveErrorIsWindowExpired)
             assertEquals(0, repository.updateCheckInCallCount)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `contributionGrid and window state reflect loaded check-ins`() =
+        runTest {
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            val state = viewModel.uiState.value
+            assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.selectedWindow)
+            assertTrue(state.availableWindows.contains(ContributionWindowUiState.RollingTwelveMonths))
+            assertTrue(state.availableWindows.contains(ContributionWindowUiState.CalendarYear(today.year)))
+            assertEquals(TodayWasContributionLevel.LEVEL_5, state.contributionGrid.cells[today])
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `WindowSelected updates selectedWindow and recomputes contributionGrid without changing an already-visible day's level`() =
+        runTest {
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now),
+                    HabitCheckIn(id = 2L, habitId = 1L, date = today.minusDays(3), value = 0, createdAt = now.minus(Duration.ofDays(3))),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            val levelBefore = viewModel.uiState.value.contributionGrid.cells[today]
+
+            viewModel.onIntent(HabitDetailIntent.WindowSelected(ContributionWindowUiState.CalendarYear(today.year)))
+            runCurrent()
+
+            assertEquals(ContributionWindowUiState.CalendarYear(today.year), viewModel.uiState.value.selectedWindow)
+            assertEquals(levelBefore, viewModel.uiState.value.contributionGrid.cells[today])
             collectJob.cancel()
         }
 
