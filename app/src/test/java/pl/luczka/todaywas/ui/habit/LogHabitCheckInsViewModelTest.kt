@@ -71,15 +71,15 @@ class LogHabitCheckInsViewModelTest {
     }
 
     @Test
-    fun `selectableDates contains exactly 7 dates ending today`() =
+    fun `selectableDates contains exactly yesterday and today`() =
         runTest {
             val viewModel = viewModel(FakeHabitRepository())
 
             val dates = viewModel.uiState.value.selectableDates
 
-            assertEquals(7, dates.size)
+            assertEquals(2, dates.size)
             assertEquals(LocalDate.now(), dates.last())
-            assertEquals(LocalDate.now().minusDays(6), dates.first())
+            assertEquals(LocalDate.now().minusDays(1), dates.first())
             assertEquals(LocalDate.now(), viewModel.uiState.value.selectedDate)
         }
 

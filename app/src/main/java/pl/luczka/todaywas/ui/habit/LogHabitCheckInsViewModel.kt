@@ -25,7 +25,7 @@ class LogHabitCheckInsViewModel @Inject constructor(
 
     private val selectableDates = run {
         val today = LocalDate.now()
-        (6 downTo 0).map { today.minusDays(it.toLong()) }
+        (1 downTo 0).map { today.minusDays(it.toLong()) }
     }
 
     private val selectedDateFlow = MutableStateFlow(selectableDates.last())

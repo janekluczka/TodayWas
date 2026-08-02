@@ -327,4 +327,18 @@ class MainViewModelTest {
             assertEquals(listOf(MainUiEvent.NavigateToJournalDetail(today.toUiState())), events)
             collectJob.cancel()
         }
+
+    @Test
+    fun `HabitClicked emits NavigateToHabitDetail with the clicked habit's id`() =
+        runTest {
+            val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = 1L)))
+            val events = mutableListOf<MainUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            viewModel.onIntent(MainIntent.HabitClicked(habit(id = 1L).toUiState(todayCheckIn = null)))
+            runCurrent()
+
+            assertEquals(listOf(MainUiEvent.NavigateToHabitDetail(1L)), events)
+            collectJob.cancel()
+        }
 }

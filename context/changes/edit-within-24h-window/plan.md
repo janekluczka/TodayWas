@@ -537,12 +537,15 @@ today.
 **Contract**: `HabitDetailUiState` holds `isLoading: Boolean`, `habitName: String`, `type:
 HabitTypeUiState`, `range: IntRange`, `rows: List<HabitDetailRowUiState>` (always exactly 2 —
 yesterday, today, in that order), `isSaving: Boolean`, `saveError: Boolean`.
-`HabitDetailRowUiState` holds `date: LocalDate`, `label: String` (e.g. "Today"/"Yesterday"),
-`value: Int?`, `editable: Boolean` (true if not yet logged, or logged and within the 24h window),
-`alreadyLogged: Boolean` (distinguishes an insert-on-save row from an update-on-save row for the
-partitioning described in Critical Implementation Details). `HabitDetailIntent` is a sealed
-interface: `Load(habitId: Long)`, `ValueChanged(date: LocalDate, value: Int?)`, `SaveClicked`,
-`BackClicked`. `HabitDetailUiEvent` is a sealed interface with one member: `NavigatedBack`.
+`HabitDetailRowUiState` holds `date: LocalDate`, `value: Int?`, `editable: Boolean` (true if not
+yet logged, or logged and within the 24h window), `alreadyLogged: Boolean` (distinguishes an
+insert-on-save row from an update-on-save row for the partitioning described in Critical
+Implementation Details). No `label` field; the screen (Phase 9) derives "Today"/"Yesterday" text
+from `date` itself via `stringResource`, keeping all UI copy in `strings.xml` per project
+convention rather than baking it into UI state. `HabitDetailIntent` is a sealed interface:
+`ValueChanged(date: LocalDate, value: Int?)`, `SaveClicked`, `BackClicked` (no `Load` — `habitId` is
+assisted-injected, same as journal's `JournalEntryDetailViewModel`). `HabitDetailUiEvent` is a
+sealed interface with one member: `NavigatedBack`.
 
 #### 4. Habit Detail ViewModel
 
@@ -551,18 +554,35 @@ interface: `Load(habitId: Long)`, `ValueChanged(date: LocalDate, value: Int?)`, 
 **Intent**: Load one habit's Today/Yesterday rows from the existing board use case, and drive the
 per-row edit + mixed-save state machine.
 
-**Contract**: `@HiltViewModel` injecting `ObserveHabitCheckInBoardUseCase`, `LogHabitCheckInsUseCase`,
-`UpdateHabitCheckInUseCase`, `Clock`. `onLoad(habitId)` collects the board, finds the matching
-`Habit`, and derives the two `HabitDetailRowUiState` rows by filtering `checkIns` to `habitId` and
-`date in [yesterday, today]` — a matching check-in makes a row `alreadyLogged = true` with
-`editable = EditWindow.isEditable(checkIn.createdAt, clock.instant())`; no match makes it
-`alreadyLogged = false, editable = true`. `onValueChanged` updates the pending value for the row at
-that `date`. `onSaveClicked` partitions the two rows by `alreadyLogged`: not-yet-logged rows with a
-pending value call `logHabitCheckIns(date, mapOf(habitId to value))` (one call per such row, since
-the use case takes one date at a time); already-logged rows with a changed pending value call
-`updateHabitCheckIn(habitId, date, value, checkIn.createdAt)` (`createdAt` cached from the load,
-same avoid-a-refetch reasoning as the journal/board use cases). `saveError = true` unless every
-call in the batch succeeds. `onBackClicked` sends `NavigatedBack`.
+**Contract**: `@HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)` with an
+`@AssistedInject` constructor taking `@Assisted habitId: Long` alongside
+`ObserveHabitCheckInBoardUseCase`, `LogHabitCheckInsUseCase`, `UpdateHabitCheckInUseCase`, `Clock`
+— same pattern as `JournalEntryDetailViewModel` (Phase 4). Internal state follows the
+"Now in Android"-style shape: a top-level (not nested — file-private, not inside the ViewModel
+class body) `HabitDetailViewModelState` data class (`isLoading`, `habitName`, `type`, `range`,
+`checkIns: List<HabitCheckIn>`, `pendingValues: Map<LocalDate, Int>`, `isSaving`, `saveError`) held
+in a private `MutableStateFlow`, with a `toUiState(dates, now)` method on that class doing the
+mapping (via `HabitDetailMapper.kt`'s `List<HabitCheckIn>.toHabitDetailRows(...)`).
+The public `val uiState: StateFlow<HabitDetailUiState>` is *derived*, not separately
+`.update{}`-driven: `viewModelState.map { it.toUiState(dates, clock.instant()) }.stateIn(scope =
+viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = ...)` — there is no
+private `_uiState` written to directly. `init` collects the board `Flow`, finds the matching
+`Habit`, and updates `viewModelState` with `habitName`/`type`/`range`/`checkIns` (raw, unmerged with
+pending edits — the mapping happens once, at the `uiState` derivation point). `onValueChanged`
+updates `viewModelState.pendingValues`. `onSaveClicked` partitions the pending entries by looking
+each date up in `viewModelState.value.checkIns` (associated by date): a hit means
+`updateHabitCheckIn(habitId, date, value, existing.createdAt)`; a miss means
+`logHabitCheckIns(date, mapOf(habitId to value))` (one call per such row, since the use case takes
+one date at a time). `saveError = true` unless every call in the batch succeeds — on success the
+board's own live `Flow` naturally refreshes `checkIns` with the new persisted state, so no manual
+state patching is needed (unlike the journal detail screen, which has no live Flow and must patch
+`entry` locally on save success). `onBackClicked` sends `NavigatedBack`.
+
+**Test note**: `SharingStarted.WhileSubscribed` means `uiState.value` only updates while something
+is actively subscribed to it — a test that reads `.value` without first `launch { uiState.collect
+{} }`ing would silently observe the stale `initialValue` forever. Every `HabitDetailViewModelTest`
+case launches and cancels such a collector job, the same subscribe-then-read shape already used
+elsewhere in this test suite for one-shot `events` Flow assertions.
 
 ### Success Criteria:
 
@@ -786,20 +806,20 @@ Negligible at MVP scale — single-row lookups by indexed/primary key, no new li
 
 #### Automated
 
-- [x] 7.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 7.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 7.3 `UpdateHabitCheckInUseCaseTest` passes (window-boundary cases via `Clock.fixed`)
+- [x] 7.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 59cbe53
+- [x] 7.2 Lint passes: `./gradlew.bat ktlintCheck` — 59cbe53
+- [x] 7.3 `UpdateHabitCheckInUseCaseTest` passes (window-boundary cases via `Clock.fixed`) — 59cbe53
 
 ### Phase 8: Habit — Presentation
 
 #### Automated
 
-- [ ] 8.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 8.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 8.3 `LogHabitCheckInsViewModelTest` passes (`selectableDates` now `[yesterday, today]`,
+- [x] 8.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 8.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 8.3 `LogHabitCheckInsViewModelTest` passes (`selectableDates` now `[yesterday, today]`,
       existing cases still pass)
-- [ ] 8.4 `MainViewModelTest` passes (`HabitClicked` → `NavigateToHabitDetail`)
-- [ ] 8.5 `HabitDetailViewModelTest` passes (row derivation, partitioned Save)
+- [x] 8.4 `MainViewModelTest` passes (`HabitClicked` → `NavigateToHabitDetail`)
+- [x] 8.5 `HabitDetailViewModelTest` passes (row derivation, partitioned Save)
 
 ### Phase 9: Habit — UI
 

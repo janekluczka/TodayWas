@@ -48,6 +48,7 @@ fun MainScreen(
     onJournalEntryClicked: (JournalEntryUiState) -> Unit,
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
+    onHabitClicked: (Long) -> Unit = {},
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -59,6 +60,7 @@ fun MainScreen(
                 is MainUiEvent.NavigateToJournalDetail -> onJournalEntryClicked(event.entry)
                 MainUiEvent.NavigateToCreateHabit -> onCreateHabitClicked()
                 MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
+                is MainUiEvent.NavigateToHabitDetail -> onHabitClicked(event.habitId)
             }
         }
     }
