@@ -220,18 +220,32 @@ so this takes its own local enum, not the domain `ContributionLevel`.
 
 **Contract**: `enum class TodayWasContributionLevel { NONE, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4,
 LEVEL_5 }` (mirrors the domain enum 1:1; mapped in `app`'s `ui/model` layer, see Phase 2/4).
-`@Composable fun TodayWasContributionGrid(startDate: LocalDate, endDate: LocalDate, cells:
-Map<LocalDate, TodayWasContributionLevel>, modifier: Modifier = Modifier)` renders via
-`LazyHorizontalGrid(rows = GridCells.Fixed(7))` — the first `Lazy*Grid` usage in this codebase (see
-the weekday-alignment padding requirement in Critical Implementation Details) — each cell a small
+`@Immutable data class TodayWasContributionCells(val values: Map<LocalDate,
+TodayWasContributionLevel>)` wraps the sparse cell map — a raw `Map` parameter is unstable to the
+Compose compiler (interface with mutable subtypes) and would defeat recomposition-skipping for this
+~370-cell grid on every unrelated recomposition of the caller; a bug caught during Phase 3 manual
+verification ("performance sucks") and fixed here. `@Composable fun TodayWasContributionGrid(startDate:
+LocalDate, endDate: LocalDate, cells: TodayWasContributionCells, modifier: Modifier = Modifier)`
+renders via `LazyHorizontalGrid(rows = GridCells.Fixed(7), reverseLayout = true)` — the first
+`Lazy*Grid` usage in this codebase. The date list is padded to whole weeks at *both* ends (preceding
+Monday .. following Sunday, per the weekday-alignment requirement in Critical Implementation
+Details) and generated newest-first; combined with `reverseLayout = true` this anchors the most
+recent week at the visual end of the row with no blank trailing space, regardless of viewport width
+— a bug also caught during Phase 3 manual verification ("start grid display from more recent
+entries"); an explicit initial-scroll-index can't achieve this without knowing how many columns fit
+on screen, so `reverseLayout` is the correct fix, not a workaround. The date list itself is
+`remember`-cached on `(startDate, endDate)`. A small internal `contentPadding` (4dp horizontal) on
+the `LazyHorizontalGrid` keeps cells from sitting flush against the component's own bounds — part of
+the same Phase 3 fix as the caller-side full-bleed layout change (Phase 3 #1). Each cell is a small
 (~12dp) rounded-square `Box` colored per level from a fixed, non-`MaterialTheme.colorScheme` palette
 (light/dark constant arrays chosen via `isSystemInDarkTheme()`, per Critical Implementation
-Details). `startDate`/`endDate` (the caller's selected window bounds) drive the rendered range, not
-`cells.keys` — `cells` only contains non-`NONE` days, so deriving bounds from it would collapse a
-mostly-empty window down to just its few logged days instead of the full selected range (a bug
-caught during Phase 1 implementation; adapted here). No `onClick`/interaction parameter — purely
-read-only. Ships `@PreviewLightDark` with a `PreviewParameterProvider` covering: an empty window
-(no data at all, full range still renders), a sparse few-day grid, and a full 5-level gradient.
+Details). `startDate`/`endDate` (the
+caller's selected window bounds) drive the rendered range, not `cells.values.keys` — `cells` only
+contains non-`NONE` days, so deriving bounds from it would collapse a mostly-empty window down to
+just its few logged days instead of the full selected range (a bug caught during Phase 1
+implementation; adapted here). No `onClick`/interaction parameter — purely read-only. Ships
+`@PreviewLightDark` with a `PreviewParameterProvider` covering: an empty window (no data at all,
+full range still renders), a sparse few-day grid, and a full 5-level gradient.
 
 #### 6. Selectable chip support
 
@@ -359,24 +373,46 @@ move the existing row-list editing into a `ModalBottomSheet`.
 **Intent**: Grid + chips become the screen's primary (and only default-visible) content.
 
 **Contract**: Body becomes `TodayWasContributionGrid(startDate = uiState.contributionGrid.startDate,
-endDate = uiState.contributionGrid.endDate, cells = uiState.contributionGrid.cells)` followed by
-a `LazyRow` of `TodayWasChip` per `uiState.availableWindows` (`selected = window ==
-uiState.selectedWindow`, `onClick = { onIntent(HabitDetailIntent.WindowSelected(window)) }`, label
-via `stringResource(R.string.contribution_window_last_12_months_label)` or `year.toString()`). Top
-bar: unchanged Edit-icon condition (`uiState.rows.any { it.eligibleForEdit } &&
-!uiState.isEditSheetOpen`) dispatching `EditClicked`.
+endDate = uiState.contributionGrid.endDate, cells =
+TodayWasContributionCells(uiState.contributionGrid.cells), modifier = Modifier.fillMaxWidth())` —
+**full-bleed, no horizontal content padding** (unlike the habit name text and chip row around it,
+which each carry their own `padding(horizontal = 24.dp)`) — a bug caught during Phase 3 manual
+verification ("grid horizontal padding cuts content on sides"): the screen's outer 24dp inset was
+visibly shrinking the grid's usable width. Followed by a `LazyRow` of `TodayWasChip` per
+`uiState.availableWindows` (`selected = window == uiState.selectedWindow`, `onClick = {
+onIntent(HabitDetailIntent.WindowSelected(window)) }`, label via
+`stringResource(R.string.contribution_window_last_12_months_label)` or `year.toString()`). Top bar's
+Edit icon shows whenever `uiState.rows.any { it.eligibleForEdit }`, **regardless of
+`isEditSheetOpen`** — it stays visible while the sheet is open too, per this session's decision
+(tapping it again while open is a harmless no-op, since `EditClicked` just re-sets an already-true
+flag).
 
 #### 2. Edit bottom sheet
 
-**File**: `app/src/main/java/pl/luczka/todaywas/ui/habit/HabitDetailScreen.kt` (same file)
+**Files**: `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/TodayWasBottomSheet.kt`
+(new), `app/src/main/java/pl/luczka/todaywas/ui/habit/HabitDetailScreen.kt`
 
-**Intent**: Reuse S-04's row-list editing UI verbatim, moved into a sheet.
+**Intent**: Reuse S-04's row-list editing UI, moved into a sheet — as a reusable
+`:core:designsystem` component rather than an inline `ModalBottomSheet`, per this project's
+build-on-M3-slotted-components convention (also needed as-is by Phase 5's journal edit sheet).
+Two more adaptations landed here after Phase 3 manual verification: the sheet only lists rows the
+user can actually act on, and its actions moved into a fixed top bar instead of a trailing row.
 
-**Contract**: When `uiState.isEditSheetOpen`, render `ModalBottomSheet(onDismissRequest = {
-onIntent(HabitDetailIntent.CancelEditClicked) })` whose content is the existing `LazyColumn` of
-`HabitDetailRow` (unchanged row composable/logic from S-04) plus a Cancel/Save action row at the
-sheet's bottom (`TodayWasIconButton` + `TodayWasButtonWithLoading`, same as the old top-bar actions,
-dispatching `CancelEditClicked`/`SaveClicked`).
+**Contract**: New `TodayWasBottomSheet(onDismissRequest: () -> Unit, onCloseClicked: () -> Unit,
+closeContentDescription: String, saveText: String, onSaveClicked: () -> Unit, modifier: Modifier =
+Modifier, isSaving: Boolean = false, saveEnabled: Boolean = true, content: @Composable
+ColumnScope.() -> Unit)` wraps M3's `ModalBottomSheet`, rendering a fixed top row (`[X
+TodayWasIconButton]` start, `[TodayWasButtonWithLoading save button]` end — the exact shape asked
+for) above the caller's `content` slot. `HabitDetailScreen` renders it when `uiState.isEditSheetOpen`,
+wiring both `onDismissRequest` and `onCloseClicked` to `CancelEditClicked` (so swipe/scrim-dismiss
+and the X button discard identically) and `onSaveClicked` to `SaveClicked`. Its `content` is
+`uiState.rows.filter { it.eligibleForEdit }` (not the full row list — a bug caught during Phase 3
+manual verification: "edit bottom sheet should only display those values that can be edited")
+rendered via the existing `LazyColumn` of `HabitDetailRow`, each now always `enabled = true` since
+every remaining row is by definition eligible. Row date labels were also changed from
+"Today"/"Yesterday" to the formatted date always, with a `(today)` suffix on today's row only
+(`habit_detail_today_suffix_format`, `"%1$s (today)"`) — per this session's decision, dropping the
+now-unused `habit_detail_today_label`/`habit_detail_yesterday_label` strings.
 
 #### 3. Strings
 
@@ -479,7 +515,8 @@ per this session's wireframe (header → grid → chips → entries).
 **Contract**: `JournalSection` (`MainScreen.kt:141-163`) gains, immediately after the section title
 `TodayWasText` and before the empty-state/`LazyColumn` branch: `TodayWasContributionGrid(startDate =
 uiState.journalContributionGrid.startDate, endDate = uiState.journalContributionGrid.endDate, cells
-= uiState.journalContributionGrid.cells)` followed by a `LazyRow` of `TodayWasChip` per
+= TodayWasContributionCells(uiState.journalContributionGrid.cells))` followed by a `LazyRow` of
+`TodayWasChip` per
 `uiState.journalAvailableWindows` (same selected/onClick/label shape as Habit Detail's chip row,
 dispatching `MainIntent.JournalWindowSelected`). The existing entries list below is untouched.
 
@@ -601,25 +638,25 @@ no-pagination-needed convention.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.3 `HabitDetailViewModelTest` passes (grid/window state, WindowSelected, existing edit/save/cancel cases under isEditSheetOpen rename)
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 17bc991
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — 17bc991
+- [x] 2.3 `HabitDetailViewModelTest` passes (grid/window state, WindowSelected, existing edit/save/cancel cases under isEditSheetOpen rename) — 17bc991
 
 ### Phase 3: Habit — UI
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 3.4 Grid shows visibly different shades for varying check-in values; empty habit shows empty grid
-- [ ] 3.5 Year chip switch changes range without changing existing days' shades
-- [ ] 3.6 Edit opens bottom sheet with same editable rows as S-04; Save updates grid
-- [ ] 3.7 Swipe-dismiss discards unsaved change
-- [ ] 3.8 Regression: add-entry and Log check-ins still work end-to-end
+- [x] 3.4 Grid shows visibly different shades for varying check-in values; empty habit shows empty grid
+- [x] 3.5 Year chip switch changes range without changing existing days' shades
+- [x] 3.6 Edit opens bottom sheet with same editable rows as S-04; Save updates grid
+- [x] 3.7 Swipe-dismiss discards unsaved change
+- [x] 3.8 Regression: add-entry and Log check-ins still work end-to-end
 
 ### Phase 4: Journal — Presentation
 
