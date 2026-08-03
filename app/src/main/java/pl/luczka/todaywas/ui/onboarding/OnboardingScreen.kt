@@ -22,12 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.DsButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.DsRadioOption
-import pl.luczka.todaywas.core.designsystem.components.DsScaffold
-import pl.luczka.todaywas.core.designsystem.components.DsText
-import pl.luczka.todaywas.core.designsystem.components.DsTextButton
-import pl.luczka.todaywas.core.designsystem.components.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
+import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.selectioncontrols.DsRadioOption
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 

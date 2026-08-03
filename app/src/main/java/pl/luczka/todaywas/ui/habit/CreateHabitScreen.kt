@@ -18,16 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.DsButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.DsIcon
-import pl.luczka.todaywas.core.designsystem.components.DsIconButton
-import pl.luczka.todaywas.core.designsystem.components.DsScaffold
-import pl.luczka.todaywas.core.designsystem.components.DsSegmentedRow
-import pl.luczka.todaywas.core.designsystem.components.DsSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.DsStepper
-import pl.luczka.todaywas.core.designsystem.components.DsText
-import pl.luczka.todaywas.core.designsystem.components.DsTextField
-import pl.luczka.todaywas.core.designsystem.components.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
+import pl.luczka.todaywas.core.designsystem.components.selectioncontrols.DsStepper
+import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 
 @Composable
