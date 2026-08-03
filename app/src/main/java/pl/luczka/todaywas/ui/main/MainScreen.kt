@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -26,6 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
+import pl.luczka.todaywas.core.designsystem.components.TodayWasChip
+import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionCells
+import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.TodayWasExtendedFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.TodayWasFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
@@ -145,14 +149,36 @@ private fun JournalSection(
     onIntent: (MainIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.padding(24.dp),
-    ) {
-        TodayWasText(text = stringResource(R.string.main_journal_section_title))
+    Column(modifier = modifier) {
+        TodayWasText(
+            text = stringResource(R.string.main_journal_section_title),
+            modifier = Modifier.padding(horizontal = 24.dp),
+        )
+        // Full-bleed (no horizontal inset), same as Habit Detail's grid: it needs all available
+        // width so more weeks are visible at once.
+        TodayWasContributionGrid(
+            startDate = uiState.journalContributionGrid.startDate,
+            endDate = uiState.journalContributionGrid.endDate,
+            cells = TodayWasContributionCells(uiState.journalContributionGrid.cells),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        ContributionWindowChipRow(
+            availableWindows = uiState.journalAvailableWindows,
+            selectedWindow = uiState.journalSelectedWindow,
+            onWindowSelected = { onIntent(MainIntent.JournalWindowSelected(it)) },
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+        )
         if (uiState.journalEntries.isEmpty()) {
-            TodayWasText(text = stringResource(R.string.main_journal_empty_state))
+            TodayWasText(
+                text = stringResource(R.string.main_journal_empty_state),
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 24.dp),
+            ) {
                 items(uiState.journalEntries) { entry ->
                     JournalEntryListItem(
                         entry = entry,
@@ -162,6 +188,31 @@ private fun JournalSection(
             }
         }
     }
+}
+
+@Composable
+private fun ContributionWindowChipRow(
+    availableWindows: List<ContributionWindowUiState>,
+    selectedWindow: ContributionWindowUiState,
+    onWindowSelected: (ContributionWindowUiState) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(modifier = modifier) {
+        items(availableWindows) { window ->
+            TodayWasChip(
+                text = window.label(),
+                selected = window == selectedWindow,
+                onClick = { onWindowSelected(window) },
+                modifier = Modifier.padding(end = 8.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ContributionWindowUiState.label(): String = when (this) {
+    ContributionWindowUiState.RollingTwelveMonths -> stringResource(R.string.contribution_window_last_12_months_label)
+    is ContributionWindowUiState.CalendarYear -> year.toString()
 }
 
 @Composable

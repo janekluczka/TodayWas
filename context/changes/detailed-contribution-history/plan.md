@@ -662,22 +662,22 @@ no-pagination-needed convention.
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 `MainViewModelTest` passes (journal grid/window state, JournalWindowSelected, existing cases unchanged)
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 14d6823
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — 14d6823
+- [x] 4.3 `MainViewModelTest` passes (journal grid/window state, JournalWindowSelected, existing cases unchanged) — 14d6823
 
 ### Phase 5: Journal — UI
 
 #### Automated
 
-- [ ] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 5.4 Main's Journal section shows grid + chips above entries; empty state doesn't crash
-- [ ] 5.5 Year chip switch changes range without changing existing days' shades
-- [ ] 5.6 Tapping an entry still navigates to detail; Edit opens bottom sheet, Save persists and reflects on Main
-- [ ] 5.7 Swipe-dismiss discards unsaved change
-- [ ] 5.8 Regression: habit check-in logging/editing and habit creation still work end-to-end
+- [x] 5.4 Main's Journal section shows grid + chips above entries; empty state doesn't crash
+- [x] 5.5 Year chip switch changes range without changing existing days' shades
+- [x] 5.6 Tapping an entry still navigates to detail; Edit opens bottom sheet, Save persists and reflects on Main
+- [x] 5.7 Swipe-dismiss discards unsaved change
+- [x] 5.8 Regression: habit check-in logging/editing and habit creation still work end-to-end
