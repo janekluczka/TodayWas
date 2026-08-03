@@ -22,23 +22,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasExtendedFloatingActionButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasFloatingActionButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingActionButton
+import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
+import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
 import java.time.LocalDate
 
@@ -76,8 +76,8 @@ private fun MainScreenContent(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
 ) {
-    TodayWasScaffold(
-        topBar = { TodayWasTopBar(title = stringResource(R.string.main_top_bar_title)) },
+    DsScaffold(
+        topBar = { DsTopBar(title = stringResource(R.string.main_top_bar_title)) },
         floatingActionButton = { MainFab(uiState, onIntent) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
@@ -87,7 +87,7 @@ private fun MainScreenContent(
                 .padding(innerPadding),
         ) {
             when (uiState.focus) {
-                null -> TodayWasText(text = stringResource(R.string.main_empty_state))
+                null -> DsText(text = stringResource(R.string.main_empty_state))
                 FocusUiState.JOURNAL -> JournalSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
                 FocusUiState.HABIT -> HabitSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
                 FocusUiState.BOTH ->
@@ -110,17 +110,17 @@ private fun MainFab(
 
     Column(
         horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
     ) {
         if (uiState.fabExpanded) {
             for (action in actions) {
-                TodayWasExtendedFloatingActionButton(
+                DsExtendedFloatingActionButton(
                     text = stringResource(action.labelRes),
                     onClick = { onIntent(MainIntent.FabActionClicked(action)) },
                 )
             }
         }
-        TodayWasFloatingActionButton(
+        DsFloatingActionButton(
             onClick = {
                 if (actions.size == 1) {
                     onIntent(MainIntent.FabActionClicked(actions.single()))
@@ -129,7 +129,7 @@ private fun MainFab(
                 }
             },
         ) {
-            TodayWasIcon(
+            DsIcon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.content_description_add),
             )
@@ -144,11 +144,11 @@ private fun JournalSection(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.padding(24.dp),
+        modifier = modifier.padding(DsSpacing.space600),
     ) {
-        TodayWasText(text = stringResource(R.string.main_journal_section_title))
+        DsText(text = stringResource(R.string.main_journal_section_title))
         if (uiState.journalEntries.isEmpty()) {
-            TodayWasText(text = stringResource(R.string.main_journal_empty_state))
+            DsText(text = stringResource(R.string.main_journal_empty_state))
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.journalEntries) { entry ->
@@ -171,10 +171,10 @@ private fun JournalEntryListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = DsSpacing.space200),
     ) {
-        TodayWasText(text = entry.formattedDate)
-        TodayWasText(
+        DsText(text = entry.formattedDate)
+        DsText(
             text = entry.text,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -189,11 +189,11 @@ private fun HabitSection(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.padding(24.dp),
+        modifier = modifier.padding(DsSpacing.space600),
     ) {
-        TodayWasText(text = stringResource(R.string.main_habit_section_title))
+        DsText(text = stringResource(R.string.main_habit_section_title))
         if (uiState.habits.isEmpty()) {
-            TodayWasText(text = stringResource(R.string.main_habit_empty_state))
+            DsText(text = stringResource(R.string.main_habit_empty_state))
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.habits) { habit ->
@@ -217,10 +217,10 @@ private fun HabitListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = DsSpacing.space200),
     ) {
-        TodayWasText(text = habit.name)
-        TodayWasText(text = habit.todayStatus.displayText())
+        DsText(text = habit.name)
+        DsText(text = habit.todayStatus.displayText())
     }
 }
 
@@ -298,7 +298,7 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
 private fun MainScreenPreview(
     @PreviewParameter(MainScreenPreviewStateProvider::class) state: MainUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         MainScreenContent(
             uiState = state,
             onIntent = {},

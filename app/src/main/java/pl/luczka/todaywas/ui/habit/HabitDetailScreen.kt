@@ -21,20 +21,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIconButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSegmentedRow
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
+import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -78,13 +78,13 @@ private fun HabitDetailScreenContent(
         }
     }
 
-    TodayWasScaffold(
+    DsScaffold(
         topBar = {
-            TodayWasTopBar(
+            DsTopBar(
                 title = stringResource(R.string.habit_detail_title),
                 navigationIcon = {
-                    TodayWasIconButton(onClick = { onIntent(HabitDetailIntent.BackClicked) }) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = { onIntent(HabitDetailIntent.BackClicked) }) {
+                        DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
                         )
@@ -95,18 +95,18 @@ private fun HabitDetailScreenContent(
                 },
             )
         },
-        snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = DsSpacing.space600),
         ) {
-            TodayWasText(
+            DsText(
                 text = uiState.habitName,
-                modifier = Modifier.padding(top = 24.dp),
+                modifier = Modifier.padding(top = DsSpacing.space600),
             )
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.rows) { row ->
@@ -118,7 +118,7 @@ private fun HabitDetailScreenContent(
                         onIntent = onIntent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp),
+                            .padding(top = DsSpacing.space400),
                     )
                 }
             }
@@ -133,13 +133,13 @@ private fun HabitDetailActions(
 ) {
     if (uiState.isEditMode) {
         Row {
-            TodayWasIconButton(onClick = { onIntent(HabitDetailIntent.CancelEditClicked) }) {
-                TodayWasIcon(
+            DsIconButton(onClick = { onIntent(HabitDetailIntent.CancelEditClicked) }) {
+                DsIcon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(R.string.habit_detail_cancel_edit_action),
                 )
             }
-            TodayWasButtonWithLoading(
+            DsButtonWithLoading(
                 text = stringResource(R.string.habit_detail_save_cta),
                 onClick = { onIntent(HabitDetailIntent.SaveClicked) },
                 enabled = !uiState.isSaving,
@@ -147,8 +147,8 @@ private fun HabitDetailActions(
             )
         }
     } else if (uiState.rows.any { it.eligibleForEdit }) {
-        TodayWasIconButton(onClick = { onIntent(HabitDetailIntent.EditClicked) }) {
-            TodayWasIcon(
+        DsIconButton(onClick = { onIntent(HabitDetailIntent.EditClicked) }) {
+            DsIcon(
                 imageVector = Icons.Filled.Edit,
                 contentDescription = stringResource(R.string.habit_detail_edit_action),
             )
@@ -181,8 +181,8 @@ private fun HabitDetailRow(
     }
 
     Column(modifier = modifier) {
-        TodayWasText(text = dateLabel)
-        TodayWasSegmentedRow(
+        DsText(text = dateLabel)
+        DsSegmentedRow(
             items = range.toList(),
             selectedItem = row.value,
             onItemSelected = { onIntent(HabitDetailIntent.ValueChanged(row.date, it)) },
@@ -190,7 +190,7 @@ private fun HabitDetailRow(
             label = label,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
+                .padding(top = DsSpacing.space200),
         )
     }
 }
@@ -234,7 +234,7 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
 private fun HabitDetailScreenPreview(
     @PreviewParameter(HabitDetailScreenPreviewStateProvider::class) state: HabitDetailUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         HabitDetailScreenContent(
             uiState = state,
             onIntent = {},

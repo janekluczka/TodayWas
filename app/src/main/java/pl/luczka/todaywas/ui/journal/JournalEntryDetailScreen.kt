@@ -19,20 +19,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIconButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTextField
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
 import java.time.LocalDate
 
@@ -75,13 +75,13 @@ private fun JournalEntryDetailScreenContent(
         }
     }
 
-    TodayWasScaffold(
+    DsScaffold(
         topBar = {
-            TodayWasTopBar(
+            DsTopBar(
                 title = stringResource(R.string.journal_detail_title),
                 navigationIcon = {
-                    TodayWasIconButton(onClick = { onIntent(JournalEntryDetailIntent.BackClicked) }) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.BackClicked) }) {
+                        DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
                         )
@@ -92,28 +92,28 @@ private fun JournalEntryDetailScreenContent(
                 },
             )
         },
-        snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp),
+                .padding(DsSpacing.space600),
         ) {
             if (uiState.entry != null) {
-                TodayWasText(text = uiState.entry.formattedDate)
+                DsText(text = uiState.entry.formattedDate)
                 if (uiState.isEditing) {
-                    TodayWasTextField(
+                    DsTextField(
                         value = uiState.editedText,
                         onValueChange = { onIntent(JournalEntryDetailIntent.TextChanged(it)) },
                         minLines = 6,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp),
+                            .padding(top = DsSpacing.space400),
                     )
                 } else {
-                    TodayWasText(text = uiState.entry.text)
+                    DsText(text = uiState.entry.text)
                 }
             }
         }
@@ -127,13 +127,13 @@ private fun JournalEntryDetailActions(
 ) {
     if (uiState.isEditing) {
         Row {
-            TodayWasIconButton(onClick = { onIntent(JournalEntryDetailIntent.CancelEditClicked) }) {
-                TodayWasIcon(
+            DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.CancelEditClicked) }) {
+                DsIcon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(R.string.journal_detail_cancel_edit_action),
                 )
             }
-            TodayWasButtonWithLoading(
+            DsButtonWithLoading(
                 text = stringResource(R.string.journal_detail_save_cta),
                 onClick = { onIntent(JournalEntryDetailIntent.SaveClicked) },
                 enabled = !uiState.isSaving,
@@ -141,8 +141,8 @@ private fun JournalEntryDetailActions(
             )
         }
     } else if (uiState.isEditable) {
-        TodayWasIconButton(onClick = { onIntent(JournalEntryDetailIntent.EditClicked) }) {
-            TodayWasIcon(
+        DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.EditClicked) }) {
+            DsIcon(
                 imageVector = Icons.Filled.Edit,
                 contentDescription = stringResource(R.string.journal_detail_edit_action),
             )
@@ -205,7 +205,7 @@ private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterPro
 private fun JournalEntryDetailScreenPreview(
     @PreviewParameter(JournalEntryDetailScreenPreviewStateProvider::class) state: JournalEntryDetailUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         JournalEntryDetailScreenContent(
             uiState = state,
             onIntent = {},
