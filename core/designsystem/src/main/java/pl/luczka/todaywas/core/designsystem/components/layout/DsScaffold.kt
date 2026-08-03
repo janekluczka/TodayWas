@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsScaffold(
@@ -32,7 +32,7 @@ fun DsScaffold(
 @PreviewLightDark
 @Composable
 private fun DsScaffoldPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsScaffold(
             topBar = { DsTopBar(title = "TodayWas") },
         ) { innerPadding ->

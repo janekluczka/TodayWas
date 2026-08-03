@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsNavigationBar(
@@ -48,7 +48,7 @@ fun RowScope.DsNavigationBarItem(
 @PreviewLightDark
 @Composable
 private fun DsNavigationBarPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsNavigationBar {
             DsNavigationBarItem(
                 selected = true,

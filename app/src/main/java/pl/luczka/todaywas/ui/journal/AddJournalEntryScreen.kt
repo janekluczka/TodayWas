@@ -16,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
@@ -28,8 +27,9 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.pickers.DsDateStrip
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
 
 @Composable
@@ -109,8 +109,8 @@ private fun AddJournalEntryScreenContent(
                 minLines = 6,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 24.dp),
+                    .padding(top = DsSpacing.space400)
+                    .padding(horizontal = DsSpacing.space600),
             )
         }
     }
@@ -180,7 +180,7 @@ private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvid
 private fun AddJournalEntryScreenPreview(
     @PreviewParameter(AddJournalEntryScreenPreviewStateProvider::class) state: AddJournalEntryUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         AddJournalEntryScreenContent(
             uiState = state,
             onIntent = {},

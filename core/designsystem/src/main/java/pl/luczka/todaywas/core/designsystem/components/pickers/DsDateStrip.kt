@@ -18,7 +18,8 @@ import androidx.compose.ui.unit.sp
 import pl.luczka.todaywas.core.designsystem.components.cards.DsCardVariant
 import pl.luczka.todaywas.core.designsystem.components.cards.DsSelectableCard
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -32,7 +33,7 @@ import java.util.Locale
 // epoch-day is a small positive Int for any realistic date, and Int.MAX_VALUE pages comfortably
 // covers it.
 private val DATE_STRIP_CARD_WIDTH = 56.dp
-private val DATE_STRIP_CARD_SPACING = 8.dp
+private val DATE_STRIP_CARD_SPACING = DsSpacing.space200
 
 @Composable
 fun DsDateStrip(
@@ -98,7 +99,7 @@ private fun DateStripCard(
 @PreviewLightDark
 @Composable
 private fun DsDateStripPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         val today = LocalDate.now()
         DsDateStrip(
             selectedDate = today,

@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsHorizontalDivider(
@@ -25,7 +25,7 @@ fun DsHorizontalDivider(
 @PreviewLightDark
 @Composable
 private fun DsHorizontalDividerPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsHorizontalDivider()
     }
 }

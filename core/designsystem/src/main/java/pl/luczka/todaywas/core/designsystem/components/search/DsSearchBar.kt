@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +48,7 @@ fun DsSearchBar(
 @PreviewLightDark
 @Composable
 private fun DsSearchBarPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         var query by remember { mutableStateOf("") }
         var expanded by remember { mutableStateOf(false) }
         DsSearchBar(

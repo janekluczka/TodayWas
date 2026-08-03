@@ -7,7 +7,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsFilterChip(
@@ -31,7 +31,7 @@ fun DsFilterChip(
 private fun DsFilterChipPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean,
 ) {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsFilterChip(
             text = "Journaling",
             selected = selected,

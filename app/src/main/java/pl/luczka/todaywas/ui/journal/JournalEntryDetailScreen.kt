@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
@@ -31,8 +30,9 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
 import java.time.LocalDate
 
@@ -99,7 +99,7 @@ private fun JournalEntryDetailScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp),
+                .padding(DsSpacing.space600),
         ) {
             if (uiState.entry != null) {
                 DsText(text = uiState.entry.formattedDate)
@@ -110,7 +110,7 @@ private fun JournalEntryDetailScreenContent(
                         minLines = 6,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp),
+                            .padding(top = DsSpacing.space400),
                     )
                 } else {
                     DsText(text = uiState.entry.text)
@@ -205,7 +205,7 @@ private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterPro
 private fun JournalEntryDetailScreenPreview(
     @PreviewParameter(JournalEntryDetailScreenPreviewStateProvider::class) state: JournalEntryDetailUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         JournalEntryDetailScreenContent(
             uiState = state,
             onIntent = {},

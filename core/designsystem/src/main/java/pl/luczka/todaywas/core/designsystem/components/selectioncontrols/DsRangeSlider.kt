@@ -4,7 +4,7 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsRangeSlider(
@@ -28,7 +28,7 @@ fun DsRangeSlider(
 @PreviewLightDark
 @Composable
 private fun DsRangeSliderPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsRangeSlider(
             value = 0.25f..0.75f,
             onValueChange = {},

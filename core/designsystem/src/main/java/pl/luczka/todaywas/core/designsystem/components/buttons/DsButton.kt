@@ -11,7 +11,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsButton(
@@ -40,7 +40,7 @@ fun DsButton(
 private fun DsButtonPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
 ) {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsButton(
             text = "Get started",
             onClick = {},

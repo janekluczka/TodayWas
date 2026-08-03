@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
@@ -34,12 +33,10 @@ import pl.luczka.todaywas.core.designsystem.components.pickers.DsDateStrip
 import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsColor
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import pl.luczka.todaywas.ui.theme.SuccessContainerDark
-import pl.luczka.todaywas.ui.theme.SuccessContainerLight
-import pl.luczka.todaywas.ui.theme.SuccessLabelDark
-import pl.luczka.todaywas.ui.theme.SuccessLabelLight
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
 
 @Composable
@@ -123,7 +120,7 @@ private fun LogHabitCheckInsScreenContent(
                         onIntent = onIntent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 8.dp),
+                            .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
                     )
                 }
             }
@@ -145,12 +142,12 @@ private fun HabitCheckInRow(
         { value -> value.toString() }
     }
     val isDarkTheme = isSystemInDarkTheme()
-    val doneChipContainerColor = if (isDarkTheme) SuccessContainerDark else SuccessContainerLight
-    val doneChipLabelColor = if (isDarkTheme) SuccessLabelDark else SuccessLabelLight
+    val doneChipContainerColor = if (isDarkTheme) DsColor.successContainerDark else DsColor.successContainerLight
+    val doneChipLabelColor = if (isDarkTheme) DsColor.successLabelDark else DsColor.successLabelLight
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
         ) {
             DsText(text = row.name)
             if (row is HabitCheckInRowUiState.AlreadyLogged) {
@@ -170,7 +167,7 @@ private fun HabitCheckInRow(
                     label = label,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .padding(top = DsSpacing.space200),
                 )
             }
             is HabitCheckInRowUiState.AlreadyLogged -> {
@@ -182,7 +179,7 @@ private fun HabitCheckInRow(
                     label = label,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .padding(top = DsSpacing.space200),
                 )
             }
         }
@@ -192,7 +189,7 @@ private fun HabitCheckInRow(
 @PreviewLightDark
 @Composable
 private fun LogHabitCheckInsScreenPreview() {
-    TodayWasTheme {
+    DsTheme {
         val today = LocalDate.now()
         LogHabitCheckInsScreenContent(
             uiState = LogHabitCheckInsUiState(

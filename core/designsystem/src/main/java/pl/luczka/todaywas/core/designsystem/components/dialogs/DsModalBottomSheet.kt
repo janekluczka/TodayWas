@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +31,7 @@ fun DsModalBottomSheet(
 @PreviewLightDark
 @Composable
 private fun DsModalBottomSheetPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsModalBottomSheet(onDismissRequest = {}) {
             DsText(text = "Bottom sheet content")
         }

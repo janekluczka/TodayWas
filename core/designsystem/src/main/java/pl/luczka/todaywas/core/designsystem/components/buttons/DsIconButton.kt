@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsIconButton(
@@ -31,7 +31,7 @@ fun DsIconButton(
 private fun DsIconButtonPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
 ) {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsIconButton(
             onClick = {},
             enabled = enabled,

@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.theme
+package pl.luczka.todaywas.core.designsystem.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -11,15 +11,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
+    primary = DsColor.purple80,
+    secondary = DsColor.purpleGrey80,
+    tertiary = DsColor.pink80,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
+    primary = DsColor.purple40,
+    secondary = DsColor.purpleGrey40,
+    tertiary = DsColor.pink40,
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
@@ -32,7 +32,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun TodayWasTheme(
+fun DsTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
@@ -50,7 +50,7 @@ fun TodayWasTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = DsTypography,
         content = content,
     )
 }

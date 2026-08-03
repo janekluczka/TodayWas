@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsTextField(
@@ -29,7 +29,7 @@ fun DsTextField(
 @PreviewLightDark
 @Composable
 private fun DsTextFieldPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsTextField(
             value = "Today was a good day.",
             onValueChange = {},

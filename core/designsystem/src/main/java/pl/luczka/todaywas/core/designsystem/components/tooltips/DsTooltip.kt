@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +32,7 @@ fun DsTooltip(
 @PreviewLightDark
 @Composable
 private fun DsTooltipPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsTooltip(tooltipText = "Change focus") {
             DsIconButton(onClick = {}) {
                 DsText(text = "i")

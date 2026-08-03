@@ -21,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
@@ -33,8 +32,9 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -102,11 +102,11 @@ private fun HabitDetailScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = DsSpacing.space600),
         ) {
             DsText(
                 text = uiState.habitName,
-                modifier = Modifier.padding(top = 24.dp),
+                modifier = Modifier.padding(top = DsSpacing.space600),
             )
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.rows) { row ->
@@ -118,7 +118,7 @@ private fun HabitDetailScreenContent(
                         onIntent = onIntent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp),
+                            .padding(top = DsSpacing.space400),
                     )
                 }
             }
@@ -190,7 +190,7 @@ private fun HabitDetailRow(
             label = label,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
+                .padding(top = DsSpacing.space200),
         )
     }
 }
@@ -234,7 +234,7 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
 private fun HabitDetailScreenPreview(
     @PreviewParameter(HabitDetailScreenPreviewStateProvider::class) state: HabitDetailUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         HabitDetailScreenContent(
             uiState = state,
             onIntent = {},

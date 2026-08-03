@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +34,7 @@ fun DsDatePicker(
 @PreviewLightDark
 @Composable
 private fun DsDatePickerPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsDatePicker(
             onDismissRequest = {},
             confirmButton = { DsTextButton(text = "OK", onClick = {}) },

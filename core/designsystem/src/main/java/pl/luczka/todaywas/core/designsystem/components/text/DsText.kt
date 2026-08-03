@@ -9,7 +9,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.TextUnit
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsText(
@@ -35,7 +35,7 @@ fun DsText(
 @PreviewLightDark
 @Composable
 private fun DsTextPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsText(text = "What would you like to focus on?")
     }
 }

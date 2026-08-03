@@ -13,7 +13,7 @@ import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,7 +36,7 @@ fun DsTopBar(
 private fun DsTopBarPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) withAction: Boolean,
 ) {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsTopBar(
             title = "TodayWas",
             navigationIcon = {

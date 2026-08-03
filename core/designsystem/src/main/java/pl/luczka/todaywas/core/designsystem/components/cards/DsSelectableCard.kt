@@ -18,7 +18,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 enum class DsCardVariant {
     NEUTRAL,
@@ -82,7 +83,7 @@ fun DsSelectableCard(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = DsSpacing.space200),
             content = content,
         )
     }
@@ -97,7 +98,7 @@ private class DsCardVariantPreviewProvider : PreviewParameterProvider<DsCardVari
 private fun DsSelectableCardPreview(
     @PreviewParameter(DsCardVariantPreviewProvider::class) variant: DsCardVariant,
 ) {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsSelectableCard(
             onClick = {},
             variant = variant,
@@ -110,7 +111,7 @@ private fun DsSelectableCardPreview(
 @PreviewLightDark
 @Composable
 private fun DsSelectableCardDisabledPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsSelectableCard(
             onClick = {},
             enabled = false,

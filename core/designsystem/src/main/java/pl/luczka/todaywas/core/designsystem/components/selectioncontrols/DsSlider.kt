@@ -4,7 +4,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsSlider(
@@ -28,7 +28,7 @@ fun DsSlider(
 @PreviewLightDark
 @Composable
 private fun DsSliderPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsSlider(
             value = 0.5f,
             onValueChange = {},

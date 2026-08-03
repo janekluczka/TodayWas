@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsCheckbox(
@@ -28,7 +28,7 @@ fun DsCheckbox(
 private fun DsCheckboxPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) checked: Boolean,
 ) {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsCheckbox(
             checked = checked,
             onCheckedChange = {},

@@ -14,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
@@ -28,7 +27,8 @@ import pl.luczka.todaywas.core.designsystem.components.selectioncontrols.DsStepp
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 @Composable
 fun CreateHabitScreen(
@@ -97,7 +97,7 @@ private fun CreateHabitScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = DsSpacing.space600),
         ) {
             DsTextField(
                 value = uiState.name,
@@ -105,27 +105,27 @@ private fun CreateHabitScreenContent(
                 label = stringResource(R.string.habit_create_name_label),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
+                    .padding(top = DsSpacing.space400),
             )
             DsText(
                 text = stringResource(R.string.habit_create_scale_steps_label),
-                modifier = Modifier.padding(top = 16.dp),
+                modifier = Modifier.padding(top = DsSpacing.space400),
             )
             DsStepper(
                 value = uiState.scaleSteps,
                 range = HabitScaleStepsRange,
                 onValueChange = { onIntent(CreateHabitIntent.ScaleStepsChanged(it)) },
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = DsSpacing.space100),
                 decreaseContentDescription = stringResource(R.string.content_description_decrease),
                 increaseContentDescription = stringResource(R.string.content_description_increase),
             )
             DsText(
                 text = stringResource(R.string.habit_create_preview_title),
-                modifier = Modifier.padding(top = 16.dp),
+                modifier = Modifier.padding(top = DsSpacing.space400),
             )
             CheckInInputPreview(
                 uiState = uiState,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = DsSpacing.space200),
             )
             DsTextField(
                 value = uiState.description,
@@ -134,7 +134,7 @@ private fun CreateHabitScreenContent(
                 minLines = 2,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
+                    .padding(top = DsSpacing.space400),
             )
         }
     }
@@ -170,7 +170,7 @@ private fun CheckInInputPreview(
 @PreviewLightDark
 @Composable
 private fun CreateHabitScreenPreview() {
-    TodayWasTheme {
+    DsTheme {
         CreateHabitScreenContent(
             uiState = CreateHabitUiState(
                 name = "Drink water",

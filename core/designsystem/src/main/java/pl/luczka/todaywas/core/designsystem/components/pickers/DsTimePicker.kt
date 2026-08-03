@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +33,7 @@ fun DsTimePickerDialog(
 @PreviewLightDark
 @Composable
 private fun DsTimePickerDialogPreview() {
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsTimePickerDialog(
             onDismissRequest = {},
             confirmButton = { DsTextButton(text = "OK", onClick = {}) },

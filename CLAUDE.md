@@ -30,10 +30,14 @@ Multi-module Gradle project: `:app` (application, package `pl.luczka.todaywas`) 
     across features.
   - `ui/<feature>/` — one package per screen/flow: `XxxIntent.kt`, `XxxUiState.kt`,
     `XxxUiEvent.kt`, `XxxViewModel.kt`, `XxxScreen.kt`.
-  - `ui/theme/` — Compose theme.
-- `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/` —
-  `DsXxx` wrappers over Material3 components (project-agnostic prefix, reusable across projects);
-  `preview/` — shared preview theme/providers.
+- `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/`
+  - `components/<type>/` — `DsXxx` wrappers over Material3 components (project-agnostic prefix,
+    reusable across projects), grouped into subpackages mirroring Material3's own component
+    groupings (`buttons/`, `cards/`, `chips/`, `navigation/`, etc.).
+  - `theme/` — `DsTheme` (the app's actual Compose theme, incl. dynamic color), `DsColor`
+    (semantic color tokens), `DsTypography`.
+  - `tokens/` — `DsSpacing` and other reusable design tokens.
+  - `preview/` — shared preview providers (e.g. `BooleanPreviewParameterProvider`).
 - Tests: `app/src/test/` (JUnit4 unit), `app/src/androidTest/` (instrumented).
 - `context/foundation/` — PRD, tech-stack, roadmap, lessons.md (see "Working in this repo" below).
 - `context/changes/<change-id>/` — in-flight change docs; archived to `context/archive/` when done.
@@ -62,8 +66,8 @@ the content genuinely doesn't fit any slotted shape.
 All user-facing Compose text goes in `strings.xml` via `stringResource(R.string.xxx)` — never
 hardcoded (preview-only sample text is exempt). Every screen and `:core:designsystem` component
 ships `@PreviewLightDark` preview(s) (use `@PreviewParameter` for multiple states instead of
-copy-pasted previews); designsystem previews use `DesignSystemPreviewTheme`, never `:app`'s
-`TodayWasTheme`.
+copy-pasted previews), wrapped in `DsTheme` (from `:core:designsystem`'s `theme/` package) — the
+same theme the real app renders with, since the theme lives in the design system module, not `:app`.
 
 ## Coding Style & Naming Conventions
 

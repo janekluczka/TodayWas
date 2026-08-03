@@ -18,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
@@ -28,8 +27,9 @@ import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.selectioncontrols.DsRadioOption
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.FocusUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 
 @Composable
 fun OnboardingScreen(
@@ -86,7 +86,7 @@ private fun OnboardingScreenContent(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(DsSpacing.space600),
             ) {
                 when (OnboardingStep.entries[page]) {
                     OnboardingStep.WELCOME -> WelcomeStepBody()
@@ -108,7 +108,7 @@ private fun OnboardingBottomBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp),
+            .padding(DsSpacing.space600),
     ) {
         DsTextButton(
             text = stringResource(R.string.onboarding_skip),
@@ -242,7 +242,7 @@ private fun previewState(
 private fun OnboardingScreenPreview(
     @PreviewParameter(OnboardingScreenPreviewStateProvider::class) state: OnboardingUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         OnboardingScreenContent(
             uiState = state,
             onIntent = {},

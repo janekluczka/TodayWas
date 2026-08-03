@@ -22,7 +22,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
@@ -32,13 +31,14 @@ import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButto
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
 import java.time.LocalDate
 
@@ -110,7 +110,7 @@ private fun MainFab(
 
     Column(
         horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
     ) {
         if (uiState.fabExpanded) {
             for (action in actions) {
@@ -144,7 +144,7 @@ private fun JournalSection(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.padding(24.dp),
+        modifier = modifier.padding(DsSpacing.space600),
     ) {
         DsText(text = stringResource(R.string.main_journal_section_title))
         if (uiState.journalEntries.isEmpty()) {
@@ -171,7 +171,7 @@ private fun JournalEntryListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = DsSpacing.space200),
     ) {
         DsText(text = entry.formattedDate)
         DsText(
@@ -189,7 +189,7 @@ private fun HabitSection(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.padding(24.dp),
+        modifier = modifier.padding(DsSpacing.space600),
     ) {
         DsText(text = stringResource(R.string.main_habit_section_title))
         if (uiState.habits.isEmpty()) {
@@ -217,7 +217,7 @@ private fun HabitListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = DsSpacing.space200),
     ) {
         DsText(text = habit.name)
         DsText(text = habit.todayStatus.displayText())
@@ -298,7 +298,7 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
 private fun MainScreenPreview(
     @PreviewParameter(MainScreenPreviewStateProvider::class) state: MainUiState,
 ) {
-    TodayWasTheme {
+    DsTheme {
         MainScreenContent(
             uiState = state,
             onIntent = {},

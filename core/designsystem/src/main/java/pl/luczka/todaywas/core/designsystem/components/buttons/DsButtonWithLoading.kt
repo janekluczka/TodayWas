@@ -12,7 +12,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.components.progress.DsLoadingIndicator
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
 fun DsButtonWithLoading(
@@ -52,7 +52,7 @@ private fun DsButtonWithLoadingPreview(
     @PreviewParameter(DsButtonWithLoadingPreviewStateProvider::class) state: Pair<Boolean, Boolean>,
 ) {
     val (enabled, loading) = state
-    DesignSystemPreviewTheme {
+    DsTheme {
         DsButtonWithLoading(
             text = "Confirm",
             onClick = {},
