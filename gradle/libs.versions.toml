@@ -6,18 +6,22 @@ junitVersion = "1.1.5"
 espressoCore = "3.5.1"
 androidxLifecycle = "2.11.0"
 activityCompose = "1.8.0"
-kotlin = "2.2.10"
+kotlin = "2.4.0"
 composeBom = "2026.02.01"
 ktlint = "14.2.0"
 room = "2.8.4"
 hilt = "2.60.1"
-ksp = "2.2.10-2.0.2"
+ksp = "2.3.10"
 robolectric = "4.16.1"
 coroutinesTest = "1.11.0"
 androidxTestCore = "1.7.0"
 androidxHiltLifecycleViewmodelCompose = "1.3.0"
 nav3Core = "1.1.4"
 kotlinxSerializationCore = "1.9.0"
+supabaseBom = "3.7.0"
+ktorClientOkhttp = "3.5.1"
+androidxCredentials = "1.6.0"
+googleid = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +54,12 @@ androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigat
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "nav3Core" }
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
 androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabaseBom" }
+supabase-auth-kt = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktorClientOkhttp" }
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "androidxCredentials" }
+androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "androidxCredentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

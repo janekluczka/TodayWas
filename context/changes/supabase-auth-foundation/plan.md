@@ -696,8 +696,8 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Automated
 
-- [ ] 1.1 Project builds: `./gradlew.bat assembleDebug`
-- [ ] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 1.1 Project builds: `./gradlew.bat assembleDebug`
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
 
 #### Manual
 
