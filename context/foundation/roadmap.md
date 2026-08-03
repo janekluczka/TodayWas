@@ -3,7 +3,7 @@ project: "TodayWas"
 version: 1
 status: draft
 created: 2026-07-25
-updated: 2026-08-02
+updated: 2026-08-03
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -41,7 +41,7 @@ Vision frames daily journaling as the primary act and habit tracking as optional
 | S-02 | journal-daily-entry            | add a daily journal entry and see it on the main screen            | S-01           | US-01, FR-003, FR-005, FR-008 | done |
 | S-03 | habit-create-and-checkin       | create a habit and log check-ins for it, seen on the main screen   | S-01           | US-02, FR-002, FR-004, FR-005, FR-008 | done |
 | S-04 | edit-within-24h-window         | edit a recent journal entry or habit check-in within 24 hours      | S-02, S-03     | US-03, FR-006         | done |
-| S-05 | detailed-contribution-history  | drill into a detailed contribution history for a journal or habit  | S-02, S-03     | FR-011                | proposed |
+| S-05 | detailed-contribution-history  | drill into a detailed contribution history for a journal or habit  | S-02, S-03     | FR-011                | done |
 | S-06 | account-creation-and-sync      | create an account and have existing local data sync automatically  | F-01, S-02, S-03 | US-04, FR-007        | proposed |
 | F-02 | ai-assist-proxy-foundation     | (foundation) Server-side AI proxy live, JWT-verified via Supabase  | F-01           | FR-009, FR-010, NFR (journal content never reaches AI-assisted features) | proposed |
 | S-07 | ai-starter-prompt              | tap "help me start" and get a tone-matched AI starter prompt       | F-02, S-02     | US-05, FR-009         | proposed |
@@ -180,7 +180,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:** —
 - **Risk:** Depends on both entity types existing so the detail view has real data to render for
   either journal or habit.
-- **Status:** proposed
+- **Status:** done
 
 ### S-06: Account creation and auto-sync
 
@@ -272,3 +272,4 @@ to `done` — when a change whose `Change ID` matches the item is archived.)
 - **S-02: User adds a daily journal entry, independent of any habit tracking, and sees it reflected on the main screen as a colored contribution cell.** — Archived 2026-08-01 → `context/archive/2026-07-27-journal-daily-entry/`. Lesson: —.
 - **S-03: User creates a habit (binary or scale value) and logs check-ins for it, independent of journaling, seen on the main screen as a colored contribution cell.** — Archived 2026-08-01 → `context/archive/2026-07-31-habit-create-and-checkin/`. Lesson: —.
 - **S-04: User opens a journal entry or habit check-in created less than 24 hours ago and edits it; after 24 hours it's viewable but read-only.** — Archived 2026-08-02 → `context/archive/2026-08-01-edit-within-24h-window/`. Lesson: —.
+- **S-05: User drills down from the main screen into a detailed contribution-style history for a single journal or habit.** — Archived 2026-08-03 → `context/archive/2026-08-02-detailed-contribution-history/`. Lesson: —.
