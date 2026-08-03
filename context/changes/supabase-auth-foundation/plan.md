@@ -696,8 +696,8 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Automated
 
-- [x] 1.1 Project builds: `./gradlew.bat assembleDebug`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 1.1 Project builds: `./gradlew.bat assembleDebug` — 1ebd0a2
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — 1ebd0a2
 
 #### Manual
 
@@ -708,8 +708,8 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
 
 ### Phase 3: Bottom navigation shell
 

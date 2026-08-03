@@ -3,7 +3,7 @@ change_id: supabase-auth-foundation
 title: Supabase auth foundation
 status: implementing
 created: 2026-08-03
-updated: 2026-08-03
+updated: 2026-08-04
 archived_at: null
 ---
 
