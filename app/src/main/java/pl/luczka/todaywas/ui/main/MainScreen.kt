@@ -28,7 +28,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.TodayWasChip
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionCells
 import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.TodayWasExtendedFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.TodayWasFloatingActionButton
@@ -157,9 +156,7 @@ private fun JournalSection(
         // Full-bleed (no horizontal inset), same as Habit Detail's grid: it needs all available
         // width so more weeks are visible at once.
         TodayWasContributionGrid(
-            startDate = uiState.journalContributionGrid.startDate,
-            endDate = uiState.journalContributionGrid.endDate,
-            cells = TodayWasContributionCells(uiState.journalContributionGrid.cells),
+            cells = uiState.journalContributionGrid.cells,
             modifier = Modifier.fillMaxWidth(),
         )
         ContributionWindowChipRow(
@@ -358,11 +355,7 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
     )
 }
 
-private val previewJournalContributionGrid = ContributionGridUiState(
-    startDate = LocalDate.now().minusDays(34),
-    endDate = LocalDate.now(),
-    cells = emptyMap(),
-)
+private val previewJournalContributionGrid = ContributionGridUiState(cells = emptyList())
 
 private val previewJournalAvailableWindows = listOf(
     ContributionWindowUiState.RollingTwelveMonths,

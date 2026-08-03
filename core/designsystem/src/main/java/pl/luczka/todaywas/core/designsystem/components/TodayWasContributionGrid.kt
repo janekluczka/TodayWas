@@ -12,8 +12,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -32,15 +30,27 @@ enum class TodayWasContributionLevel {
     LEVEL_5,
 }
 
-// A raw Map parameter is unstable to the Compose compiler (Map is an interface with mutable
-// subtypes), so passing `cells` directly would defeat recomposition-skipping and force this whole
-// ~370-cell grid to redraw on every unrelated recomposition of the caller (e.g. every keystroke
-// elsewhere on the same screen). Wrapping it in an @Immutable data class restores structural
-// equals()-based skipping.
-@Immutable
-data class TodayWasContributionCells(
-    val values: Map<LocalDate, TodayWasContributionLevel>,
-)
+// A precomputed, already-laid-out cell list — every date/week/month calculation happens once,
+// upstream in ui/model/ContributionMapper.kt, not on every recomposition of this component.
+// Months own their own contiguous block of columns: a month's first/last column is truncated to
+// only the weekdays that actually fall within that month (e.g. a month starting on Saturday gets a
+// column with only Saturday+Sunday populated) — the rest of that column's 7 slots are `Blank`
+// (same footprint, renders nothing). `hasGapBefore` marks every cell in the first column of a new
+// month so the renderer can add a small leading margin there, visually separating month blocks
+// without a dedicated spacer column. `date` on `Level` is identifying metadata for callers/tests —
+// this component never reads it.
+sealed interface TodayWasContributionCellUiState {
+
+    data class Level(
+        val date: LocalDate,
+        val level: TodayWasContributionLevel,
+        val hasGapBefore: Boolean = false,
+    ) : TodayWasContributionCellUiState
+
+    data class Blank(
+        val hasGapBefore: Boolean = false,
+    ) : TodayWasContributionCellUiState
+}
 
 // Fixed, non-MaterialTheme.colorScheme palette: TodayWasTheme has dynamicColor = true, so
 // colorScheme roles vary per device/wallpaper (Material You) and would make relative intensity
@@ -65,29 +75,13 @@ private val DarkLevelColors = mapOf(
 
 private val CELL_SIZE = 12.dp
 private val CELL_SPACING = 2.dp
+private val MONTH_GAP = 6.dp
 
 @Composable
 fun TodayWasContributionGrid(
-    startDate: LocalDate,
-    endDate: LocalDate,
-    cells: TodayWasContributionCells,
+    cells: List<TodayWasContributionCellUiState>,
     modifier: Modifier = Modifier,
 ) {
-    // Bounds come from the caller's selected window (not derived from `cells`, which only
-    // contains non-NONE days) — otherwise a mostly-empty window would render as a tiny grid
-    // spanning just its few logged days instead of the full selected range.
-    // Padded to whole weeks (preceding Monday .. following Sunday) so every column is a full
-    // week, then listed newest-first: combined with reverseLayout below, this anchors the most
-    // recent week at the visual end of the row (like GitHub's own graph) with no blank trailing
-    // space, regardless of viewport width — an explicit initial-scroll-index can't achieve that
-    // without knowing how many columns fit on screen. Memoized since this is a ~370-entry list.
-    val dates = remember(startDate, endDate) {
-        val paddedStart = startDate.minusDays((startDate.dayOfWeek.value - 1).toLong())
-        val paddedEnd = endDate.plusDays(((7 - endDate.dayOfWeek.value) % 7).toLong())
-        generateSequence(paddedEnd) { it.minusDays(1) }
-            .takeWhile { it >= paddedStart }
-            .toList()
-    }
     val levelColors = if (isSystemInDarkTheme()) DarkLevelColors else LightLevelColors
 
     LazyHorizontalGrid(
@@ -96,74 +90,59 @@ fun TodayWasContributionGrid(
         contentPadding = PaddingValues(horizontal = 4.dp),
         modifier = modifier.height((CELL_SIZE + CELL_SPACING) * 7),
     ) {
-        items(dates) { date ->
-            val level = cells.values[date] ?: TodayWasContributionLevel.NONE
-            Box(
-                modifier = Modifier
-                    .padding(CELL_SPACING / 2)
-                    .size(CELL_SIZE)
-                    .background(
-                        color = levelColors.getValue(level),
+        items(cells) { cell ->
+            val hasGapBefore = when (cell) {
+                is TodayWasContributionCellUiState.Level -> cell.hasGapBefore
+                is TodayWasContributionCellUiState.Blank -> cell.hasGapBefore
+            }
+            val cellModifier = Modifier
+                .padding(start = if (hasGapBefore) MONTH_GAP else 0.dp)
+                .padding(CELL_SPACING / 2)
+                .size(CELL_SIZE)
+            when (cell) {
+                is TodayWasContributionCellUiState.Level -> Box(
+                    modifier = cellModifier.background(
+                        color = levelColors.getValue(cell.level),
                         shape = RoundedCornerShape(2.dp),
                     ),
-            )
+                )
+                is TodayWasContributionCellUiState.Blank -> Box(modifier = cellModifier)
+            }
         }
     }
 }
 
-private data class ContributionGridPreviewState(
-    val startDate: LocalDate,
-    val endDate: LocalDate,
-    val cells: TodayWasContributionCells,
-)
-
-private class TodayWasContributionGridPreviewProvider : PreviewParameterProvider<ContributionGridPreviewState> {
+private class TodayWasContributionGridPreviewProvider : PreviewParameterProvider<List<TodayWasContributionCellUiState>> {
     private val today = LocalDate.now()
 
     override val values = sequenceOf(
-        // Empty window: no data at all, still renders the full (all-NONE) range.
-        ContributionGridPreviewState(
-            startDate = today.minusDays(34),
-            endDate = today,
-            cells = TodayWasContributionCells(emptyMap()),
-        ),
-        // Sparse window: a few logged days inside an otherwise-empty range.
-        ContributionGridPreviewState(
-            startDate = today.minusDays(34),
-            endDate = today,
-            cells = TodayWasContributionCells(
-                mapOf(
-                    today to TodayWasContributionLevel.LEVEL_3,
-                    today.minusDays(2) to TodayWasContributionLevel.LEVEL_1,
-                    today.minusDays(10) to TodayWasContributionLevel.LEVEL_5,
-                ),
-            ),
-        ),
-        // Full 5-level gradient across the whole window.
-        ContributionGridPreviewState(
-            startDate = today.minusDays(34),
-            endDate = today,
-            cells = TodayWasContributionCells(
-                (0..34).associate { offset ->
-                    val date = today.minusDays(offset.toLong())
-                    val level = TodayWasContributionLevel.entries[offset % TodayWasContributionLevel.entries.size]
-                    date to level
-                },
-            ),
-        ),
+        // A month boundary mid-week: the ending month's tail column has only its first 5 rows
+        // filled (Mon-Fri), the new month's first column (gap before it) has only the last 2
+        // rows filled (Sat-Sun) — matching a month that starts on a Saturday.
+        buildList<TodayWasContributionCellUiState> {
+            repeat(5) { add(TodayWasContributionCellUiState.Level(today.minusDays(10), TodayWasContributionLevel.LEVEL_3)) }
+            add(TodayWasContributionCellUiState.Blank())
+            add(TodayWasContributionCellUiState.Blank())
+            add(TodayWasContributionCellUiState.Blank(hasGapBefore = true))
+            add(TodayWasContributionCellUiState.Blank(hasGapBefore = true))
+            add(TodayWasContributionCellUiState.Blank(hasGapBefore = true))
+            add(TodayWasContributionCellUiState.Blank(hasGapBefore = true))
+            add(TodayWasContributionCellUiState.Blank(hasGapBefore = true))
+            add(TodayWasContributionCellUiState.Level(today.minusDays(2), TodayWasContributionLevel.LEVEL_1, hasGapBefore = true))
+            add(TodayWasContributionCellUiState.Level(today.minusDays(1), TodayWasContributionLevel.LEVEL_5, hasGapBefore = true))
+            repeat(7) { add(TodayWasContributionCellUiState.Level(today, TodayWasContributionLevel.LEVEL_2)) }
+        },
+        // A single full column, no gaps.
+        List(7) { TodayWasContributionCellUiState.Level(today.minusDays(it.toLong()), TodayWasContributionLevel.LEVEL_3) },
     )
 }
 
 @PreviewLightDark
 @Composable
 private fun TodayWasContributionGridPreview(
-    @PreviewParameter(TodayWasContributionGridPreviewProvider::class) state: ContributionGridPreviewState,
+    @PreviewParameter(TodayWasContributionGridPreviewProvider::class) cells: List<TodayWasContributionCellUiState>,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasContributionGrid(
-            startDate = state.startDate,
-            endDate = state.endDate,
-            cells = state.cells,
-        )
+        TodayWasContributionGrid(cells = cells)
     }
 }

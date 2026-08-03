@@ -14,6 +14,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionCellUiState
 import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionLevel
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.domain.model.Habit
@@ -56,6 +57,14 @@ class HabitDetailViewModelTest {
         updateHabitCheckIn = UpdateHabitCheckInUseCase(repository, clock),
         clock = clock,
     )
+
+    private fun levelFor(
+        cells: List<TodayWasContributionCellUiState>,
+        date: LocalDate,
+    ): TodayWasContributionLevel? = cells
+        .filterIsInstance<TodayWasContributionCellUiState.Level>()
+        .find { it.date == date }
+        ?.level
 
     @Before
     fun setUp() {
@@ -325,7 +334,7 @@ class HabitDetailViewModelTest {
             assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.selectedWindow)
             assertTrue(state.availableWindows.contains(ContributionWindowUiState.RollingTwelveMonths))
             assertTrue(state.availableWindows.contains(ContributionWindowUiState.CalendarYear(today.year)))
-            assertEquals(TodayWasContributionLevel.LEVEL_5, state.contributionGrid.cells[today])
+            assertEquals(TodayWasContributionLevel.LEVEL_5, levelFor(state.contributionGrid.cells, today))
             collectJob.cancel()
         }
 
@@ -343,13 +352,36 @@ class HabitDetailViewModelTest {
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
 
-            val levelBefore = viewModel.uiState.value.contributionGrid.cells[today]
+            val levelBefore = levelFor(viewModel.uiState.value.contributionGrid.cells, today)
 
             viewModel.onIntent(HabitDetailIntent.WindowSelected(ContributionWindowUiState.CalendarYear(today.year)))
             runCurrent()
 
             assertEquals(ContributionWindowUiState.CalendarYear(today.year), viewModel.uiState.value.selectedWindow)
-            assertEquals(levelBefore, viewModel.uiState.value.contributionGrid.cells[today])
+            assertEquals(levelBefore, levelFor(viewModel.uiState.value.contributionGrid.cells, today))
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `contributionGrid instance is reused across unrelated state changes during editing`() =
+        runTest {
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            val gridBefore = viewModel.uiState.value.contributionGrid
+
+            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(yesterday, 1))
+            runCurrent()
+
+            assertTrue(gridBefore === viewModel.uiState.value.contributionGrid)
             collectJob.cancel()
         }
 

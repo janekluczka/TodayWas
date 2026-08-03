@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -65,23 +67,45 @@ class MainViewModel @Inject constructor(
     private val eventChannel = Channel<MainUiEvent>(Channel.BUFFERED)
     val events: Flow<MainUiEvent> = eventChannel.receiveAsFlow()
 
+    // Only recomputes when journal entries/selectedJournalWindow actually change — not on every
+    // unrelated emission (onboarding, habit board) from the wider combine below, which computing
+    // this inline in that single combine's lambda would otherwise trigger on every tick.
+    private val journalContributionData: Flow<JournalContributionData> = combine(
+        observeJournalEntries(),
+        selectedJournalWindow,
+    ) { entries, window -> entries to window }
+        .distinctUntilChanged()
+        .map { (entries, window) ->
+            val now = clock.instant()
+            JournalContributionData(
+                grid = JournalContributionCalculator.compute(entries, window, now).toUiState(now),
+                availableWindows = availableWindows(entries.minOfOrNull { it.date }, now).map { it.toUiState() },
+            )
+        }
+
     init {
         viewModelScope.launch {
-            combine(
+            val rawSources = combine(
                 observeOnboardingState(),
                 observeJournalEntries(),
                 observeAddableJournalDateSlots(),
                 observeHabitCheckInBoard(),
-                selectedJournalWindow,
-            ) { onboardingState, entries, addableSlots, board, selectedWindow ->
-                val now = clock.instant()
-                CombinedMainState(
+            ) { onboardingState, entries, addableSlots, board ->
+                RawMainSources(
                     focus = onboardingState.focus?.toUiState(),
                     journalEntries = entries.map { it.toUiState() },
                     addableSlots = addableSlots.map { it.toUiState() },
                     habits = board.toHabitUiStates(),
-                    journalContributionGrid = JournalContributionCalculator.compute(entries, selectedWindow, now).toUiState(now),
-                    journalAvailableWindows = availableWindows(entries.minOfOrNull { it.date }, now).map { it.toUiState() },
+                )
+            }
+            combine(rawSources, selectedJournalWindow, journalContributionData) { raw, selectedWindow, contribution ->
+                CombinedMainState(
+                    focus = raw.focus,
+                    journalEntries = raw.journalEntries,
+                    addableSlots = raw.addableSlots,
+                    habits = raw.habits,
+                    journalContributionGrid = contribution.grid,
+                    journalAvailableWindows = contribution.availableWindows,
                     journalSelectedWindow = selectedWindow.toUiState(),
                 )
             }.collect { combined ->
@@ -148,6 +172,18 @@ class MainViewModel @Inject constructor(
             FabActionUiState.LOG_HABIT_CHECK_INS.takeIf { habitFocusActive && habits.isNotEmpty() },
         )
     }
+
+    private data class RawMainSources(
+        val focus: FocusUiState?,
+        val journalEntries: List<JournalEntryUiState>,
+        val addableSlots: List<JournalDateSlotUiState>,
+        val habits: List<HabitUiState>,
+    )
+
+    private data class JournalContributionData(
+        val grid: ContributionGridUiState,
+        val availableWindows: List<ContributionWindowUiState>,
+    )
 
     private data class CombinedMainState(
         val focus: FocusUiState?,
