@@ -963,12 +963,12 @@ no-pagination-needed convention.
 
 #### Automated
 
-- [x] 7.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 7.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 7.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 7.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — af59ad3
+- [x] 7.2 Lint passes: `./gradlew.bat ktlintCheck` — af59ad3
+- [x] 7.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — af59ad3
 
 #### Manual
 
-- [x] 7.4 Habit Detail shows a vertically-scrolling list of weeks (most recent at top), each row reading Monday-Sunday left-to-right, centered, bigger cells, chips above
-- [x] 7.5 Main's Journal section is unchanged (still the horizontal grid)
-- [x] 7.6 Regression: year chip switch, edit bottom sheet, and habit check-in editing/saving still work end-to-end on Habit Detail
+- [x] 7.4 Habit Detail shows a vertically-scrolling list of weeks (most recent at top), each row reading Monday-Sunday left-to-right, centered, bigger cells, chips above — af59ad3
+- [x] 7.5 Main's Journal section is unchanged (still the horizontal grid) — af59ad3
+- [x] 7.6 Regression: year chip switch, edit bottom sheet, and habit check-in editing/saving still work end-to-end on Habit Detail — af59ad3
