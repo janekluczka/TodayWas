@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun <T> TodayWasSegmentedRow(
+fun <T> DsSegmentedRow(
     items: List<T>,
     selectedItem: T?,
     onItemSelected: (T?) -> Unit,
@@ -30,13 +30,13 @@ fun <T> TodayWasSegmentedRow(
     ) {
         for (item in items) {
             val selected = item == selectedItem
-            TodayWasSelectableCard(
+            DsSelectableCard(
                 onClick = { onItemSelected(if (allowDeselect && selected) null else item) },
                 enabled = enabled,
-                variant = if (selected) TodayWasCardVariant.PRIMARY else TodayWasCardVariant.NEUTRAL,
+                variant = if (selected) DsCardVariant.PRIMARY else DsCardVariant.NEUTRAL,
                 modifier = Modifier.weight(1f),
             ) {
-                TodayWasText(text = label(item))
+                DsText(text = label(item))
             }
         }
     }
@@ -44,9 +44,9 @@ fun <T> TodayWasSegmentedRow(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasSegmentedRowBinaryPreview() {
+private fun DsSegmentedRowBinaryPreview() {
     DesignSystemPreviewTheme {
-        TodayWasSegmentedRow(
+        DsSegmentedRow(
             items = listOf(0, 1),
             selectedItem = 1,
             onItemSelected = {},
@@ -57,9 +57,9 @@ private fun TodayWasSegmentedRowBinaryPreview() {
 
 @PreviewLightDark
 @Composable
-private fun TodayWasSegmentedRowScalePreview() {
+private fun DsSegmentedRowScalePreview() {
     DesignSystemPreviewTheme {
-        TodayWasSegmentedRow(
+        DsSegmentedRow(
             items = (1..5).toList(),
             selectedItem = null,
             onItemSelected = {},

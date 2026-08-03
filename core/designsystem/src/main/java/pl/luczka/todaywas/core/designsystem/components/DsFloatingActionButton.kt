@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasFloatingActionButton(
+fun DsFloatingActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
@@ -23,10 +23,10 @@ fun TodayWasFloatingActionButton(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasFloatingActionButtonPreview() {
+private fun DsFloatingActionButtonPreview() {
     DesignSystemPreviewTheme {
-        TodayWasFloatingActionButton(onClick = {}) {
-            TodayWasIcon(
+        DsFloatingActionButton(onClick = {}) {
+            DsIcon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add",
             )

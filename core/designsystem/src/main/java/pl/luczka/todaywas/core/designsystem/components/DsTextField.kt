@@ -7,7 +7,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasTextField(
+fun DsTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -18,7 +18,7 @@ fun TodayWasTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = label?.let { { TodayWasText(text = it) } },
+        label = label?.let { { DsText(text = it) } },
         enabled = enabled,
         minLines = minLines,
         modifier = modifier,
@@ -27,9 +27,9 @@ fun TodayWasTextField(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasTextFieldPreview() {
+private fun DsTextFieldPreview() {
     DesignSystemPreviewTheme {
-        TodayWasTextField(
+        DsTextField(
             value = "Today was a good day.",
             onValueChange = {},
             label = "Entry",

@@ -23,14 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIconButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTextField
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.components.DsText
+import pl.luczka.todaywas.core.designsystem.components.DsTextField
+import pl.luczka.todaywas.core.designsystem.components.DsTopBar
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.Instant
@@ -75,13 +75,13 @@ private fun JournalEntryDetailScreenContent(
         }
     }
 
-    TodayWasScaffold(
+    DsScaffold(
         topBar = {
-            TodayWasTopBar(
+            DsTopBar(
                 title = stringResource(R.string.journal_detail_title),
                 navigationIcon = {
-                    TodayWasIconButton(onClick = { onIntent(JournalEntryDetailIntent.BackClicked) }) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.BackClicked) }) {
+                        DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
                         )
@@ -92,7 +92,7 @@ private fun JournalEntryDetailScreenContent(
                 },
             )
         },
-        snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
@@ -102,9 +102,9 @@ private fun JournalEntryDetailScreenContent(
                 .padding(24.dp),
         ) {
             if (uiState.entry != null) {
-                TodayWasText(text = uiState.entry.formattedDate)
+                DsText(text = uiState.entry.formattedDate)
                 if (uiState.isEditing) {
-                    TodayWasTextField(
+                    DsTextField(
                         value = uiState.editedText,
                         onValueChange = { onIntent(JournalEntryDetailIntent.TextChanged(it)) },
                         minLines = 6,
@@ -113,7 +113,7 @@ private fun JournalEntryDetailScreenContent(
                             .padding(top = 16.dp),
                     )
                 } else {
-                    TodayWasText(text = uiState.entry.text)
+                    DsText(text = uiState.entry.text)
                 }
             }
         }
@@ -127,13 +127,13 @@ private fun JournalEntryDetailActions(
 ) {
     if (uiState.isEditing) {
         Row {
-            TodayWasIconButton(onClick = { onIntent(JournalEntryDetailIntent.CancelEditClicked) }) {
-                TodayWasIcon(
+            DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.CancelEditClicked) }) {
+                DsIcon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(R.string.journal_detail_cancel_edit_action),
                 )
             }
-            TodayWasButtonWithLoading(
+            DsButtonWithLoading(
                 text = stringResource(R.string.journal_detail_save_cta),
                 onClick = { onIntent(JournalEntryDetailIntent.SaveClicked) },
                 enabled = !uiState.isSaving,
@@ -141,8 +141,8 @@ private fun JournalEntryDetailActions(
             )
         }
     } else if (uiState.isEditable) {
-        TodayWasIconButton(onClick = { onIntent(JournalEntryDetailIntent.EditClicked) }) {
-            TodayWasIcon(
+        DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.EditClicked) }) {
+            DsIcon(
                 imageVector = Icons.Filled.Edit,
                 contentDescription = stringResource(R.string.journal_detail_edit_action),
             )

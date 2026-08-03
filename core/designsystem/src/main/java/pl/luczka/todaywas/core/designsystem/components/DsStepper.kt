@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasStepper(
+fun DsStepper(
     value: Int,
     range: IntRange,
     onValueChange: (Int) -> Unit,
@@ -25,24 +25,24 @@ fun TodayWasStepper(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
     ) {
-        TodayWasIconButton(
+        DsIconButton(
             onClick = { onValueChange(value - 1) },
             enabled = value > range.first,
         ) {
-            TodayWasIcon(
+            DsIcon(
                 imageVector = Icons.Default.Remove,
                 contentDescription = decreaseContentDescription,
             )
         }
-        TodayWasText(
+        DsText(
             text = value.toString(),
             modifier = Modifier.padding(horizontal = 12.dp),
         )
-        TodayWasIconButton(
+        DsIconButton(
             onClick = { onValueChange(value + 1) },
             enabled = value < range.last,
         ) {
-            TodayWasIcon(
+            DsIcon(
                 imageVector = Icons.Default.Add,
                 contentDescription = increaseContentDescription,
             )
@@ -52,9 +52,9 @@ fun TodayWasStepper(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasStepperPreview() {
+private fun DsStepperPreview() {
     DesignSystemPreviewTheme {
-        TodayWasStepper(
+        DsStepper(
             value = 4,
             range = 2..7,
             onValueChange = {},

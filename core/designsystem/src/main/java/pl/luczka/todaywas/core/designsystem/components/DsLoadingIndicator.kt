@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasLoadingIndicator(
+fun DsLoadingIndicator(
     modifier: Modifier = Modifier,
     color: Color = ProgressIndicatorDefaults.circularColor,
 ) {
@@ -21,8 +21,8 @@ fun TodayWasLoadingIndicator(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasLoadingIndicatorPreview() {
+private fun DsLoadingIndicatorPreview() {
     DesignSystemPreviewTheme {
-        TodayWasLoadingIndicator()
+        DsLoadingIndicator()
     }
 }

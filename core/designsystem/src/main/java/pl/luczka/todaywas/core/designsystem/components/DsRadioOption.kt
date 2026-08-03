@@ -14,7 +14,7 @@ import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvi
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasRadioOption(
+fun DsRadioOption(
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
@@ -32,7 +32,7 @@ fun TodayWasRadioOption(
             selected = selected,
             onClick = onClick,
         )
-        TodayWasText(
+        DsText(
             text = text,
             modifier = Modifier.padding(start = 8.dp),
         )
@@ -41,11 +41,11 @@ fun TodayWasRadioOption(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasRadioOptionPreview(
+private fun DsRadioOptionPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasRadioOption(
+        DsRadioOption(
             text = "Journaling",
             selected = selected,
             onClick = {},

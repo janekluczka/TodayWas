@@ -20,14 +20,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.TodayWasDateStrip
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIconButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTextField
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.DsDateStrip
+import pl.luczka.todaywas.core.designsystem.components.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.components.DsTextField
+import pl.luczka.todaywas.core.designsystem.components.DsTopBar
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 import java.time.LocalDate
@@ -68,20 +68,20 @@ private fun AddJournalEntryScreenContent(
         }
     }
 
-    TodayWasScaffold(
+    DsScaffold(
         topBar = {
-            TodayWasTopBar(
+            DsTopBar(
                 title = stringResource(R.string.journal_add_entry_title),
                 navigationIcon = {
-                    TodayWasIconButton(onClick = { onIntent(AddJournalEntryIntent.CancelClicked) }) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = { onIntent(AddJournalEntryIntent.CancelClicked) }) {
+                        DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
                         )
                     }
                 },
                 actions = {
-                    TodayWasButtonWithLoading(
+                    DsButtonWithLoading(
                         text = stringResource(R.string.journal_add_entry_save_cta),
                         onClick = { onIntent(AddJournalEntryIntent.SaveClicked) },
                         enabled = !uiState.isSaving && uiState.text.isNotBlank(),
@@ -90,7 +90,7 @@ private fun AddJournalEntryScreenContent(
                 },
             )
         },
-        snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
@@ -102,7 +102,7 @@ private fun AddJournalEntryScreenContent(
                 uiState = uiState,
                 onIntent = onIntent,
             )
-            TodayWasTextField(
+            DsTextField(
                 value = uiState.text,
                 onValueChange = { onIntent(AddJournalEntryIntent.TextChanged(it)) },
                 label = stringResource(R.string.journal_add_entry_text_label),
@@ -125,7 +125,7 @@ private fun JournalDateStrip(
     val yesterday = today.minusDays(1)
     val selectedDate = if (uiState.selectedSlot == JournalDateSlotUiState.TODAY) today else yesterday
 
-    TodayWasDateStrip(
+    DsDateStrip(
         selectedDate = selectedDate,
         isSelectable = { date -> date.toSlot(today, yesterday)?.let { it in uiState.availableSlots } ?: false },
         onDateSelected = { date -> date.toSlot(today, yesterday)?.let { onIntent(AddJournalEntryIntent.SlotSelected(it)) } },

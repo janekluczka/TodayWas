@@ -10,7 +10,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasChip(
+fun DsChip(
     text: String,
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
@@ -18,7 +18,7 @@ fun TodayWasChip(
 ) {
     SuggestionChip(
         onClick = {},
-        label = { TodayWasText(text = text, color = labelColor) },
+        label = { DsText(text = text, color = labelColor) },
         colors = SuggestionChipDefaults.suggestionChipColors(containerColor = containerColor),
         border = null,
         modifier = modifier,
@@ -27,8 +27,8 @@ fun TodayWasChip(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasChipPreview() {
+private fun DsChipPreview() {
     DesignSystemPreviewTheme {
-        TodayWasChip(text = "Done")
+        DsChip(text = "Done")
     }
 }

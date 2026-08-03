@@ -22,12 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.TodayWasRadioOption
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTextButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.DsRadioOption
+import pl.luczka.todaywas.core.designsystem.components.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.DsText
+import pl.luczka.todaywas.core.designsystem.components.DsTextButton
+import pl.luczka.todaywas.core.designsystem.components.DsTopBar
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 
@@ -66,8 +66,8 @@ private fun OnboardingScreenContent(
         pagerState.animateScrollToPage(uiState.step.ordinal)
     }
 
-    TodayWasScaffold(
-        topBar = { TodayWasTopBar(title = "") },
+    DsScaffold(
+        topBar = { DsTopBar(title = "") },
         bottomBar = {
             OnboardingBottomBar(
                 uiState = uiState,
@@ -110,12 +110,12 @@ private fun OnboardingBottomBar(
             .fillMaxWidth()
             .padding(24.dp),
     ) {
-        TodayWasTextButton(
+        DsTextButton(
             text = stringResource(R.string.onboarding_skip),
             onClick = { onIntent(OnboardingIntent.SkipClicked) },
             enabled = !uiState.isSaving,
         )
-        TodayWasButtonWithLoading(
+        DsButtonWithLoading(
             text = nextButtonLabel(uiState),
             onClick = { onIntent(OnboardingIntent.NextClicked) },
             enabled = nextButtonEnabled(uiState),
@@ -145,8 +145,8 @@ private fun nextButtonEnabled(uiState: OnboardingUiState): Boolean = when (uiSta
 @Composable
 private fun WelcomeStepBody() {
     Column {
-        TodayWasText(text = stringResource(R.string.onboarding_welcome_title))
-        TodayWasText(text = stringResource(R.string.onboarding_welcome_description))
+        DsText(text = stringResource(R.string.onboarding_welcome_title))
+        DsText(text = stringResource(R.string.onboarding_welcome_description))
     }
 }
 
@@ -156,9 +156,9 @@ private fun FocusPickStepBody(
     onIntent: (OnboardingIntent) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        TodayWasText(text = stringResource(R.string.onboarding_focus_pick_title))
+        DsText(text = stringResource(R.string.onboarding_focus_pick_title))
         for (focus in FocusUiState.entries) {
-            TodayWasRadioOption(
+            DsRadioOption(
                 text = focus.label(),
                 selected = uiState.selectedFocus == focus,
                 onClick = { onIntent(OnboardingIntent.FocusOptionSelected(focus)) },
@@ -166,7 +166,7 @@ private fun FocusPickStepBody(
             )
         }
         if (uiState.saveError) {
-            TodayWasText(text = stringResource(R.string.onboarding_focus_pick_error))
+            DsText(text = stringResource(R.string.onboarding_focus_pick_error))
         }
     }
 }
@@ -174,8 +174,8 @@ private fun FocusPickStepBody(
 @Composable
 private fun AccountInfoStepBody(onIntent: (OnboardingIntent) -> Unit) {
     Column {
-        TodayWasText(text = stringResource(R.string.onboarding_account_description))
-        TodayWasTextButton(
+        DsText(text = stringResource(R.string.onboarding_account_description))
+        DsTextButton(
             text = stringResource(R.string.onboarding_account_create_cta),
             onClick = { onIntent(OnboardingIntent.CreateAccountClicked) },
         )
@@ -184,7 +184,7 @@ private fun AccountInfoStepBody(onIntent: (OnboardingIntent) -> Unit) {
 
 @Composable
 private fun AllSetStepBody() {
-    TodayWasText(text = stringResource(R.string.onboarding_all_set_title))
+    DsText(text = stringResource(R.string.onboarding_all_set_title))
 }
 
 @Composable

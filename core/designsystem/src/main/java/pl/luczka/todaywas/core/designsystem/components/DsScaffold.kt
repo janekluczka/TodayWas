@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasScaffold(
+fun DsScaffold(
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
@@ -29,12 +29,12 @@ fun TodayWasScaffold(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasScaffoldPreview() {
+private fun DsScaffoldPreview() {
     DesignSystemPreviewTheme {
-        TodayWasScaffold(
-            topBar = { TodayWasTopBar(title = "TodayWas") },
+        DsScaffold(
+            topBar = { DsTopBar(title = "TodayWas") },
         ) { innerPadding ->
-            TodayWasText(
+            DsText(
                 text = "No entries yet",
                 modifier = Modifier.padding(innerPadding),
             )

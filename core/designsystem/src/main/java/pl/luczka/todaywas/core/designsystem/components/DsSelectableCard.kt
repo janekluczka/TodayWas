@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
-enum class TodayWasCardVariant {
+enum class DsCardVariant {
     NEUTRAL,
     PRIMARY,
     SECONDARY,
@@ -32,11 +32,11 @@ enum class TodayWasCardVariant {
 // 12%/38% alpha) regardless of `variant`, matching how M3's own chips/buttons render disabled
 // state — a faint container tint only when the disabled item is also the selected one.
 @Composable
-fun TodayWasSelectableCard(
+fun DsSelectableCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    variant: TodayWasCardVariant = TodayWasCardVariant.NEUTRAL,
+    variant: DsCardVariant = DsCardVariant.NEUTRAL,
     shape: Shape = RoundedCornerShape(8.dp),
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -44,19 +44,19 @@ fun TodayWasSelectableCard(
     val contentColor: Color
     when {
         !enabled -> {
-            val isSelectedVariant = variant != TodayWasCardVariant.NEUTRAL
+            val isSelectedVariant = variant != DsCardVariant.NEUTRAL
             containerColor = if (isSelectedVariant) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent
             contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         }
-        variant == TodayWasCardVariant.PRIMARY -> {
+        variant == DsCardVariant.PRIMARY -> {
             containerColor = MaterialTheme.colorScheme.primary
             contentColor = MaterialTheme.colorScheme.onPrimary
         }
-        variant == TodayWasCardVariant.SECONDARY -> {
+        variant == DsCardVariant.SECONDARY -> {
             containerColor = MaterialTheme.colorScheme.secondaryContainer
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
         }
-        variant == TodayWasCardVariant.TERTIARY -> {
+        variant == DsCardVariant.TERTIARY -> {
             containerColor = MaterialTheme.colorScheme.tertiaryContainer
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
         }
@@ -87,35 +87,35 @@ fun TodayWasSelectableCard(
     }
 }
 
-private class TodayWasCardVariantPreviewProvider : PreviewParameterProvider<TodayWasCardVariant> {
-    override val values = TodayWasCardVariant.entries.asSequence()
+private class DsCardVariantPreviewProvider : PreviewParameterProvider<DsCardVariant> {
+    override val values = DsCardVariant.entries.asSequence()
 }
 
 @PreviewLightDark
 @Composable
-private fun TodayWasSelectableCardPreview(
-    @PreviewParameter(TodayWasCardVariantPreviewProvider::class) variant: TodayWasCardVariant,
+private fun DsSelectableCardPreview(
+    @PreviewParameter(DsCardVariantPreviewProvider::class) variant: DsCardVariant,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasSelectableCard(
+        DsSelectableCard(
             onClick = {},
             variant = variant,
         ) {
-            TodayWasText(text = variant.name)
+            DsText(text = variant.name)
         }
     }
 }
 
 @PreviewLightDark
 @Composable
-private fun TodayWasSelectableCardDisabledPreview() {
+private fun DsSelectableCardDisabledPreview() {
     DesignSystemPreviewTheme {
-        TodayWasSelectableCard(
+        DsSelectableCard(
             onClick = {},
             enabled = false,
-            variant = TodayWasCardVariant.PRIMARY,
+            variant = DsCardVariant.PRIMARY,
         ) {
-            TodayWasText(text = "Disabled")
+            DsText(text = "Disabled")
         }
     }
 }

@@ -32,7 +32,7 @@ private val DATE_STRIP_CARD_WIDTH = 56.dp
 private val DATE_STRIP_CARD_SPACING = 8.dp
 
 @Composable
-fun TodayWasDateStrip(
+fun DsDateStrip(
     selectedDate: LocalDate,
     isSelectable: (LocalDate) -> Boolean,
     onDateSelected: (LocalDate) -> Unit,
@@ -75,29 +75,29 @@ private fun DateStripCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    TodayWasSelectableCard(
+    DsSelectableCard(
         onClick = onClick,
         enabled = available,
-        variant = if (selected) TodayWasCardVariant.PRIMARY else TodayWasCardVariant.SECONDARY,
+        variant = if (selected) DsCardVariant.PRIMARY else DsCardVariant.SECONDARY,
         shape = RoundedCornerShape(12.dp),
         modifier = modifier,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            TodayWasText(
+            DsText(
                 text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
                 fontSize = 10.sp,
             )
-            TodayWasText(text = date.dayOfMonth.toString())
+            DsText(text = date.dayOfMonth.toString())
         }
     }
 }
 
 @PreviewLightDark
 @Composable
-private fun TodayWasDateStripPreview() {
+private fun DsDateStripPreview() {
     DesignSystemPreviewTheme {
         val today = LocalDate.now()
-        TodayWasDateStrip(
+        DsDateStrip(
             selectedDate = today,
             isSelectable = { it == today || it == today.minusDays(1) },
             onDateSelected = {},

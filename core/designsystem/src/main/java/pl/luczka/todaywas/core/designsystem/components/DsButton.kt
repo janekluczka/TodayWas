@@ -1,8 +1,10 @@
 package pl.luczka.todaywas.core.designsystem.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -11,34 +13,37 @@ import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvi
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasIconButton(
+fun DsButton(
+    text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    content: @Composable () -> Unit,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
 ) {
-    IconButton(
+    Button(
         onClick = onClick,
         enabled = enabled,
-        content = content,
+        colors = colors,
+        elevation = elevation,
+        contentPadding = contentPadding,
         modifier = modifier,
-    )
+    ) {
+        DsText(text = text)
+    }
 }
 
 @PreviewLightDark
 @Composable
-private fun TodayWasIconButtonPreview(
+private fun DsButtonPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasIconButton(
+        DsButton(
+            text = "Get started",
             onClick = {},
             enabled = enabled,
-        ) {
-            TodayWasIcon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Change focus",
-            )
-        }
+        )
     }
 }

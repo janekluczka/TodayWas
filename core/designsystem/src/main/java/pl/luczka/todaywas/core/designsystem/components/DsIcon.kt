@@ -12,7 +12,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasIcon(
+fun DsIcon(
     imageVector: ImageVector,
     contentDescription: String?,
     modifier: Modifier = Modifier,
@@ -28,9 +28,9 @@ fun TodayWasIcon(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasIconPreview() {
+private fun DsIconPreview() {
     DesignSystemPreviewTheme {
-        TodayWasIcon(
+        DsIcon(
             imageVector = Icons.Default.Edit,
             contentDescription = "Change focus",
         )

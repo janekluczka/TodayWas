@@ -32,7 +32,8 @@ Multi-module Gradle project: `:app` (application, package `pl.luczka.todaywas`) 
     `XxxUiEvent.kt`, `XxxViewModel.kt`, `XxxScreen.kt`.
   - `ui/theme/` — Compose theme.
 - `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/` —
-  `TodayWasXxx` wrappers over Material3 components; `preview/` — shared preview theme/providers.
+  `DsXxx` wrappers over Material3 components (project-agnostic prefix, reusable across projects);
+  `preview/` — shared preview theme/providers.
 - Tests: `app/src/test/` (JUnit4 unit), `app/src/androidTest/` (instrumented).
 - `context/foundation/` — PRD, tech-stack, roadmap, lessons.md (see "Working in this repo" below).
 - `context/changes/<change-id>/` — in-flight change docs; archived to `context/archive/` when done.

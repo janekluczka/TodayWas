@@ -10,7 +10,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasSnackbarHost(
+fun DsSnackbarHost(
     hostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
@@ -22,10 +22,10 @@ fun TodayWasSnackbarHost(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasSnackbarHostPreview() {
+private fun DsSnackbarHostPreview() {
     DesignSystemPreviewTheme {
         val hostState = remember { SnackbarHostState() }
         LaunchedEffect(Unit) { hostState.showSnackbar("Something went wrong. Please try again.") }
-        TodayWasSnackbarHost(hostState = hostState)
+        DsSnackbarHost(hostState = hostState)
     }
 }

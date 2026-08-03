@@ -24,16 +24,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.TodayWasChip
-import pl.luczka.todaywas.core.designsystem.components.TodayWasDateStrip
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIconButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSegmentedRow
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.DsChip
+import pl.luczka.todaywas.core.designsystem.components.DsDateStrip
+import pl.luczka.todaywas.core.designsystem.components.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.DsSegmentedRow
+import pl.luczka.todaywas.core.designsystem.components.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.components.DsText
+import pl.luczka.todaywas.core.designsystem.components.DsTopBar
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.theme.SuccessContainerDark
 import pl.luczka.todaywas.ui.theme.SuccessContainerLight
@@ -81,20 +81,20 @@ private fun LogHabitCheckInsScreenContent(
         }
     }
 
-    TodayWasScaffold(
+    DsScaffold(
         topBar = {
-            TodayWasTopBar(
+            DsTopBar(
                 title = stringResource(R.string.habit_checkin_title),
                 navigationIcon = {
-                    TodayWasIconButton(onClick = { onIntent(LogHabitCheckInsIntent.CancelClicked) }) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = { onIntent(LogHabitCheckInsIntent.CancelClicked) }) {
+                        DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
                         )
                     }
                 },
                 actions = {
-                    TodayWasButtonWithLoading(
+                    DsButtonWithLoading(
                         text = stringResource(R.string.habit_checkin_save_cta),
                         onClick = { onIntent(LogHabitCheckInsIntent.SaveClicked) },
                         enabled = !uiState.isSaving && uiState.hasPendingInput(),
@@ -103,7 +103,7 @@ private fun LogHabitCheckInsScreenContent(
                 },
             )
         },
-        snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
@@ -111,7 +111,7 @@ private fun LogHabitCheckInsScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            TodayWasDateStrip(
+            DsDateStrip(
                 selectedDate = uiState.selectedDate,
                 isSelectable = { it in uiState.selectableDates },
                 onDateSelected = { onIntent(LogHabitCheckInsIntent.DateSelected(it)) },
@@ -152,9 +152,9 @@ private fun HabitCheckInRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            TodayWasText(text = row.name)
+            DsText(text = row.name)
             if (row is HabitCheckInRowUiState.AlreadyLogged) {
-                TodayWasChip(
+                DsChip(
                     text = doneLabel,
                     containerColor = doneChipContainerColor,
                     labelColor = doneChipLabelColor,
@@ -163,7 +163,7 @@ private fun HabitCheckInRow(
         }
         when (row) {
             is HabitCheckInRowUiState.Editable -> {
-                TodayWasSegmentedRow(
+                DsSegmentedRow(
                     items = row.range.toList(),
                     selectedItem = row.value,
                     onItemSelected = { onIntent(LogHabitCheckInsIntent.ValueChanged(row.habitId, it)) },
@@ -174,7 +174,7 @@ private fun HabitCheckInRow(
                 )
             }
             is HabitCheckInRowUiState.AlreadyLogged -> {
-                TodayWasSegmentedRow(
+                DsSegmentedRow(
                     items = row.range.toList(),
                     selectedItem = row.value,
                     onItemSelected = {},

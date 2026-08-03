@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.TextUnit
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasText(
+fun DsText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
@@ -34,8 +34,8 @@ fun TodayWasText(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasTextPreview() {
+private fun DsTextPreview() {
     DesignSystemPreviewTheme {
-        TodayWasText(text = "What would you like to focus on?")
+        DsText(text = "What would you like to focus on?")
     }
 }

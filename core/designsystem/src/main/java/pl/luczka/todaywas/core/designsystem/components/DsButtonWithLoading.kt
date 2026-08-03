@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @Composable
-fun TodayWasButtonWithLoading(
+fun DsButtonWithLoading(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -26,17 +26,17 @@ fun TodayWasButtonWithLoading(
         modifier = modifier.animateContentSize(),
     ) {
         if (loading) {
-            TodayWasLoadingIndicator(
+            DsLoadingIndicator(
                 color = LocalContentColor.current,
                 modifier = Modifier.size(20.dp),
             )
         } else {
-            TodayWasText(text = text)
+            DsText(text = text)
         }
     }
 }
 
-private class TodayWasButtonWithLoadingPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
+private class DsButtonWithLoadingPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
     override val values = sequenceOf(
         true to false,
         false to false,
@@ -46,12 +46,12 @@ private class TodayWasButtonWithLoadingPreviewStateProvider : PreviewParameterPr
 
 @PreviewLightDark
 @Composable
-private fun TodayWasButtonWithLoadingPreview(
-    @PreviewParameter(TodayWasButtonWithLoadingPreviewStateProvider::class) state: Pair<Boolean, Boolean>,
+private fun DsButtonWithLoadingPreview(
+    @PreviewParameter(DsButtonWithLoadingPreviewStateProvider::class) state: Pair<Boolean, Boolean>,
 ) {
     val (enabled, loading) = state
     DesignSystemPreviewTheme {
-        TodayWasButtonWithLoading(
+        DsButtonWithLoading(
             text = "Confirm",
             onClick = {},
             enabled = enabled,

@@ -14,14 +14,14 @@ import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodayWasTopBar(
+fun DsTopBar(
     title: String,
     modifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable () -> Unit = {},
 ) {
     TopAppBar(
-        title = { TodayWasText(text = title) },
+        title = { DsText(text = title) },
         navigationIcon = navigationIcon,
         actions = { actions() },
         modifier = modifier,
@@ -30,16 +30,16 @@ fun TodayWasTopBar(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasTopBarPreview(
+private fun DsTopBarPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) withAction: Boolean,
 ) {
     DesignSystemPreviewTheme {
-        TodayWasTopBar(
+        DsTopBar(
             title = "TodayWas",
             navigationIcon = {
                 if (withAction) {
-                    TodayWasIconButton(onClick = {}) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = {}) {
+                        DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                         )
@@ -48,8 +48,8 @@ private fun TodayWasTopBarPreview(
             },
             actions = {
                 if (withAction) {
-                    TodayWasIconButton(onClick = {}) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = {}) {
+                        DsIcon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Change focus",
                         )

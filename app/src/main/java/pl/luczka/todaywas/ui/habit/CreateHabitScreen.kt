@@ -18,16 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasButtonWithLoading
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIconButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSegmentedRow
-import pl.luczka.todaywas.core.designsystem.components.TodayWasSnackbarHost
-import pl.luczka.todaywas.core.designsystem.components.TodayWasStepper
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTextField
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.DsSegmentedRow
+import pl.luczka.todaywas.core.designsystem.components.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.components.DsStepper
+import pl.luczka.todaywas.core.designsystem.components.DsText
+import pl.luczka.todaywas.core.designsystem.components.DsTextField
+import pl.luczka.todaywas.core.designsystem.components.DsTopBar
 import pl.luczka.todaywas.ui.theme.TodayWasTheme
 
 @Composable
@@ -68,20 +68,20 @@ private fun CreateHabitScreenContent(
         }
     }
 
-    TodayWasScaffold(
+    DsScaffold(
         topBar = {
-            TodayWasTopBar(
+            DsTopBar(
                 title = stringResource(R.string.habit_create_title),
                 navigationIcon = {
-                    TodayWasIconButton(onClick = { onIntent(CreateHabitIntent.CancelClicked) }) {
-                        TodayWasIcon(
+                    DsIconButton(onClick = { onIntent(CreateHabitIntent.CancelClicked) }) {
+                        DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
                         )
                     }
                 },
                 actions = {
-                    TodayWasButtonWithLoading(
+                    DsButtonWithLoading(
                         text = stringResource(R.string.habit_create_save_cta),
                         onClick = { onIntent(CreateHabitIntent.SaveClicked) },
                         enabled = uiState.isSaveEnabled(),
@@ -90,7 +90,7 @@ private fun CreateHabitScreenContent(
                 },
             )
         },
-        snackbarHost = { TodayWasSnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
@@ -99,7 +99,7 @@ private fun CreateHabitScreenContent(
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp),
         ) {
-            TodayWasTextField(
+            DsTextField(
                 value = uiState.name,
                 onValueChange = { onIntent(CreateHabitIntent.NameChanged(it)) },
                 label = stringResource(R.string.habit_create_name_label),
@@ -107,11 +107,11 @@ private fun CreateHabitScreenContent(
                     .fillMaxWidth()
                     .padding(top = 16.dp),
             )
-            TodayWasText(
+            DsText(
                 text = stringResource(R.string.habit_create_scale_steps_label),
                 modifier = Modifier.padding(top = 16.dp),
             )
-            TodayWasStepper(
+            DsStepper(
                 value = uiState.scaleSteps,
                 range = HabitScaleStepsRange,
                 onValueChange = { onIntent(CreateHabitIntent.ScaleStepsChanged(it)) },
@@ -119,7 +119,7 @@ private fun CreateHabitScreenContent(
                 decreaseContentDescription = stringResource(R.string.content_description_decrease),
                 increaseContentDescription = stringResource(R.string.content_description_increase),
             )
-            TodayWasText(
+            DsText(
                 text = stringResource(R.string.habit_create_preview_title),
                 modifier = Modifier.padding(top = 16.dp),
             )
@@ -127,7 +127,7 @@ private fun CreateHabitScreenContent(
                 uiState = uiState,
                 modifier = Modifier.padding(top = 8.dp),
             )
-            TodayWasTextField(
+            DsTextField(
                 value = uiState.description,
                 onValueChange = { onIntent(CreateHabitIntent.DescriptionChanged(it)) },
                 label = stringResource(R.string.habit_create_description_label),
@@ -148,7 +148,7 @@ private fun CheckInInputPreview(
     if (uiState.isBinary) {
         val doneLabel = stringResource(R.string.habit_checkin_done_label)
         val notDoneLabel = stringResource(R.string.habit_checkin_not_done_label)
-        TodayWasSegmentedRow(
+        DsSegmentedRow(
             items = listOf(0, 1),
             selectedItem = null,
             onItemSelected = {},
@@ -157,7 +157,7 @@ private fun CheckInInputPreview(
             modifier = modifier.fillMaxWidth(),
         )
     } else {
-        TodayWasSegmentedRow(
+        DsSegmentedRow(
             items = (1..uiState.scaleSteps).toList(),
             selectedItem = null,
             onItemSelected = {},

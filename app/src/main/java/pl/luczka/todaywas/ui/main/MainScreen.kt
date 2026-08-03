@@ -26,12 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasExtendedFloatingActionButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasFloatingActionButton
-import pl.luczka.todaywas.core.designsystem.components.TodayWasIcon
-import pl.luczka.todaywas.core.designsystem.components.TodayWasScaffold
-import pl.luczka.todaywas.core.designsystem.components.TodayWasText
-import pl.luczka.todaywas.core.designsystem.components.TodayWasTopBar
+import pl.luczka.todaywas.core.designsystem.components.DsExtendedFloatingActionButton
+import pl.luczka.todaywas.core.designsystem.components.DsFloatingActionButton
+import pl.luczka.todaywas.core.designsystem.components.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.DsText
+import pl.luczka.todaywas.core.designsystem.components.DsTopBar
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
@@ -76,8 +76,8 @@ private fun MainScreenContent(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
 ) {
-    TodayWasScaffold(
-        topBar = { TodayWasTopBar(title = stringResource(R.string.main_top_bar_title)) },
+    DsScaffold(
+        topBar = { DsTopBar(title = stringResource(R.string.main_top_bar_title)) },
         floatingActionButton = { MainFab(uiState, onIntent) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
@@ -87,7 +87,7 @@ private fun MainScreenContent(
                 .padding(innerPadding),
         ) {
             when (uiState.focus) {
-                null -> TodayWasText(text = stringResource(R.string.main_empty_state))
+                null -> DsText(text = stringResource(R.string.main_empty_state))
                 FocusUiState.JOURNAL -> JournalSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
                 FocusUiState.HABIT -> HabitSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
                 FocusUiState.BOTH ->
@@ -114,13 +114,13 @@ private fun MainFab(
     ) {
         if (uiState.fabExpanded) {
             for (action in actions) {
-                TodayWasExtendedFloatingActionButton(
+                DsExtendedFloatingActionButton(
                     text = stringResource(action.labelRes),
                     onClick = { onIntent(MainIntent.FabActionClicked(action)) },
                 )
             }
         }
-        TodayWasFloatingActionButton(
+        DsFloatingActionButton(
             onClick = {
                 if (actions.size == 1) {
                     onIntent(MainIntent.FabActionClicked(actions.single()))
@@ -129,7 +129,7 @@ private fun MainFab(
                 }
             },
         ) {
-            TodayWasIcon(
+            DsIcon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.content_description_add),
             )
@@ -146,9 +146,9 @@ private fun JournalSection(
     Column(
         modifier = modifier.padding(24.dp),
     ) {
-        TodayWasText(text = stringResource(R.string.main_journal_section_title))
+        DsText(text = stringResource(R.string.main_journal_section_title))
         if (uiState.journalEntries.isEmpty()) {
-            TodayWasText(text = stringResource(R.string.main_journal_empty_state))
+            DsText(text = stringResource(R.string.main_journal_empty_state))
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.journalEntries) { entry ->
@@ -173,8 +173,8 @@ private fun JournalEntryListItem(
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
     ) {
-        TodayWasText(text = entry.formattedDate)
-        TodayWasText(
+        DsText(text = entry.formattedDate)
+        DsText(
             text = entry.text,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -191,9 +191,9 @@ private fun HabitSection(
     Column(
         modifier = modifier.padding(24.dp),
     ) {
-        TodayWasText(text = stringResource(R.string.main_habit_section_title))
+        DsText(text = stringResource(R.string.main_habit_section_title))
         if (uiState.habits.isEmpty()) {
-            TodayWasText(text = stringResource(R.string.main_habit_empty_state))
+            DsText(text = stringResource(R.string.main_habit_empty_state))
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.habits) { habit ->
@@ -219,8 +219,8 @@ private fun HabitListItem(
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
     ) {
-        TodayWasText(text = habit.name)
-        TodayWasText(text = habit.todayStatus.displayText())
+        DsText(text = habit.name)
+        DsText(text = habit.todayStatus.displayText())
     }
 }
 
