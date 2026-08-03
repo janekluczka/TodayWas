@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -25,7 +26,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
+import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionCells
+import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
@@ -145,14 +149,36 @@ private fun JournalSection(
     onIntent: (MainIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.padding(DsSpacing.space600),
-    ) {
-        DsText(text = stringResource(R.string.main_journal_section_title))
+    Column(modifier = modifier) {
+        DsText(
+            text = stringResource(R.string.main_journal_section_title),
+            modifier = Modifier.padding(horizontal = DsSpacing.space600),
+        )
+        // Full-bleed (no horizontal inset), same as Habit Detail's grid: it needs all available
+        // width so more weeks are visible at once.
+        TodayWasContributionGrid(
+            startDate = uiState.journalContributionGrid.startDate,
+            endDate = uiState.journalContributionGrid.endDate,
+            cells = TodayWasContributionCells(uiState.journalContributionGrid.cells),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        ContributionWindowChipRow(
+            availableWindows = uiState.journalAvailableWindows,
+            selectedWindow = uiState.journalSelectedWindow,
+            onWindowSelected = { onIntent(MainIntent.JournalWindowSelected(it)) },
+            modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+        )
         if (uiState.journalEntries.isEmpty()) {
-            DsText(text = stringResource(R.string.main_journal_empty_state))
+            DsText(
+                text = stringResource(R.string.main_journal_empty_state),
+                modifier = Modifier.padding(horizontal = DsSpacing.space600),
+            )
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = DsSpacing.space600),
+            ) {
                 items(uiState.journalEntries) { entry ->
                     JournalEntryListItem(
                         entry = entry,
@@ -162,6 +188,31 @@ private fun JournalSection(
             }
         }
     }
+}
+
+@Composable
+private fun ContributionWindowChipRow(
+    availableWindows: List<ContributionWindowUiState>,
+    selectedWindow: ContributionWindowUiState,
+    onWindowSelected: (ContributionWindowUiState) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(modifier = modifier) {
+        items(availableWindows) { window ->
+            DsChip(
+                text = window.label(),
+                selected = window == selectedWindow,
+                onClick = { onWindowSelected(window) },
+                modifier = Modifier.padding(end = DsSpacing.space200),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ContributionWindowUiState.label(): String = when (this) {
+    ContributionWindowUiState.RollingTwelveMonths -> stringResource(R.string.contribution_window_last_12_months_label)
+    is ContributionWindowUiState.CalendarYear -> year.toString()
 }
 
 @Composable

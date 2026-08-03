@@ -1,13 +1,11 @@
 package pl.luczka.todaywas.ui.journal
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -22,8 +20,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
+import pl.luczka.todaywas.core.designsystem.components.TodayWasBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
-import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
@@ -103,19 +101,28 @@ private fun JournalEntryDetailScreenContent(
         ) {
             if (uiState.entry != null) {
                 DsText(text = uiState.entry.formattedDate)
-                if (uiState.isEditing) {
-                    DsTextField(
-                        value = uiState.editedText,
-                        onValueChange = { onIntent(JournalEntryDetailIntent.TextChanged(it)) },
-                        minLines = 6,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = DsSpacing.space400),
-                    )
-                } else {
-                    DsText(text = uiState.entry.text)
-                }
+                DsText(text = uiState.entry.text)
             }
+        }
+    }
+
+    if (uiState.isEditing) {
+        TodayWasBottomSheet(
+            onDismissRequest = { onIntent(JournalEntryDetailIntent.CancelEditClicked) },
+            onCloseClicked = { onIntent(JournalEntryDetailIntent.CancelEditClicked) },
+            closeContentDescription = stringResource(R.string.journal_detail_cancel_edit_action),
+            saveText = stringResource(R.string.journal_detail_save_cta),
+            onSaveClicked = { onIntent(JournalEntryDetailIntent.SaveClicked) },
+            isSaving = uiState.isSaving,
+        ) {
+            DsTextField(
+                value = uiState.editedText,
+                onValueChange = { onIntent(JournalEntryDetailIntent.TextChanged(it)) },
+                minLines = 6,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(DsSpacing.space600),
+            )
         }
     }
 }
@@ -125,22 +132,7 @@ private fun JournalEntryDetailActions(
     uiState: JournalEntryDetailUiState,
     onIntent: (JournalEntryDetailIntent) -> Unit,
 ) {
-    if (uiState.isEditing) {
-        Row {
-            DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.CancelEditClicked) }) {
-                DsIcon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = stringResource(R.string.journal_detail_cancel_edit_action),
-                )
-            }
-            DsButtonWithLoading(
-                text = stringResource(R.string.journal_detail_save_cta),
-                onClick = { onIntent(JournalEntryDetailIntent.SaveClicked) },
-                enabled = !uiState.isSaving,
-                loading = uiState.isSaving,
-            )
-        }
-    } else if (uiState.isEditable) {
+    if (uiState.isEditable) {
         DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.EditClicked) }) {
             DsIcon(
                 imageVector = Icons.Filled.Edit,
