@@ -532,8 +532,10 @@ reusing the existing `editedText`/intents unchanged (per Key Discoveries).
 When `uiState.isEditing`, render `ModalBottomSheet(onDismissRequest = {
 onIntent(JournalEntryDetailIntent.CancelEditClicked) })` containing the `TodayWasTextField` bound
 to `editedText` plus the existing Cancel/Save action row (moved from the top bar into the sheet,
-same as Habit Detail's Phase 3 shape). Top bar's Edit action (`isEditable && !uiState.isEditing`)
-is unchanged.
+same as Habit Detail's Phase 3 shape). Top bar's Edit action is simplified to `isEditable` alone
+(drops the `!uiState.isEditing` gate) — caught during impl-review as undocumented drift: the icon
+now stays visible while the sheet is open, matching Habit Detail's "no need to hide edit button
+when sheet is open" decision (Phase 3), applied consistently here too rather than left as-is.
 
 #### 3. Strings
 
