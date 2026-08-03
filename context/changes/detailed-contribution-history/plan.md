@@ -646,25 +646,25 @@ no-pagination-needed convention.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 3a98335
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — 3a98335
+- [x] 3.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — 3a98335
 
 #### Manual
 
-- [x] 3.4 Grid shows visibly different shades for varying check-in values; empty habit shows empty grid
-- [x] 3.5 Year chip switch changes range without changing existing days' shades
-- [x] 3.6 Edit opens bottom sheet with same editable rows as S-04; Save updates grid
-- [x] 3.7 Swipe-dismiss discards unsaved change
-- [x] 3.8 Regression: add-entry and Log check-ins still work end-to-end
+- [x] 3.4 Grid shows visibly different shades for varying check-in values; empty habit shows empty grid — 3a98335
+- [x] 3.5 Year chip switch changes range without changing existing days' shades — 3a98335
+- [x] 3.6 Edit opens bottom sheet with same editable rows as S-04; Save updates grid — 3a98335
+- [x] 3.7 Swipe-dismiss discards unsaved change — 3a98335
+- [x] 3.8 Regression: add-entry and Log check-ins still work end-to-end — 3a98335
 
 ### Phase 4: Journal — Presentation
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 `MainViewModelTest` passes (journal grid/window state, JournalWindowSelected, existing cases unchanged)
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 `MainViewModelTest` passes (journal grid/window state, JournalWindowSelected, existing cases unchanged)
 
 ### Phase 5: Journal — UI
 
