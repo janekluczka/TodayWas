@@ -563,6 +563,162 @@ No new strings needed — journal's chip row reuses
 
 **Implementation Note**: Pause here for manual confirmation before wrapping up the change.
 
+*(Update: a Phase 6 was added after this phase shipped, per user feedback on grid performance and
+month-gap styling — see below. Phase 5 no longer wraps up the change; Phase 6 does.)*
+
+---
+
+## Phase 6: Journal/Habit — Contribution grid UI refinements
+
+### Overview
+
+Two issues found after Phase 5 shipped: (1) `TodayWasContributionGrid` still does real work in the
+render path (date-sequence generation, `Map` lookups, month-boundary comparisons) every time it
+recomposes, despite Phase 3's `@Immutable`-wrapper fix for recomposition-*skipping* — skipping only
+helps when the composable doesn't run at all; this phase removes the work from the render path
+itself so even a forced re-run is cheap; (2) the grid has no visual gap between months, unlike
+GitHub's own graph. Both fixes push all date/week/month logic out of the Composable and into the
+`ui.model` mapper layer, computed once per grid recomputation instead of once per frame/interaction
+— and since each recomputation is now doing more work (week-chunking, gap insertion), this phase
+also decouples *when* that recomputation happens: both `HabitDetailViewModel` and `MainViewModel`
+currently recompute their contribution grid on every unrelated state emission (every keystroke/tap
+during editing, every unrelated habit-board update), not just when the underlying data or selected
+window actually changes.
+
+### Changes Required:
+
+#### 1. Precomputed grid data (mapper)
+
+**File**: `app/src/main/java/pl/luczka/todaywas/ui/model/ContributionMapper.kt`
+
+**Intent**: Replace the sparse `Map<LocalDate, TodayWasContributionLevel>` + separate
+`startDate`/`endDate` with a single, fully precomputed cell list — all date/week/month math happens
+once here, not in the Composable.
+
+**Contract** *(superseded mid-implementation — see note below)*: `ContributionGridUiState` becomes
+`data class ContributionGridUiState(val cells: List<TodayWasContributionCellUiState>)` (drops
+`startDate`/`endDate`, no longer needed by the component).
+
+**Post-manual-verification revision**: the first implementation padded the whole window to uniform
+Monday-Sunday weeks and inserted a full 7-item blank "Gap" column between months. Manual testing
+showed this was wrong: a calendar week straddling a month boundary (e.g. a month starting on a
+Saturday) rendered as ONE column mixing both months' days, with the gap column landing in the wrong
+place relative to the actual boundary. The corrected design (implemented, no separate phase number)
+gives each month its own contiguous block of columns instead: `ContributionGrid.toUiState(now:
+Instant)` walks `currentDate` forward from the window's `startDate`; each column spans
+`weekMonday..weekSunday` (the calendar week `currentDate` falls in), but only cells within
+`[currentDate, columnEnd]` get a real `Level` — where `columnEnd = minOf(weekSunday, endDate,
+YearMonth.from(currentDate).atEndOfMonth())` — everything outside that range (before `currentDate`
+or after `columnEnd`) becomes `TodayWasContributionCellUiState.Blank`. Because `columnEnd` always
+stops at a month boundary, a shared calendar week that straddles two months naturally splits into
+two side-by-side columns — one per month, each truncated to just its own days (e.g. a month
+starting Saturday gets a column with only Saturday+Sunday populated, Monday-Friday `Blank`; the
+prior month's tail column gets the inverse). Every cell (`Level` or `Blank`) in the first column of
+a new month carries `hasGapBefore = true` so the renderer can add a small leading margin there —
+replacing the old dedicated spacer column with a lighter-weight per-cell flag. The whole flat list
+is still **reversed** at the end (paired with `reverseLayout = true`), for the same reason as
+before — every column is uniformly 7 items regardless of how many are `Blank`, so this rides through
+the reversal cleanly.
+
+#### 2. Grid rendering (design system)
+
+**File**: `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/TodayWasContributionGrid.kt`
+
+**Intent**: The Composable becomes a pure, mechanical renderer of a precomputed list — no date
+arithmetic, no map lookups, no `remember` needed at all.
+
+**Contract** *(superseded mid-implementation — see note above)*: `sealed interface
+TodayWasContributionCellUiState { data class Level(val date: LocalDate, val level:
+TodayWasContributionLevel, val hasGapBefore: Boolean = false) : TodayWasContributionCellUiState;
+data class Blank(val hasGapBefore: Boolean = false) : TodayWasContributionCellUiState }` — `date` on
+`Level` is identifying metadata for callers/tests only (the component never reads it); `Blank`
+replaced the original `Gap` object once the per-month truncation redesign needed a same-size,
+no-background placeholder *within* a column rather than a dedicated spacer column between columns.
+`@Composable fun TodayWasContributionGrid(cells: List<TodayWasContributionCellUiState>, modifier:
+Modifier = Modifier)` renders via `LazyHorizontalGrid(rows = GridCells.Fixed(7), reverseLayout =
+true)` (unchanged from Phase 3); each cell applies `Modifier.padding(start = MONTH_GAP)` when
+`hasGapBefore` is true (before the usual cell padding/size), then either a colored `Level` swatch or
+an empty `Blank` box. `TodayWasContributionLevel` and the fixed light/dark palettes are unchanged.
+Ships `@PreviewLightDark` covering: a month-boundary scenario matching the mid-week-Saturday-start
+shape, and a small edge-case grid (single full column, no gaps).
+
+#### 3. Habit — decoupled recomputation
+
+**File**: `app/src/main/java/pl/luczka/todaywas/ui/habit/HabitDetailViewModel.kt`
+
+**Intent**: Stop recomputing the contribution grid on every unrelated state change (every
+`ValueChanged`/`isSaving` toggle during an edit-sheet session) — only recompute when `checkIns` or
+`selectedWindow` actually change.
+
+**Contract**: Derive `contributionGrid` as its own flow: `viewModelState.map { it.checkIns to
+it.selectedWindow }.distinctUntilChanged().map { (checkIns, window) ->
+HabitContributionCalculator.compute(checkIns, window, clock.instant()).toUiState(clock.instant()) }`,
+then combine this with `viewModelState` (via `combine`, not inline inside a single `toUiState` call)
+to produce the final `HabitDetailUiState` — same output shape as before, cheaper trigger frequency.
+
+#### 4. Journal — decoupled recomputation
+
+**File**: `app/src/main/java/pl/luczka/todaywas/ui/main/MainViewModel.kt`
+
+**Intent**: Same decoupling for `journalContributionGrid`, which today sits inside the existing
+5-way `combine(...)` and recomputes on every onboarding/habit-board emission even when journal
+entries/window haven't changed.
+
+**Contract**: Split the journal-entries+selected-window pair out with its own
+`distinctUntilChanged()` gate before computing `JournalContributionCalculator.compute(...)`, folding
+the result back into the existing combine chain rather than recomputing inline on every emission.
+
+#### 5. Grid layout as a choice, not a fixed behavior (added after manual verification)
+
+**File**: `app/src/main/java/pl/luczka/todaywas/ui/model/ContributionMapper.kt`
+
+**Intent**: Per this session's decision, don't hard-code the by-month layout as the only option —
+keep both layouts available behind a type so a future user-facing preference can switch between
+them, defaulting to the plain continuous ("GitHub-like") shape for now. Neither screen currently
+overrides the default, so this change has no visible effect yet — it's purely making the by-month
+work from item 1 selectable rather than deleting or hard-wiring it.
+
+**Contract**: New `enum class ContributionGridType { CONTINUOUS, BY_MONTH }`.
+`ContributionGrid.toUiState(now: Instant, type: ContributionGridType =
+ContributionGridType.CONTINUOUS)` dispatches to one of two private extension functions:
+`toContinuousCells` (plain Monday-Sunday padding across the whole window, every cell a `Level`,
+`NONE` for no-data days — the original Phase 3 shape) or `toByMonthCells` (the per-month
+truncated-column algorithm from item 1 above, unchanged). Both `HabitDetailViewModel` and
+`MainViewModel` call `toUiState(now)` without a `type` argument, so they get `CONTINUOUS` — the
+by-month layout is fully built and unit-tested but not reachable from any screen yet.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- Lint passes: `./gradlew.bat ktlintCheck`
+- Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- `ContributionMapperTest` passes (rewritten after the post-manual-verification redesign above):
+  `toUiState(now)` defaults to `CONTINUOUS`; `CONTINUOUS` never produces a `Blank` cell and covers
+  the whole window padded to full weeks; for `BY_MONTH` — no cell in the window's very first column
+  has `hasGapBefore`; every column has exactly 7 cells; a known real month-boundary case (August 1,
+  2026, a Saturday) produces the exact expected split — the prior month's tail column has Mon-Fri
+  `Level` + Sat-Sun `Blank`, the new month's head column has the inverse plus `hasGapBefore` on all
+  7 cells; a real check-in's date maps to the correct level in both modes.
+- `HabitDetailViewModelTest`/`MainViewModelTest` still pass, plus a new case per ViewModel
+  confirming `contributionGrid`/`journalContributionGrid` is the *same instance* (`===`, not just
+  equal) after an unrelated state change (`ValueChanged` during editing, for Habit; `FabToggled`,
+  for Journal/Main) — proving the `distinctUntilChanged` gate actually skipped recomputation, not
+  just that the recomputed value happened to match
+
+#### Manual Verification:
+
+- With the default `CONTINUOUS` type active in both screens, the grid reads as plain continuous
+  weeks (no month gaps/truncation visible) — matching the "GitHub-like" default this session
+  settled on
+- Editing values in the Habit Detail bottom sheet feels noticeably smoother than before (no visible
+  jank while tapping/typing)
+- Regression: grid still anchors to the most recent week with no blank trailing space; switching
+  the year chip still works; editing/saving in both verticals still works end-to-end
+
+**Implementation Note**: Pause here for manual confirmation before wrapping up the change.
+
 ---
 
 ## Testing Strategy
@@ -670,14 +826,30 @@ no-pagination-needed convention.
 
 #### Automated
 
-- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 3c99500
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck` — 3c99500
+- [x] 5.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — 3c99500
 
 #### Manual
 
-- [x] 5.4 Main's Journal section shows grid + chips above entries; empty state doesn't crash
-- [x] 5.5 Year chip switch changes range without changing existing days' shades
-- [x] 5.6 Tapping an entry still navigates to detail; Edit opens bottom sheet, Save persists and reflects on Main
-- [x] 5.7 Swipe-dismiss discards unsaved change
-- [x] 5.8 Regression: habit check-in logging/editing and habit creation still work end-to-end
+- [x] 5.4 Main's Journal section shows grid + chips above entries; empty state doesn't crash — 3c99500
+- [x] 5.5 Year chip switch changes range without changing existing days' shades — 3c99500
+- [x] 5.6 Tapping an entry still navigates to detail; Edit opens bottom sheet, Save persists and reflects on Main — 3c99500
+- [x] 5.7 Swipe-dismiss discards unsaved change — 3c99500
+- [x] 5.8 Regression: habit check-in logging/editing and habit creation still work end-to-end — 3c99500
+
+### Phase 6: Journal/Habit — Contribution grid UI refinements
+
+#### Automated
+
+- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 6.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+- [x] 6.4 `ContributionMapperTest` passes (CONTINUOUS default + coverage, BY_MONTH truncated-column boundary case)
+- [x] 6.5 `HabitDetailViewModelTest`/`MainViewModelTest` confirm contributionGrid isn't recomputed on unrelated state changes
+
+#### Manual
+
+- [x] 6.6 Grid uses the default CONTINUOUS layout in both screens (plain continuous weeks, no month gaps visible)
+- [x] 6.7 Editing values in the Habit Detail bottom sheet feels noticeably smoother
+- [x] 6.8 Regression: grid still anchors to the most recent week with no blank trailing space; year chip switch and editing/saving in both verticals still work end-to-end

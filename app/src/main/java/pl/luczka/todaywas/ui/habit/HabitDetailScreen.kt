@@ -26,7 +26,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.TodayWasBottomSheet
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionCells
 import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
@@ -117,9 +116,7 @@ private fun HabitDetailScreenContent(
             // needs all available width so more weeks are visible at once — the outer 24dp
             // content padding was visibly cutting into the grid's usable area.
             TodayWasContributionGrid(
-                startDate = uiState.contributionGrid.startDate,
-                endDate = uiState.contributionGrid.endDate,
-                cells = TodayWasContributionCells(uiState.contributionGrid.cells),
+                cells = uiState.contributionGrid.cells,
                 modifier = Modifier.fillMaxWidth(),
             )
             ContributionWindowChipRow(
@@ -262,11 +259,7 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
                 HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 1, eligibleForEdit = false, alreadyLogged = true),
                 HabitDetailRowUiState(date = LocalDate.now().minusDays(5), value = 0, eligibleForEdit = false, alreadyLogged = true),
             ),
-            contributionGrid = ContributionGridUiState(
-                startDate = LocalDate.now().minusDays(34),
-                endDate = LocalDate.now(),
-                cells = emptyMap(),
-            ),
+            contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(
                 ContributionWindowUiState.RollingTwelveMonths,
                 ContributionWindowUiState.CalendarYear(LocalDate.now().year),
@@ -286,11 +279,7 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
                 HabitDetailRowUiState(date = LocalDate.now(), value = 4, eligibleForEdit = true, alreadyLogged = true),
                 HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 3, eligibleForEdit = true, alreadyLogged = true),
             ),
-            contributionGrid = ContributionGridUiState(
-                startDate = LocalDate.now().minusDays(34),
-                endDate = LocalDate.now(),
-                cells = emptyMap(),
-            ),
+            contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(
                 ContributionWindowUiState.RollingTwelveMonths,
                 ContributionWindowUiState.CalendarYear(LocalDate.now().year),

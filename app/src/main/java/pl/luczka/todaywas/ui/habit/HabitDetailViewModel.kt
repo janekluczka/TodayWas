@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -24,6 +26,7 @@ import pl.luczka.todaywas.domain.model.availableWindows
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
+import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.toDomain
@@ -45,24 +48,30 @@ private data class HabitDetailViewModelState(
     val saveError: Boolean = false,
     val saveErrorIsWindowExpired: Boolean = false,
 ) {
-    fun toUiState(now: Instant): HabitDetailUiState {
-        val availableWindows = availableWindows(checkIns.minOfOrNull { it.date }, now)
-        return HabitDetailUiState(
-            isLoading = isLoading,
-            habitName = habitName,
-            type = type,
-            range = range,
-            rows = checkIns.toHabitDetailRows(pendingValues, now),
-            contributionGrid = HabitContributionCalculator.compute(checkIns, selectedWindow, now).toUiState(now),
-            availableWindows = availableWindows.map { it.toUiState() },
-            selectedWindow = selectedWindow.toUiState(),
-            isEditSheetOpen = isEditSheetOpen,
-            isSaving = isSaving,
-            saveError = saveError,
-            saveErrorIsWindowExpired = saveErrorIsWindowExpired,
-        )
-    }
+    fun toUiState(
+        now: Instant,
+        contributionGrid: ContributionGridUiState,
+        availableWindows: List<ContributionWindowUiState>,
+    ): HabitDetailUiState = HabitDetailUiState(
+        isLoading = isLoading,
+        habitName = habitName,
+        type = type,
+        range = range,
+        rows = checkIns.toHabitDetailRows(pendingValues, now),
+        contributionGrid = contributionGrid,
+        availableWindows = availableWindows,
+        selectedWindow = selectedWindow.toUiState(),
+        isEditSheetOpen = isEditSheetOpen,
+        isSaving = isSaving,
+        saveError = saveError,
+        saveErrorIsWindowExpired = saveErrorIsWindowExpired,
+    )
 }
+
+private data class ContributionData(
+    val grid: ContributionGridUiState,
+    val availableWindows: List<ContributionWindowUiState>,
+)
 
 @HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)
 class HabitDetailViewModel @AssistedInject constructor(
@@ -75,13 +84,35 @@ class HabitDetailViewModel @AssistedInject constructor(
 
     private val viewModelState = MutableStateFlow(HabitDetailViewModelState())
 
-    val uiState: StateFlow<HabitDetailUiState> = viewModelState
-        .map { it.toUiState(clock.instant()) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = viewModelState.value.toUiState(clock.instant()),
-        )
+    // Only recomputes when checkIns/selectedWindow actually change — not on every unrelated
+    // state change (pendingValues, isSaving, isEditSheetOpen) during an edit-sheet session, which
+    // `toUiState` being called on every viewModelState emission would otherwise trigger.
+    private val contributionData: Flow<ContributionData> = viewModelState
+        .map { it.checkIns to it.selectedWindow }
+        .distinctUntilChanged()
+        .map { (checkIns, window) ->
+            val now = clock.instant()
+            ContributionData(
+                grid = HabitContributionCalculator.compute(checkIns, window, now).toUiState(now),
+                availableWindows = availableWindows(checkIns.minOfOrNull { it.date }, now).map { it.toUiState() },
+            )
+        }
+
+    val uiState: StateFlow<HabitDetailUiState> = combine(viewModelState, contributionData) { state, contribution ->
+        state.toUiState(clock.instant(), contribution.grid, contribution.availableWindows)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = run {
+            val now = clock.instant()
+            val initialState = HabitDetailViewModelState()
+            initialState.toUiState(
+                now = now,
+                contributionGrid = HabitContributionCalculator.compute(emptyList(), initialState.selectedWindow, now).toUiState(now),
+                availableWindows = availableWindows(null, now).map { it.toUiState() },
+            )
+        },
+    )
 
     private val eventChannel = Channel<HabitDetailUiEvent>(Channel.BUFFERED)
     val events: Flow<HabitDetailUiEvent> = eventChannel.receiveAsFlow()
