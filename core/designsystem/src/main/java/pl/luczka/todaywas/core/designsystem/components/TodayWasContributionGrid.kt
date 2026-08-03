@@ -3,13 +3,12 @@ package pl.luczka.todaywas.core.designsystem.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
 import java.time.LocalDate
@@ -32,13 +32,14 @@ enum class TodayWasContributionLevel {
 
 // A precomputed, already-laid-out cell list — every date/week/month calculation happens once,
 // upstream in ui/model/ContributionMapper.kt, not on every recomposition of this component.
-// Months own their own contiguous block of columns: a month's first/last column is truncated to
-// only the weekdays that actually fall within that month (e.g. a month starting on Saturday gets a
-// column with only Saturday+Sunday populated) — the rest of that column's 7 slots are `Blank`
-// (same footprint, renders nothing). `hasGapBefore` marks every cell in the first column of a new
-// month so the renderer can add a small leading margin there, visually separating month blocks
-// without a dedicated spacer column. `date` on `Level` is identifying metadata for callers/tests —
-// this component never reads it.
+// Months own their own contiguous block of weeks: a month's first/last week is truncated to only
+// the weekdays that actually fall within that month (e.g. a month starting on Saturday gets a week
+// with only Saturday+Sunday populated) — the rest of that week's 7 slots are `Blank` (same
+// footprint, renders nothing). `hasGapBefore` marks every cell in the first week of a new month;
+// callers check it once per week (all 7 cells in a week share the same value) and apply a margin
+// to the whole week container — a horizontal margin before the column in the horizontal grid, a
+// vertical margin above the row in the vertical timeline. `date` on `Level` is identifying
+// metadata for callers/tests — neither renderer reads it.
 sealed interface TodayWasContributionCellUiState {
 
     data class Level(
@@ -55,7 +56,8 @@ sealed interface TodayWasContributionCellUiState {
 // Fixed, non-MaterialTheme.colorScheme palette: TodayWasTheme has dynamicColor = true, so
 // colorScheme roles vary per device/wallpaper (Material You) and would make relative intensity
 // comparisons meaningless. These are the same values GitHub's own contribution graph uses.
-private val LightLevelColors = mapOf(
+// Internal (not private) so TodayWasContributionTimeline.kt can share the same rendering.
+internal val LightLevelColors = mapOf(
     TodayWasContributionLevel.NONE to Color(0xFFEBEDF0),
     TodayWasContributionLevel.LEVEL_1 to Color(0xFF9BE9A8),
     TodayWasContributionLevel.LEVEL_2 to Color(0xFF40C463),
@@ -64,7 +66,7 @@ private val LightLevelColors = mapOf(
     TodayWasContributionLevel.LEVEL_5 to Color(0xFF0E4429),
 )
 
-private val DarkLevelColors = mapOf(
+internal val DarkLevelColors = mapOf(
     TodayWasContributionLevel.NONE to Color(0xFF161B22),
     TodayWasContributionLevel.LEVEL_1 to Color(0xFF0E4429),
     TodayWasContributionLevel.LEVEL_2 to Color(0xFF006D32),
@@ -73,40 +75,66 @@ private val DarkLevelColors = mapOf(
     TodayWasContributionLevel.LEVEL_5 to Color(0xFF56D364),
 )
 
-private val CELL_SIZE = 12.dp
-private val CELL_SPACING = 2.dp
-private val MONTH_GAP = 6.dp
+internal val CELL_SIZE = 12.dp
+internal val CELL_SPACING = 2.dp
+internal val MONTH_GAP = 6.dp
+
+@Composable
+internal fun contributionLevelColors(): Map<TodayWasContributionLevel, Color> =
+    if (isSystemInDarkTheme()) DarkLevelColors else LightLevelColors
+
+// All 7 cells in one week share the same hasGapBefore value (set uniformly by the mapper), so
+// callers only need to check the first cell to decide whether the whole week needs a margin.
+internal fun List<TodayWasContributionCellUiState>.weekHasGapBefore(): Boolean = when (val cell = first()) {
+    is TodayWasContributionCellUiState.Level -> cell.hasGapBefore
+    is TodayWasContributionCellUiState.Blank -> cell.hasGapBefore
+}
+
+// Shared by both TodayWasContributionGrid (horizontal) and TodayWasContributionTimeline
+// (vertical) so the two stay visually consistent without duplicating the palette/size logic. Pure
+// rendering only — month-gap spacing is the week container's job (see weekHasGapBefore), not a
+// per-cell concern, since "before" means a different axis in each component.
+@Composable
+internal fun ContributionCell(
+    cell: TodayWasContributionCellUiState,
+    levelColors: Map<TodayWasContributionLevel, Color>,
+    modifier: Modifier = Modifier,
+    cellSize: Dp = CELL_SIZE,
+) {
+    val cellModifier = modifier
+        .padding(CELL_SPACING / 2)
+        .size(cellSize)
+    when (cell) {
+        is TodayWasContributionCellUiState.Level -> Box(
+            modifier = cellModifier.background(
+                color = levelColors.getValue(cell.level),
+                shape = RoundedCornerShape(2.dp),
+            ),
+        )
+        is TodayWasContributionCellUiState.Blank -> Box(modifier = cellModifier)
+    }
+}
 
 @Composable
 fun TodayWasContributionGrid(
     cells: List<TodayWasContributionCellUiState>,
     modifier: Modifier = Modifier,
 ) {
-    val levelColors = if (isSystemInDarkTheme()) DarkLevelColors else LightLevelColors
+    val levelColors = contributionLevelColors()
 
-    LazyHorizontalGrid(
-        rows = GridCells.Fixed(7),
+    // Each week is one lazy item (not one item per cell) — a week is always exactly 7 cells, so
+    // there's no need for LazyHorizontalGrid's per-item grid-slot math; a plain Column stacking
+    // 7 cells inside a LazyRow item is simpler and cheaper.
+    LazyRow(
         reverseLayout = true,
         contentPadding = PaddingValues(horizontal = 4.dp),
-        modifier = modifier.height((CELL_SIZE + CELL_SPACING) * 7),
+        modifier = modifier,
     ) {
-        items(cells) { cell ->
-            val hasGapBefore = when (cell) {
-                is TodayWasContributionCellUiState.Level -> cell.hasGapBefore
-                is TodayWasContributionCellUiState.Blank -> cell.hasGapBefore
-            }
-            val cellModifier = Modifier
-                .padding(start = if (hasGapBefore) MONTH_GAP else 0.dp)
-                .padding(CELL_SPACING / 2)
-                .size(CELL_SIZE)
-            when (cell) {
-                is TodayWasContributionCellUiState.Level -> Box(
-                    modifier = cellModifier.background(
-                        color = levelColors.getValue(cell.level),
-                        shape = RoundedCornerShape(2.dp),
-                    ),
-                )
-                is TodayWasContributionCellUiState.Blank -> Box(modifier = cellModifier)
+        items(cells.chunked(7)) { week ->
+            Column(
+                modifier = Modifier.padding(start = if (week.weekHasGapBefore()) MONTH_GAP else 0.dp),
+            ) {
+                week.forEach { cell -> ContributionCell(cell = cell, levelColors = levelColors) }
             }
         }
     }
