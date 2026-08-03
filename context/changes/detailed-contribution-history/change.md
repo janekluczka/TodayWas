@@ -3,7 +3,7 @@ change_id: detailed-contribution-history
 title: Detailed contribution history
 status: implementing
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-03
 archived_at: null
 ---
 

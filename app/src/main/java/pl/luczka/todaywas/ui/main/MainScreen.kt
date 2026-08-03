@@ -33,6 +33,8 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
@@ -238,6 +240,9 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
             focus = null,
             journalEntries = emptyList(),
             habits = emptyList(),
+            journalContributionGrid = previewJournalContributionGrid,
+            journalAvailableWindows = previewJournalAvailableWindows,
+            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = emptyList(),
             fabExpanded = false,
         ),
@@ -245,6 +250,9 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
             focus = FocusUiState.JOURNAL,
             journalEntries = emptyList(),
             habits = emptyList(),
+            journalContributionGrid = previewJournalContributionGrid,
+            journalAvailableWindows = previewJournalAvailableWindows,
+            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
             fabExpanded = false,
         ),
@@ -267,6 +275,9 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                 ),
             ),
             habits = emptyList(),
+            journalContributionGrid = previewJournalContributionGrid,
+            journalAvailableWindows = previewJournalAvailableWindows,
+            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = emptyList(),
             fabExpanded = false,
         ),
@@ -287,11 +298,25 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 4),
                 ),
             ),
+            journalContributionGrid = previewJournalContributionGrid,
+            journalAvailableWindows = previewJournalAvailableWindows,
+            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
             fabExpanded = false,
         ),
     )
 }
+
+private val previewJournalContributionGrid = ContributionGridUiState(
+    startDate = LocalDate.now().minusDays(34),
+    endDate = LocalDate.now(),
+    cells = emptyMap(),
+)
+
+private val previewJournalAvailableWindows = listOf(
+    ContributionWindowUiState.RollingTwelveMonths,
+    ContributionWindowUiState.CalendarYear(LocalDate.now().year),
+)
 
 @PreviewLightDark
 @Composable
