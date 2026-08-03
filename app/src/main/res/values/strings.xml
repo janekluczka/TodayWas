@@ -71,6 +71,7 @@
     <string name="habit_detail_cancel_edit_action">Cancel</string>
     <string name="habit_detail_error">Something went wrong. Please try again.</string>
     <string name="habit_detail_edit_window_expired_error">This value can no longer be edited.</string>
-    <string name="habit_detail_today_label">Today</string>
-    <string name="habit_detail_yesterday_label">Yesterday</string>
+    <string name="habit_detail_today_suffix_format">%1$s (today)</string>
+
+    <string name="contribution_window_last_12_months_label">Last 12 months</string>
 </resources>

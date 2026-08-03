@@ -3,6 +3,7 @@ package pl.luczka.todaywas.core.designsystem.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -11,6 +12,8 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -28,6 +31,16 @@ enum class TodayWasContributionLevel {
     LEVEL_4,
     LEVEL_5,
 }
+
+// A raw Map parameter is unstable to the Compose compiler (Map is an interface with mutable
+// subtypes), so passing `cells` directly would defeat recomposition-skipping and force this whole
+// ~370-cell grid to redraw on every unrelated recomposition of the caller (e.g. every keystroke
+// elsewhere on the same screen). Wrapping it in an @Immutable data class restores structural
+// equals()-based skipping.
+@Immutable
+data class TodayWasContributionCells(
+    val values: Map<LocalDate, TodayWasContributionLevel>,
+)
 
 // Fixed, non-MaterialTheme.colorScheme palette: TodayWasTheme has dynamicColor = true, so
 // colorScheme roles vary per device/wallpaper (Material You) and would make relative intensity
@@ -57,26 +70,34 @@ private val CELL_SPACING = 2.dp
 fun TodayWasContributionGrid(
     startDate: LocalDate,
     endDate: LocalDate,
-    cells: Map<LocalDate, TodayWasContributionLevel>,
+    cells: TodayWasContributionCells,
     modifier: Modifier = Modifier,
 ) {
     // Bounds come from the caller's selected window (not derived from `cells`, which only
     // contains non-NONE days) — otherwise a mostly-empty window would render as a tiny grid
     // spanning just its few logged days instead of the full selected range.
-    // Pad backward to the preceding Monday so every column's rows align to the same weekday —
-    // otherwise a start date that isn't a Monday would shift every subsequent column visibly.
-    val paddedStart = startDate.minusDays((startDate.dayOfWeek.value - 1).toLong())
-    val dates = generateSequence(paddedStart) { it.plusDays(1) }
-        .takeWhile { it <= endDate }
-        .toList()
+    // Padded to whole weeks (preceding Monday .. following Sunday) so every column is a full
+    // week, then listed newest-first: combined with reverseLayout below, this anchors the most
+    // recent week at the visual end of the row (like GitHub's own graph) with no blank trailing
+    // space, regardless of viewport width — an explicit initial-scroll-index can't achieve that
+    // without knowing how many columns fit on screen. Memoized since this is a ~370-entry list.
+    val dates = remember(startDate, endDate) {
+        val paddedStart = startDate.minusDays((startDate.dayOfWeek.value - 1).toLong())
+        val paddedEnd = endDate.plusDays(((7 - endDate.dayOfWeek.value) % 7).toLong())
+        generateSequence(paddedEnd) { it.minusDays(1) }
+            .takeWhile { it >= paddedStart }
+            .toList()
+    }
     val levelColors = if (isSystemInDarkTheme()) DarkLevelColors else LightLevelColors
 
     LazyHorizontalGrid(
         rows = GridCells.Fixed(7),
+        reverseLayout = true,
+        contentPadding = PaddingValues(horizontal = 4.dp),
         modifier = modifier.height((CELL_SIZE + CELL_SPACING) * 7),
     ) {
         items(dates) { date ->
-            val level = cells[date] ?: TodayWasContributionLevel.NONE
+            val level = cells.values[date] ?: TodayWasContributionLevel.NONE
             Box(
                 modifier = Modifier
                     .padding(CELL_SPACING / 2)
@@ -93,7 +114,7 @@ fun TodayWasContributionGrid(
 private data class ContributionGridPreviewState(
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val cells: Map<LocalDate, TodayWasContributionLevel>,
+    val cells: TodayWasContributionCells,
 )
 
 private class TodayWasContributionGridPreviewProvider : PreviewParameterProvider<ContributionGridPreviewState> {
@@ -104,27 +125,31 @@ private class TodayWasContributionGridPreviewProvider : PreviewParameterProvider
         ContributionGridPreviewState(
             startDate = today.minusDays(34),
             endDate = today,
-            cells = emptyMap(),
+            cells = TodayWasContributionCells(emptyMap()),
         ),
         // Sparse window: a few logged days inside an otherwise-empty range.
         ContributionGridPreviewState(
             startDate = today.minusDays(34),
             endDate = today,
-            cells = mapOf(
-                today to TodayWasContributionLevel.LEVEL_3,
-                today.minusDays(2) to TodayWasContributionLevel.LEVEL_1,
-                today.minusDays(10) to TodayWasContributionLevel.LEVEL_5,
+            cells = TodayWasContributionCells(
+                mapOf(
+                    today to TodayWasContributionLevel.LEVEL_3,
+                    today.minusDays(2) to TodayWasContributionLevel.LEVEL_1,
+                    today.minusDays(10) to TodayWasContributionLevel.LEVEL_5,
+                ),
             ),
         ),
         // Full 5-level gradient across the whole window.
         ContributionGridPreviewState(
             startDate = today.minusDays(34),
             endDate = today,
-            cells = (0..34).associate { offset ->
-                val date = today.minusDays(offset.toLong())
-                val level = TodayWasContributionLevel.entries[offset % TodayWasContributionLevel.entries.size]
-                date to level
-            },
+            cells = TodayWasContributionCells(
+                (0..34).associate { offset ->
+                    val date = today.minusDays(offset.toLong())
+                    val level = TodayWasContributionLevel.entries[offset % TodayWasContributionLevel.entries.size]
+                    date to level
+                },
+            ),
         ),
     )
 }
