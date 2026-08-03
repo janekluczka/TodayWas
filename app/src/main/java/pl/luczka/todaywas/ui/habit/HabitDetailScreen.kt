@@ -26,7 +26,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.TodayWasBottomSheet
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionGrid
+import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionTimeline
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
@@ -112,18 +112,21 @@ private fun HabitDetailScreenContent(
                 text = uiState.habitName,
                 modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space600),
             )
-            // Full-bleed (no horizontal inset), unlike the name/chips above and below: the grid
-            // needs all available width so more weeks are visible at once — the outer 24dp
-            // content padding was visibly cutting into the grid's usable area.
-            TodayWasContributionGrid(
-                cells = uiState.contributionGrid.cells,
-                modifier = Modifier.fillMaxWidth(),
-            )
             ContributionWindowChipRow(
                 availableWindows = uiState.availableWindows,
                 selectedWindow = uiState.selectedWindow,
                 onWindowSelected = { onIntent(HabitDetailIntent.WindowSelected(it)) },
                 modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+            )
+            // Full-bleed (no horizontal inset), unlike the name/chips above: the timeline's rows
+            // are centered within the available width, and centering against a narrower,
+            // 24dp-inset width would look off-center relative to the full-width chip row above it.
+            // `weight(1f)` lets it fill remaining vertical space and scroll internally.
+            TodayWasContributionTimeline(
+                cells = uiState.contributionGrid.cells,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
             )
         }
     }

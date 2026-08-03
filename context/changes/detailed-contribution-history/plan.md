@@ -719,6 +719,111 @@ by-month layout is fully built and unit-tested but not reachable from any screen
 
 **Implementation Note**: Pause here for manual confirmation before wrapping up the change.
 
+*(Update: a Phase 7 was added after this phase shipped, per user feedback that a vertical timeline
+suits Habit Detail's single-item drill-down better than the horizontal grid. Phase 6 no longer
+wraps up the change; Phase 7 does.)*
+
+---
+
+## Phase 7: Habit Detail — vertical contribution timeline
+
+### Overview
+
+The horizontal `TodayWasContributionGrid` reads best for compact, multi-item overviews (Main's
+Journal section, potentially future multi-habit views) but is a cramped fit for a single habit's
+own drill-down screen. This phase adds a vertical-scrolling alternative — one row per week,
+scrolling down through history — and swaps it in on Habit Detail only; Main's Journal grid stays
+horizontal.
+
+### Changes Required:
+
+#### 1. Vertical timeline component
+
+**File**: `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/components/TodayWasContributionTimeline.kt` (new)
+
+**Intent**: Reuse the exact same precomputed `List<TodayWasContributionCellUiState>` the horizontal
+grid already consumes — no new mapper/domain work needed — just group and orient it differently.
+
+**Contract**: `@Composable fun TodayWasContributionTimeline(cells: List<TodayWasContributionCellUiState>,
+modifier: Modifier = Modifier)` renders a `LazyColumn` where `items(cells.chunked(7))` — each chunk
+is one week (the same grouping the horizontal grid relies on, since `cells` is already
+newest-first/whole-weeks per the mapper's existing contract) rendered as a `Row` of that chunk's 7
+cells **reversed** (so within a row it reads Monday→Sunday left-to-right, ascending — the opposite
+of the horizontal grid, where within-column order is cosmetically irrelevant since it's never
+directly scanned; here each row IS directly scanned, so a sensible left-to-right order matters).
+Because `cells` is already newest-first, item 0 (top of the list) is the most recent week —
+`LazyColumn` needs no `reverseLayout` trick here, unlike the horizontal grid. The per-cell
+color/size/shape rendering (including `hasGapBefore` leading spacing, forward-compatible with a
+future `BY_MONTH` selection) is extracted from `TodayWasContributionGrid.kt` into a shared,
+internal (module-visible, not public) `ContributionCell` composable — now taking an optional
+`cellSize: Dp = CELL_SIZE` param — so both components stay visually consistent without duplicating
+the palette lookup, while each can size its cells independently. Each row is
+`Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth())` — centered
+within the full available width — using a `TIMELINE_CELL_SIZE = 20.dp` (bigger than the horizontal
+grid's compact 12dp, since this view only ever shows one week per row and has room to spare) — both
+adjustments added post-manual-verification, per this session's feedback. Ships `@PreviewLightDark`
+with a `PreviewParameterProvider` covering a multi-week history and a single-week edge case.
+
+#### 2. Wire into Habit Detail only
+
+**File**: `app/src/main/java/pl/luczka/todaywas/ui/habit/HabitDetailScreen.kt`
+
+**Intent**: Swap the horizontal grid for the new vertical timeline on this screen only — Main's
+Journal section (`MainScreen.kt`) is untouched and keeps the horizontal grid.
+
+**Contract**: Replace the `TodayWasContributionGrid(cells = uiState.contributionGrid.cells, modifier
+= Modifier.fillMaxWidth())` call with `TodayWasContributionTimeline(cells =
+uiState.contributionGrid.cells, modifier = Modifier.weight(1f).fillMaxWidth())` — `weight(1f)`
+lets it consume the remaining vertical space in the screen's `Column` and scroll internally. The
+year-chip row moves **above** the timeline (order: name → chips → timeline, not the original
+name → timeline → chips) — post-manual-verification feedback — both so the chip row acts as a
+control bar above the scrollable content, and so the timeline's centered rows measure against the
+same full-width context as the chip row above them (a chip row still inset at 24dp, sitting above
+a full-bleed centered timeline, wouldn't visually align).
+
+#### 3. Week-as-single-item rendering (added post-manual-verification, both files)
+
+**Files**: `core/designsystem/.../TodayWasContributionGrid.kt`, `TodayWasContributionTimeline.kt`
+
+**Intent**: A user question during manual verification ("would it be more optimal to use Row in
+vertical grid and Column in horizontal to display a week?") surfaced a real improvement: a week is
+always exactly 7 cells, so `LazyHorizontalGrid(rows = GridCells.Fixed(7))` doing per-cell grid-slot
+math was unnecessary overhead — treating each *week* as one lazy item (a plain `Column`/`Row` of 7
+cells inside a `LazyRow`/`LazyColumn` item) is simpler and cheaper, and fewer lazy-tracked items
+(~52 weeks vs. ~364 cells for a year). It also exposed a latent bug: `hasGapBefore` was applied as
+horizontal leading padding *inside* `ContributionCell` for both components — correct for the grid's
+columns, but wrong for the timeline's rows (needs *vertical* spacing instead). Inactive today since
+neither screen selects `BY_MONTH`, but wrong regardless.
+
+**Contract**: `TodayWasContributionGrid` now uses a plain `LazyRow(reverseLayout = true)` (not
+`LazyHorizontalGrid`/`GridCells`), `items(cells.chunked(7))`, each week rendered as a `Column` of
+its 7 `ContributionCell`s, with `Modifier.padding(start = if (week.weekHasGapBefore()) MONTH_GAP
+else 0.dp)` on the `Column` itself. `TodayWasContributionTimeline`'s `Row` per week gains the
+mirrored `Modifier.padding(top = if (week.weekHasGapBefore()) MONTH_GAP else 0.dp)`. New internal
+extension `List<TodayWasContributionCellUiState>.weekHasGapBefore(): Boolean` (checks `first()`,
+since the mapper already sets the same value across all 7 cells in an affected week) replaces the
+per-cell check `ContributionCell` used to do — `ContributionCell` itself is now pure rendering (no
+gap logic at all).
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- Lint passes: `./gradlew.bat ktlintCheck`
+- Debug build compiles and installs: `./gradlew.bat assembleDebug`
+
+#### Manual Verification:
+
+- Habit Detail shows a vertically-scrolling list of weeks (most recent at the top), each row
+  reading Monday→Sunday left-to-right, centered within the width, with cells visibly bigger than
+  the horizontal grid's, and the year-chip row sitting above the timeline
+- Main's Journal section is unchanged (still the horizontal grid)
+- Regression: year chip switch, edit bottom sheet, and habit check-in editing/saving still work
+  end-to-end on Habit Detail
+
+**Implementation Note**: Pause here for manual confirmation before wrapping up the change.
+
 ---
 
 ## Testing Strategy
@@ -842,14 +947,28 @@ no-pagination-needed convention.
 
 #### Automated
 
-- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 6.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
-- [x] 6.4 `ContributionMapperTest` passes (CONTINUOUS default + coverage, BY_MONTH truncated-column boundary case)
-- [x] 6.5 `HabitDetailViewModelTest`/`MainViewModelTest` confirm contributionGrid isn't recomputed on unrelated state changes
+- [x] 6.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 5a3a045
+- [x] 6.2 Lint passes: `./gradlew.bat ktlintCheck` — 5a3a045
+- [x] 6.3 Debug build compiles and installs: `./gradlew.bat assembleDebug` — 5a3a045
+- [x] 6.4 `ContributionMapperTest` passes (CONTINUOUS default + coverage, BY_MONTH truncated-column boundary case) — 5a3a045
+- [x] 6.5 `HabitDetailViewModelTest`/`MainViewModelTest` confirm contributionGrid isn't recomputed on unrelated state changes — 5a3a045
 
 #### Manual
 
-- [x] 6.6 Grid uses the default CONTINUOUS layout in both screens (plain continuous weeks, no month gaps visible)
-- [x] 6.7 Editing values in the Habit Detail bottom sheet feels noticeably smoother
-- [x] 6.8 Regression: grid still anchors to the most recent week with no blank trailing space; year chip switch and editing/saving in both verticals still work end-to-end
+- [x] 6.6 Grid uses the default CONTINUOUS layout in both screens (plain continuous weeks, no month gaps visible) — 5a3a045
+- [x] 6.7 Editing values in the Habit Detail bottom sheet feels noticeably smoother — 5a3a045
+- [x] 6.8 Regression: grid still anchors to the most recent week with no blank trailing space; year chip switch and editing/saving in both verticals still work end-to-end — 5a3a045
+
+### Phase 7: Habit Detail — vertical contribution timeline
+
+#### Automated
+
+- [x] 7.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 7.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 7.3 Debug build compiles and installs: `./gradlew.bat assembleDebug`
+
+#### Manual
+
+- [x] 7.4 Habit Detail shows a vertically-scrolling list of weeks (most recent at top), each row reading Monday-Sunday left-to-right, centered, bigger cells, chips above
+- [x] 7.5 Main's Journal section is unchanged (still the horizontal grid)
+- [x] 7.6 Regression: year chip switch, edit bottom sheet, and habit check-in editing/saving still work end-to-end on Habit Detail
