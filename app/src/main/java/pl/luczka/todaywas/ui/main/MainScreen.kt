@@ -26,9 +26,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
@@ -155,7 +155,7 @@ private fun JournalSection(
         )
         // Full-bleed (no horizontal inset), same as Habit Detail's grid: it needs all available
         // width so more weeks are visible at once.
-        TodayWasContributionGrid(
+        DsContributionGrid(
             cells = uiState.journalContributionGrid.cells,
             modifier = Modifier.fillMaxWidth(),
         )

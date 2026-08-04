@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.designsystem.components
+package pl.luczka.todaywas.core.designsystem.components.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
@@ -14,13 +14,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.unit.dp
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodayWasBottomSheet(
+fun DsBottomSheet(
     onDismissRequest: () -> Unit,
     onCloseClicked: () -> Unit,
     closeContentDescription: String,
@@ -40,15 +44,15 @@ fun TodayWasBottomSheet(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = DsSpacing.space400, vertical = DsSpacing.space200),
         ) {
-            TodayWasIconButton(onClick = onCloseClicked) {
-                TodayWasIcon(
+            DsIconButton(onClick = onCloseClicked) {
+                DsIcon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = closeContentDescription,
                 )
             }
-            TodayWasButtonWithLoading(
+            DsButtonWithLoading(
                 text = saveText,
                 onClick = onSaveClicked,
                 enabled = saveEnabled && !isSaving,
@@ -61,11 +65,11 @@ fun TodayWasBottomSheet(
 
 @PreviewLightDark
 @Composable
-private fun TodayWasBottomSheetPreview(
+private fun DsBottomSheetPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) isSaving: Boolean,
 ) {
-    DesignSystemPreviewTheme {
-        TodayWasBottomSheet(
+    DsTheme {
+        DsBottomSheet(
             onDismissRequest = {},
             onCloseClicked = {},
             closeContentDescription = "Close",
@@ -73,9 +77,9 @@ private fun TodayWasBottomSheetPreview(
             onSaveClicked = {},
             isSaving = isSaving,
         ) {
-            TodayWasText(
+            DsText(
                 text = "Sheet content",
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(DsSpacing.space400),
             )
         }
     }

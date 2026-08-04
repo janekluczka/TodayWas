@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.designsystem.components
+package pl.luczka.todaywas.core.designsystem.components.contribution
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -12,20 +12,20 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import pl.luczka.todaywas.core.designsystem.preview.DesignSystemPreviewTheme
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import java.time.LocalDate
 
 // A bit bigger than the horizontal grid's compact 12dp cells — this view only ever shows one
 // week per row, so there's room to make each cell easier to read.
 private val TIMELINE_CELL_SIZE = 20.dp
 
-// A vertical alternative to TodayWasContributionGrid: one row per week, most recent at the top,
+// A vertical alternative to DsContributionGrid: one row per week, most recent at the top,
 // scrolling down through history. Better suited to a single-item drill-down (e.g. Habit Detail)
 // than the horizontal grid, which reads best as a compact multi-item overview. Reuses the exact
 // same precomputed cell list the horizontal grid consumes — no new mapper logic.
 @Composable
-fun TodayWasContributionTimeline(
-    cells: List<TodayWasContributionCellUiState>,
+fun DsContributionTimeline(
+    cells: List<DsContributionCellUiState>,
     modifier: Modifier = Modifier,
 ) {
     val levelColors = contributionLevelColors()
@@ -52,28 +52,28 @@ fun TodayWasContributionTimeline(
     }
 }
 
-private class TodayWasContributionTimelinePreviewProvider : PreviewParameterProvider<List<TodayWasContributionCellUiState>> {
+private class DsContributionTimelinePreviewProvider : PreviewParameterProvider<List<DsContributionCellUiState>> {
     private val today = LocalDate.now()
 
     override val values = sequenceOf(
         // Several weeks of history, most recent first (offset 0 = today).
         (0..27).map { offset ->
-            TodayWasContributionCellUiState.Level(
+            DsContributionCellUiState.Level(
                 today.minusDays(offset.toLong()),
-                TodayWasContributionLevel.entries[offset % TodayWasContributionLevel.entries.size],
+                DsContributionLevel.entries[offset % DsContributionLevel.entries.size],
             )
         },
         // A single week.
-        List(7) { TodayWasContributionCellUiState.Level(today.minusDays(it.toLong()), TodayWasContributionLevel.LEVEL_3) },
+        List(7) { DsContributionCellUiState.Level(today.minusDays(it.toLong()), DsContributionLevel.LEVEL_3) },
     )
 }
 
 @PreviewLightDark
 @Composable
-private fun TodayWasContributionTimelinePreview(
-    @PreviewParameter(TodayWasContributionTimelinePreviewProvider::class) cells: List<TodayWasContributionCellUiState>,
+private fun DsContributionTimelinePreview(
+    @PreviewParameter(DsContributionTimelinePreviewProvider::class) cells: List<DsContributionCellUiState>,
 ) {
-    DesignSystemPreviewTheme {
-        TodayWasContributionTimeline(cells = cells)
+    DsTheme {
+        DsContributionTimeline(cells = cells)
     }
 }

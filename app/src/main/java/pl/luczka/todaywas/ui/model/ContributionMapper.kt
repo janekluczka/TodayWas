@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.ui.model
 
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionCellUiState
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionLevel
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.domain.model.ContributionGrid
 import pl.luczka.todaywas.domain.model.ContributionLevel
 import pl.luczka.todaywas.domain.model.ContributionWindow
@@ -11,7 +11,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 data class ContributionGridUiState(
-    val cells: List<TodayWasContributionCellUiState>,
+    val cells: List<DsContributionCellUiState>,
 )
 
 sealed interface ContributionWindowUiState {
@@ -53,14 +53,14 @@ fun ContributionGrid.toUiState(
 private fun ContributionGrid.toContinuousCells(
     startDate: LocalDate,
     endDate: LocalDate,
-): List<TodayWasContributionCellUiState> {
+): List<DsContributionCellUiState> {
     val paddedStart = startDate.minusDays((startDate.dayOfWeek.value - 1).toLong())
     val paddedEnd = endDate.plusDays(((7 - endDate.dayOfWeek.value) % 7).toLong())
     return generateSequence(paddedStart) { it.plusDays(1) }
         .takeWhile { it <= paddedEnd }
         .map { date ->
-            val level = days[date]?.toUiState() ?: TodayWasContributionLevel.NONE
-            TodayWasContributionCellUiState.Level(date, level)
+            val level = days[date]?.toUiState() ?: DsContributionLevel.NONE
+            DsContributionCellUiState.Level(date, level)
         }.toList()
 }
 
@@ -73,8 +73,8 @@ private fun ContributionGrid.toContinuousCells(
 private fun ContributionGrid.toByMonthCells(
     startDate: LocalDate,
     endDate: LocalDate,
-): List<TodayWasContributionCellUiState> {
-    val cells = mutableListOf<TodayWasContributionCellUiState>()
+): List<DsContributionCellUiState> {
+    val cells = mutableListOf<DsContributionCellUiState>()
     var currentDate = startDate
     var previousMonth: YearMonth? = null
     while (currentDate <= endDate) {
@@ -91,10 +91,10 @@ private fun ContributionGrid.toByMonthCells(
             val rowDate = weekMonday.plusDays(rowOffset.toLong())
             cells.add(
                 if (rowDate < currentDate || rowDate > columnEnd) {
-                    TodayWasContributionCellUiState.Blank(hasGapBefore)
+                    DsContributionCellUiState.Blank(hasGapBefore)
                 } else {
-                    val level = days[rowDate]?.toUiState() ?: TodayWasContributionLevel.NONE
-                    TodayWasContributionCellUiState.Level(rowDate, level, hasGapBefore)
+                    val level = days[rowDate]?.toUiState() ?: DsContributionLevel.NONE
+                    DsContributionCellUiState.Level(rowDate, level, hasGapBefore)
                 },
             )
         }
@@ -103,13 +103,13 @@ private fun ContributionGrid.toByMonthCells(
     return cells
 }
 
-fun ContributionLevel.toUiState(): TodayWasContributionLevel = when (this) {
-    ContributionLevel.NONE -> TodayWasContributionLevel.NONE
-    ContributionLevel.LEVEL_1 -> TodayWasContributionLevel.LEVEL_1
-    ContributionLevel.LEVEL_2 -> TodayWasContributionLevel.LEVEL_2
-    ContributionLevel.LEVEL_3 -> TodayWasContributionLevel.LEVEL_3
-    ContributionLevel.LEVEL_4 -> TodayWasContributionLevel.LEVEL_4
-    ContributionLevel.LEVEL_5 -> TodayWasContributionLevel.LEVEL_5
+fun ContributionLevel.toUiState(): DsContributionLevel = when (this) {
+    ContributionLevel.NONE -> DsContributionLevel.NONE
+    ContributionLevel.LEVEL_1 -> DsContributionLevel.LEVEL_1
+    ContributionLevel.LEVEL_2 -> DsContributionLevel.LEVEL_2
+    ContributionLevel.LEVEL_3 -> DsContributionLevel.LEVEL_3
+    ContributionLevel.LEVEL_4 -> DsContributionLevel.LEVEL_4
+    ContributionLevel.LEVEL_5 -> DsContributionLevel.LEVEL_5
 }
 
 fun ContributionWindow.toUiState(): ContributionWindowUiState = when (this) {

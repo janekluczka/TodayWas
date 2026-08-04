@@ -15,8 +15,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionCellUiState
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionLevel
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.data.repository.OnboardingRepository
@@ -118,10 +118,10 @@ class MainViewModelTest {
     }
 
     private fun levelFor(
-        cells: List<TodayWasContributionCellUiState>,
+        cells: List<DsContributionCellUiState>,
         date: LocalDate,
-    ): TodayWasContributionLevel? = cells
-        .filterIsInstance<TodayWasContributionCellUiState.Level>()
+    ): DsContributionLevel? = cells
+        .filterIsInstance<DsContributionCellUiState.Level>()
         .find { it.date == date }
         ?.level
 

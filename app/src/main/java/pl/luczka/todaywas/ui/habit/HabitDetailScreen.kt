@@ -25,11 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasBottomSheet
-import pl.luczka.todaywas.core.designsystem.components.TodayWasContributionTimeline
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionTimeline
+import pl.luczka.todaywas.core.designsystem.components.dialogs.DsBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
@@ -122,7 +122,7 @@ private fun HabitDetailScreenContent(
             // are centered within the available width, and centering against a narrower,
             // 24dp-inset width would look off-center relative to the full-width chip row above it.
             // `weight(1f)` lets it fill remaining vertical space and scroll internally.
-            TodayWasContributionTimeline(
+            DsContributionTimeline(
                 cells = uiState.contributionGrid.cells,
                 modifier = Modifier
                     .weight(1f)
@@ -132,7 +132,7 @@ private fun HabitDetailScreenContent(
     }
 
     if (uiState.isEditSheetOpen) {
-        TodayWasBottomSheet(
+        DsBottomSheet(
             onDismissRequest = { onIntent(HabitDetailIntent.CancelEditClicked) },
             onCloseClicked = { onIntent(HabitDetailIntent.CancelEditClicked) },
             closeContentDescription = stringResource(R.string.habit_detail_cancel_edit_action),

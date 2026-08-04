@@ -20,9 +20,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
-import pl.luczka.todaywas.core.designsystem.components.TodayWasBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.dialogs.DsBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
@@ -107,7 +107,7 @@ private fun JournalEntryDetailScreenContent(
     }
 
     if (uiState.isEditing) {
-        TodayWasBottomSheet(
+        DsBottomSheet(
             onDismissRequest = { onIntent(JournalEntryDetailIntent.CancelEditClicked) },
             onCloseClicked = { onIntent(JournalEntryDetailIntent.CancelEditClicked) },
             closeContentDescription = stringResource(R.string.journal_detail_cancel_edit_action),
