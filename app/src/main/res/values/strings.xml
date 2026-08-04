@@ -14,6 +14,13 @@
     <string name="main_fab_log_check_ins">Log check-ins</string>
     <string name="content_description_add">Add</string>
     <string name="content_description_back">Back</string>
+
+    <string name="bottom_nav_home_label">Home</string>
+    <string name="bottom_nav_journal_label">Journal</string>
+    <string name="bottom_nav_habits_label">Habits</string>
+    <string name="bottom_nav_preferences_label">Preferences</string>
+    <string name="main_journal_tab_placeholder">Coming soon</string>
+    <string name="main_habit_tab_placeholder">Coming soon</string>
     <string name="content_description_decrease">Decrease</string>
     <string name="content_description_increase">Increase</string>
 

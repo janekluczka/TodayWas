@@ -708,22 +708,22 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — ed091ce
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — ed091ce
 
 ### Phase 3: Bottom navigation shell
 
 #### Automated
 
-- [ ] 3.1 Project builds: `./gradlew.bat assembleDebug`
-- [ ] 3.2 Existing `MainScreen` tests still pass unchanged
-- [ ] 3.3 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.1 Project builds: `./gradlew.bat assembleDebug`
+- [x] 3.2 Existing `MainScreen` tests still pass unchanged
+- [x] 3.3 Lint passes: `./gradlew.bat ktlintCheck`
 
 #### Manual
 
-- [ ] 3.4 4-tab bottom nav renders; Home unchanged; Journal/Habits show placeholders; Preferences
+- [x] 3.4 4-tab bottom nav renders; Home unchanged; Journal/Habits show placeholders; Preferences
       renders empty
-- [ ] 3.5 No regression in journal/habit add/detail flows from Home
+- [x] 3.5 No regression in journal/habit add/detail flows from Home
 
 ### Phase 4: Shared auth-form UI + Preferences screen
 
