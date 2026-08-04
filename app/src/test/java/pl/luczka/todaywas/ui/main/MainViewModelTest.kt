@@ -15,6 +15,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.data.repository.OnboardingRepository
@@ -28,12 +30,15 @@ import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.toUiState
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
@@ -92,6 +97,7 @@ class MainViewModelTest {
         entries: List<JournalEntry> = emptyList(),
         habits: List<Habit> = emptyList(),
         checkIns: List<HabitCheckIn> = emptyList(),
+        clock: Clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
     ): MainViewModel {
         val journalRepository = FakeJournalRepository(entries)
         val habitRepository = FakeHabitRepository(habits, checkIns)
@@ -107,8 +113,17 @@ class MainViewModelTest {
             observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
             observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+            clock = clock,
         )
     }
+
+    private fun levelFor(
+        cells: List<DsContributionCellUiState>,
+        date: LocalDate,
+    ): DsContributionLevel? = cells
+        .filterIsInstance<DsContributionCellUiState.Level>()
+        .find { it.date == date }
+        ?.level
 
     @Before
     fun setUp() {
@@ -340,5 +355,54 @@ class MainViewModelTest {
 
             assertEquals(listOf(MainUiEvent.NavigateToHabitDetail(1L)), events)
             collectJob.cancel()
+        }
+
+    @Test
+    fun `journalContributionGrid and window state reflect loaded entries`() =
+        runTest {
+            val today = entry(LocalDate.now())
+            val viewModel = viewModel(entries = listOf(today))
+
+            val state = viewModel.uiState.value
+
+            assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.journalSelectedWindow)
+            assertTrue(state.journalAvailableWindows.contains(ContributionWindowUiState.RollingTwelveMonths))
+            assertTrue(state.journalAvailableWindows.contains(ContributionWindowUiState.CalendarYear(LocalDate.now().year)))
+            assertTrue(levelFor(state.journalContributionGrid.cells, LocalDate.now()) != null)
+        }
+
+    @Test
+    fun `JournalWindowSelected updates journalSelectedWindow and recomputes the grid without changing an already-visible day's level`() =
+        runTest {
+            val today = entry(LocalDate.now())
+            val older = entry(LocalDate.now().minusDays(3))
+            val viewModel = viewModel(entries = listOf(today, older))
+
+            val levelBefore = levelFor(viewModel.uiState.value.journalContributionGrid.cells, LocalDate.now())
+
+            viewModel.onIntent(
+                MainIntent.JournalWindowSelected(ContributionWindowUiState.CalendarYear(LocalDate.now().year)),
+            )
+            runCurrent()
+
+            assertEquals(
+                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
+                viewModel.uiState.value.journalSelectedWindow,
+            )
+            assertEquals(levelBefore, levelFor(viewModel.uiState.value.journalContributionGrid.cells, LocalDate.now()))
+        }
+
+    @Test
+    fun `journalContributionGrid instance is reused across an unrelated state change`() =
+        runTest {
+            val today = entry(LocalDate.now())
+            val viewModel = viewModel(entries = listOf(today))
+
+            val gridBefore = viewModel.uiState.value.journalContributionGrid
+
+            viewModel.onIntent(MainIntent.FabToggled)
+            runCurrent()
+
+            assertTrue(gridBefore === viewModel.uiState.value.journalContributionGrid)
         }
 }
