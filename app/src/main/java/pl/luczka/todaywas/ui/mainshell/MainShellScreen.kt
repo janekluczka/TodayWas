@@ -29,6 +29,7 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.ui.main.MainScreen
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.ui.preferences.PreferencesScreen
 
 @Composable
 fun MainShellScreen(
@@ -37,6 +38,7 @@ fun MainShellScreen(
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
     onHabitClicked: (Long) -> Unit,
+    onAccountClicked: () -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(BottomNavTab.HOME) }
 
@@ -54,7 +56,7 @@ fun MainShellScreen(
             )
             BottomNavTab.JOURNAL -> TabPlaceholder(stringResource(R.string.main_journal_tab_placeholder))
             BottomNavTab.HABITS -> TabPlaceholder(stringResource(R.string.main_habit_tab_placeholder))
-            BottomNavTab.PREFERENCES -> Unit
+            BottomNavTab.PREFERENCES -> PreferencesScreen(onAccountClicked = onAccountClicked)
         }
     }
 }

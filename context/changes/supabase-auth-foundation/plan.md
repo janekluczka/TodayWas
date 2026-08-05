@@ -715,23 +715,23 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Automated
 
-- [x] 3.1 Project builds: `./gradlew.bat assembleDebug`
-- [x] 3.2 Existing `MainScreen` tests still pass unchanged
-- [x] 3.3 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.1 Project builds: `./gradlew.bat assembleDebug` — 953ba6d
+- [x] 3.2 Existing `MainScreen` tests still pass unchanged — 953ba6d
+- [x] 3.3 Lint passes: `./gradlew.bat ktlintCheck` — 953ba6d
 
 #### Manual
 
 - [x] 3.4 4-tab bottom nav renders; Home unchanged; Journal/Habits show placeholders; Preferences
-      renders empty
-- [x] 3.5 No regression in journal/habit add/detail flows from Home
+      renders empty — 953ba6d
+- [x] 3.5 No regression in journal/habit add/detail flows from Home — 953ba6d
 
 ### Phase 4: Shared auth-form UI + Preferences screen
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 `PreferencesScreen` `@PreviewLightDark` previews (signed-out sign-up, signed-out
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 `PreferencesScreen` `@PreviewLightDark` previews (signed-out sign-up, signed-out
       sign-in-with-error, signed-in)
 
 #### Manual

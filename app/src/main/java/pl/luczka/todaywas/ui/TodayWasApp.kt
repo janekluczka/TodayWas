@@ -9,6 +9,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import pl.luczka.todaywas.ui.account.AccountScreen
 import pl.luczka.todaywas.ui.habit.CreateHabitScreen
 import pl.luczka.todaywas.ui.habit.HabitDetailScreen
 import pl.luczka.todaywas.ui.habit.LogHabitCheckInsScreen
@@ -53,6 +54,12 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                     onCreateHabitClicked = { backStack.add(CreateHabitKey) },
                     onLogCheckInsClicked = { backStack.add(LogHabitCheckInsKey) },
                     onHabitClicked = { habitId -> backStack.add(HabitDetailKey(habitId)) },
+                    onAccountClicked = { backStack.add(AccountKey) },
+                )
+            }
+            entry<AccountKey> {
+                AccountScreen(
+                    onBack = { backStack.removeLastOrNull() },
                 )
             }
             entry<AddJournalEntryKey> {
