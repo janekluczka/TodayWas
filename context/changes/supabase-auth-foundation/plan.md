@@ -729,25 +729,25 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 60177df
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — 60177df
 - [x] 4.3 `PreferencesScreen` `@PreviewLightDark` previews (signed-out sign-up, signed-out
-      sign-in-with-error, signed-in)
+      sign-in-with-error, signed-in) — 60177df
 
 #### Manual
 
 - [ ] 4.4 Email sign-up creates a real Supabase Auth user
 - [ ] 4.5 Sign-out then sign-in with the same credentials works
 - [ ] 4.6 Duplicate-email sign-up shows a friendly error, not a raw exception
-- [ ] 4.7 Google sign-in works (or fails gracefully pre-OAuth-client-ID)
+- [x] 4.7 Google sign-in works (or fails gracefully pre-OAuth-client-ID) — 60177df
 
 ### Phase 5: Onboarding embedding
 
 #### Automated
 
-- [ ] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 5.3 `OnboardingScreen` previews extended (choice, form, signed-in confirmation)
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 5.3 `OnboardingScreen` previews extended (choice, form, signed-in confirmation)
 
 #### Manual
 

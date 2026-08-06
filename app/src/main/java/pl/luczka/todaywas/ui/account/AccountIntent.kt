@@ -4,6 +4,14 @@ sealed interface AccountIntent {
 
     data object BackClicked : AccountIntent
 
+    data class FirstNameChanged(
+        val value: String,
+    ) : AccountIntent
+
+    data class LastNameChanged(
+        val value: String,
+    ) : AccountIntent
+
     data class EmailChanged(
         val value: String,
     ) : AccountIntent

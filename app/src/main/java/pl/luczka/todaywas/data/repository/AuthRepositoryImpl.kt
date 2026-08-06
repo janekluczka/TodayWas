@@ -8,6 +8,8 @@ import io.github.jan.supabase.auth.providers.builtin.IDToken
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
 import javax.inject.Inject
@@ -21,10 +23,16 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signUpWithEmail(
         email: String,
         password: String,
+        firstName: String,
+        lastName: String,
     ): Result<Unit> = authCall {
         supabase.auth.signUpWith(Email) {
             this.email = email
             this.password = password
+            data = buildJsonObject {
+                put("first_name", firstName)
+                put("last_name", lastName)
+            }
         }
     }
 

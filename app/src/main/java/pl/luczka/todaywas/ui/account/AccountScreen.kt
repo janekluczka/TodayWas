@@ -97,6 +97,8 @@ private fun AccountScreenContent(
                 AuthStateUi.Loading -> DsLoadingIndicator()
                 AuthStateUi.SignedOut -> AuthFormContent(
                     state = uiState.authForm,
+                    onFirstNameChanged = { onIntent(AccountIntent.FirstNameChanged(it)) },
+                    onLastNameChanged = { onIntent(AccountIntent.LastNameChanged(it)) },
                     onEmailChanged = { onIntent(AccountIntent.EmailChanged(it)) },
                     onPasswordChanged = { onIntent(AccountIntent.PasswordChanged(it)) },
                     onModeToggled = { onIntent(AccountIntent.ModeToggled) },

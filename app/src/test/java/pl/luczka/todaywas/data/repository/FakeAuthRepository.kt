@@ -23,6 +23,10 @@ class FakeAuthRepository(
         private set
     var signOutCallCount = 0
         private set
+    var lastSignUpFirstName: String? = null
+        private set
+    var lastSignUpLastName: String? = null
+        private set
 
     fun emit(newState: AuthState) {
         state.value = newState
@@ -33,8 +37,12 @@ class FakeAuthRepository(
     override suspend fun signUpWithEmail(
         email: String,
         password: String,
+        firstName: String,
+        lastName: String,
     ): Result<Unit> {
         signUpCallCount++
+        lastSignUpFirstName = firstName
+        lastSignUpLastName = lastName
         return signUpError?.let { Result.failure(AuthException(it)) } ?: Result.success(Unit)
     }
 

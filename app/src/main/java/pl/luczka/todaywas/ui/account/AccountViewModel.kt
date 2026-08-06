@@ -21,6 +21,7 @@ import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.ui.auth.AuthFormMode
 import pl.luczka.todaywas.ui.auth.AuthFormUiState
 import pl.luczka.todaywas.ui.auth.isValidEmail
+import pl.luczka.todaywas.ui.auth.isValidName
 import pl.luczka.todaywas.ui.auth.isValidPassword
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.toUiState
@@ -57,6 +58,8 @@ class AccountViewModel @Inject constructor(
     fun onIntent(intent: AccountIntent) {
         when (intent) {
             AccountIntent.BackClicked -> eventChannel.trySend(AccountUiEvent.NavigatedBack)
+            is AccountIntent.FirstNameChanged -> onFirstNameChanged(intent.value)
+            is AccountIntent.LastNameChanged -> onLastNameChanged(intent.value)
             is AccountIntent.EmailChanged -> onEmailChanged(intent.value)
             is AccountIntent.PasswordChanged -> onPasswordChanged(intent.value)
             AccountIntent.ModeToggled -> onModeToggled()
@@ -65,6 +68,14 @@ class AccountViewModel @Inject constructor(
             AccountIntent.GoogleSignInFailed -> onGoogleSignInFailed()
             AccountIntent.SignOutClicked -> onSignOutClicked()
         }
+    }
+
+    private fun onFirstNameChanged(value: String) {
+        _uiState.update { it.copy(authForm = it.authForm.copy(firstName = value, firstNameError = false)) }
+    }
+
+    private fun onLastNameChanged(value: String) {
+        _uiState.update { it.copy(authForm = it.authForm.copy(lastName = value, lastNameError = false)) }
     }
 
     private fun onEmailChanged(value: String) {
@@ -81,6 +92,8 @@ class AccountViewModel @Inject constructor(
             it.copy(
                 authForm = it.authForm.copy(
                     mode = nextMode,
+                    firstNameError = false,
+                    lastNameError = false,
                     emailError = false,
                     passwordError = false,
                 ),
@@ -94,9 +107,18 @@ class AccountViewModel @Inject constructor(
 
         val emailValid = isValidEmail(form.email)
         val passwordValid = isValidPassword(form.password)
-        if (!emailValid || !passwordValid) {
+        val firstNameValid = form.mode == AuthFormMode.SIGN_IN || isValidName(form.firstName)
+        val lastNameValid = form.mode == AuthFormMode.SIGN_IN || isValidName(form.lastName)
+        if (!emailValid || !passwordValid || !firstNameValid || !lastNameValid) {
             _uiState.update {
-                it.copy(authForm = it.authForm.copy(emailError = !emailValid, passwordError = !passwordValid))
+                it.copy(
+                    authForm = it.authForm.copy(
+                        firstNameError = !firstNameValid,
+                        lastNameError = !lastNameValid,
+                        emailError = !emailValid,
+                        passwordError = !passwordValid,
+                    ),
+                )
             }
             return
         }
@@ -104,7 +126,7 @@ class AccountViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(authForm = it.authForm.copy(isSubmitting = true)) }
             val result = when (form.mode) {
-                AuthFormMode.SIGN_UP -> signUpWithEmail(form.email, form.password)
+                AuthFormMode.SIGN_UP -> signUpWithEmail(form.email, form.password, form.firstName, form.lastName)
                 AuthFormMode.SIGN_IN -> signInWithEmail(form.email, form.password)
             }
             applyAuthResult(result)

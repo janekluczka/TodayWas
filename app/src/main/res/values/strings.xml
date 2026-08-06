@@ -41,6 +41,9 @@
 
     <string name="onboarding_account_description">Create an account to sync your data across devices.</string>
     <string name="onboarding_account_create_cta">Create account</string>
+    <string name="onboarding_account_signin_cta">Sign in</string>
+    <string name="onboarding_account_back">Back</string>
+    <string name="onboarding_account_signed_in_format">Signed in as %1$s</string>
     <string name="onboarding_account_continue_cta">Continue</string>
 
     <string name="onboarding_all_set_title">All set!</string>
@@ -82,6 +85,9 @@
 
     <string name="contribution_window_last_12_months_label">Last 12 months</string>
 
+    <string name="auth_form_first_name_label">First name</string>
+    <string name="auth_form_last_name_label">Last name</string>
+    <string name="auth_form_name_error">Required</string>
     <string name="auth_form_email_label">Email</string>
     <string name="auth_form_email_error">Enter a valid email address</string>
     <string name="auth_form_password_label">Password</string>

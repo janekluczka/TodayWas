@@ -87,15 +87,34 @@ class AccountViewModelTest {
     fun `submit in SIGN_UP mode with valid fields calls signUpWithEmail and resets the form on success`() = runTest {
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
+        viewModel.onIntent(AccountIntent.FirstNameChanged("Jane"))
+        viewModel.onIntent(AccountIntent.LastNameChanged("Doe"))
         viewModel.onIntent(AccountIntent.EmailChanged("person@example.com"))
         viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
 
         viewModel.onIntent(AccountIntent.SubmitClicked)
 
         assertEquals(1, repository.signUpCallCount)
+        assertEquals("Jane", repository.lastSignUpFirstName)
+        assertEquals("Doe", repository.lastSignUpLastName)
         assertEquals(AuthFormMode.SIGN_UP, viewModel.uiState.value.authForm.mode)
         assertEquals("", viewModel.uiState.value.authForm.email)
         assertFalse(viewModel.uiState.value.authForm.isSubmitting)
+    }
+
+    @Test
+    fun `submit in SIGN_UP mode without a name sets name errors without calling the repository`() = runTest {
+        val repository = FakeAuthRepository()
+        val viewModel = viewModel(repository)
+        viewModel.onIntent(AccountIntent.EmailChanged("person@example.com"))
+        viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
+
+        viewModel.onIntent(AccountIntent.SubmitClicked)
+
+        val form = viewModel.uiState.value.authForm
+        assertTrue(form.firstNameError)
+        assertTrue(form.lastNameError)
+        assertEquals(0, repository.signUpCallCount)
     }
 
     @Test
@@ -119,6 +138,8 @@ class AccountViewModelTest {
         val viewModel = viewModel(repository)
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
+        viewModel.onIntent(AccountIntent.FirstNameChanged("Jane"))
+        viewModel.onIntent(AccountIntent.LastNameChanged("Doe"))
         viewModel.onIntent(AccountIntent.EmailChanged("person@example.com"))
         viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
 

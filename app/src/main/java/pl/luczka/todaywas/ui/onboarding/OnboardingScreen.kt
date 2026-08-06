@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -26,9 +28,15 @@ import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoadi
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.selectioncontrols.DsRadioOption
+import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.auth.AuthFormContent
+import pl.luczka.todaywas.ui.auth.AuthFormUiState
+import pl.luczka.todaywas.ui.auth.message
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FocusUiState
 
 @Composable
@@ -38,12 +46,15 @@ fun OnboardingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 OnboardingUiEvent.ExitApp -> activity?.finish()
                 OnboardingUiEvent.Finished -> onFinished()
+                is OnboardingUiEvent.ShowError -> snackbarHostState.showSnackbar(errorMessages.getValue(event.error))
             }
         }
     }
@@ -51,6 +62,7 @@ fun OnboardingScreen(
     OnboardingScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -58,6 +70,7 @@ fun OnboardingScreen(
 private fun OnboardingScreenContent(
     uiState: OnboardingUiState,
     onIntent: (OnboardingIntent) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     BackHandler(enabled = true) { onIntent(OnboardingIntent.StepBack) }
 
@@ -74,6 +87,7 @@ private fun OnboardingScreenContent(
                 onIntent = onIntent,
             )
         },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         HorizontalPager(
@@ -91,7 +105,7 @@ private fun OnboardingScreenContent(
                 when (OnboardingStep.entries[page]) {
                     OnboardingStep.WELCOME -> WelcomeStepBody()
                     OnboardingStep.FOCUS_PICK -> FocusPickStepBody(uiState, onIntent)
-                    OnboardingStep.ACCOUNT_INFO -> AccountInfoStepBody(onIntent)
+                    OnboardingStep.ACCOUNT_INFO -> AccountInfoStepBody(uiState, onIntent)
                     OnboardingStep.ALL_SET -> AllSetStepBody()
                 }
             }
@@ -172,12 +186,64 @@ private fun FocusPickStepBody(
 }
 
 @Composable
-private fun AccountInfoStepBody(onIntent: (OnboardingIntent) -> Unit) {
-    Column {
+private fun AccountInfoStepBody(
+    uiState: OnboardingUiState,
+    onIntent: (OnboardingIntent) -> Unit,
+) {
+    val authState = uiState.authState
+    when {
+        authState is AuthStateUi.SignedIn -> AccountSignedInBody(email = authState.email)
+        uiState.accountSubStep == AccountSubStep.CHOICE -> AccountChoiceBody(onIntent)
+        else -> AccountFormBody(uiState.authForm, onIntent)
+    }
+}
+
+@Composable
+private fun AccountSignedInBody(email: String?) {
+    DsText(
+        text = stringResource(
+            R.string.onboarding_account_signed_in_format,
+            email ?: stringResource(R.string.preferences_signed_in_no_email),
+        ),
+    )
+}
+
+@Composable
+private fun AccountChoiceBody(onIntent: (OnboardingIntent) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400)) {
         DsText(text = stringResource(R.string.onboarding_account_description))
         DsTextButton(
             text = stringResource(R.string.onboarding_account_create_cta),
             onClick = { onIntent(OnboardingIntent.CreateAccountClicked) },
+        )
+        DsTextButton(
+            text = stringResource(R.string.onboarding_account_signin_cta),
+            onClick = { onIntent(OnboardingIntent.SignInClicked) },
+        )
+    }
+}
+
+@Composable
+private fun AccountFormBody(
+    authForm: AuthFormUiState,
+    onIntent: (OnboardingIntent) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400)) {
+        AuthFormContent(
+            state = authForm,
+            onFirstNameChanged = { onIntent(OnboardingIntent.FirstNameChanged(it)) },
+            onLastNameChanged = { onIntent(OnboardingIntent.LastNameChanged(it)) },
+            onEmailChanged = { onIntent(OnboardingIntent.EmailChanged(it)) },
+            onPasswordChanged = { onIntent(OnboardingIntent.PasswordChanged(it)) },
+            onModeToggled = { onIntent(OnboardingIntent.ModeToggled) },
+            onSubmitClicked = { onIntent(OnboardingIntent.SubmitClicked) },
+            onGoogleIdTokenReceived = { onIntent(OnboardingIntent.GoogleIdTokenReceived(it)) },
+            onGoogleSignInFailed = { onIntent(OnboardingIntent.GoogleSignInFailed) },
+        )
+        DsTextButton(
+            text = stringResource(R.string.onboarding_account_back),
+            onClick = { onIntent(OnboardingIntent.BackToChoiceClicked) },
+            enabled = !authForm.isSubmitting,
         )
     }
 }
@@ -215,6 +281,18 @@ private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<On
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
             confirmedFocus = FocusUiState.JOURNAL,
+            accountSubStep = AccountSubStep.CHOICE,
+        ),
+        previewState(
+            step = OnboardingStep.ACCOUNT_INFO,
+            confirmedFocus = FocusUiState.JOURNAL,
+            accountSubStep = AccountSubStep.FORM,
+            authForm = AuthFormUiState(),
+        ),
+        previewState(
+            step = OnboardingStep.ACCOUNT_INFO,
+            confirmedFocus = FocusUiState.JOURNAL,
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
         ),
         previewState(
             step = OnboardingStep.ALL_SET,
@@ -229,12 +307,18 @@ private fun previewState(
     confirmedFocus: FocusUiState? = null,
     isSaving: Boolean = false,
     saveError: Boolean = false,
+    accountSubStep: AccountSubStep = AccountSubStep.CHOICE,
+    authState: AuthStateUi = AuthStateUi.SignedOut,
+    authForm: AuthFormUiState = AuthFormUiState(),
 ) = OnboardingUiState(
     step = step,
     selectedFocus = selectedFocus,
     confirmedFocus = confirmedFocus,
     isSaving = isSaving,
     saveError = saveError,
+    accountSubStep = accountSubStep,
+    authState = authState,
+    authForm = authForm,
 )
 
 @PreviewLightDark

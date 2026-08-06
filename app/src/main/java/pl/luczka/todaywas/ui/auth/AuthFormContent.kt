@@ -33,6 +33,8 @@ import pl.luczka.todaywas.ui.model.AuthErrorUiState
 @Composable
 fun AuthFormContent(
     state: AuthFormUiState,
+    onFirstNameChanged: (String) -> Unit,
+    onLastNameChanged: (String) -> Unit,
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onModeToggled: () -> Unit,
@@ -48,6 +50,26 @@ fun AuthFormContent(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
         modifier = modifier.fillMaxWidth(),
     ) {
+        if (state.mode == AuthFormMode.SIGN_UP) {
+            DsTextField(
+                value = state.firstName,
+                onValueChange = onFirstNameChanged,
+                label = stringResource(R.string.auth_form_first_name_label),
+                enabled = !state.isSubmitting,
+                isError = state.firstNameError,
+                supportingText = if (state.firstNameError) stringResource(R.string.auth_form_name_error) else null,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            DsTextField(
+                value = state.lastName,
+                onValueChange = onLastNameChanged,
+                label = stringResource(R.string.auth_form_last_name_label),
+                enabled = !state.isSubmitting,
+                isError = state.lastNameError,
+                supportingText = if (state.lastNameError) stringResource(R.string.auth_form_name_error) else null,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         DsTextField(
             value = state.email,
             onValueChange = onEmailChanged,
@@ -159,6 +181,8 @@ private fun AuthFormContentPreview(
     DsTheme {
         AuthFormContent(
             state = state,
+            onFirstNameChanged = {},
+            onLastNameChanged = {},
             onEmailChanged = {},
             onPasswordChanged = {},
             onModeToggled = {},
