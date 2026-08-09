@@ -9,12 +9,13 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import pl.luczka.todaywas.ui.account.AccountScreen
 import pl.luczka.todaywas.ui.habit.CreateHabitScreen
 import pl.luczka.todaywas.ui.habit.HabitDetailScreen
 import pl.luczka.todaywas.ui.habit.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
-import pl.luczka.todaywas.ui.main.MainScreen
+import pl.luczka.todaywas.ui.mainshell.MainShellScreen
 import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
 
 @Composable
@@ -47,12 +48,18 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                 )
             }
             entry<MainKey> {
-                MainScreen(
+                MainShellScreen(
                     onAddEntryClicked = { backStack.add(AddJournalEntryKey) },
                     onJournalEntryClicked = { entry -> backStack.add(JournalEntryDetailKey(id = entry.id)) },
                     onCreateHabitClicked = { backStack.add(CreateHabitKey) },
                     onLogCheckInsClicked = { backStack.add(LogHabitCheckInsKey) },
                     onHabitClicked = { habitId -> backStack.add(HabitDetailKey(habitId)) },
+                    onAccountClicked = { backStack.add(AccountKey) },
+                )
+            }
+            entry<AccountKey> {
+                AccountScreen(
+                    onBack = { backStack.removeLastOrNull() },
                 )
             }
             entry<AddJournalEntryKey> {

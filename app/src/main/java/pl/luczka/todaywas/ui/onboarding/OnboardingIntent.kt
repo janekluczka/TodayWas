@@ -14,5 +14,39 @@ sealed interface OnboardingIntent {
         val focus: FocusUiState,
     ) : OnboardingIntent
 
-    data object CreateAccountClicked : OnboardingIntent
+    data object ContinueWithoutAccountClicked : OnboardingIntent
+
+    data object SignInSignUpClicked : OnboardingIntent
+
+    data class SignInEmailChanged(
+        val value: String,
+    ) : OnboardingIntent
+
+    data class SignInPasswordChanged(
+        val value: String,
+    ) : OnboardingIntent
+
+    data object SignInSubmitClicked : OnboardingIntent
+
+    data class SignInGoogleIdTokenReceived(
+        val idToken: String,
+    ) : OnboardingIntent
+
+    data object GoogleSignInFailed : OnboardingIntent
+
+    data object SignUpLinkClicked : OnboardingIntent
+
+    data class SignUpEmailChanged(
+        val value: String,
+    ) : OnboardingIntent
+
+    data class SignUpPasswordChanged(
+        val value: String,
+    ) : OnboardingIntent
+
+    data class SignUpRepeatPasswordChanged(
+        val value: String,
+    ) : OnboardingIntent
+
+    data object SignUpSubmitClicked : OnboardingIntent
 }

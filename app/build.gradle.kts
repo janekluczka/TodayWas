@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -6,6 +9,18 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
+
+fun requiredLocalProperty(key: String): String = localProperties.getProperty(key)
+    ?: error("Missing '$key' in local.properties — see local.properties for the expected keys.")
+
+fun optionalLocalProperty(key: String): String = localProperties.getProperty(key) ?: ""
 
 android {
     namespace = "pl.luczka.todaywas"
@@ -24,6 +39,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SUPABASE_URL", "\"${requiredLocalProperty("SUPABASE_URL")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${requiredLocalProperty("SUPABASE_ANON_KEY")}\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${optionalLocalProperty("GOOGLE_WEB_CLIENT_ID")}\"")
     }
 
     buildTypes {
@@ -39,6 +58,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions {
         unitTests {
@@ -68,6 +88,12 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.core)
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.auth.kt)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.kotlinx.coroutines.test)

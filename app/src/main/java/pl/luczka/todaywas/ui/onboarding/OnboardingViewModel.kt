@@ -11,16 +11,33 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.model.AuthError
+import pl.luczka.todaywas.domain.model.AuthException
+import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.SelectFocusUseCase
+import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
+import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
+import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SkipOnboardingUseCase
+import pl.luczka.todaywas.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.ui.auth.SignUpFormUiState
+import pl.luczka.todaywas.ui.auth.isValidEmail
+import pl.luczka.todaywas.ui.auth.isValidPassword
+import pl.luczka.todaywas.ui.auth.isValidRepeatPassword
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.toDomain
+import pl.luczka.todaywas.ui.model.toUiState
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val selectFocus: SelectFocusUseCase,
     private val skipOnboarding: SkipOnboardingUseCase,
+    observeAuthState: ObserveAuthStateUseCase,
+    private val signUpWithEmail: SignUpWithEmailUseCase,
+    private val signInWithEmail: SignInWithEmailUseCase,
+    private val signInWithGoogle: SignInWithGoogleUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -30,6 +47,11 @@ class OnboardingViewModel @Inject constructor(
             confirmedFocus = null,
             isSaving = false,
             saveError = false,
+            accountSubStep = AccountSubStep.CHOICE,
+            authState = AuthStateUi.Loading,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+            allSetReason = AllSetReason.NO_ACCOUNT,
         ),
     )
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
@@ -37,14 +59,34 @@ class OnboardingViewModel @Inject constructor(
     private val eventChannel = Channel<OnboardingUiEvent>(Channel.BUFFERED)
     val events: Flow<OnboardingUiEvent> = eventChannel.receiveAsFlow()
 
+    init {
+        viewModelScope.launch {
+            observeAuthState().collect { state ->
+                _uiState.update { it.copy(authState = state.toUiState()) }
+            }
+        }
+    }
+
     fun onIntent(intent: OnboardingIntent) {
         when (intent) {
             OnboardingIntent.NextClicked -> onNextClicked()
             OnboardingIntent.SkipClicked -> onSkipClicked()
             OnboardingIntent.StepBack -> onStepBack()
             is OnboardingIntent.FocusOptionSelected -> onFocusOptionSelected(intent.focus)
-            // Real account creation is F-01's job, deferred.
-            OnboardingIntent.CreateAccountClicked -> Unit
+            OnboardingIntent.ContinueWithoutAccountClicked -> onContinueWithoutAccountClicked()
+            OnboardingIntent.SignInSignUpClicked ->
+                _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_IN) }
+            is OnboardingIntent.SignInEmailChanged -> onSignInEmailChanged(intent.value)
+            is OnboardingIntent.SignInPasswordChanged -> onSignInPasswordChanged(intent.value)
+            OnboardingIntent.SignInSubmitClicked -> onSignInSubmitClicked()
+            is OnboardingIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(intent.idToken)
+            OnboardingIntent.GoogleSignInFailed -> onGoogleSignInFailed()
+            OnboardingIntent.SignUpLinkClicked ->
+                _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_UP) }
+            is OnboardingIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
+            is OnboardingIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
+            is OnboardingIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(intent.value)
+            OnboardingIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
         }
     }
 
@@ -52,7 +94,14 @@ class OnboardingViewModel @Inject constructor(
         when (_uiState.value.step) {
             OnboardingStep.WELCOME -> _uiState.update { it.copy(step = OnboardingStep.FOCUS_PICK) }
             OnboardingStep.FOCUS_PICK -> onConfirmFocus()
-            OnboardingStep.ACCOUNT_INFO -> _uiState.update { it.copy(step = OnboardingStep.ALL_SET) }
+            OnboardingStep.ACCOUNT_INFO -> {
+                val reason = if (_uiState.value.authState is AuthStateUi.SignedIn) {
+                    AllSetReason.SIGNED_IN
+                } else {
+                    AllSetReason.NO_ACCOUNT
+                }
+                _uiState.update { it.copy(step = OnboardingStep.ALL_SET, allSetReason = reason) }
+            }
             OnboardingStep.ALL_SET -> eventChannel.trySend(OnboardingUiEvent.Finished)
         }
     }
@@ -92,15 +141,23 @@ class OnboardingViewModel @Inject constructor(
     private fun onStepBack() {
         when (_uiState.value.step) {
             OnboardingStep.FOCUS_PICK -> _uiState.update { it.copy(step = OnboardingStep.WELCOME) }
-            OnboardingStep.ACCOUNT_INFO ->
+            OnboardingStep.ACCOUNT_INFO -> onAccountInfoStepBack()
+            OnboardingStep.ALL_SET -> _uiState.update { it.copy(step = OnboardingStep.ACCOUNT_INFO) }
+            OnboardingStep.WELCOME -> eventChannel.trySend(OnboardingUiEvent.ExitApp)
+        }
+    }
+
+    private fun onAccountInfoStepBack() {
+        when (_uiState.value.accountSubStep) {
+            AccountSubStep.SIGN_UP -> _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_IN) }
+            AccountSubStep.SIGN_IN -> _uiState.update { it.copy(accountSubStep = AccountSubStep.CHOICE) }
+            AccountSubStep.CHOICE ->
                 _uiState.update {
                     it.copy(
                         step = OnboardingStep.FOCUS_PICK,
                         selectedFocus = it.confirmedFocus,
                     )
                 }
-            OnboardingStep.ALL_SET -> _uiState.update { it.copy(step = OnboardingStep.ACCOUNT_INFO) }
-            OnboardingStep.WELCOME -> eventChannel.trySend(OnboardingUiEvent.ExitApp)
         }
     }
 
@@ -127,6 +184,126 @@ class OnboardingViewModel @Inject constructor(
             if (result.isSuccess) {
                 eventChannel.trySend(OnboardingUiEvent.Finished)
             }
+        }
+    }
+
+    private fun onContinueWithoutAccountClicked() {
+        _uiState.update { it.copy(step = OnboardingStep.ALL_SET, allSetReason = AllSetReason.NO_ACCOUNT) }
+    }
+
+    private fun onSignInEmailChanged(value: String) {
+        _uiState.update { it.copy(signInForm = it.signInForm.copy(email = value, emailError = false)) }
+    }
+
+    private fun onSignInPasswordChanged(value: String) {
+        _uiState.update { it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false)) }
+    }
+
+    private fun onSignInSubmitClicked() {
+        val form = _uiState.value.signInForm
+        if (form.isSubmitting) return
+
+        val emailValid = isValidEmail(form.email)
+        val passwordValid = isValidPassword(form.password)
+        if (!emailValid || !passwordValid) {
+            _uiState.update {
+                it.copy(
+                    signInForm = it.signInForm.copy(
+                        emailError = !emailValid,
+                        passwordError = !passwordValid,
+                    ),
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = true)) }
+            applySignInResult(signInWithEmail(form.email, form.password))
+        }
+    }
+
+    private fun onSignInGoogleIdTokenReceived(idToken: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = true)) }
+            applySignInResult(signInWithGoogle(idToken))
+        }
+    }
+
+    private fun onGoogleSignInFailed() {
+        eventChannel.trySend(OnboardingUiEvent.ShowError(AuthError.Unknown.toUiState()))
+    }
+
+    private fun applySignInResult(result: Result<Unit>) {
+        if (result.isSuccess) {
+            _uiState.update {
+                it.copy(
+                    signInForm = SignInFormUiState(),
+                    step = OnboardingStep.ALL_SET,
+                    allSetReason = AllSetReason.SIGNED_IN,
+                )
+            }
+        } else {
+            val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+            _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
+            eventChannel.trySend(OnboardingUiEvent.ShowError(error.toUiState()))
+        }
+    }
+
+    private fun onSignUpEmailChanged(value: String) {
+        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(email = value, emailError = false)) }
+    }
+
+    private fun onSignUpPasswordChanged(value: String) {
+        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false)) }
+    }
+
+    private fun onSignUpRepeatPasswordChanged(value: String) {
+        _uiState.update {
+            it.copy(signUpForm = it.signUpForm.copy(repeatPassword = value, repeatPasswordError = false))
+        }
+    }
+
+    private fun onSignUpSubmitClicked() {
+        val form = _uiState.value.signUpForm
+        if (form.isSubmitting) return
+
+        val emailValid = isValidEmail(form.email)
+        val passwordValid = isValidPassword(form.password)
+        val repeatPasswordValid = isValidRepeatPassword(form.password, form.repeatPassword)
+        if (!emailValid || !passwordValid || !repeatPasswordValid) {
+            _uiState.update {
+                it.copy(
+                    signUpForm = it.signUpForm.copy(
+                        emailError = !emailValid,
+                        passwordError = !passwordValid,
+                        repeatPasswordError = !repeatPasswordValid,
+                    ),
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = true)) }
+            val result = signUpWithEmail(form.email, form.password)
+            applySignUpResult(result)
+        }
+    }
+
+    private fun applySignUpResult(result: Result<Unit>) {
+        if (result.isSuccess) {
+            _uiState.update {
+                it.copy(
+                    signUpForm = SignUpFormUiState(),
+                    step = OnboardingStep.ALL_SET,
+                    allSetReason = AllSetReason.ACCOUNT_CREATED,
+                )
+            }
+        } else {
+            val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+            _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = false)) }
+            eventChannel.trySend(OnboardingUiEvent.ShowError(error.toUiState()))
         }
     }
 }

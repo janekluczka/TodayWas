@@ -17,4 +17,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindHabitRepository(impl: HabitRepositoryImpl): HabitRepository
+
+    @Binds
+    abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
 }
