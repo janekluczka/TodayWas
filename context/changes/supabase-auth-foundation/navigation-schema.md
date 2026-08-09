@@ -1,15 +1,15 @@
-# Navigation Schema (as of supabase-auth-foundation, Phase 5)
+# Navigation Schema (as of supabase-auth-foundation, Phase 5 redesign)
 
-Snapshot of the current navigation structure, for reviewing/adjusting flow and nesting before
-continuing. Three distinct navigation layers exist today, each using a different mechanism:
+Snapshot of the current navigation structure. Three distinct navigation layers exist today, each
+using a different mechanism:
 
 1. **Root** — Navigation 3 (`NavDisplay` + a single `rememberNavBackStack`), in `TodayWasApp.kt`.
 2. **Bottom-nav tabs** — plain local Compose state (`rememberSaveable { mutableStateOf(...) }`),
    in `MainShellScreen.kt`. Not part of the root back stack; no history, no deep-linking.
 3. **Onboarding's internal steps** — a `HorizontalPager` driven by ViewModel state
    (`OnboardingStep` enum), in `OnboardingScreen.kt`. Also not part of the root back stack. The
-   `ACCOUNT_INFO` step additionally has its own two-state `AccountSubStep` (`CHOICE` / `FORM`)
-   layered inside it.
+   `ACCOUNT_INFO` step additionally has its own three-state `AccountSubStep`
+   (`CHOICE` / `SIGN_IN` / `SIGN_UP`) layered inside it.
 
 ## 1. Root NavDisplay (`TodayWasApp.kt` / `TodayWasKey.kt`)
 
@@ -78,27 +78,47 @@ flowchart LR
 
 ## 3. `AccountScreen` (`AccountKey`, pushed from Preferences) — root-level, standalone
 
-Hosts the actual sign-in/sign-up/sign-out UI via the shared `AuthFormContent` composable.
+Hosts sign-in/sign-up/sign-out via the shared `SignInFormContent`/`SignUpFormContent`
+composables, driven by its own `AccountStep` (`SIGN_IN` / `SIGN_UP` / `SUCCESS`) — only reachable
+while `AuthState` is `SignedOut`; a signed-in user sees the unchanged email + Sign out view
+regardless of `step`.
 
 ```mermaid
 flowchart TD
-    Loading[AuthState.Loading<br/>spinner] 
-    SignedOut[AuthState.SignedOut<br/>AuthFormContent:<br/>first/last name*, email, password,<br/>mode toggle, Google button]
+    Loading[AuthState.Loading<br/>spinner]
     SignedIn[AuthState.SignedIn<br/>email + Sign out button]
 
-    SignedOut -- submit success --> SignedIn
-    SignedIn -- Sign out --> SignedOut
+    subgraph SignedOut["AuthState.SignedOut (AccountStep)"]
+        direction TD
+        SignIn["SIGN_IN (initial):<br/>email, password,<br/>Google button, 'Sign up' link"]
+        SignUp["SIGN_UP:<br/>first/last name, email, password,<br/>repeat password, T&C checkbox<br/>(no Google)"]
+        Success["SUCCESS:<br/>confirmation message +<br/>manual 'Continue' button (no timer)"]
 
-    note1["*first/last name fields only<br/>shown in SIGN_UP mode"]
+        SignIn -- "Sign up" link --> SignUp
+        SignUp -- "Back" --> SignIn
+    end
+
+    SignIn -- "sign-in or Google<br/>success -> NavigatedBack" --> SignedIn
+    SignUp -- "sign-up success" --> Success
+    Success -- "Continue -> NavigatedBack" --> SignedIn
+    SignedIn -- "Sign out" --> SignIn
 ```
 
-Errors during submit (either mode) surface as a `Snackbar` via a one-shot `ShowError` event —
-not part of persistent state, so they don't reappear on rotation/recomposition.
+**Notes**:
+- Top-bar back arrow (`AccountIntent.BackClicked`) always pops `AccountScreen` entirely
+  (`NavigatedBack`), from any step. `SIGN_UP`'s in-content "Back" button is a separate,
+  step-local affordance (`BackToSignInClicked`) that only returns to `SIGN_IN`.
+- Unlike onboarding, a successful sign-in/Google sign-in here skips any confirmation screen and
+  pops straight back to Preferences — the Account card there already re-reads auth state on
+  return. Only a successful **sign-up** shows `SUCCESS` first (manual continue, no auto-timer,
+  since there's no "enter the app" transition to time here).
+- Errors during any submit surface as a `Snackbar` via a one-shot `ShowError` event — not part of
+  persistent state, so they don't reappear on rotation/recomposition.
 
 ## 4. Onboarding's internal step pager (`OnboardingScreen.kt` / `OnboardingStep.kt`)
 
 A single `OnboardingKey` root entry internally drives a 4-step `HorizontalPager`, with
-`ACCOUNT_INFO` further split into its own two-state sub-flow (`AccountSubStep`):
+`ACCOUNT_INFO` further split into its own three-state sub-flow (`AccountSubStep`):
 
 ```mermaid
 flowchart TD
@@ -106,39 +126,50 @@ flowchart TD
     FocusPick -->|Back| Welcome
     FocusPick -->|Next: save focus| AccountInfo[ACCOUNT_INFO]
     AccountInfo -->|Back| FocusPick
-    AccountInfo -->|Next: always, regardless<br/>of auth outcome| AllSet[ALL_SET]
+    AccountInfo -->|Next: always, regardless<br/>of auth outcome, reason = NO_ACCOUNT<br/>unless already signed in| AllSet[ALL_SET]
     AllSet -->|Back| AccountInfo
-    AllSet -->|Next| FinishedEvent(("Finished" event<br/>-> root clears stack,<br/>pushes MainKey))
+    AllSet -->|"Next (manual or<br/>5s auto-advance)"| FinishedEvent(("Finished" event<br/>-> root clears stack,<br/>pushes MainKey))
 
     subgraph AccountInfo["ACCOUNT_INFO step (AccountSubStep)"]
         direction TD
-        Choice["CHOICE:<br/>'Create account' / 'Sign in' buttons"]
-        Form["FORM:<br/>AuthFormContent<br/>(same component AccountScreen uses)<br/>+ 'Back' button"]
-        SignedInConfirm["authState == SignedIn:<br/>'Signed in as {email}'<br/>(overrides CHOICE/FORM display)"]
+        Choice["CHOICE:<br/>'Continue without account' /<br/>'Sign in or sign up' buttons"]
+        SignIn["SIGN_IN:<br/>SignInFormContent<br/>(email, password, Google,<br/>'Sign up' link) + 'Back' button"]
+        SignUp["SIGN_UP:<br/>SignUpFormContent<br/>(name, surname, email, password,<br/>repeat password, T&C) + 'Back' button"]
+        SignedInConfirm["authState == SignedIn:<br/>'Signed in as {email}'<br/>(overrides CHOICE/SIGN_IN/SIGN_UP display)"]
 
-        Choice -- "Create account" --> Form
-        Choice -- "Sign in" --> Form
-        Form -- "Back" --> Choice
+        Choice -- "Continue without account<br/>-> ALL_SET (reason=NO_ACCOUNT)" --> AllSetJump(( ))
+        Choice -- "Sign in or sign up" --> SignIn
+        SignIn -- "Sign up link" --> SignUp
+        SignIn -- "Back" --> Choice
+        SignUp -- "Back" --> SignIn
     end
+
+    SignIn -- "sign-in or Google success<br/>-> ALL_SET (reason=SIGNED_IN)" --> AllSet
+    SignUp -- "sign-up success<br/>-> ALL_SET (reason=ACCOUNT_CREATED)" --> AllSet
 ```
 
 **Notes**:
 - The wizard's own `Back` (system back gesture / `BackHandler`) only moves between
   `OnboardingStep`s (`WELCOME` ↔ `FOCUS_PICK` ↔ `ACCOUNT_INFO` ↔ `ALL_SET`). It does **not** know
-  about `AccountSubStep` — going FORM → CHOICE only happens via the in-step "Back" text button,
-  never via the system back gesture. (Currently: system back while in `FORM` jumps straight past
-  `CHOICE` to `FOCUS_PICK`.)
-- `Next` on `ACCOUNT_INFO` always advances to `ALL_SET`, regardless of `accountSubStep` or
-  `authState` — signing in/up is optional, never a gate.
-- `AuthFormContent` here is the **same shared composable** `AccountScreen` uses (Phase 4), so
-  sign-up/sign-in/Google-sign-in and the name fields behave identically in both places. The
+  about `AccountSubStep` — going `SIGN_IN`/`SIGN_UP` → `CHOICE` only happens via the in-step
+  "Back" text button, never via the system back gesture. (Currently: system back while in
+  `SIGN_IN`/`SIGN_UP` jumps straight past `CHOICE` to `FOCUS_PICK`.)
+- `Next` on `ACCOUNT_INFO` always advances to `ALL_SET` regardless of `accountSubStep` — signing
+  in/up is optional, never a gate. The `AllSetReason` it sets is `SIGNED_IN` if `authState` is
+  already `SignedIn` at that moment, `NO_ACCOUNT` otherwise (a successful sign-in/sign-up already
+  jumped to `ALL_SET` itself with the right reason before `Next` could even be pressed again).
+- `ALL_SET` shows `AllSetReason`-specific copy and auto-fires the `Finished` event 5 seconds after
+  being reached (manual Continue still works, cancels the wait by navigating away first).
+- `SignInFormContent`/`SignUpFormContent` here are the **same shared composables**
+  `AccountScreen` uses, so sign-up/sign-in/Google-sign-in behave identically in both places. The
   underlying auth state (`AuthState`/`ObserveAuthStateUseCase`) is also shared — signing in during
   onboarding is immediately reflected in the Preferences tab's Account card afterward, and vice
   versa.
 - Onboarding's `OnboardingViewModel` and `AccountScreen`'s `AccountViewModel` are **two separate
   ViewModels with duplicated form-handling logic** (deliberate — see plan.md's Critical
   Implementation Details on why a shared ViewModel wasn't used across unrelated screens). Only the
-  stateless `AuthFormContent` UI and the use cases underneath are shared, not the ViewModel.
+  stateless `SignInFormContent`/`SignUpFormContent` UI and the use cases underneath are shared,
+  not the ViewModel.
 
 ## Summary table
 
@@ -150,14 +181,15 @@ flowchart TD
 | ↳ Journal tab | local state | `MainKey` | tap tab | switch tab (placeholder only) |
 | ↳ Habits tab | local state | `MainKey` | tap tab | switch tab (placeholder only) |
 | ↳ Preferences tab | local state | `MainKey` | tap tab | switch tab |
-| `AccountKey` | root NavDisplay | — | Preferences tab's Account card | `onBack` → pop to `MainKey` |
+| `AccountKey` | root NavDisplay | — | Preferences tab's Account card | `BackClicked` → pop to `MainKey`; sign-in/Google success → `NavigatedBack` pop |
 | `AddJournalEntryKey` | root NavDisplay | — | Home tab's FAB | saved/cancelled → pop |
 | `JournalEntryDetailKey` | root NavDisplay | — | Home tab's journal list | back → pop |
 | `CreateHabitKey` | root NavDisplay | — | Home tab's FAB | saved/cancelled → pop |
 | `LogHabitCheckInsKey` | root NavDisplay | — | Home tab's FAB | saved/cancelled → pop |
 | `HabitDetailKey` | root NavDisplay | — | Home tab's habit list | back → pop |
 | `WELCOME`/`FOCUS_PICK`/`ACCOUNT_INFO`/`ALL_SET` | `HorizontalPager` + ViewModel state | `OnboardingKey` | pager Next/Back | `Finished`/`ExitApp` events |
-| ↳ `AccountSubStep.CHOICE`/`FORM` | ViewModel state | `ACCOUNT_INFO` step | Create account / Sign in / Back | (folded into `ACCOUNT_INFO`) |
+| ↳ `AccountSubStep.CHOICE`/`SIGN_IN`/`SIGN_UP` | ViewModel state | `ACCOUNT_INFO` step | Continue without account / Sign in or sign up / Sign up link / Back | jumps to `ALL_SET` on success or "continue without account" |
+| ↳ `AccountStep.SIGN_IN`/`SIGN_UP`/`SUCCESS` | ViewModel state | `AccountKey` (signed out) | Sign up link / Back | sign-in success → pop; sign-up success → `SUCCESS` → Continue → pop |
 
 ## Open questions worth deciding before adjusting
 
@@ -169,8 +201,8 @@ flowchart TD
   `lessons.md` note "a future bottom nav bar gets its own nested Nav3 setup"), or is the current
   flat local-state switch (chosen for Phase 3, since only Home had real content) still the right
   call now that Preferences also pushes a real destination (`AccountKey`)?
-- Should system back from `ACCOUNT_INFO`'s `FORM` sub-step go to `CHOICE` first instead of
-  jumping straight to `FOCUS_PICK`?
+- Should system back from `ACCOUNT_INFO`'s `SIGN_IN`/`SIGN_UP` sub-steps go to `CHOICE` (and
+  `SIGN_IN` respectively) first instead of jumping straight to `FOCUS_PICK`?
 - Is a root-level `AccountKey` (reachable only from Preferences) the right place for sign-in, or
   should Preferences' Account card open something scoped closer to "tab-local" navigation once
   bottom-nav tabs get their own nested graphs?

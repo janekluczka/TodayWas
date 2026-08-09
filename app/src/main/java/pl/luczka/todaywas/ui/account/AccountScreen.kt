@@ -1,5 +1,6 @@
 package pl.luczka.todaywas.ui.account
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,8 +33,10 @@ import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.auth.AuthFormContent
-import pl.luczka.todaywas.ui.auth.AuthFormUiState
+import pl.luczka.todaywas.ui.auth.SignInFormContent
+import pl.luczka.todaywas.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.ui.auth.SignUpFormContent
+import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.message
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
@@ -55,6 +58,8 @@ fun AccountScreen(
             }
         }
     }
+
+    BackHandler(enabled = true) { viewModel.onIntent(AccountIntent.BackClicked) }
 
     AccountScreenContent(
         uiState = uiState,
@@ -95,23 +100,54 @@ private fun AccountScreenContent(
         ) {
             when (val authState = uiState.authState) {
                 AuthStateUi.Loading -> DsLoadingIndicator()
-                AuthStateUi.SignedOut -> AuthFormContent(
-                    state = uiState.authForm,
-                    onFirstNameChanged = { onIntent(AccountIntent.FirstNameChanged(it)) },
-                    onLastNameChanged = { onIntent(AccountIntent.LastNameChanged(it)) },
-                    onEmailChanged = { onIntent(AccountIntent.EmailChanged(it)) },
-                    onPasswordChanged = { onIntent(AccountIntent.PasswordChanged(it)) },
-                    onModeToggled = { onIntent(AccountIntent.ModeToggled) },
-                    onSubmitClicked = { onIntent(AccountIntent.SubmitClicked) },
-                    onGoogleIdTokenReceived = { onIntent(AccountIntent.GoogleIdTokenReceived(it)) },
-                    onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed) },
-                )
+                AuthStateUi.SignedOut -> SignedOutContent(uiState, onIntent)
                 is AuthStateUi.SignedIn -> SignedInContent(
                     email = authState.email,
                     onSignOutClicked = { onIntent(AccountIntent.SignOutClicked) },
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun SignedOutContent(
+    uiState: AccountUiState,
+    onIntent: (AccountIntent) -> Unit,
+) {
+    when (uiState.step) {
+        AccountStep.SIGN_IN -> SignInFormContent(
+            state = uiState.signInForm,
+            onEmailChanged = { onIntent(AccountIntent.SignInEmailChanged(it)) },
+            onPasswordChanged = { onIntent(AccountIntent.SignInPasswordChanged(it)) },
+            onSubmitClicked = { onIntent(AccountIntent.SignInSubmitClicked) },
+            onGoogleIdTokenReceived = { onIntent(AccountIntent.SignInGoogleIdTokenReceived(it)) },
+            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed) },
+            onSignUpLinkClicked = { onIntent(AccountIntent.SignUpLinkClicked) },
+        )
+        AccountStep.SIGN_UP -> SignUpFormContent(
+            state = uiState.signUpForm,
+            onEmailChanged = { onIntent(AccountIntent.SignUpEmailChanged(it)) },
+            onPasswordChanged = { onIntent(AccountIntent.SignUpPasswordChanged(it)) },
+            onRepeatPasswordChanged = { onIntent(AccountIntent.SignUpRepeatPasswordChanged(it)) },
+            onSubmitClicked = { onIntent(AccountIntent.SignUpSubmitClicked) },
+        )
+        AccountStep.SUCCESS -> AccountSuccessContent(onIntent)
+    }
+}
+
+@Composable
+private fun AccountSuccessContent(onIntent: (AccountIntent) -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        DsText(text = stringResource(R.string.account_success_title))
+        DsText(text = stringResource(R.string.account_success_message))
+        DsButton(
+            text = stringResource(R.string.account_success_continue_cta),
+            onClick = { onIntent(AccountIntent.ContinueClicked) },
+        )
     }
 }
 
@@ -134,11 +170,35 @@ private fun SignedInContent(
 
 private class AccountUiStatePreviewProvider : PreviewParameterProvider<AccountUiState> {
     override val values = sequenceOf(
-        AccountUiState(authState = AuthStateUi.Loading, authForm = AuthFormUiState()),
-        AccountUiState(authState = AuthStateUi.SignedOut, authForm = AuthFormUiState()),
+        AccountUiState(
+            authState = AuthStateUi.Loading,
+            step = AccountStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+        ),
+        AccountUiState(
+            authState = AuthStateUi.SignedOut,
+            step = AccountStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+        ),
+        AccountUiState(
+            authState = AuthStateUi.SignedOut,
+            step = AccountStep.SIGN_UP,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+        ),
+        AccountUiState(
+            authState = AuthStateUi.SignedOut,
+            step = AccountStep.SUCCESS,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+        ),
         AccountUiState(
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
-            authForm = AuthFormUiState(),
+            step = AccountStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
         ),
     )
 }

@@ -10,7 +10,5 @@ class SignUpWithEmailUseCase @Inject constructor(
     suspend operator fun invoke(
         email: String,
         password: String,
-        firstName: String,
-        lastName: String,
-    ): Result<Unit> = repository.signUpWithEmail(email, password, firstName, lastName)
+    ): Result<Unit> = repository.signUpWithEmail(email, password)
 }

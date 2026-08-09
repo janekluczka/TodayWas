@@ -4,31 +4,39 @@ sealed interface AccountIntent {
 
     data object BackClicked : AccountIntent
 
-    data class FirstNameChanged(
+    data class SignInEmailChanged(
         val value: String,
     ) : AccountIntent
 
-    data class LastNameChanged(
+    data class SignInPasswordChanged(
         val value: String,
     ) : AccountIntent
 
-    data class EmailChanged(
-        val value: String,
-    ) : AccountIntent
+    data object SignInSubmitClicked : AccountIntent
 
-    data class PasswordChanged(
-        val value: String,
-    ) : AccountIntent
-
-    data object ModeToggled : AccountIntent
-
-    data object SubmitClicked : AccountIntent
-
-    data class GoogleIdTokenReceived(
+    data class SignInGoogleIdTokenReceived(
         val idToken: String,
     ) : AccountIntent
 
     data object GoogleSignInFailed : AccountIntent
+
+    data object SignUpLinkClicked : AccountIntent
+
+    data class SignUpEmailChanged(
+        val value: String,
+    ) : AccountIntent
+
+    data class SignUpPasswordChanged(
+        val value: String,
+    ) : AccountIntent
+
+    data class SignUpRepeatPasswordChanged(
+        val value: String,
+    ) : AccountIntent
+
+    data object SignUpSubmitClicked : AccountIntent
+
+    data object ContinueClicked : AccountIntent
 
     data object SignOutClicked : AccountIntent
 }

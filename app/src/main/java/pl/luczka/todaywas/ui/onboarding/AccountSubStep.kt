@@ -2,5 +2,6 @@ package pl.luczka.todaywas.ui.onboarding
 
 enum class AccountSubStep {
     CHOICE,
-    FORM,
+    SIGN_IN,
+    SIGN_UP,
 }

@@ -29,7 +29,6 @@ import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SkipOnboardingUseCase
-import pl.luczka.todaywas.ui.auth.AuthFormMode
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FocusUiState
@@ -80,6 +79,22 @@ class OnboardingViewModelTest {
         viewModel.onIntent(OnboardingIntent.NextClicked)
         viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
         viewModel.onIntent(OnboardingIntent.NextClicked)
+    }
+
+    private fun advanceToSignIn(viewModel: OnboardingViewModel) {
+        advanceToAccountInfo(viewModel)
+        viewModel.onIntent(OnboardingIntent.SignInSignUpClicked)
+    }
+
+    private fun advanceToSignUp(viewModel: OnboardingViewModel) {
+        advanceToSignIn(viewModel)
+        viewModel.onIntent(OnboardingIntent.SignUpLinkClicked)
+    }
+
+    private fun fillSignUpForm(viewModel: OnboardingViewModel) {
+        viewModel.onIntent(OnboardingIntent.SignUpEmailChanged("person@example.com"))
+        viewModel.onIntent(OnboardingIntent.SignUpPasswordChanged("password123"))
+        viewModel.onIntent(OnboardingIntent.SignUpRepeatPasswordChanged("password123"))
     }
 
     @Before
@@ -171,104 +186,174 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `CreateAccountClicked moves to FORM in SIGN_UP mode`() =
+    fun `SignInSignUpClicked moves to SIGN_IN`() =
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToAccountInfo(viewModel)
 
-            viewModel.onIntent(OnboardingIntent.CreateAccountClicked)
+            viewModel.onIntent(OnboardingIntent.SignInSignUpClicked)
 
-            val state = viewModel.uiState.value
-            assertEquals(AccountSubStep.FORM, state.accountSubStep)
-            assertEquals(AuthFormMode.SIGN_UP, state.authForm.mode)
+            assertEquals(AccountSubStep.SIGN_IN, viewModel.uiState.value.accountSubStep)
         }
 
     @Test
-    fun `SignInClicked moves to FORM in SIGN_IN mode`() =
+    fun `SignUpLinkClicked from SIGN_IN moves to SIGN_UP`() =
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
-            advanceToAccountInfo(viewModel)
+            advanceToSignIn(viewModel)
 
-            viewModel.onIntent(OnboardingIntent.SignInClicked)
+            viewModel.onIntent(OnboardingIntent.SignUpLinkClicked)
 
-            val state = viewModel.uiState.value
-            assertEquals(AccountSubStep.FORM, state.accountSubStep)
-            assertEquals(AuthFormMode.SIGN_IN, state.authForm.mode)
+            assertEquals(AccountSubStep.SIGN_UP, viewModel.uiState.value.accountSubStep)
         }
 
     @Test
-    fun `BackToChoiceClicked returns to CHOICE`() =
+    fun `StepBack from SIGN_IN returns to CHOICE`() =
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
-            advanceToAccountInfo(viewModel)
-            viewModel.onIntent(OnboardingIntent.CreateAccountClicked)
+            advanceToSignIn(viewModel)
 
-            viewModel.onIntent(OnboardingIntent.BackToChoiceClicked)
+            viewModel.onIntent(OnboardingIntent.StepBack)
 
             assertEquals(AccountSubStep.CHOICE, viewModel.uiState.value.accountSubStep)
+            assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `submit in SIGN_UP mode with valid fields calls signUpWithEmail and resets the form on success`() =
+    fun `StepBack from SIGN_UP returns to SIGN_IN`() =
+        runTest {
+            val viewModel = viewModel(FakeOnboardingRepository())
+            advanceToSignUp(viewModel)
+
+            viewModel.onIntent(OnboardingIntent.StepBack)
+
+            assertEquals(AccountSubStep.SIGN_IN, viewModel.uiState.value.accountSubStep)
+            assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.step)
+        }
+
+    @Test
+    fun `ContinueWithoutAccountClicked jumps straight to ALL_SET with NO_ACCOUNT reason`() =
+        runTest {
+            val viewModel = viewModel(FakeOnboardingRepository())
+            advanceToAccountInfo(viewModel)
+
+            viewModel.onIntent(OnboardingIntent.ContinueWithoutAccountClicked)
+
+            val state = viewModel.uiState.value
+            assertEquals(OnboardingStep.ALL_SET, state.step)
+            assertEquals(AllSetReason.NO_ACCOUNT, state.allSetReason)
+        }
+
+    @Test
+    fun `sign-in submit with valid fields calls signInWithEmail and jumps to ALL_SET with SIGNED_IN reason`() =
         runTest {
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
-            advanceToAccountInfo(viewModel)
-            viewModel.onIntent(OnboardingIntent.CreateAccountClicked)
-            viewModel.onIntent(OnboardingIntent.FirstNameChanged("Jane"))
-            viewModel.onIntent(OnboardingIntent.LastNameChanged("Doe"))
-            viewModel.onIntent(OnboardingIntent.EmailChanged("person@example.com"))
-            viewModel.onIntent(OnboardingIntent.PasswordChanged("password123"))
+            advanceToSignIn(viewModel)
+            viewModel.onIntent(OnboardingIntent.SignInEmailChanged("person@example.com"))
+            viewModel.onIntent(OnboardingIntent.SignInPasswordChanged("password123"))
 
-            viewModel.onIntent(OnboardingIntent.SubmitClicked)
+            viewModel.onIntent(OnboardingIntent.SignInSubmitClicked)
+
+            assertEquals(1, authRepository.signInCallCount)
+            val state = viewModel.uiState.value
+            assertEquals(OnboardingStep.ALL_SET, state.step)
+            assertEquals(AllSetReason.SIGNED_IN, state.allSetReason)
+            assertFalse(state.signInForm.isSubmitting)
+        }
+
+    @Test
+    fun `sign-in submit with invalid email sets emailError without calling the repository`() =
+        runTest {
+            val authRepository = FakeAuthRepository()
+            val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
+            advanceToSignIn(viewModel)
+            viewModel.onIntent(OnboardingIntent.SignInEmailChanged("not-an-email"))
+            viewModel.onIntent(OnboardingIntent.SignInPasswordChanged("password123"))
+
+            viewModel.onIntent(OnboardingIntent.SignInSubmitClicked)
+
+            assertTrue(viewModel.uiState.value.signInForm.emailError)
+            assertEquals(0, authRepository.signInCallCount)
+            assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.step)
+        }
+
+    @Test
+    fun `sign-in submit failure emits a ShowError event and stops submitting without leaving ACCOUNT_INFO`() =
+        runTest {
+            val authRepository = FakeAuthRepository()
+            authRepository.signInError = AuthError.InvalidCredentials
+            val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
+            advanceToSignIn(viewModel)
+            viewModel.onIntent(OnboardingIntent.SignInEmailChanged("person@example.com"))
+            viewModel.onIntent(OnboardingIntent.SignInPasswordChanged("password123"))
+            val events = mutableListOf<OnboardingUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            viewModel.onIntent(OnboardingIntent.SignInSubmitClicked)
+            runCurrent()
+
+            assertEquals(
+                listOf(OnboardingUiEvent.ShowError(AuthErrorUiState.INVALID_CREDENTIALS)),
+                events,
+            )
+            val state = viewModel.uiState.value
+            assertFalse(state.signInForm.isSubmitting)
+            assertEquals(OnboardingStep.ACCOUNT_INFO, state.step)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `sign-up submit with valid fields calls signUpWithEmail and jumps to ALL_SET with ACCOUNT_CREATED reason`() =
+        runTest {
+            val authRepository = FakeAuthRepository()
+            val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
+            advanceToSignUp(viewModel)
+            fillSignUpForm(viewModel)
+
+            viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
 
             assertEquals(1, authRepository.signUpCallCount)
-            assertEquals("Jane", authRepository.lastSignUpFirstName)
-            assertEquals("Doe", authRepository.lastSignUpLastName)
-            assertFalse(viewModel.uiState.value.authForm.isSubmitting)
+            val state = viewModel.uiState.value
+            assertEquals(OnboardingStep.ALL_SET, state.step)
+            assertEquals(AllSetReason.ACCOUNT_CREATED, state.allSetReason)
+            assertFalse(state.signUpForm.isSubmitting)
         }
 
     @Test
-    fun `submit in SIGN_UP mode without a name sets name errors without calling the repository`() =
+    fun `sign-up submit with mismatched repeat password sets repeatPasswordError without calling the repository`() =
         runTest {
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
-            advanceToAccountInfo(viewModel)
-            viewModel.onIntent(OnboardingIntent.CreateAccountClicked)
-            viewModel.onIntent(OnboardingIntent.EmailChanged("person@example.com"))
-            viewModel.onIntent(OnboardingIntent.PasswordChanged("password123"))
+            advanceToSignUp(viewModel)
+            fillSignUpForm(viewModel)
+            viewModel.onIntent(OnboardingIntent.SignUpRepeatPasswordChanged("mismatch"))
 
-            viewModel.onIntent(OnboardingIntent.SubmitClicked)
+            viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
 
-            val form = viewModel.uiState.value.authForm
-            assertTrue(form.firstNameError)
-            assertTrue(form.lastNameError)
+            assertTrue(viewModel.uiState.value.signUpForm.repeatPasswordError)
             assertEquals(0, authRepository.signUpCallCount)
         }
 
     @Test
-    fun `submit failure emits a ShowError event and stops submitting`() =
+    fun `sign-up submit failure emits a ShowError event and stops submitting`() =
         runTest {
             val authRepository = FakeAuthRepository()
             authRepository.signUpError = AuthError.EmailAlreadyRegistered
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
-            advanceToAccountInfo(viewModel)
-            viewModel.onIntent(OnboardingIntent.CreateAccountClicked)
-            viewModel.onIntent(OnboardingIntent.FirstNameChanged("Jane"))
-            viewModel.onIntent(OnboardingIntent.LastNameChanged("Doe"))
-            viewModel.onIntent(OnboardingIntent.EmailChanged("person@example.com"))
-            viewModel.onIntent(OnboardingIntent.PasswordChanged("password123"))
+            advanceToSignUp(viewModel)
+            fillSignUpForm(viewModel)
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
-            viewModel.onIntent(OnboardingIntent.SubmitClicked)
+            viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
             runCurrent()
 
             assertEquals(
                 listOf(OnboardingUiEvent.ShowError(AuthErrorUiState.EMAIL_ALREADY_REGISTERED)),
                 events,
             )
-            assertFalse(viewModel.uiState.value.authForm.isSubmitting)
+            assertFalse(viewModel.uiState.value.signUpForm.isSubmitting)
             collectJob.cancel()
         }
 
@@ -287,41 +372,24 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `NextClicked on ACCOUNT_INFO advances to ALL_SET when nothing was chosen`() =
+    fun `NextClicked on ACCOUNT_INFO advances to ALL_SET with NO_ACCOUNT reason when nothing was chosen`() =
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToAccountInfo(viewModel)
 
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
-            assertEquals(OnboardingStep.ALL_SET, viewModel.uiState.value.step)
+            val state = viewModel.uiState.value
+            assertEquals(OnboardingStep.ALL_SET, state.step)
+            assertEquals(AllSetReason.NO_ACCOUNT, state.allSetReason)
         }
 
     @Test
-    fun `NextClicked on ACCOUNT_INFO advances to ALL_SET while mid-form`() =
+    fun `NextClicked on ACCOUNT_INFO advances to ALL_SET while mid sign-in form`() =
         runTest {
             val viewModel = viewModel(FakeOnboardingRepository())
-            advanceToAccountInfo(viewModel)
-            viewModel.onIntent(OnboardingIntent.CreateAccountClicked)
-            viewModel.onIntent(OnboardingIntent.EmailChanged("person@example.com"))
-
-            viewModel.onIntent(OnboardingIntent.NextClicked)
-
-            assertEquals(OnboardingStep.ALL_SET, viewModel.uiState.value.step)
-        }
-
-    @Test
-    fun `NextClicked on ACCOUNT_INFO advances to ALL_SET after a successful sign-up`() =
-        runTest {
-            val authRepository = FakeAuthRepository()
-            val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
-            advanceToAccountInfo(viewModel)
-            viewModel.onIntent(OnboardingIntent.CreateAccountClicked)
-            viewModel.onIntent(OnboardingIntent.FirstNameChanged("Jane"))
-            viewModel.onIntent(OnboardingIntent.LastNameChanged("Doe"))
-            viewModel.onIntent(OnboardingIntent.EmailChanged("person@example.com"))
-            viewModel.onIntent(OnboardingIntent.PasswordChanged("password123"))
-            viewModel.onIntent(OnboardingIntent.SubmitClicked)
+            advanceToSignIn(viewModel)
+            viewModel.onIntent(OnboardingIntent.SignInEmailChanged("person@example.com"))
 
             viewModel.onIntent(OnboardingIntent.NextClicked)
 

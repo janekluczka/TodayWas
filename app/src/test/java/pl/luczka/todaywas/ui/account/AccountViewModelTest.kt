@@ -22,8 +22,7 @@ import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
-import pl.luczka.todaywas.ui.auth.AuthFormMode
-import pl.luczka.todaywas.ui.auth.AuthFormUiState
+import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 
@@ -38,6 +37,12 @@ class AccountViewModelTest {
         signOut = SignOutUseCase(repository),
     )
 
+    private fun fillSignUpForm(viewModel: AccountViewModel) {
+        viewModel.onIntent(AccountIntent.SignUpEmailChanged("person@example.com"))
+        viewModel.onIntent(AccountIntent.SignUpPasswordChanged("password123"))
+        viewModel.onIntent(AccountIntent.SignUpRepeatPasswordChanged("password123"))
+    }
+
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -49,12 +54,13 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `initial state reflects the observed auth state`() = runTest {
+    fun `initial state reflects the observed auth state and starts on SIGN_IN`() = runTest {
         val repository = FakeAuthRepository(initialState = AuthState.SignedOut)
 
         val viewModel = viewModel(repository)
 
         assertEquals(AuthStateUi.SignedOut, viewModel.uiState.value.authState)
+        assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
     }
 
     @Test
@@ -71,112 +77,162 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `submit with invalid email sets emailError without calling the repository`() = runTest {
-        val repository = FakeAuthRepository()
-        val viewModel = viewModel(repository)
-        viewModel.onIntent(AccountIntent.EmailChanged("not-an-email"))
-        viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
+    fun `SignUpLinkClicked moves to SIGN_UP`() = runTest {
+        val viewModel = viewModel(FakeAuthRepository())
 
-        viewModel.onIntent(AccountIntent.SubmitClicked)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
 
-        assertTrue(viewModel.uiState.value.authForm.emailError)
-        assertEquals(0, repository.signUpCallCount)
+        assertEquals(AccountStep.SIGN_UP, viewModel.uiState.value.step)
     }
 
     @Test
-    fun `submit in SIGN_UP mode with valid fields calls signUpWithEmail and resets the form on success`() = runTest {
-        val repository = FakeAuthRepository()
-        val viewModel = viewModel(repository)
-        viewModel.onIntent(AccountIntent.FirstNameChanged("Jane"))
-        viewModel.onIntent(AccountIntent.LastNameChanged("Doe"))
-        viewModel.onIntent(AccountIntent.EmailChanged("person@example.com"))
-        viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
+    fun `BackClicked from SIGN_UP returns to SIGN_IN without navigating back`() = runTest {
+        val viewModel = viewModel(FakeAuthRepository())
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
-        viewModel.onIntent(AccountIntent.SubmitClicked)
+        viewModel.onIntent(AccountIntent.BackClicked)
+        runCurrent()
 
-        assertEquals(1, repository.signUpCallCount)
-        assertEquals("Jane", repository.lastSignUpFirstName)
-        assertEquals("Doe", repository.lastSignUpLastName)
-        assertEquals(AuthFormMode.SIGN_UP, viewModel.uiState.value.authForm.mode)
-        assertEquals("", viewModel.uiState.value.authForm.email)
-        assertFalse(viewModel.uiState.value.authForm.isSubmitting)
+        assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
+        assertEquals(emptyList<AccountUiEvent>(), events)
+        collectJob.cancel()
     }
 
     @Test
-    fun `submit in SIGN_UP mode without a name sets name errors without calling the repository`() = runTest {
+    fun `sign-in submit with invalid email sets emailError without calling the repository`() = runTest {
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
-        viewModel.onIntent(AccountIntent.EmailChanged("person@example.com"))
-        viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
+        viewModel.onIntent(AccountIntent.SignInEmailChanged("not-an-email"))
+        viewModel.onIntent(AccountIntent.SignInPasswordChanged("password123"))
 
-        viewModel.onIntent(AccountIntent.SubmitClicked)
+        viewModel.onIntent(AccountIntent.SignInSubmitClicked)
 
-        val form = viewModel.uiState.value.authForm
-        assertTrue(form.firstNameError)
-        assertTrue(form.lastNameError)
-        assertEquals(0, repository.signUpCallCount)
+        assertTrue(viewModel.uiState.value.signInForm.emailError)
+        assertEquals(0, repository.signInCallCount)
     }
 
     @Test
-    fun `submit in SIGN_IN mode calls signInWithEmail`() = runTest {
+    fun `sign-in submit with valid fields calls signInWithEmail and pops back without a SUCCESS step`() = runTest {
         val repository = FakeAuthRepository()
-        val viewModel = viewModel(repository)
-        viewModel.onIntent(AccountIntent.ModeToggled)
-        viewModel.onIntent(AccountIntent.EmailChanged("person@example.com"))
-        viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
-
-        viewModel.onIntent(AccountIntent.SubmitClicked)
-
-        assertEquals(1, repository.signInCallCount)
-        assertEquals(0, repository.signUpCallCount)
-    }
-
-    @Test
-    fun `submit failure emits a ShowError event with the mapped error and stops submitting`() = runTest {
-        val repository = FakeAuthRepository()
-        repository.signUpError = AuthError.EmailAlreadyRegistered
         val viewModel = viewModel(repository)
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
-        viewModel.onIntent(AccountIntent.FirstNameChanged("Jane"))
-        viewModel.onIntent(AccountIntent.LastNameChanged("Doe"))
-        viewModel.onIntent(AccountIntent.EmailChanged("person@example.com"))
-        viewModel.onIntent(AccountIntent.PasswordChanged("password123"))
+        viewModel.onIntent(AccountIntent.SignInEmailChanged("person@example.com"))
+        viewModel.onIntent(AccountIntent.SignInPasswordChanged("password123"))
 
-        viewModel.onIntent(AccountIntent.SubmitClicked)
+        viewModel.onIntent(AccountIntent.SignInSubmitClicked)
+        runCurrent()
+
+        assertEquals(1, repository.signInCallCount)
+        assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
+        assertEquals(SignInFormUiState(), viewModel.uiState.value.signInForm)
+        assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `sign-in submit failure emits a ShowError event and stops submitting without navigating back`() = runTest {
+        val repository = FakeAuthRepository()
+        repository.signInError = AuthError.InvalidCredentials
+        val viewModel = viewModel(repository)
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
+        viewModel.onIntent(AccountIntent.SignInEmailChanged("person@example.com"))
+        viewModel.onIntent(AccountIntent.SignInPasswordChanged("password123"))
+
+        viewModel.onIntent(AccountIntent.SignInSubmitClicked)
+        runCurrent()
+
+        assertEquals(
+            listOf(AccountUiEvent.ShowError(AuthErrorUiState.INVALID_CREDENTIALS)),
+            events,
+        )
+        assertFalse(viewModel.uiState.value.signInForm.isSubmitting)
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `sign-up submit with valid fields calls signUpWithEmail and moves to SUCCESS`() = runTest {
+        val repository = FakeAuthRepository()
+        val viewModel = viewModel(repository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+
+        assertEquals(1, repository.signUpCallCount)
+        assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
+        assertFalse(viewModel.uiState.value.signUpForm.isSubmitting)
+    }
+
+    @Test
+    fun `sign-up submit with mismatched repeat password sets repeatPasswordError without calling the repository`() =
+        runTest {
+            val repository = FakeAuthRepository()
+            val viewModel = viewModel(repository)
+            viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+            fillSignUpForm(viewModel)
+            viewModel.onIntent(AccountIntent.SignUpRepeatPasswordChanged("mismatch"))
+
+            viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+
+            assertTrue(viewModel.uiState.value.signUpForm.repeatPasswordError)
+            assertEquals(0, repository.signUpCallCount)
+        }
+
+    @Test
+    fun `sign-up submit failure emits a ShowError event with the mapped error and stops submitting`() = runTest {
+        val repository = FakeAuthRepository()
+        repository.signUpError = AuthError.EmailAlreadyRegistered
+        val viewModel = viewModel(repository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
+        fillSignUpForm(viewModel)
+
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
         runCurrent()
 
         assertEquals(
             listOf(AccountUiEvent.ShowError(AuthErrorUiState.EMAIL_ALREADY_REGISTERED)),
             events,
         )
-        assertFalse(viewModel.uiState.value.authForm.isSubmitting)
+        assertFalse(viewModel.uiState.value.signUpForm.isSubmitting)
         collectJob.cancel()
     }
 
     @Test
-    fun `ModeToggled switches between SIGN_UP and SIGN_IN and clears errors`() = runTest {
-        val viewModel = viewModel(FakeAuthRepository())
-        viewModel.onIntent(AccountIntent.EmailChanged("not-an-email"))
-        viewModel.onIntent(AccountIntent.SubmitClicked)
-        assertTrue(viewModel.uiState.value.authForm.emailError)
+    fun `ContinueClicked from SUCCESS emits NavigatedBack`() = runTest {
+        val repository = FakeAuthRepository()
+        val viewModel = viewModel(repository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
-        viewModel.onIntent(AccountIntent.ModeToggled)
+        viewModel.onIntent(AccountIntent.ContinueClicked)
+        runCurrent()
 
-        val form = viewModel.uiState.value.authForm
-        assertEquals(AuthFormMode.SIGN_IN, form.mode)
-        assertFalse(form.emailError)
+        assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
+        collectJob.cancel()
     }
 
     @Test
-    fun `GoogleIdTokenReceived calls signInWithGoogleIdToken and resets the form on success`() = runTest {
+    fun `SignInGoogleIdTokenReceived calls signInWithGoogleIdToken and pops back on success`() = runTest {
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
-        viewModel.onIntent(AccountIntent.GoogleIdTokenReceived("id-token"))
+        viewModel.onIntent(AccountIntent.SignInGoogleIdTokenReceived("id-token"))
+        runCurrent()
 
-        assertFalse(viewModel.uiState.value.authForm.isSubmitting)
-        assertEquals(AuthFormUiState(), viewModel.uiState.value.authForm)
+        assertFalse(viewModel.uiState.value.signInForm.isSubmitting)
+        assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
+        collectJob.cancel()
     }
 
     @Test

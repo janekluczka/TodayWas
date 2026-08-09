@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
@@ -32,8 +33,10 @@ import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.auth.AuthFormContent
-import pl.luczka.todaywas.ui.auth.AuthFormUiState
+import pl.luczka.todaywas.ui.auth.SignInFormContent
+import pl.luczka.todaywas.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.ui.auth.SignUpFormContent
+import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.message
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
@@ -78,6 +81,12 @@ private fun OnboardingScreenContent(
     LaunchedEffect(uiState.step) {
         pagerState.animateScrollToPage(uiState.step.ordinal)
     }
+    LaunchedEffect(uiState.step) {
+        if (uiState.step == OnboardingStep.ALL_SET) {
+            delay(ALL_SET_AUTO_ADVANCE_DELAY_MS)
+            onIntent(OnboardingIntent.NextClicked)
+        }
+    }
 
     DsScaffold(
         topBar = { DsTopBar(title = "") },
@@ -106,12 +115,14 @@ private fun OnboardingScreenContent(
                     OnboardingStep.WELCOME -> WelcomeStepBody()
                     OnboardingStep.FOCUS_PICK -> FocusPickStepBody(uiState, onIntent)
                     OnboardingStep.ACCOUNT_INFO -> AccountInfoStepBody(uiState, onIntent)
-                    OnboardingStep.ALL_SET -> AllSetStepBody()
+                    OnboardingStep.ALL_SET -> AllSetStepBody(uiState)
                 }
             }
         }
     }
 }
+
+private const val ALL_SET_AUTO_ADVANCE_DELAY_MS = 5_000L
 
 @Composable
 private fun OnboardingBottomBar(
@@ -194,7 +205,8 @@ private fun AccountInfoStepBody(
     when {
         authState is AuthStateUi.SignedIn -> AccountSignedInBody(email = authState.email)
         uiState.accountSubStep == AccountSubStep.CHOICE -> AccountChoiceBody(onIntent)
-        else -> AccountFormBody(uiState.authForm, onIntent)
+        uiState.accountSubStep == AccountSubStep.SIGN_IN -> AccountSignInBody(uiState.signInForm, onIntent)
+        else -> AccountSignUpBody(uiState.signUpForm, onIntent)
     }
 }
 
@@ -213,44 +225,66 @@ private fun AccountChoiceBody(onIntent: (OnboardingIntent) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400)) {
         DsText(text = stringResource(R.string.onboarding_account_description))
         DsTextButton(
-            text = stringResource(R.string.onboarding_account_create_cta),
-            onClick = { onIntent(OnboardingIntent.CreateAccountClicked) },
+            text = stringResource(R.string.onboarding_account_continue_without_account_cta),
+            onClick = { onIntent(OnboardingIntent.ContinueWithoutAccountClicked) },
         )
         DsTextButton(
-            text = stringResource(R.string.onboarding_account_signin_cta),
-            onClick = { onIntent(OnboardingIntent.SignInClicked) },
+            text = stringResource(R.string.onboarding_account_signin_signup_cta),
+            onClick = { onIntent(OnboardingIntent.SignInSignUpClicked) },
         )
     }
 }
 
 @Composable
-private fun AccountFormBody(
-    authForm: AuthFormUiState,
+private fun AccountSignInBody(
+    signInForm: SignInFormUiState,
     onIntent: (OnboardingIntent) -> Unit,
 ) {
+    SignInFormContent(
+        state = signInForm,
+        onEmailChanged = { onIntent(OnboardingIntent.SignInEmailChanged(it)) },
+        onPasswordChanged = { onIntent(OnboardingIntent.SignInPasswordChanged(it)) },
+        onSubmitClicked = { onIntent(OnboardingIntent.SignInSubmitClicked) },
+        onGoogleIdTokenReceived = { onIntent(OnboardingIntent.SignInGoogleIdTokenReceived(it)) },
+        onGoogleSignInFailed = { onIntent(OnboardingIntent.GoogleSignInFailed) },
+        onSignUpLinkClicked = { onIntent(OnboardingIntent.SignUpLinkClicked) },
+    )
+}
+
+@Composable
+private fun AccountSignUpBody(
+    signUpForm: SignUpFormUiState,
+    onIntent: (OnboardingIntent) -> Unit,
+) {
+    SignUpFormContent(
+        state = signUpForm,
+        onEmailChanged = { onIntent(OnboardingIntent.SignUpEmailChanged(it)) },
+        onPasswordChanged = { onIntent(OnboardingIntent.SignUpPasswordChanged(it)) },
+        onRepeatPasswordChanged = { onIntent(OnboardingIntent.SignUpRepeatPasswordChanged(it)) },
+        onSubmitClicked = { onIntent(OnboardingIntent.SignUpSubmitClicked) },
+    )
+}
+
+@Composable
+private fun AllSetStepBody(uiState: OnboardingUiState) {
+    val email = (uiState.authState as? AuthStateUi.SignedIn)?.email
     Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400)) {
-        AuthFormContent(
-            state = authForm,
-            onFirstNameChanged = { onIntent(OnboardingIntent.FirstNameChanged(it)) },
-            onLastNameChanged = { onIntent(OnboardingIntent.LastNameChanged(it)) },
-            onEmailChanged = { onIntent(OnboardingIntent.EmailChanged(it)) },
-            onPasswordChanged = { onIntent(OnboardingIntent.PasswordChanged(it)) },
-            onModeToggled = { onIntent(OnboardingIntent.ModeToggled) },
-            onSubmitClicked = { onIntent(OnboardingIntent.SubmitClicked) },
-            onGoogleIdTokenReceived = { onIntent(OnboardingIntent.GoogleIdTokenReceived(it)) },
-            onGoogleSignInFailed = { onIntent(OnboardingIntent.GoogleSignInFailed) },
-        )
-        DsTextButton(
-            text = stringResource(R.string.onboarding_account_back),
-            onClick = { onIntent(OnboardingIntent.BackToChoiceClicked) },
-            enabled = !authForm.isSubmitting,
-        )
+        DsText(text = stringResource(R.string.onboarding_all_set_title))
+        DsText(text = allSetMessage(uiState.allSetReason, email))
     }
 }
 
 @Composable
-private fun AllSetStepBody() {
-    DsText(text = stringResource(R.string.onboarding_all_set_title))
+private fun allSetMessage(
+    reason: AllSetReason,
+    email: String?,
+): String = when (reason) {
+    AllSetReason.NO_ACCOUNT -> stringResource(R.string.onboarding_all_set_no_account_message)
+    AllSetReason.SIGNED_IN -> stringResource(
+        R.string.onboarding_all_set_signed_in_format,
+        email ?: stringResource(R.string.preferences_signed_in_no_email),
+    )
+    AllSetReason.ACCOUNT_CREATED -> stringResource(R.string.onboarding_all_set_account_created_message)
 }
 
 @Composable
@@ -286,8 +320,14 @@ private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<On
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
             confirmedFocus = FocusUiState.JOURNAL,
-            accountSubStep = AccountSubStep.FORM,
-            authForm = AuthFormUiState(),
+            accountSubStep = AccountSubStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+        ),
+        previewState(
+            step = OnboardingStep.ACCOUNT_INFO,
+            confirmedFocus = FocusUiState.JOURNAL,
+            accountSubStep = AccountSubStep.SIGN_UP,
+            signUpForm = SignUpFormUiState(),
         ),
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
@@ -297,6 +337,18 @@ private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<On
         previewState(
             step = OnboardingStep.ALL_SET,
             confirmedFocus = FocusUiState.JOURNAL,
+            allSetReason = AllSetReason.NO_ACCOUNT,
+        ),
+        previewState(
+            step = OnboardingStep.ALL_SET,
+            confirmedFocus = FocusUiState.JOURNAL,
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            allSetReason = AllSetReason.SIGNED_IN,
+        ),
+        previewState(
+            step = OnboardingStep.ALL_SET,
+            confirmedFocus = FocusUiState.JOURNAL,
+            allSetReason = AllSetReason.ACCOUNT_CREATED,
         ),
     )
 }
@@ -309,7 +361,9 @@ private fun previewState(
     saveError: Boolean = false,
     accountSubStep: AccountSubStep = AccountSubStep.CHOICE,
     authState: AuthStateUi = AuthStateUi.SignedOut,
-    authForm: AuthFormUiState = AuthFormUiState(),
+    signInForm: SignInFormUiState = SignInFormUiState(),
+    signUpForm: SignUpFormUiState = SignUpFormUiState(),
+    allSetReason: AllSetReason = AllSetReason.NO_ACCOUNT,
 ) = OnboardingUiState(
     step = step,
     selectedFocus = selectedFocus,
@@ -318,7 +372,9 @@ private fun previewState(
     saveError = saveError,
     accountSubStep = accountSubStep,
     authState = authState,
-    authForm = authForm,
+    signInForm = signInForm,
+    signUpForm = signUpForm,
+    allSetReason = allSetReason,
 )
 
 @PreviewLightDark

@@ -1,7 +1,8 @@
 package pl.luczka.todaywas.ui.onboarding
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.auth.AuthFormUiState
+import pl.luczka.todaywas.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FocusUiState
 
@@ -14,5 +15,7 @@ data class OnboardingUiState(
     val saveError: Boolean,
     val accountSubStep: AccountSubStep,
     val authState: AuthStateUi,
-    val authForm: AuthFormUiState,
+    val signInForm: SignInFormUiState,
+    val signUpForm: SignUpFormUiState,
+    val allSetReason: AllSetReason,
 )

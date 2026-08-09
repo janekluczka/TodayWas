@@ -645,6 +645,38 @@ modes), and already-`SignedIn`.
 
 ---
 
+## Phase 5 redesign (post-implementation)
+
+Phase 5 as originally written above shipped, then was redesigned based on user feedback before
+being committed as final. The single mode-toggling `AuthFormContent`/`AuthFormUiState` (shared
+with Phase 4's `AccountScreen`, itself a Phase-4-time split from this plan's original
+"Preferences screen" framing — see `navigation-schema.md`) was replaced with distinct **Sign In**
+and **Sign Up** screens, since the user wanted separate flows rather than a toggle:
+
+- `AccountSubStep` (onboarding's `ACCOUNT_INFO` sub-flow) is now `CHOICE → SIGN_IN → SIGN_UP`
+  (was `CHOICE → FORM`). `CHOICE` offers "Continue without account" (jumps straight to `ALL_SET`)
+  or "Sign in or sign up" (→ `SIGN_IN`). `SIGN_IN` has email/password + Google + a "Sign up" link
+  (→ `SIGN_UP`). `SIGN_UP` adds first/last name, repeat password, and a required Terms &
+  Conditions checkbox (placeholder copy, no real document yet) — no Google button there.
+- `ALL_SET` now carries an `AllSetReason` (`NO_ACCOUNT` / `SIGNED_IN` / `ACCOUNT_CREATED`) driving
+  reason-specific copy, and auto-advances (`Finished` event) 5 seconds after being reached, with
+  the existing Continue button still available to skip the wait.
+- `AccountScreen` (Preferences' account sub-screen) gained the mirrored `AccountStep` (`SIGN_IN`
+  → `SIGN_UP` → `SUCCESS`). Unlike onboarding, a successful sign-in/Google sign-in here pops
+  straight back to Preferences with no confirmation screen; a successful sign-up shows a `SUCCESS`
+  step (manual "Continue" button only, no auto-timer, since there's no "enter the app" transition
+  happening) before popping back.
+- The shared `ui/auth/` layer is now two stateless composables, `SignInFormContent` and
+  `SignUpFormContent` (replacing `AuthFormContent`/`AuthFormUiState`/`AuthFormMode`, deleted),
+  backed by `SignInFormUiState`/`SignUpFormUiState`. `AuthFormValidation.kt` gained
+  `isValidRepeatPassword`.
+
+See `context/changes/supabase-auth-foundation/navigation-schema.md` for the full updated
+sub-step diagrams. Phase 5's Progress checklist below reflects this shipped design, not the
+original per-step description above.
+
+---
+
 ## Testing Strategy
 
 ### Unit Tests:
@@ -741,18 +773,23 @@ Not applicable — no existing data model changes; purely additive.
 - [ ] 4.6 Duplicate-email sign-up shows a friendly error, not a raw exception
 - [x] 4.7 Google sign-in works (or fails gracefully pre-OAuth-client-ID) — 60177df
 
-### Phase 5: Onboarding embedding
+### Phase 5: Onboarding embedding (redesigned — see "Phase 5 redesign" above)
 
 #### Automated
 
 - [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
 - [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 5.3 `OnboardingScreen` previews extended (choice, form, signed-in confirmation)
+- [x] 5.3 `OnboardingScreen`/`AccountScreen` previews extended (choice, sign-in, sign-up,
+      signed-in confirmation, all-set reasons, account success)
 
 #### Manual
 
-- [ ] 5.4 Sign-up inline in onboarding reaches `ALL_SET`
-- [ ] 5.5 Sign-in inline in onboarding reaches `ALL_SET`
-- [ ] 5.6 Skipping the account step (Next with no choice made) still reaches `ALL_SET`
-- [ ] 5.7 Auth state from onboarding is reflected in the Preferences tab afterward
-- [ ] 5.8 Google sign-in from onboarding works the same as from Preferences
+- [ ] 5.4 Onboarding "Continue without account" reaches `ALL_SET` immediately with the
+      no-account message and auto-advances after 5s
+- [ ] 5.5 Onboarding sign-up (email) reaches `ALL_SET` with the account-created message
+- [ ] 5.6 Onboarding sign-in (email + Google) both reach `ALL_SET` with the signed-in message
+- [ ] 5.7 Preferences → Account sign-in (email + Google) pops straight back to Preferences with
+      the account card updated, no intermediate success screen
+- [ ] 5.8 Preferences → Account sign-up shows the `SUCCESS` screen; Continue pops back to
+      Preferences
+- [ ] 5.9 Auth state from onboarding is reflected in the Preferences tab afterward
