@@ -98,13 +98,17 @@ private fun AccountScreenContent(
                 .padding(DsSpacing.space600),
             contentAlignment = Alignment.TopCenter,
         ) {
-            when (val authState = uiState.authState) {
-                AuthStateUi.Loading -> DsLoadingIndicator()
-                AuthStateUi.SignedOut -> SignedOutContent(uiState, onIntent)
-                is AuthStateUi.SignedIn -> SignedInContent(
-                    email = authState.email,
-                    onSignOutClicked = { onIntent(AccountIntent.SignOutClicked) },
-                )
+            if (uiState.step == AccountStep.SUCCESS) {
+                AccountSuccessContent(onIntent)
+            } else {
+                when (val authState = uiState.authState) {
+                    AuthStateUi.Loading -> DsLoadingIndicator()
+                    AuthStateUi.SignedOut -> SignedOutContent(uiState, onIntent)
+                    is AuthStateUi.SignedIn -> SignedInContent(
+                        email = authState.email,
+                        onSignOutClicked = { onIntent(AccountIntent.SignOutClicked) },
+                    )
+                }
             }
         }
     }
@@ -197,6 +201,12 @@ private class AccountUiStatePreviewProvider : PreviewParameterProvider<AccountUi
         AccountUiState(
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
             step = AccountStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+        ),
+        AccountUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            step = AccountStep.SUCCESS,
             signInForm = SignInFormUiState(),
             signUpForm = SignUpFormUiState(),
         ),

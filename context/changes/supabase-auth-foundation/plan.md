@@ -656,8 +656,9 @@ and **Sign Up** screens, since the user wanted separate flows rather than a togg
 - `AccountSubStep` (onboarding's `ACCOUNT_INFO` sub-flow) is now `CHOICE → SIGN_IN → SIGN_UP`
   (was `CHOICE → FORM`). `CHOICE` offers "Continue without account" (jumps straight to `ALL_SET`)
   or "Sign in or sign up" (→ `SIGN_IN`). `SIGN_IN` has email/password + Google + a "Sign up" link
-  (→ `SIGN_UP`). `SIGN_UP` adds first/last name, repeat password, and a required Terms &
-  Conditions checkbox (placeholder copy, no real document yet) — no Google button there.
+  (→ `SIGN_UP`). `SIGN_UP` adds repeat password — no Google button there. First/last name fields
+  and a Terms & Conditions checkbox were tried and then dropped again (see "Sign-up name/Terms
+  fields dropped" below) — there's nowhere to persist them yet.
 - `ALL_SET` now carries an `AllSetReason` (`NO_ACCOUNT` / `SIGNED_IN` / `ACCOUNT_CREATED`) driving
   reason-specific copy, and auto-advances (`Finished` event) 5 seconds after being reached, with
   the existing Continue button still available to skip the wait.
@@ -674,6 +675,18 @@ and **Sign Up** screens, since the user wanted separate flows rather than a togg
 See `context/changes/supabase-auth-foundation/navigation-schema.md` for the full updated
 sub-step diagrams. Phase 5's Progress checklist below reflects this shipped design, not the
 original per-step description above.
+
+### Sign-up name/Terms fields dropped
+
+The redesign above (and its first commit) had `SIGN_UP` also collect first/last name and a
+required Terms & Conditions checkbox. Both were removed in a follow-up commit on the same
+branch: the Supabase project has no custom Postgres table yet (Auth-only, per Current State
+Analysis), so there was nowhere meaningful to persist a name beyond Supabase Auth's
+`user_metadata` — and the user chose to drop the fields entirely for now rather than write to
+`user_metadata` with no consumer. `SignUpFormUiState`/`SignUpFormContent` now collect only
+email/password/repeat-password; `AuthRepository.signUpWithEmail`/`SignUpWithEmailUseCase`
+dropped their `firstName`/`lastName` parameters accordingly. Revisit if/when a `profiles` table
+is introduced.
 
 ---
 
@@ -734,7 +747,7 @@ Not applicable — no existing data model changes; purely additive.
 #### Manual
 
 - [ ] 1.3 Build fails loudly without the three `local.properties` keys
-- [ ] 1.4 `SupabaseClient` injects without crashing at startup
+- [x] 1.4 `SupabaseClient` injects without crashing at startup
 
 ### Phase 2: Auth domain + data layer
 
@@ -768,9 +781,9 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Manual
 
-- [ ] 4.4 Email sign-up creates a real Supabase Auth user
-- [ ] 4.5 Sign-out then sign-in with the same credentials works
-- [ ] 4.6 Duplicate-email sign-up shows a friendly error, not a raw exception
+- [x] 4.4 Email sign-up creates a real Supabase Auth user
+- [x] 4.5 Sign-out then sign-in with the same credentials works
+- [x] 4.6 Duplicate-email sign-up shows a friendly error, not a raw exception
 - [x] 4.7 Google sign-in works (or fails gracefully pre-OAuth-client-ID) — 60177df
 
 ### Phase 5: Onboarding embedding (redesigned — see "Phase 5 redesign" above)
@@ -784,12 +797,12 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Manual
 
-- [ ] 5.4 Onboarding "Continue without account" reaches `ALL_SET` immediately with the
+- [x] 5.4 Onboarding "Continue without account" reaches `ALL_SET` immediately with the
       no-account message and auto-advances after 5s
-- [ ] 5.5 Onboarding sign-up (email) reaches `ALL_SET` with the account-created message
-- [ ] 5.6 Onboarding sign-in (email + Google) both reach `ALL_SET` with the signed-in message
-- [ ] 5.7 Preferences → Account sign-in (email + Google) pops straight back to Preferences with
+- [x] 5.5 Onboarding sign-up (email) reaches `ALL_SET` with the account-created message
+- [x] 5.6 Onboarding sign-in (email + Google) both reach `ALL_SET` with the signed-in message
+- [x] 5.7 Preferences → Account sign-in (email + Google) pops straight back to Preferences with
       the account card updated, no intermediate success screen
-- [ ] 5.8 Preferences → Account sign-up shows the `SUCCESS` screen; Continue pops back to
+- [x] 5.8 Preferences → Account sign-up shows the `SUCCESS` screen; Continue pops back to
       Preferences
-- [ ] 5.9 Auth state from onboarding is reflected in the Preferences tab afterward
+- [x] 5.9 Auth state from onboarding is reflected in the Preferences tab afterward

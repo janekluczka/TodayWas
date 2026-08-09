@@ -194,6 +194,11 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignOutClicked() {
-        viewModelScope.launch { signOut() }
+        viewModelScope.launch {
+            val result = signOut()
+            if (result.isSuccess) {
+                _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
+            }
+        }
     }
 }

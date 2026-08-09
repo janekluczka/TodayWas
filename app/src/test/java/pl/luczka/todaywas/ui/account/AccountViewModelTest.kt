@@ -257,4 +257,18 @@ class AccountViewModelTest {
 
         assertEquals(1, repository.signOutCallCount)
     }
+
+    @Test
+    fun `SignOutClicked resets a stale SUCCESS step back to SIGN_IN`() = runTest {
+        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val viewModel = viewModel(repository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+        assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
+
+        viewModel.onIntent(AccountIntent.SignOutClicked)
+
+        assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
+    }
 }
