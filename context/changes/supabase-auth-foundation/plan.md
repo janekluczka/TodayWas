@@ -746,7 +746,7 @@ Not applicable — no existing data model changes; purely additive.
 
 #### Manual
 
-- [ ] 1.3 Build fails loudly without the three `local.properties` keys
+- [x] 1.3 Build fails loudly without the three `local.properties` keys
 - [x] 1.4 `SupabaseClient` injects without crashing at startup
 
 ### Phase 2: Auth domain + data layer
