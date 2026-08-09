@@ -91,7 +91,7 @@ flowchart TD
     subgraph SignedOut["AuthState.SignedOut (AccountStep)"]
         direction TD
         SignIn["SIGN_IN (initial):<br/>email, password,<br/>Google button, 'Sign up' link"]
-        SignUp["SIGN_UP:<br/>first/last name, email, password,<br/>repeat password, T&C checkbox<br/>(no Google)"]
+        SignUp["SIGN_UP:<br/>email, password,<br/>repeat password<br/>(no Google)"]
         Success["SUCCESS:<br/>confirmation message +<br/>manual 'Continue' button (no timer)"]
 
         SignIn -- "Sign up" link --> SignUp
@@ -105,9 +105,11 @@ flowchart TD
 ```
 
 **Notes**:
-- Top-bar back arrow (`AccountIntent.BackClicked`) always pops `AccountScreen` entirely
-  (`NavigatedBack`), from any step. `SIGN_UP`'s in-content "Back" button is a separate,
-  step-local affordance (`BackToSignInClicked`) that only returns to `SIGN_IN`.
+- A single back mechanism drives both the top-bar back arrow and the hardware/gesture back
+  (`AccountIntent.BackClicked`, dispatched from both `DsIconButton`'s `onClick` and a screen-level
+  `BackHandler` so they can't desync): from `SIGN_UP` it steps back to `SIGN_IN`; from any other
+  step it pops `AccountScreen` entirely (`NavigatedBack`). There is no separate in-content "Back"
+  button — that was consolidated into this one step-aware handler.
 - Unlike onboarding, a successful sign-in/Google sign-in here skips any confirmation screen and
   pops straight back to Preferences — the Account card there already re-reads auth state on
   return. Only a successful **sign-up** shows `SUCCESS` first (manual continue, no auto-timer,
@@ -133,8 +135,8 @@ flowchart TD
     subgraph AccountInfo["ACCOUNT_INFO step (AccountSubStep)"]
         direction TD
         Choice["CHOICE:<br/>'Continue without account' /<br/>'Sign in or sign up' buttons"]
-        SignIn["SIGN_IN:<br/>SignInFormContent<br/>(email, password, Google,<br/>'Sign up' link) + 'Back' button"]
-        SignUp["SIGN_UP:<br/>SignUpFormContent<br/>(name, surname, email, password,<br/>repeat password, T&C) + 'Back' button"]
+        SignIn["SIGN_IN:<br/>SignInFormContent<br/>(email, password, Google,<br/>'Sign up' link)"]
+        SignUp["SIGN_UP:<br/>SignUpFormContent<br/>(email, password,<br/>repeat password)"]
         SignedInConfirm["authState == SignedIn:<br/>'Signed in as {email}'<br/>(overrides CHOICE/SIGN_IN/SIGN_UP display)"]
 
         Choice -- "Continue without account<br/>-> ALL_SET (reason=NO_ACCOUNT)" --> AllSetJump(( ))
@@ -149,11 +151,10 @@ flowchart TD
 ```
 
 **Notes**:
-- The wizard's own `Back` (system back gesture / `BackHandler`) only moves between
-  `OnboardingStep`s (`WELCOME` ↔ `FOCUS_PICK` ↔ `ACCOUNT_INFO` ↔ `ALL_SET`). It does **not** know
-  about `AccountSubStep` — going `SIGN_IN`/`SIGN_UP` → `CHOICE` only happens via the in-step
-  "Back" text button, never via the system back gesture. (Currently: system back while in
-  `SIGN_IN`/`SIGN_UP` jumps straight past `CHOICE` to `FOCUS_PICK`.)
+- The wizard's single `Back` (system back gesture / `BackHandler`, dispatching `StepBack`) is
+  sub-step aware: within `ACCOUNT_INFO` it steps `SIGN_UP → SIGN_IN → CHOICE → FOCUS_PICK` one
+  level at a time, never skipping `SIGN_IN`/`CHOICE`. There is no separate in-step "Back" text
+  button — that was consolidated into this one handler, the same way `AccountScreen` was (see §3).
 - `Next` on `ACCOUNT_INFO` always advances to `ALL_SET` regardless of `accountSubStep` — signing
   in/up is optional, never a gate. The `AllSetReason` it sets is `SIGNED_IN` if `authState` is
   already `SignedIn` at that moment, `NO_ACCOUNT` otherwise (a successful sign-in/sign-up already

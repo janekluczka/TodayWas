@@ -194,10 +194,16 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignOutClicked() {
+        if (_uiState.value.isSigningOut) return
         viewModelScope.launch {
+            _uiState.update { it.copy(isSigningOut = true) }
             val result = signOut()
             if (result.isSuccess) {
-                _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
+                _uiState.update { it.copy(step = AccountStep.SIGN_IN, isSigningOut = false) }
+            } else {
+                val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+                _uiState.update { it.copy(isSigningOut = false) }
+                eventChannel.trySend(AccountUiEvent.ShowError(error.toUiState()))
             }
         }
     }

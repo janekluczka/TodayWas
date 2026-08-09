@@ -11,4 +11,5 @@ data class AccountUiState(
     val step: AccountStep,
     val signInForm: SignInFormUiState,
     val signUpForm: SignUpFormUiState,
+    val isSigningOut: Boolean = false,
 )

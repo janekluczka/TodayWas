@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -16,6 +20,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -42,6 +47,7 @@ fun SignInFormContent(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    var isGoogleSignInLaunching by remember { mutableStateOf(false) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
@@ -75,7 +81,7 @@ fun SignInFormContent(
             modifier = Modifier.fillMaxWidth(),
         )
         GoogleSignInButton(
-            enabled = !state.isSubmitting,
+            enabled = !state.isSubmitting && !isGoogleSignInLaunching,
             onClick = {
                 // Google sign-in isn't configured until GOOGLE_WEB_CLIENT_ID is set in
                 // local.properties (external Google Cloud prerequisite) — fail gracefully
@@ -83,6 +89,7 @@ fun SignInFormContent(
                 if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
                     onGoogleSignInFailed()
                 } else {
+                    isGoogleSignInLaunching = true
                     coroutineScope.launch {
                         try {
                             val googleIdOption = GetGoogleIdOption
@@ -97,10 +104,14 @@ fun SignInFormContent(
                             val result = CredentialManager.create(context).getCredential(context, request)
                             val credential = GoogleIdTokenCredential.createFrom(result.credential.data)
                             onGoogleIdTokenReceived(credential.idToken)
+                        } catch (e: GetCredentialCancellationException) {
+                            // User dismissed the system account picker — not a failure, no error to show.
                         } catch (e: GetCredentialException) {
                             onGoogleSignInFailed()
                         } catch (e: GoogleIdTokenParsingException) {
                             onGoogleSignInFailed()
+                        } finally {
+                            isGoogleSignInLaunching = false
                         }
                     }
                 }

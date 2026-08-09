@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
@@ -106,6 +107,7 @@ private fun AccountScreenContent(
                     AuthStateUi.SignedOut -> SignedOutContent(uiState, onIntent)
                     is AuthStateUi.SignedIn -> SignedInContent(
                         email = authState.email,
+                        isSigningOut = uiState.isSigningOut,
                         onSignOutClicked = { onIntent(AccountIntent.SignOutClicked) },
                     )
                 }
@@ -158,6 +160,7 @@ private fun AccountSuccessContent(onIntent: (AccountIntent) -> Unit) {
 @Composable
 private fun SignedInContent(
     email: String?,
+    isSigningOut: Boolean,
     onSignOutClicked: () -> Unit,
 ) {
     Column(
@@ -165,9 +168,10 @@ private fun SignedInContent(
         modifier = Modifier.fillMaxWidth(),
     ) {
         DsText(text = email ?: stringResource(R.string.preferences_signed_in_no_email))
-        DsButton(
+        DsButtonWithLoading(
             text = stringResource(R.string.preferences_sign_out_cta),
             onClick = onSignOutClicked,
+            loading = isSigningOut,
         )
     }
 }

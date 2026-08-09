@@ -1,7 +1,7 @@
 ---
 change_id: supabase-auth-foundation
 title: Supabase auth foundation
-status: implemented
+status: impl_reviewed
 created: 2026-08-03
 updated: 2026-08-09
 archived_at: null
@@ -19,3 +19,6 @@ archived_at: null
   verification (2026-08-09) so sign-up establishes a session immediately — a deliberate product
   choice, not just a testing convenience. This surfaced a real bug (Account screen's `SUCCESS`
   step going stale after sign-out), fixed in commit 9f26493.
+- Full implementation review completed 2026-08-09 (`reviews/impl-review.md`) — 0 critical, 4
+  warnings, 2 observations; all findings triaged and resolved same session (4 fixed, 1 accepted
+  as intentional). Overall verdict was NEEDS ATTENTION going in, now fully addressed.

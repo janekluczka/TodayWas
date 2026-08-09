@@ -259,6 +259,25 @@ class AccountViewModelTest {
     }
 
     @Test
+    fun `SignOutClicked failure emits a ShowError event and clears isSigningOut`() = runTest {
+        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        repository.signOutError = AuthError.NetworkUnavailable
+        val viewModel = viewModel(repository)
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+        viewModel.onIntent(AccountIntent.SignOutClicked)
+        runCurrent()
+
+        assertEquals(
+            listOf(AccountUiEvent.ShowError(AuthErrorUiState.NETWORK_UNAVAILABLE)),
+            events,
+        )
+        assertFalse(viewModel.uiState.value.isSigningOut)
+        collectJob.cancel()
+    }
+
+    @Test
     fun `SignOutClicked resets a stale SUCCESS step back to SIGN_IN`() = runTest {
         val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         val viewModel = viewModel(repository)

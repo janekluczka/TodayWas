@@ -193,6 +193,16 @@ equivalents for the other two keys. Missing keys should fail the build loudly (n
 produce an empty string) so a fresh clone without `local.properties` configured gets a clear
 error, not a runtime crash deep in `SupabaseModule`.
 
+**Addendum (post-implementation)**: `GOOGLE_WEB_CLIENT_ID` deliberately does *not* follow the
+"fail loudly" rule above — it uses `optionalLocalProperty` (silent `""` default), not
+`requiredLocalProperty`. Only `SUPABASE_URL`/`SUPABASE_ANON_KEY` fail the build; a missing
+`GOOGLE_WEB_CLIENT_ID` instead surfaces at runtime via `SignInFormContent.kt`'s
+`BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()` check, which calls `onGoogleSignInFailed()`
+gracefully. This matches "External prerequisite for Google sign-in" below (a fresh clone without
+the Google OAuth Client ID configured should still build and run Phases 1-4's email auth) — it
+just wasn't stated explicitly in this contract when originally written. Progress item 1.3's "the
+three keys" should be read as "the two Supabase keys."
+
 #### 4. local.properties documentation
 
 **File**: `local.properties` (gitignored — not committed) and, if this repo keeps a
