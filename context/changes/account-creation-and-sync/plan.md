@@ -667,8 +667,8 @@ this pre-release app.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 3eb2805
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — 3eb2805
 
 ### Phase 3: Sign-out clears synced local data
 
