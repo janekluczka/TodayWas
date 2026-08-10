@@ -15,8 +15,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.data.repository.FakeAuthRepository
+import pl.luczka.todaywas.data.repository.FakeHabitRepository
+import pl.luczka.todaywas.data.repository.FakeJournalRepository
+import pl.luczka.todaywas.data.repository.FakeOnboardingRepository
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthState
+import pl.luczka.todaywas.domain.usecase.ClearSyncedLocalDataUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
@@ -29,12 +33,18 @@ import pl.luczka.todaywas.ui.model.AuthStateUi
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {
 
-    private fun viewModel(repository: FakeAuthRepository) = AccountViewModel(
+    private fun viewModel(
+        repository: FakeAuthRepository,
+        journalRepository: FakeJournalRepository = FakeJournalRepository(),
+        habitRepository: FakeHabitRepository = FakeHabitRepository(),
+        onboardingRepository: FakeOnboardingRepository = FakeOnboardingRepository(),
+    ) = AccountViewModel(
         observeAuthState = ObserveAuthStateUseCase(repository),
         signUpWithEmail = SignUpWithEmailUseCase(repository),
         signInWithEmail = SignInWithEmailUseCase(repository),
         signInWithGoogle = SignInWithGoogleUseCase(repository),
         signOut = SignOutUseCase(repository),
+        clearSyncedLocalData = ClearSyncedLocalDataUseCase(journalRepository, habitRepository, onboardingRepository),
     )
 
     private fun fillSignUpForm(viewModel: AccountViewModel) {
@@ -298,6 +308,45 @@ class AccountViewModelTest {
 
         // Assert
         assertEquals(1, repository.signOutCallCount)
+    }
+
+    @Test
+    fun `should clear synced local data when SignOutClicked succeeds`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val journalRepository = FakeJournalRepository()
+        val habitRepository = FakeHabitRepository()
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository, habitRepository, onboardingRepository)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignOutClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(1, journalRepository.clearLocalCallCount)
+        assertEquals(1, habitRepository.clearLocalCallCount)
+        assertEquals(1, onboardingRepository.resetSyncFlagCallCount)
+    }
+
+    @Test
+    fun `should not clear local data when SignOutClicked fails`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        repository.signOutError = AuthError.NetworkUnavailable
+        val journalRepository = FakeJournalRepository()
+        val habitRepository = FakeHabitRepository()
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository, habitRepository, onboardingRepository)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignOutClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(0, journalRepository.clearLocalCallCount)
+        assertEquals(0, habitRepository.clearLocalCallCount)
+        assertEquals(0, onboardingRepository.resetSyncFlagCallCount)
     }
 
     @Test

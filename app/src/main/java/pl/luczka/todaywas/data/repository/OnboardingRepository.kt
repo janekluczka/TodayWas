@@ -9,4 +9,8 @@ interface OnboardingRepository {
     fun observeState(): Flow<OnboardingState>
 
     suspend fun saveFocus(focus: Focus): Result<Unit>
+
+    suspend fun markLocalDataSynced(): Result<Unit>
+
+    suspend fun resetSyncFlag(): Result<Unit>
 }

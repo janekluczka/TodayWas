@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
+import pl.luczka.todaywas.domain.usecase.ClearSyncedLocalDataUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
@@ -34,6 +35,7 @@ class AccountViewModel @Inject constructor(
     private val signInWithEmail: SignInWithEmailUseCase,
     private val signInWithGoogle: SignInWithGoogleUseCase,
     private val signOut: SignOutUseCase,
+    private val clearSyncedLocalData: ClearSyncedLocalDataUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -199,6 +201,7 @@ class AccountViewModel @Inject constructor(
             _uiState.update { it.copy(isSigningOut = true) }
             val result = signOut()
             if (result.isSuccess) {
+                clearSyncedLocalData()
                 _uiState.update { it.copy(step = AccountStep.SIGN_IN, isSigningOut = false) }
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown

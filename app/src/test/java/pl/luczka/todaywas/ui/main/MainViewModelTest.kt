@@ -52,6 +52,10 @@ class MainViewModelTest {
         override fun observeState(): Flow<OnboardingState> = stateFlow
 
         override suspend fun saveFocus(focus: Focus): Result<Unit> = Result.success(Unit)
+
+        override suspend fun markLocalDataSynced(): Result<Unit> = Result.success(Unit)
+
+        override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
     }
 
     private fun entry(
@@ -107,6 +111,7 @@ class MainViewModelTest {
                     OnboardingState(
                         completed = true,
                         focus = focus,
+                        hasSyncedLocalData = false,
                     ),
                 ),
             ),

@@ -42,6 +42,7 @@ class OnboardingViewModelTest {
             OnboardingState(
                 completed = false,
                 focus = null,
+                hasSyncedLocalData = false,
             ),
         )
 
@@ -57,10 +58,15 @@ class OnboardingViewModelTest {
                 stateFlow.value = OnboardingState(
                     completed = true,
                     focus = focus,
+                    hasSyncedLocalData = false,
                 )
             }
             return saveFocusResult
         }
+
+        override suspend fun markLocalDataSynced(): Result<Unit> = Result.success(Unit)
+
+        override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
     }
 
     private fun viewModel(
