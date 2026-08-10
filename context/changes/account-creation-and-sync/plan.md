@@ -653,14 +653,14 @@ this pre-release app.
 
 #### Automated
 
-- [x] 1.1 Project builds: `./gradlew.bat assembleDebug`
-- [x] 1.2 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.3 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 1.1 Project builds: `./gradlew.bat assembleDebug` — bcfada3
+- [x] 1.2 Unit tests pass: `./gradlew.bat testDebugUnitTest` — bcfada3
+- [x] 1.3 Lint passes: `./gradlew.bat ktlintCheck` — bcfada3
 
 #### Manual
 
-- [ ] 1.4 Fresh install: add/edit journal entry, habit, check-in — all work with UUID ids
-- [ ] 1.5 Supabase tables (`journal_entries`, `habits`, `habit_check_ins`) exist with RLS
+- [x] 1.4 Fresh install: add/edit journal entry, habit, check-in — all work with UUID ids
+- [x] 1.5 Supabase tables (`journal_entries`, `habits`, `habit_check_ins`) exist with RLS
       policies via MCP `apply_migration`; `postgrest-kt` compiles in
 
 ### Phase 2: Remote data sources + repository sync capability
