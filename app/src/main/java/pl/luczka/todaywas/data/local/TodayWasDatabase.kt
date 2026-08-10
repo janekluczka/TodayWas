@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [UserPreferencesEntity::class, JournalEntryEntity::class, HabitEntity::class, HabitCheckInEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class TodayWasDatabase : RoomDatabase() {

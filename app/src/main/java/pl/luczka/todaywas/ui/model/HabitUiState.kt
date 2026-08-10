@@ -22,7 +22,7 @@ sealed interface HabitCheckInStatusUiState {
 
 @Immutable
 data class HabitUiState(
-    val id: Long,
+    val id: String,
     val name: String,
     val type: HabitTypeUiState,
     val todayStatus: HabitCheckInStatusUiState,

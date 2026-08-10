@@ -3,7 +3,7 @@ package pl.luczka.todaywas.domain.model
 import java.time.Instant
 
 data class Habit(
-    val id: Long,
+    val id: String,
     val name: String,
     val description: String?,
     val type: HabitType,

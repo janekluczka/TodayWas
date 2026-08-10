@@ -22,13 +22,13 @@ interface HabitRepository {
 
     suspend fun addCheckIns(
         date: LocalDate,
-        values: Map<Long, Int>,
+        values: Map<String, Int>,
     ): Result<Unit>
 
     // Callers must check EditWindow.isEditable first - enforced by UpdateHabitCheckInUseCase,
     // not here.
     suspend fun updateCheckIn(
-        habitId: Long,
+        habitId: String,
         date: LocalDate,
         value: Int,
     ): Result<Unit>

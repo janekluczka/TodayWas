@@ -53,7 +53,7 @@ fun MainScreen(
     onJournalEntryClicked: (JournalEntryUiState) -> Unit,
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
-    onHabitClicked: (Long) -> Unit,
+    onHabitClicked: (String) -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -308,14 +308,14 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
             focus = FocusUiState.BOTH,
             journalEntries = listOf(
                 JournalEntryUiState(
-                    id = 1,
+                    id = "1",
                     date = LocalDate.now(),
                     formattedDate = "Jul 27, 2026",
                     text = "Today was a good day.",
                     createdAt = Instant.now(),
                 ),
                 JournalEntryUiState(
-                    id = 2,
+                    id = "2",
                     date = LocalDate.now().minusDays(1),
                     formattedDate = "Jul 26, 2026",
                     text = "A long entry that should get truncated in the list preview once it wraps past two lines of text.",
@@ -334,13 +334,13 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
             journalEntries = emptyList(),
             habits = listOf(
                 HabitUiState(
-                    id = 1,
+                    id = "1",
                     name = "Drink water",
                     type = HabitTypeUiState.BINARY,
                     todayStatus = HabitCheckInStatusUiState.NotLogged,
                 ),
                 HabitUiState(
-                    id = 2,
+                    id = "2",
                     name = "Mood",
                     type = HabitTypeUiState.SCALE,
                     todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 4),

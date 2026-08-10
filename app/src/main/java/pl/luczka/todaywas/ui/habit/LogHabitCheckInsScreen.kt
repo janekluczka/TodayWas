@@ -197,21 +197,21 @@ private fun LogHabitCheckInsScreenPreview() {
                 selectedDate = today,
                 rows = listOf(
                     HabitCheckInRowUiState.Editable(
-                        habitId = 1L,
+                        habitId = "1",
                         name = "Drink water",
                         value = null,
                         range = 0..1,
                         type = HabitTypeUiState.BINARY,
                     ),
                     HabitCheckInRowUiState.Editable(
-                        habitId = 2L,
+                        habitId = "2",
                         name = "Mood",
                         value = 3,
                         range = 1..5,
                         type = HabitTypeUiState.SCALE,
                     ),
                     HabitCheckInRowUiState.AlreadyLogged(
-                        habitId = 3L,
+                        habitId = "3",
                         name = "Read",
                         range = 0..1,
                         type = HabitTypeUiState.BINARY,

@@ -28,13 +28,13 @@ class FakeHabitRepository(
     var addCheckInsResult: Result<Unit> = Result.success(Unit)
     var lastLoggedDate: LocalDate? = null
         private set
-    var lastLoggedValues: Map<Long, Int>? = null
+    var lastLoggedValues: Map<String, Int>? = null
         private set
 
     var updateCheckInResult: Result<Unit> = Result.success(Unit)
     var updateCheckInCallCount = 0
         private set
-    var lastUpdatedHabitId: Long? = null
+    var lastUpdatedHabitId: String? = null
         private set
     var lastUpdatedDate: LocalDate? = null
         private set
@@ -61,7 +61,7 @@ class FakeHabitRepository(
 
     override suspend fun addCheckIns(
         date: LocalDate,
-        values: Map<Long, Int>,
+        values: Map<String, Int>,
     ): Result<Unit> {
         lastLoggedDate = date
         lastLoggedValues = values
@@ -69,7 +69,7 @@ class FakeHabitRepository(
     }
 
     override suspend fun updateCheckIn(
-        habitId: Long,
+        habitId: String,
         date: LocalDate,
         value: Int,
     ): Result<Unit> {

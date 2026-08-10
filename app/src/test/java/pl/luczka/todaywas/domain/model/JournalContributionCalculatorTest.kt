@@ -11,7 +11,7 @@ class JournalContributionCalculatorTest {
     private val now = Instant.parse("2026-08-02T12:00:00Z")
     private val window = ContributionWindow.CalendarYear(2026)
 
-    private fun entry(date: LocalDate) = JournalEntry(id = date.toEpochDay(), date = date, text = "entry", createdAt = now)
+    private fun entry(date: LocalDate) = JournalEntry(id = date.toEpochDay().toString(), date = date, text = "entry", createdAt = now)
 
     @Test
     fun `should map date to level 3 when it has an entry`() {

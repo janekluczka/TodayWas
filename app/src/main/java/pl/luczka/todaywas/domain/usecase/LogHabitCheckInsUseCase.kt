@@ -10,6 +10,6 @@ class LogHabitCheckInsUseCase @Inject constructor(
 
     suspend operator fun invoke(
         date: LocalDate,
-        values: Map<Long, Int>,
+        values: Map<String, Int>,
     ): Result<Unit> = repository.addCheckIns(date, values)
 }

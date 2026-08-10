@@ -24,11 +24,11 @@ class UpdateJournalEntryUseCaseTest {
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, "Edited.", createdAt)
+            val result = useCase("1", "Edited.", createdAt)
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals(1L, repository.lastUpdatedId)
+            assertEquals("1", repository.lastUpdatedId)
             assertEquals("Edited.", repository.lastUpdatedText)
         }
 
@@ -41,7 +41,7 @@ class UpdateJournalEntryUseCaseTest {
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, "Edited.", createdAt)
+            val result = useCase("1", "Edited.", createdAt)
 
             // Assert
             assertTrue(result.isFailure)
@@ -61,7 +61,7 @@ class UpdateJournalEntryUseCaseTest {
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, "Edited.", createdAt)
+            val result = useCase("1", "Edited.", createdAt)
 
             // Assert
             assertTrue(result.isFailure)
@@ -80,7 +80,7 @@ class UpdateJournalEntryUseCaseTest {
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, "Edited.", createdAt)
+            val result = useCase("1", "Edited.", createdAt)
 
             // Assert
             assertTrue(result.isFailure)

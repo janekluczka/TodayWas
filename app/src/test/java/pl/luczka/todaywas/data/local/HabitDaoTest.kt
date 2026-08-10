@@ -27,6 +27,7 @@ class HabitDaoTest {
             // Act
             db1.habitDao().insert(
                 HabitEntity(
+                    id = "habit-1",
                     name = "Drink water",
                     description = null,
                     type = "SCALE",
@@ -63,6 +64,7 @@ class HabitDaoTest {
                 .build()
             db.habitDao().insert(
                 HabitEntity(
+                    id = "habit-1",
                     name = "Newest",
                     description = null,
                     type = "BINARY",
@@ -73,6 +75,7 @@ class HabitDaoTest {
             )
             db.habitDao().insert(
                 HabitEntity(
+                    id = "habit-2",
                     name = "Oldest",
                     description = null,
                     type = "BINARY",
@@ -83,6 +86,7 @@ class HabitDaoTest {
             )
             db.habitDao().insert(
                 HabitEntity(
+                    id = "habit-3",
                     name = "Middle",
                     description = null,
                     type = "BINARY",

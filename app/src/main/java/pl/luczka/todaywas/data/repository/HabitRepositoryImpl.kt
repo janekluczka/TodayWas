@@ -11,6 +11,7 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import java.time.Instant
 import java.time.LocalDate
+import java.util.UUID
 import javax.inject.Inject
 
 class HabitRepositoryImpl @Inject constructor(
@@ -30,6 +31,7 @@ class HabitRepositoryImpl @Inject constructor(
         scaleMax: Int?,
     ): Result<Unit> {
         val entity = HabitEntity(
+            id = UUID.randomUUID().toString(),
             name = name,
             description = description,
             type = type.name,
@@ -45,11 +47,12 @@ class HabitRepositoryImpl @Inject constructor(
 
     override suspend fun addCheckIns(
         date: LocalDate,
-        values: Map<Long, Int>,
+        values: Map<String, Int>,
     ): Result<Unit> {
         val createdAt = Instant.now().toEpochMilli()
         val entities = values.map { (habitId, value) ->
             HabitCheckInEntity(
+                id = UUID.randomUUID().toString(),
                 habitId = habitId,
                 date = date.toString(),
                 value = value,
@@ -60,7 +63,7 @@ class HabitRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateCheckIn(
-        habitId: Long,
+        habitId: String,
         date: LocalDate,
         value: Int,
     ): Result<Unit> {

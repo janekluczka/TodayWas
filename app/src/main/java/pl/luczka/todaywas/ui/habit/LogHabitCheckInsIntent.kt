@@ -9,7 +9,7 @@ sealed interface LogHabitCheckInsIntent {
     ) : LogHabitCheckInsIntent
 
     data class ValueChanged(
-        val habitId: Long,
+        val habitId: String,
         val value: Int?,
     ) : LogHabitCheckInsIntent
 

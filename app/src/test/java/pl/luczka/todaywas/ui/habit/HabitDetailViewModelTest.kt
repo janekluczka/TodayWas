@@ -37,7 +37,7 @@ class HabitDetailViewModelTest {
     private val yesterday = today.minusDays(1)
     private val now = Instant.now()
     private val habit = Habit(
-        id = 1L,
+        id = "1",
         name = "Drink water",
         description = null,
         type = HabitType.BINARY,
@@ -49,7 +49,7 @@ class HabitDetailViewModelTest {
     private fun viewModel(
         repository: FakeHabitRepository,
         clock: Clock = Clock.fixed(now, ZoneOffset.UTC),
-        habitId: Long = 1L,
+        habitId: String = "1",
     ) = HabitDetailViewModel(
         habitId = habitId,
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
@@ -84,7 +84,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = oldDate, value = 1, createdAt = now.minus(Duration.ofDays(10))),
+                    HabitCheckIn(id = "1", habitId = "1", date = oldDate, value = 1, createdAt = now.minus(Duration.ofDays(10))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -130,7 +130,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -155,7 +155,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = yesterday, value = 0, createdAt = now.minus(Duration.ofHours(25))),
+                    HabitCheckIn(id = "1", habitId = "1", date = yesterday, value = 0, createdAt = now.minus(Duration.ofHours(25))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -257,7 +257,7 @@ class HabitDetailViewModelTest {
             assertFalse(viewModel.uiState.value.saveError)
             assertFalse(viewModel.uiState.value.isEditSheetOpen)
             assertEquals(today, repository.lastLoggedDate)
-            assertEquals(mapOf(1L to 1), repository.lastLoggedValues)
+            assertEquals(mapOf("1" to 1), repository.lastLoggedValues)
             assertEquals(0, repository.updateCheckInCallCount)
             collectJob.cancel()
         }
@@ -269,7 +269,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -298,7 +298,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -317,7 +317,7 @@ class HabitDetailViewModelTest {
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.updateCheckInCallCount)
             assertEquals(yesterday, repository.lastLoggedDate)
-            assertEquals(mapOf(1L to 1), repository.lastLoggedValues)
+            assertEquals(mapOf("1" to 1), repository.lastLoggedValues)
             collectJob.cancel()
         }
 
@@ -328,7 +328,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now.minus(Duration.ofHours(25))),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(25))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -357,7 +357,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -382,8 +382,8 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now),
-                    HabitCheckIn(id = 2L, habitId = 1L, date = today.minusDays(3), value = 0, createdAt = now.minus(Duration.ofDays(3))),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now),
+                    HabitCheckIn(id = "2", habitId = "1", date = today.minusDays(3), value = 0, createdAt = now.minus(Duration.ofDays(3))),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -408,7 +408,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = 1L, habitId = 1L, date = today, value = 1, createdAt = now),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now),
                 ),
             )
             val viewModel = viewModel(repository)

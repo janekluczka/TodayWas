@@ -24,17 +24,27 @@ class HabitRepositoryImplTest {
 
         override fun observeAll(): Flow<List<HabitEntity>> = flowOf(emptyList())
 
+        override suspend fun getAll(): List<HabitEntity> = emptyList()
+
         override suspend fun insert(entity: HabitEntity) {
             insertCallCount++
             if (insertCallCount <= failuresBeforeSuccess) {
                 throw RuntimeException("simulated write failure")
             }
         }
+
+        override suspend fun upsert(entity: HabitEntity) {
+            // not used by the repository
+        }
+
+        override suspend fun clearAll() {
+            // not used by the repository
+        }
     }
 
     private class FakeHabitCheckInDao(
         private val failuresBeforeSuccess: Int = 0,
-        private val entities: MutableMap<Pair<Long, String>, HabitCheckInEntity> = mutableMapOf(),
+        private val entities: MutableMap<Pair<String, String>, HabitCheckInEntity> = mutableMapOf(),
     ) : HabitCheckInDao {
 
         var insertAllCallCount = 0
@@ -44,8 +54,10 @@ class HabitRepositoryImplTest {
 
         override fun observeAll(): Flow<List<HabitCheckInEntity>> = flowOf(entities.values.toList())
 
+        override suspend fun getAll(): List<HabitCheckInEntity> = entities.values.toList()
+
         override suspend fun getByHabitAndDate(
-            habitId: Long,
+            habitId: String,
             date: String,
         ): HabitCheckInEntity? = entities[habitId to date]
 
@@ -58,12 +70,22 @@ class HabitRepositoryImplTest {
             }
         }
 
+        override suspend fun upsertOne(entity: HabitCheckInEntity): Unit = throw UnsupportedOperationException("not used by the repository")
+
+        override suspend fun upsertAll(entities: List<HabitCheckInEntity>) {
+            // not used by the repository
+        }
+
         override suspend fun update(entity: HabitCheckInEntity) {
             updateCallCount++
             if (updateCallCount <= failuresBeforeSuccess) {
                 throw RuntimeException("simulated write failure")
             }
             entities[entity.habitId to entity.date] = entity
+        }
+
+        override suspend fun clearAll() {
+            entities.clear()
         }
     }
 
@@ -128,7 +150,7 @@ class HabitRepositoryImplTest {
             // Act
             val result = repository.addCheckIns(
                 date = LocalDate.of(2026, 7, 27),
-                values = mapOf(1L to 1, 2L to 3),
+                values = mapOf("1" to 1, "2" to 3),
             )
 
             // Assert
@@ -149,7 +171,7 @@ class HabitRepositoryImplTest {
             // Act
             val result = repository.addCheckIns(
                 date = LocalDate.of(2026, 7, 27),
-                values = mapOf(1L to 1),
+                values = mapOf("1" to 1),
             )
 
             // Assert
@@ -161,35 +183,35 @@ class HabitRepositoryImplTest {
     fun `should succeed after one retry when updateCheckIn's first write fails`() =
         runTest {
             // Arrange
-            val existing = HabitCheckInEntity(habitId = 1L, date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = 1,
-                entities = mutableMapOf((1L to "2026-07-27") to existing),
+                entities = mutableMapOf(("1" to "2026-07-27") to existing),
             )
             val repository = HabitRepositoryImpl(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao)
 
             // Act
-            val result = repository.updateCheckIn(habitId = 1L, date = LocalDate.of(2026, 7, 27), value = 0)
+            val result = repository.updateCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), value = 0)
 
             // Assert
             assertTrue(result.isSuccess)
             assertEquals(2, checkInDao.updateCallCount)
-            assertEquals(0, checkInDao.getByHabitAndDate(1L, "2026-07-27")?.value)
+            assertEquals(0, checkInDao.getByHabitAndDate("1", "2026-07-27")?.value)
         }
 
     @Test
     fun `should return failure when updateCheckIn's retry also fails`() =
         runTest {
             // Arrange
-            val existing = HabitCheckInEntity(habitId = 1L, date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = Int.MAX_VALUE,
-                entities = mutableMapOf((1L to "2026-07-27") to existing),
+                entities = mutableMapOf(("1" to "2026-07-27") to existing),
             )
             val repository = HabitRepositoryImpl(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao)
 
             // Act
-            val result = repository.updateCheckIn(habitId = 1L, date = LocalDate.of(2026, 7, 27), value = 0)
+            val result = repository.updateCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), value = 0)
 
             // Assert
             assertTrue(result.isFailure)
@@ -204,7 +226,7 @@ class HabitRepositoryImplTest {
             val repository = HabitRepositoryImpl(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao)
 
             // Act
-            val result = repository.updateCheckIn(habitId = 1L, date = LocalDate.of(2026, 7, 27), value = 0)
+            val result = repository.updateCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), value = 0)
 
             // Assert
             assertTrue(result.isFailure)

@@ -9,6 +9,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
 class JournalEntryDaoTest {
@@ -27,6 +28,7 @@ class JournalEntryDaoTest {
             // Act
             db1.journalEntryDao().insert(
                 JournalEntryEntity(
+                    id = "entry-1",
                     date = "2026-07-27",
                     text = "Today was good.",
                     createdAt = 1_000L,
@@ -59,6 +61,7 @@ class JournalEntryDaoTest {
                 .build()
             db.journalEntryDao().insert(
                 JournalEntryEntity(
+                    id = "entry-1",
                     date = "2026-07-25",
                     text = "Older",
                     createdAt = 1L,
@@ -66,6 +69,7 @@ class JournalEntryDaoTest {
             )
             db.journalEntryDao().insert(
                 JournalEntryEntity(
+                    id = "entry-2",
                     date = "2026-07-27",
                     text = "Newest",
                     createdAt = 3L,
@@ -73,6 +77,7 @@ class JournalEntryDaoTest {
             )
             db.journalEntryDao().insert(
                 JournalEntryEntity(
+                    id = "entry-3",
                     date = "2026-07-26",
                     text = "Middle",
                     createdAt = 2L,
@@ -99,6 +104,7 @@ class JournalEntryDaoTest {
                 .build()
             db.journalEntryDao().insert(
                 JournalEntryEntity(
+                    id = "entry-1",
                     date = "2026-07-27",
                     text = "Today was good.",
                     createdAt = 1_000L,
@@ -112,7 +118,7 @@ class JournalEntryDaoTest {
 
             // Act
             val found = db.journalEntryDao().getById(inserted.id)
-            val missing = db.journalEntryDao().getById(inserted.id + 1)
+            val missing = db.journalEntryDao().getById(UUID.randomUUID().toString())
             db.close()
 
             // Assert
@@ -132,6 +138,7 @@ class JournalEntryDaoTest {
                 .build()
             db.journalEntryDao().insert(
                 JournalEntryEntity(
+                    id = "entry-1",
                     date = "2026-07-27",
                     text = "Original text.",
                     createdAt = 1_000L,

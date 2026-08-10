@@ -12,7 +12,7 @@ class UpdateJournalEntryUseCase @Inject constructor(
     private val clock: Clock,
 ) {
     suspend operator fun invoke(
-        id: Long,
+        id: String,
         text: String,
         createdAt: Instant,
     ): Result<Unit> {

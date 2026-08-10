@@ -28,12 +28,17 @@ import java.time.ZoneOffset
 class JournalEntryDetailViewModelTest {
 
     private val createdAt = Instant.parse("2026-08-01T00:00:00Z")
-    private val entry = JournalEntry(id = 1L, date = LocalDate.of(2026, 8, 1), text = "Original text.", createdAt = createdAt)
+    private val entry = JournalEntry(
+        id = "1",
+        date = LocalDate.of(2026, 8, 1),
+        text = "Original text.",
+        createdAt = createdAt,
+    )
 
     private fun viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
         clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC),
-        id: Long = 1L,
+        id: String = "1",
     ) = JournalEntryDetailViewModel(
         id = id,
         getJournalEntry = GetJournalEntryUseCase(repository),

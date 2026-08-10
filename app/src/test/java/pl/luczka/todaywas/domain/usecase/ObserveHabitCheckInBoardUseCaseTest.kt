@@ -14,7 +14,7 @@ import java.time.LocalDate
 class ObserveHabitCheckInBoardUseCaseTest {
 
     private val habit = Habit(
-        id = 1L,
+        id = "1",
         name = "Drink water",
         description = null,
         type = HabitType.BINARY,
@@ -24,8 +24,8 @@ class ObserveHabitCheckInBoardUseCaseTest {
     )
 
     private val checkIn = HabitCheckIn(
-        id = 1L,
-        habitId = 1L,
+        id = "1",
+        habitId = "1",
         date = LocalDate.of(2026, 7, 27),
         value = 1,
         createdAt = Instant.EPOCH,

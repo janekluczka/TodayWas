@@ -14,7 +14,7 @@ class JournalRepositoryImplTest {
 
     private class FakeDao(
         private val failuresBeforeSuccess: Int = 0,
-        private val entities: MutableMap<Long, JournalEntryEntity> = mutableMapOf(),
+        private val entities: MutableMap<String, JournalEntryEntity> = mutableMapOf(),
     ) : JournalEntryDao {
 
         var insertCallCount = 0
@@ -24,13 +24,20 @@ class JournalRepositoryImplTest {
 
         override fun observeAll(): Flow<List<JournalEntryEntity>> = flowOf(entities.values.toList())
 
-        override suspend fun getById(id: Long): JournalEntryEntity? = entities[id]
+        override suspend fun getAll(): List<JournalEntryEntity> = entities.values.toList()
+
+        override suspend fun getById(id: String): JournalEntryEntity? = entities[id]
 
         override suspend fun insert(entity: JournalEntryEntity) {
             insertCallCount++
             if (insertCallCount <= failuresBeforeSuccess) {
                 throw RuntimeException("simulated write failure")
             }
+            entities[entity.id] = entity
+        }
+
+        override suspend fun upsert(entity: JournalEntryEntity) {
+            entities[entity.id] = entity
         }
 
         override suspend fun update(entity: JournalEntryEntity) {
@@ -39,6 +46,10 @@ class JournalRepositoryImplTest {
                 throw RuntimeException("simulated write failure")
             }
             entities[entity.id] = entity
+        }
+
+        override suspend fun clearAll() {
+            entities.clear()
         }
     }
 
@@ -76,15 +87,15 @@ class JournalRepositoryImplTest {
     fun `should return the mapped domain entry when getEntry finds it`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = 1L, date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
-            val dao = FakeDao(entities = mutableMapOf(1L to entity))
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val repository = JournalRepositoryImpl(dao)
 
             // Act
-            val entry = repository.getEntry(1L)
+            val entry = repository.getEntry("1")
 
             // Assert
-            assertEquals(1L, entry?.id)
+            assertEquals("1", entry?.id)
             assertEquals("Today was good.", entry?.text)
         }
 
@@ -96,7 +107,7 @@ class JournalRepositoryImplTest {
             val repository = JournalRepositoryImpl(dao)
 
             // Act
-            val entry = repository.getEntry(1L)
+            val entry = repository.getEntry("1")
 
             // Assert
             assertEquals(null, entry)
@@ -106,29 +117,29 @@ class JournalRepositoryImplTest {
     fun `should succeed after one retry when updateEntry's first write fails`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = 1L, date = "2026-07-27", text = "Original.", createdAt = 1_000L)
-            val dao = FakeDao(failuresBeforeSuccess = 1, entities = mutableMapOf(1L to entity))
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L)
+            val dao = FakeDao(failuresBeforeSuccess = 1, entities = mutableMapOf("1" to entity))
             val repository = JournalRepositoryImpl(dao)
 
             // Act
-            val result = repository.updateEntry(1L, "Edited.")
+            val result = repository.updateEntry("1", "Edited.")
 
             // Assert
             assertTrue(result.isSuccess)
             assertEquals(2, dao.updateCallCount)
-            assertEquals("Edited.", dao.getById(1L)?.text)
+            assertEquals("Edited.", dao.getById("1")?.text)
         }
 
     @Test
     fun `should return failure when updateEntry's retry also fails`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = 1L, date = "2026-07-27", text = "Original.", createdAt = 1_000L)
-            val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE, entities = mutableMapOf(1L to entity))
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L)
+            val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE, entities = mutableMapOf("1" to entity))
             val repository = JournalRepositoryImpl(dao)
 
             // Act
-            val result = repository.updateEntry(1L, "Edited.")
+            val result = repository.updateEntry("1", "Edited.")
 
             // Assert
             assertTrue(result.isFailure)
@@ -143,7 +154,7 @@ class JournalRepositoryImplTest {
             val repository = JournalRepositoryImpl(dao)
 
             // Act
-            val result = repository.updateEntry(1L, "Edited.")
+            val result = repository.updateEntry("1", "Edited.")
 
             // Assert
             assertTrue(result.isFailure)

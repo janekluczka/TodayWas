@@ -23,7 +23,7 @@ import java.time.Clock
 
 @HiltViewModel(assistedFactory = JournalEntryDetailViewModel.Factory::class)
 class JournalEntryDetailViewModel @AssistedInject constructor(
-    @Assisted private val id: Long,
+    @Assisted private val id: String,
     private val getJournalEntry: GetJournalEntryUseCase,
     private val updateJournalEntry: UpdateJournalEntryUseCase,
     private val clock: Clock,
@@ -117,7 +117,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            @Assisted id: Long,
+            @Assisted id: String,
         ): JournalEntryDetailViewModel
     }
 }

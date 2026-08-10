@@ -58,14 +58,14 @@ class MainViewModelTest {
         date: LocalDate,
         text: String = "entry",
     ) = JournalEntry(
-        id = date.hashCode().toLong(),
+        id = date.hashCode().toString(),
         date = date,
         text = text,
         createdAt = Instant.now(),
     )
 
     private fun habit(
-        id: Long,
+        id: String,
         name: String = "habit-$id",
         type: HabitType = HabitType.BINARY,
         scaleMin: Int? = null,
@@ -81,7 +81,7 @@ class MainViewModelTest {
     )
 
     private fun checkIn(
-        habitId: Long,
+        habitId: String,
         date: LocalDate,
         value: Int,
     ) = HabitCheckIn(
@@ -159,7 +159,7 @@ class MainViewModelTest {
             // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
-                habits = listOf(habit(id = 1L, name = "Drink water")),
+                habits = listOf(habit(id = "1", name = "Drink water")),
             )
 
             // Act
@@ -177,8 +177,8 @@ class MainViewModelTest {
             // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
-                habits = listOf(habit(id = 1L, type = HabitType.BINARY)),
-                checkIns = listOf(checkIn(habitId = 1L, date = LocalDate.now(), value = 1)),
+                habits = listOf(habit(id = "1", type = HabitType.BINARY)),
+                checkIns = listOf(checkIn(habitId = "1", date = LocalDate.now(), value = 1)),
             )
 
             // Act
@@ -195,8 +195,8 @@ class MainViewModelTest {
             // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
-                habits = listOf(habit(id = 1L, type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
-                checkIns = listOf(checkIn(habitId = 1L, date = LocalDate.now(), value = 3)),
+                habits = listOf(habit(id = "1", type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
+                checkIns = listOf(checkIn(habitId = "1", date = LocalDate.now(), value = 3)),
             )
 
             // Act
@@ -213,8 +213,8 @@ class MainViewModelTest {
             // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
-                habits = listOf(habit(id = 1L)),
-                checkIns = listOf(checkIn(habitId = 1L, date = LocalDate.now().minusDays(1), value = 1)),
+                habits = listOf(habit(id = "1")),
+                checkIns = listOf(checkIn(habitId = "1", date = LocalDate.now().minusDays(1), value = 1)),
             )
 
             // Act
@@ -278,7 +278,7 @@ class MainViewModelTest {
             // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
-                habits = listOf(habit(id = 1L)),
+                habits = listOf(habit(id = "1")),
             )
 
             // Act
@@ -297,7 +297,7 @@ class MainViewModelTest {
             // Arrange
             val viewModel = viewModel(
                 focus = Focus.BOTH,
-                habits = listOf(habit(id = 1L)),
+                habits = listOf(habit(id = "1")),
             )
 
             // Act
@@ -350,7 +350,7 @@ class MainViewModelTest {
     fun `should emit NavigateToLogHabitCheckIns when FabActionClicked with LOG_HABIT_CHECK_INS`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = 1L)))
+            val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = "1")))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
@@ -398,16 +398,16 @@ class MainViewModelTest {
     fun `should emit NavigateToHabitDetail with the clicked habit's id when HabitClicked is dispatched`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = 1L)))
+            val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = "1")))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
-            viewModel.onIntent(MainIntent.HabitClicked(habit(id = 1L).toUiState(todayCheckIn = null)))
+            viewModel.onIntent(MainIntent.HabitClicked(habit(id = "1").toUiState(todayCheckIn = null)))
             runCurrent()
 
             // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToHabitDetail(1L)), events)
+            assertEquals(listOf(MainUiEvent.NavigateToHabitDetail("1")), events)
             collectJob.cancel()
         }
 

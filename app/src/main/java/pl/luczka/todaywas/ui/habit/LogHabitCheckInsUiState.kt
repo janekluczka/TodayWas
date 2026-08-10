@@ -15,7 +15,7 @@ data class LogHabitCheckInsUiState(
 
 sealed interface HabitCheckInRowUiState {
 
-    val habitId: Long
+    val habitId: String
     val name: String
 
     // A binary habit is just a 0..1 range under the hood — one segmented-row component handles
@@ -26,7 +26,7 @@ sealed interface HabitCheckInRowUiState {
     val type: HabitTypeUiState
 
     data class Editable(
-        override val habitId: Long,
+        override val habitId: String,
         override val name: String,
         override val range: IntRange,
         override val type: HabitTypeUiState,
@@ -34,7 +34,7 @@ sealed interface HabitCheckInRowUiState {
     ) : HabitCheckInRowUiState
 
     data class AlreadyLogged(
-        override val habitId: Long,
+        override val habitId: String,
         override val name: String,
         override val range: IntRange,
         override val type: HabitTypeUiState,

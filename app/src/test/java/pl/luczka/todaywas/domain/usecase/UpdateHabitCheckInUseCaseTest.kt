@@ -26,11 +26,11 @@ class UpdateHabitCheckInUseCaseTest {
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, date, 0, createdAt)
+            val result = useCase("1", date, 0, createdAt)
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals(1L, repository.lastUpdatedHabitId)
+            assertEquals("1", repository.lastUpdatedHabitId)
             assertEquals(date, repository.lastUpdatedDate)
             assertEquals(0, repository.lastUpdatedValue)
         }
@@ -44,7 +44,7 @@ class UpdateHabitCheckInUseCaseTest {
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, date, 0, createdAt)
+            val result = useCase("1", date, 0, createdAt)
 
             // Assert
             assertTrue(result.isFailure)
@@ -61,7 +61,7 @@ class UpdateHabitCheckInUseCaseTest {
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, date, 0, createdAt)
+            val result = useCase("1", date, 0, createdAt)
 
             // Assert
             assertTrue(result.isFailure)
@@ -80,7 +80,7 @@ class UpdateHabitCheckInUseCaseTest {
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
             // Act
-            val result = useCase(1L, date, 0, createdAt)
+            val result = useCase("1", date, 0, createdAt)
 
             // Assert
             assertTrue(result.isFailure)
