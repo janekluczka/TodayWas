@@ -108,12 +108,15 @@ class OnboardingViewModelTest {
     }
 
     @Test
-    fun `initial state is WELCOME with nothing selected`() =
+    fun `should be WELCOME with nothing selected on initial state`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
 
+            // Act
             val state = viewModel.uiState.value
 
+            // Assert
             assertEquals(OnboardingStep.WELCOME, state.step)
             assertNull(state.selectedFocus)
             assertNull(state.confirmedFocus)
@@ -123,24 +126,30 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `NextClicked from WELCOME advances to FOCUS_PICK`() =
+    fun `should advance to FOCUS_PICK when NextClicked from WELCOME`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
 
+            // Act
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Assert
             assertEquals(OnboardingStep.FOCUS_PICK, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `NextClicked on FOCUS_PICK success advances to ACCOUNT_INFO and sets confirmedFocus`() =
+    fun `should advance to ACCOUNT_INFO and set confirmedFocus when NextClicked on FOCUS_PICK succeeds`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
 
+            // Act
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Assert
             val state = viewModel.uiState.value
             assertEquals(FocusUiState.JOURNAL, state.confirmedFocus)
             assertEquals(OnboardingStep.ACCOUNT_INFO, state.step)
@@ -149,16 +158,19 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `NextClicked on FOCUS_PICK failure sets saveError and stays on FOCUS_PICK`() =
+    fun `should set saveError and stay on FOCUS_PICK when NextClicked on FOCUS_PICK fails`() =
         runTest {
+            // Arrange
             val repository = FakeOnboardingRepository()
             repository.saveFocusResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.BOTH))
 
+            // Act
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Assert
             val state = viewModel.uiState.value
             assertTrue(state.saveError)
             assertFalse(state.isSaving)
@@ -166,8 +178,9 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `NextClicked retries after a failed attempt`() =
+    fun `should succeed when NextClicked is retried after a failed attempt`() =
         runTest {
+            // Arrange
             val repository = FakeOnboardingRepository()
             repository.saveFocusResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
@@ -177,8 +190,10 @@ class OnboardingViewModelTest {
             assertTrue(viewModel.uiState.value.saveError)
             repository.saveFocusResult = Result.success(Unit)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Assert
             val state = viewModel.uiState.value
             assertFalse(state.saveError)
             assertEquals(FocusUiState.HABIT, state.confirmedFocus)
@@ -186,75 +201,93 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `SignInSignUpClicked moves to SIGN_IN`() =
+    fun `should move to SIGN_IN when SignInSignUpClicked is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToAccountInfo(viewModel)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignInSignUpClicked)
 
+            // Assert
             assertEquals(AccountSubStep.SIGN_IN, viewModel.uiState.value.accountSubStep)
         }
 
     @Test
-    fun `SignUpLinkClicked from SIGN_IN moves to SIGN_UP`() =
+    fun `should move to SIGN_UP when SignUpLinkClicked from SIGN_IN`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToSignIn(viewModel)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignUpLinkClicked)
 
+            // Assert
             assertEquals(AccountSubStep.SIGN_UP, viewModel.uiState.value.accountSubStep)
         }
 
     @Test
-    fun `StepBack from SIGN_IN returns to CHOICE`() =
+    fun `should return to CHOICE when StepBack from SIGN_IN`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToSignIn(viewModel)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.StepBack)
 
+            // Assert
             assertEquals(AccountSubStep.CHOICE, viewModel.uiState.value.accountSubStep)
             assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `StepBack from SIGN_UP returns to SIGN_IN`() =
+    fun `should return to SIGN_IN when StepBack from SIGN_UP`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToSignUp(viewModel)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.StepBack)
 
+            // Assert
             assertEquals(AccountSubStep.SIGN_IN, viewModel.uiState.value.accountSubStep)
             assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `ContinueWithoutAccountClicked jumps straight to ALL_SET with NO_ACCOUNT reason`() =
+    fun `should jump straight to ALL_SET with NO_ACCOUNT reason when ContinueWithoutAccountClicked is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToAccountInfo(viewModel)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.ContinueWithoutAccountClicked)
 
+            // Assert
             val state = viewModel.uiState.value
             assertEquals(OnboardingStep.ALL_SET, state.step)
             assertEquals(AllSetReason.NO_ACCOUNT, state.allSetReason)
         }
 
     @Test
-    fun `sign-in submit with valid fields calls signInWithEmail and jumps to ALL_SET with SIGNED_IN reason`() =
+    fun `should call signInWithEmail and jump to ALL_SET with SIGNED_IN reason when sign-in submit has valid fields`() =
         runTest {
+            // Arrange
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
             advanceToSignIn(viewModel)
             viewModel.onIntent(OnboardingIntent.SignInEmailChanged("person@example.com"))
             viewModel.onIntent(OnboardingIntent.SignInPasswordChanged("password123"))
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignInSubmitClicked)
 
+            // Assert
             assertEquals(1, authRepository.signInCallCount)
             val state = viewModel.uiState.value
             assertEquals(OnboardingStep.ALL_SET, state.step)
@@ -263,24 +296,28 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `sign-in submit with invalid email sets emailError without calling the repository`() =
+    fun `should set emailError without calling the repository when sign-in submit has an invalid email`() =
         runTest {
+            // Arrange
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
             advanceToSignIn(viewModel)
             viewModel.onIntent(OnboardingIntent.SignInEmailChanged("not-an-email"))
             viewModel.onIntent(OnboardingIntent.SignInPasswordChanged("password123"))
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignInSubmitClicked)
 
+            // Assert
             assertTrue(viewModel.uiState.value.signInForm.emailError)
             assertEquals(0, authRepository.signInCallCount)
             assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `sign-in submit failure emits a ShowError event and stops submitting without leaving ACCOUNT_INFO`() =
+    fun `should emit a ShowError event and stop submitting without leaving ACCOUNT_INFO when sign-in submit fails`() =
         runTest {
+            // Arrange
             val authRepository = FakeAuthRepository()
             authRepository.signInError = AuthError.InvalidCredentials
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
@@ -290,9 +327,11 @@ class OnboardingViewModelTest {
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignInSubmitClicked)
             runCurrent()
 
+            // Assert
             assertEquals(
                 listOf(OnboardingUiEvent.ShowError(AuthErrorUiState.INVALID_CREDENTIALS)),
                 events,
@@ -304,15 +343,18 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `sign-up submit with valid fields calls signUpWithEmail and jumps to ALL_SET with ACCOUNT_CREATED reason`() =
+    fun `should call signUpWithEmail and jump to ALL_SET with ACCOUNT_CREATED reason when sign-up submit has valid fields`() =
         runTest {
+            // Arrange
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
 
+            // Assert
             assertEquals(1, authRepository.signUpCallCount)
             val state = viewModel.uiState.value
             assertEquals(OnboardingStep.ALL_SET, state.step)
@@ -321,23 +363,27 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `sign-up submit with mismatched repeat password sets repeatPasswordError without calling the repository`() =
+    fun `should set repeatPasswordError without calling the repository when sign-up submit has a mismatched repeat password`() =
         runTest {
+            // Arrange
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingIntent.SignUpRepeatPasswordChanged("mismatch"))
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
 
+            // Assert
             assertTrue(viewModel.uiState.value.signUpForm.repeatPasswordError)
             assertEquals(0, authRepository.signUpCallCount)
         }
 
     @Test
-    fun `sign-up submit failure emits a ShowError event and stops submitting`() =
+    fun `should emit a ShowError event and stop submitting when sign-up submit fails`() =
         runTest {
+            // Arrange
             val authRepository = FakeAuthRepository()
             authRepository.signUpError = AuthError.EmailAlreadyRegistered
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
@@ -346,9 +392,11 @@ class OnboardingViewModelTest {
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
             runCurrent()
 
+            // Assert
             assertEquals(
                 listOf(OnboardingUiEvent.ShowError(AuthErrorUiState.EMAIL_ALREADY_REGISTERED)),
                 events,
@@ -358,52 +406,64 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `GoogleSignInFailed emits a ShowError event with Unknown`() =
+    fun `should emit a ShowError event with Unknown when GoogleSignInFailed is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(OnboardingIntent.GoogleSignInFailed)
             runCurrent()
 
+            // Assert
             assertEquals(listOf(OnboardingUiEvent.ShowError(AuthErrorUiState.UNKNOWN)), events)
             collectJob.cancel()
         }
 
     @Test
-    fun `NextClicked on ACCOUNT_INFO advances to ALL_SET with NO_ACCOUNT reason when nothing was chosen`() =
+    fun `should advance to ALL_SET with NO_ACCOUNT reason when NextClicked on ACCOUNT_INFO with nothing chosen`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToAccountInfo(viewModel)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Assert
             val state = viewModel.uiState.value
             assertEquals(OnboardingStep.ALL_SET, state.step)
             assertEquals(AllSetReason.NO_ACCOUNT, state.allSetReason)
         }
 
     @Test
-    fun `NextClicked on ACCOUNT_INFO advances to ALL_SET while mid sign-in form`() =
+    fun `should advance to ALL_SET when NextClicked on ACCOUNT_INFO while mid sign-in form`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             advanceToSignIn(viewModel)
             viewModel.onIntent(OnboardingIntent.SignInEmailChanged("person@example.com"))
 
+            // Act
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Assert
             assertEquals(OnboardingStep.ALL_SET, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `authState reflects a session that becomes signed in`() =
+    fun `should reflect a session that becomes signed in in authState`() =
         runTest {
+            // Arrange
             val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)
             val viewModel = viewModel(FakeOnboardingRepository(), authRepository)
 
+            // Act
             authRepository.emit(AuthState.SignedIn(userId = "u1", email = "person@example.com"))
 
+            // Assert
             assertEquals(
                 AuthStateUi.SignedIn(email = "person@example.com"),
                 viewModel.uiState.value.authState,
@@ -411,8 +471,9 @@ class OnboardingViewModelTest {
         }
 
     @Test
-    fun `NextClicked on ALL_SET emits Finished`() =
+    fun `should emit Finished when NextClicked on ALL_SET`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.JOURNAL))
@@ -421,87 +482,105 @@ class OnboardingViewModelTest {
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(OnboardingIntent.NextClicked)
             runCurrent()
 
+            // Assert
             assertEquals(listOf(OnboardingUiEvent.Finished), events)
             collectJob.cancel()
         }
 
     @Test
-    fun `StepBack from FOCUS_PICK returns to WELCOME`() =
+    fun `should return to WELCOME when StepBack from FOCUS_PICK`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.StepBack)
 
+            // Assert
             assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `StepBack from ACCOUNT_INFO returns to FOCUS_PICK and pre-fills confirmedFocus`() =
+    fun `should return to FOCUS_PICK and pre-fill confirmedFocus when StepBack from ACCOUNT_INFO`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.HABIT))
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.StepBack)
 
+            // Assert
             val state = viewModel.uiState.value
             assertEquals(OnboardingStep.FOCUS_PICK, state.step)
             assertEquals(FocusUiState.HABIT, state.selectedFocus)
         }
 
     @Test
-    fun `StepBack from ALL_SET returns to ACCOUNT_INFO`() =
+    fun `should return to ACCOUNT_INFO when StepBack from ALL_SET`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.FocusOptionSelected(FocusUiState.HABIT))
             viewModel.onIntent(OnboardingIntent.NextClicked)
             viewModel.onIntent(OnboardingIntent.NextClicked)
 
+            // Act
             viewModel.onIntent(OnboardingIntent.StepBack)
 
+            // Assert
             assertEquals(OnboardingStep.ACCOUNT_INFO, viewModel.uiState.value.step)
         }
 
     @Test
-    fun `StepBack from WELCOME emits ExitApp without changing step`() =
+    fun `should emit ExitApp without changing step when StepBack from WELCOME`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(OnboardingIntent.StepBack)
             runCurrent()
 
+            // Assert
             assertEquals(listOf(OnboardingUiEvent.ExitApp), events)
             assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value.step)
             collectJob.cancel()
         }
 
     @Test
-    fun `SkipClicked calls SkipOnboardingUseCase and emits Finished when no focus confirmed yet`() =
+    fun `should call SkipOnboardingUseCase and emit Finished when SkipClicked with no focus confirmed yet`() =
         runTest {
+            // Arrange
             val repository = FakeOnboardingRepository()
             val viewModel = viewModel(repository)
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SkipClicked)
             runCurrent()
 
+            // Assert
             assertEquals(1, repository.saveFocusCallCount)
             assertEquals(listOf(OnboardingUiEvent.Finished), events)
             collectJob.cancel()
         }
 
     @Test
-    fun `SkipClicked emits Finished with no use-case call when a focus is already confirmed`() =
+    fun `should emit Finished with no use-case call when SkipClicked with a focus already confirmed`() =
         runTest {
+            // Arrange
             val repository = FakeOnboardingRepository()
             val viewModel = viewModel(repository)
             viewModel.onIntent(OnboardingIntent.NextClicked)
@@ -510,9 +589,11 @@ class OnboardingViewModelTest {
             val events = mutableListOf<OnboardingUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(OnboardingIntent.SkipClicked)
             runCurrent()
 
+            // Assert
             assertEquals(1, repository.saveFocusCallCount)
             assertEquals(FocusUiState.JOURNAL, viewModel.uiState.value.confirmedFocus)
             assertEquals(listOf(OnboardingUiEvent.Finished), events)

@@ -14,15 +14,17 @@ import org.robolectric.RobolectricTestRunner
 class HabitDaoTest {
 
     @Test
-    fun `inserted habit survives recreating the database instance from the same file`() =
+    fun `should survive recreating the database instance from the same file when a habit was inserted`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db1 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .build()
+
+            // Act
             db1.habitDao().insert(
                 HabitEntity(
                     name = "Drink water",
@@ -34,7 +36,6 @@ class HabitDaoTest {
                 ),
             )
             db1.close()
-
             val db2 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -42,6 +43,7 @@ class HabitDaoTest {
             val persisted = db2.habitDao().observeAll().first()
             db2.close()
 
+            // Assert
             assertEquals(1, persisted.size)
             assertEquals("Drink water", persisted[0].name)
             assertEquals("SCALE", persisted[0].type)
@@ -50,11 +52,11 @@ class HabitDaoTest {
         }
 
     @Test
-    fun `observeAll orders habits by createdAt ascending`() =
+    fun `should order habits by createdAt ascending when observeAll is called`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -90,9 +92,11 @@ class HabitDaoTest {
                 ),
             )
 
+            // Act
             val habits = db.habitDao().observeAll().first()
             db.close()
 
+            // Assert
             assertEquals(listOf("Oldest", "Middle", "Newest"), habits.map { it.name })
         }
 }

@@ -30,25 +30,31 @@ class OnboardingRepositoryImplTest {
     }
 
     @Test
-    fun `saveFocus retries once then succeeds if the retry works`() =
+    fun `should succeed after one retry when saveFocus's first write fails`() =
         runTest {
+            // Arrange
             val dao = FakeDao(failuresBeforeSuccess = 1)
             val repository = OnboardingRepositoryImpl(dao)
 
+            // Act
             val result = repository.saveFocus(Focus.JOURNAL)
 
+            // Assert
             assertTrue(result.isSuccess)
             assertEquals(2, dao.upsertCallCount)
         }
 
     @Test
-    fun `saveFocus returns failure after the retry also fails`() =
+    fun `should return failure when saveFocus's retry also fails`() =
         runTest {
+            // Arrange
             val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE)
             val repository = OnboardingRepositoryImpl(dao)
 
+            // Act
             val result = repository.saveFocus(Focus.JOURNAL)
 
+            // Assert
             assertTrue(result.isFailure)
             assertEquals(2, dao.upsertCallCount)
         }

@@ -45,38 +45,47 @@ class RootViewModelTest {
     }
 
     @Test
-    fun `resolves to OnboardingKey when initial state is incomplete`() =
+    fun `should resolve to OnboardingKey when initial state is incomplete`() =
         runTest {
-            val viewModel = viewModel(
-                FakeOnboardingRepository(
-                    OnboardingState(
-                        completed = false,
-                        focus = null,
-                    ),
+            // Arrange
+            val repository = FakeOnboardingRepository(
+                OnboardingState(
+                    completed = false,
+                    focus = null,
                 ),
             )
 
-            assertEquals(OnboardingKey, viewModel.initialDestination.value)
+            // Act
+            val viewModel = viewModel(repository)
+            val destination = viewModel.initialDestination.value
+
+            // Assert
+            assertEquals(OnboardingKey, destination)
         }
 
     @Test
-    fun `resolves to MainKey when initial state is already completed`() =
+    fun `should resolve to MainKey when initial state is already completed`() =
         runTest {
-            val viewModel = viewModel(
-                FakeOnboardingRepository(
-                    OnboardingState(
-                        completed = true,
-                        focus = Focus.BOTH,
-                    ),
+            // Arrange
+            val repository = FakeOnboardingRepository(
+                OnboardingState(
+                    completed = true,
+                    focus = Focus.BOTH,
                 ),
             )
 
-            assertEquals(MainKey, viewModel.initialDestination.value)
+            // Act
+            val viewModel = viewModel(repository)
+            val destination = viewModel.initialDestination.value
+
+            // Assert
+            assertEquals(MainKey, destination)
         }
 
     @Test
-    fun `a later emission flipping completed to true does not change the resolved destination`() =
+    fun `should not change the resolved destination when a later emission flips completed to true`() =
         runTest {
+            // Arrange
             val repository = FakeOnboardingRepository(
                 OnboardingState(
                     completed = false,
@@ -86,12 +95,14 @@ class RootViewModelTest {
             val viewModel = viewModel(repository)
             assertEquals(OnboardingKey, viewModel.initialDestination.value)
 
+            // Act
             // Mirrors selecting a focus mid-flow: Room flips `completed` before Account/All-set show.
             repository.stateFlow.value = OnboardingState(
                 completed = true,
                 focus = Focus.JOURNAL,
             )
 
+            // Assert
             assertEquals(OnboardingKey, viewModel.initialDestination.value)
         }
 }

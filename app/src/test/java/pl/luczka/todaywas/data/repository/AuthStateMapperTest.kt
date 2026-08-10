@@ -12,23 +12,44 @@ import java.io.IOException
 class AuthStateMapperTest {
 
     @Test
-    fun `Initializing maps to Loading`() {
-        assertEquals(AuthState.Loading, SessionStatus.Initializing.toAuthState())
+    fun `should map to Loading when status is Initializing`() {
+        // Arrange
+        val status = SessionStatus.Initializing
+
+        // Act
+        val result = status.toAuthState()
+
+        // Assert
+        assertEquals(AuthState.Loading, result)
     }
 
     @Test
-    fun `NotAuthenticated maps to SignedOut`() {
-        assertEquals(AuthState.SignedOut, SessionStatus.NotAuthenticated(isSignOut = false).toAuthState())
+    fun `should map to SignedOut when status is NotAuthenticated`() {
+        // Arrange
+        val status = SessionStatus.NotAuthenticated(isSignOut = false)
+
+        // Act
+        val result = status.toAuthState()
+
+        // Assert
+        assertEquals(AuthState.SignedOut, result)
     }
 
     @Test
-    fun `RefreshFailure maps to SignedOut`() {
+    fun `should map to SignedOut when status is RefreshFailure`() {
+        // Arrange
         val status = SessionStatus.RefreshFailure(RefreshFailureCause.NetworkError(IOException("no connection")))
-        assertEquals(AuthState.SignedOut, status.toAuthState())
+
+        // Act
+        val result = status.toAuthState()
+
+        // Assert
+        assertEquals(AuthState.SignedOut, result)
     }
 
     @Test
-    fun `Authenticated maps to SignedIn with user id and email`() {
+    fun `should map to SignedIn with user id and email when status is Authenticated`() {
+        // Arrange
         val session = UserSession(
             accessToken = "access",
             refreshToken = "refresh",
@@ -37,8 +58,10 @@ class AuthStateMapperTest {
             user = UserInfo(aud = "authenticated", id = "user-1", email = "person@example.com"),
         )
 
+        // Act
         val result = SessionStatus.Authenticated(session).toAuthState()
 
+        // Assert
         assertEquals(AuthState.SignedIn(userId = "user-1", email = "person@example.com"), result)
     }
 }

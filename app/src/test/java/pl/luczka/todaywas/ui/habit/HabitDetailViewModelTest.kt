@@ -77,8 +77,9 @@ class HabitDetailViewModelTest {
     }
 
     @Test
-    fun `rows include every logged date plus today and yesterday even if unlogged`() =
+    fun `should include every logged date plus today and yesterday even if unlogged in rows`() =
         runTest {
+            // Arrange
             val oldDate = today.minusDays(10)
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
@@ -88,11 +89,13 @@ class HabitDetailViewModelTest {
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
 
+            // Act
+            runCurrent()
             val dates = viewModel.uiState.value.rows
                 .map { it.date }
 
+            // Assert
             assertTrue(dates.contains(oldDate))
             assertTrue(dates.contains(today))
             assertTrue(dates.contains(yesterday))
@@ -101,16 +104,19 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `a not-yet-logged day derives eligibleForEdit true and alreadyLogged false`() =
+    fun `should derive eligibleForEdit true and alreadyLogged false when a day is not yet logged`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
 
+            // Act
+            runCurrent()
             val row = viewModel.uiState.value.rows
                 .find { it.date == today }
 
+            // Assert
             assertEquals("Drink water", viewModel.uiState.value.habitName)
             assertTrue(row?.eligibleForEdit == true)
             assertFalse(row?.alreadyLogged == true)
@@ -118,8 +124,9 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `a logged day within the window derives eligibleForEdit true and alreadyLogged true`() =
+    fun `should derive eligibleForEdit true and alreadyLogged true when a logged day is within the window`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -128,11 +135,13 @@ class HabitDetailViewModelTest {
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
 
+            // Act
+            runCurrent()
             val row = viewModel.uiState.value.rows
                 .find { it.date == today }
 
+            // Assert
             assertEquals(1, row?.value)
             assertTrue(row?.alreadyLogged == true)
             assertTrue(row?.eligibleForEdit == true)
@@ -140,8 +149,9 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `a logged day past the window derives eligibleForEdit false and alreadyLogged true`() =
+    fun `should derive eligibleForEdit false and alreadyLogged true when a logged day is past the window`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -150,44 +160,52 @@ class HabitDetailViewModelTest {
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
 
+            // Act
+            runCurrent()
             val row = viewModel.uiState.value.rows
                 .find { it.date == yesterday }
 
+            // Assert
             assertTrue(row?.alreadyLogged == true)
             assertFalse(row?.eligibleForEdit == true)
             collectJob.cancel()
         }
 
     @Test
-    fun `EditClicked sets isEditSheetOpen true`() =
+    fun `should set isEditSheetOpen true when EditClicked is dispatched`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
 
+            // Act
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             runCurrent()
 
+            // Assert
             assertTrue(viewModel.uiState.value.isEditSheetOpen)
             collectJob.cancel()
         }
 
     @Test
-    fun `CancelEditClicked exits edit mode and discards pending values`() =
+    fun `should exit edit mode and discard pending values when CancelEditClicked is dispatched`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+
+            // Act
             viewModel.onIntent(HabitDetailIntent.CancelEditClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isEditSheetOpen)
             assertEquals(
                 null,
@@ -199,17 +217,20 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `Save with nothing pending just exits edit mode without calling either use case`() =
+    fun `should exit edit mode without calling either use case when Save has nothing pending`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             viewModel.onIntent(HabitDetailIntent.EditClicked)
+
+            // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isEditSheetOpen)
             assertEquals(null, repository.lastLoggedDate)
             assertEquals(0, repository.updateCheckInCallCount)
@@ -217,18 +238,21 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `Save touching only a not-yet-logged row calls only the insert path and exits edit mode`() =
+    fun `should call only the insert path and exit edit mode when Save touches only a not-yet-logged row`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+
+            // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
             assertFalse(viewModel.uiState.value.isEditSheetOpen)
@@ -239,8 +263,9 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `Save touching only an in-window logged row calls only the update path`() =
+    fun `should call only the update path when Save touches only an in-window logged row`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -250,12 +275,14 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
+
+            // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.updateCheckInCallCount)
@@ -265,8 +292,9 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `Save touching both a new and an existing row calls both and clears pending only if both succeed`() =
+    fun `should call both paths and clear pending only if both succeed when Save touches a new and an existing row`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -276,13 +304,15 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
             viewModel.onIntent(HabitDetailIntent.ValueChanged(yesterday, 1))
+
+            // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.updateCheckInCallCount)
@@ -292,8 +322,9 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `Save failing on a window-expired row sets saveErrorIsWindowExpired`() =
+    fun `should set saveErrorIsWindowExpired when Save fails on a window-expired row`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -303,13 +334,15 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             // Bypasses the UI's enabled gate on purpose, mirroring a real mid-session expiry.
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
+
+            // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.saveError)
             assertTrue(viewModel.uiState.value.saveErrorIsWindowExpired)
@@ -318,8 +351,9 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `contributionGrid and window state reflect loaded check-ins`() =
+    fun `should reflect loaded check-ins in contributionGrid and window state`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -328,9 +362,12 @@ class HabitDetailViewModelTest {
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
 
+            // Act
+            runCurrent()
             val state = viewModel.uiState.value
+
+            // Assert
             assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.selectedWindow)
             assertTrue(state.availableWindows.contains(ContributionWindowUiState.RollingTwelveMonths))
             assertTrue(state.availableWindows.contains(ContributionWindowUiState.CalendarYear(today.year)))
@@ -339,8 +376,9 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `WindowSelected updates selectedWindow and recomputes contributionGrid without changing an already-visible day's level`() =
+    fun `should update selectedWindow without changing an already-visible day's level when WindowSelected is dispatched`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -351,20 +389,22 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             val levelBefore = levelFor(viewModel.uiState.value.contributionGrid.cells, today)
 
+            // Act
             viewModel.onIntent(HabitDetailIntent.WindowSelected(ContributionWindowUiState.CalendarYear(today.year)))
             runCurrent()
 
+            // Assert
             assertEquals(ContributionWindowUiState.CalendarYear(today.year), viewModel.uiState.value.selectedWindow)
             assertEquals(levelBefore, levelFor(viewModel.uiState.value.contributionGrid.cells, today))
             collectJob.cancel()
         }
 
     @Test
-    fun `contributionGrid instance is reused across unrelated state changes during editing`() =
+    fun `should reuse the contributionGrid instance across unrelated state changes during editing`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
@@ -374,31 +414,35 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             val gridBefore = viewModel.uiState.value.contributionGrid
 
+            // Act
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(yesterday, 1))
             runCurrent()
 
+            // Assert
             assertTrue(gridBefore === viewModel.uiState.value.contributionGrid)
             collectJob.cancel()
         }
 
     @Test
-    fun `Save failing for a generic reason clears saveErrorIsWindowExpired`() =
+    fun `should clear saveErrorIsWindowExpired when Save fails for a generic reason`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             repository.addCheckInsResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-
             viewModel.onIntent(HabitDetailIntent.EditClicked)
             viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+
+            // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertTrue(viewModel.uiState.value.saveError)
             assertFalse(viewModel.uiState.value.saveErrorIsWindowExpired)
             collectJob.cancel()

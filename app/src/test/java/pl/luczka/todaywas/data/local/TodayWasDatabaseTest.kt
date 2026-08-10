@@ -14,15 +14,17 @@ import org.robolectric.RobolectricTestRunner
 class TodayWasDatabaseTest {
 
     @Test
-    fun `saved focus survives recreating the database instance from the same file`() =
+    fun `should survive recreating the database instance from the same file when a focus was saved`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db1 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .build()
+
+            // Act
             db1.userPreferencesDao().upsert(
                 UserPreferencesEntity(
                     focus = "JOURNAL",
@@ -30,7 +32,6 @@ class TodayWasDatabaseTest {
                 ),
             )
             db1.close()
-
             val db2 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -38,6 +39,7 @@ class TodayWasDatabaseTest {
             val persisted = db2.userPreferencesDao().observe().first()
             db2.close()
 
+            // Assert
             assertEquals("JOURNAL", persisted?.focus)
             assertEquals(true, persisted?.onboardingCompleted)
         }

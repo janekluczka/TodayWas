@@ -18,14 +18,17 @@ class UpdateHabitCheckInUseCaseTest {
     private val date = LocalDate.of(2026, 8, 1)
 
     @Test
-    fun `within window delegates to the repository`() =
+    fun `should delegate to the repository when within the edit window`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC)
             val repository = FakeHabitRepository()
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, date, 0, createdAt)
 
+            // Assert
             assertTrue(result.isSuccess)
             assertEquals(1L, repository.lastUpdatedHabitId)
             assertEquals(date, repository.lastUpdatedDate)
@@ -33,44 +36,53 @@ class UpdateHabitCheckInUseCaseTest {
         }
 
     @Test
-    fun `at the 24h boundary returns failure and never calls the repository`() =
+    fun `should return failure and never call the repository when at the 24h boundary`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(createdAt.plus(Duration.ofHours(24)), ZoneOffset.UTC)
             val repository = FakeHabitRepository()
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, date, 0, createdAt)
 
+            // Assert
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is EditWindowExpiredException)
             assertEquals(0, repository.updateCheckInCallCount)
         }
 
     @Test
-    fun `past the 24h boundary returns failure and never calls the repository`() =
+    fun `should return failure and never call the repository when past the 24h boundary`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(createdAt.plus(Duration.ofHours(24).plusSeconds(1)), ZoneOffset.UTC)
             val repository = FakeHabitRepository()
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, date, 0, createdAt)
 
+            // Assert
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is EditWindowExpiredException)
             assertEquals(0, repository.updateCheckInCallCount)
         }
 
     @Test
-    fun `a repository failure passes through unchanged`() =
+    fun `should pass a repository failure through unchanged`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(createdAt, ZoneOffset.UTC)
             val repository = FakeHabitRepository()
             val failure = RuntimeException("write failed")
             repository.updateCheckInResult = Result.failure(failure)
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, date, 0, createdAt)
 
+            // Assert
             assertTrue(result.isFailure)
             assertEquals(failure, result.exceptionOrNull())
         }
