@@ -32,4 +32,8 @@ interface HabitRepository {
         date: LocalDate,
         value: Int,
     ): Result<Unit>
+
+    suspend fun syncWithRemote(): Result<Unit>
+
+    suspend fun clearLocal(): Result<Unit>
 }

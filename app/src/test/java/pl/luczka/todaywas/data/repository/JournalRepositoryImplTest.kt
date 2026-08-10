@@ -1,7 +1,10 @@
 package pl.luczka.todaywas.data.repository
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -10,7 +13,15 @@ import pl.luczka.todaywas.data.local.JournalEntryDao
 import pl.luczka.todaywas.data.local.JournalEntryEntity
 import java.time.LocalDate
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class JournalRepositoryImplTest {
+
+    private fun repository(
+        dao: JournalEntryDao,
+        scope: CoroutineScope,
+        remote: RemoteJournalDataSource = FakeRemoteJournalDataSource(),
+        auth: AuthRepository = FakeAuthRepository(),
+    ) = JournalRepositoryImpl(dao, remote, auth, scope)
 
     private class FakeDao(
         private val failuresBeforeSuccess: Int = 0,
@@ -58,7 +69,7 @@ class JournalRepositoryImplTest {
         runTest {
             // Arrange
             val dao = FakeDao(failuresBeforeSuccess = 1)
-            val repository = JournalRepositoryImpl(dao)
+            val repository = repository(dao, backgroundScope)
 
             // Act
             val result = repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
@@ -73,7 +84,7 @@ class JournalRepositoryImplTest {
         runTest {
             // Arrange
             val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE)
-            val repository = JournalRepositoryImpl(dao)
+            val repository = repository(dao, backgroundScope)
 
             // Act
             val result = repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
@@ -89,7 +100,7 @@ class JournalRepositoryImplTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
-            val repository = JournalRepositoryImpl(dao)
+            val repository = repository(dao, backgroundScope)
 
             // Act
             val entry = repository.getEntry("1")
@@ -104,7 +115,7 @@ class JournalRepositoryImplTest {
         runTest {
             // Arrange
             val dao = FakeDao()
-            val repository = JournalRepositoryImpl(dao)
+            val repository = repository(dao, backgroundScope)
 
             // Act
             val entry = repository.getEntry("1")
@@ -119,7 +130,7 @@ class JournalRepositoryImplTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L)
             val dao = FakeDao(failuresBeforeSuccess = 1, entities = mutableMapOf("1" to entity))
-            val repository = JournalRepositoryImpl(dao)
+            val repository = repository(dao, backgroundScope)
 
             // Act
             val result = repository.updateEntry("1", "Edited.")
@@ -136,7 +147,7 @@ class JournalRepositoryImplTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L)
             val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE, entities = mutableMapOf("1" to entity))
-            val repository = JournalRepositoryImpl(dao)
+            val repository = repository(dao, backgroundScope)
 
             // Act
             val result = repository.updateEntry("1", "Edited.")
@@ -151,7 +162,7 @@ class JournalRepositoryImplTest {
         runTest {
             // Arrange
             val dao = FakeDao()
-            val repository = JournalRepositoryImpl(dao)
+            val repository = repository(dao, backgroundScope)
 
             // Act
             val result = repository.updateEntry("1", "Edited.")
@@ -159,5 +170,82 @@ class JournalRepositoryImplTest {
             // Assert
             assertTrue(result.isFailure)
             assertEquals(0, dao.updateCallCount)
+        }
+
+    @Test
+    fun `should still succeed when the background remote push fails`() =
+        runTest {
+            // Arrange
+            val dao = FakeDao()
+            val remote = FakeRemoteJournalDataSource(shouldFail = true)
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            val result = repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
+            runCurrent()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(1, remote.upsertCallCount)
+        }
+
+    @Test
+    fun `should not push when signed out`() =
+        runTest {
+            // Arrange
+            val dao = FakeDao()
+            val remote = FakeRemoteJournalDataSource()
+            val auth = FakeAuthRepository(currentUserId = null)
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
+            runCurrent()
+
+            // Assert
+            assertEquals(0, remote.upsertCallCount)
+        }
+
+    @Test
+    fun `should push all local rows then pull remote-only rows when syncWithRemote is called`() =
+        runTest {
+            // Arrange
+            val localOnly = JournalEntryEntity(id = "local-1", date = "2026-07-27", text = "Local only.", createdAt = 1_000L)
+            val dao = FakeDao(entities = mutableMapOf("local-1" to localOnly))
+            val remoteOnly = JournalEntryRemoteDto(
+                id = "remote-1",
+                userId = "user-1",
+                date = "2026-07-20",
+                text = "Remote only.",
+                createdAt = "2026-07-20T00:00:00Z",
+            )
+            val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("remote-1" to remoteOnly))
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            val result = repository.syncWithRemote()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(1, remote.upsertCallCount)
+            assertTrue(dao.getAll().any { it.id == "remote-1" })
+        }
+
+    @Test
+    fun `should empty the DAO when clearLocal is called`() =
+        runTest {
+            // Arrange
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val dao = FakeDao(entities = mutableMapOf("1" to entity))
+            val repository = repository(dao, backgroundScope)
+
+            // Act
+            val result = repository.clearLocal()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertTrue(dao.getAll().isEmpty())
         }
 }

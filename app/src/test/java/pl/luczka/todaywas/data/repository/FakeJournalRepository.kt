@@ -27,6 +27,14 @@ class FakeJournalRepository(
     var lastUpdatedText: String? = null
         private set
 
+    var syncWithRemoteResult: Result<Unit> = Result.success(Unit)
+    var syncWithRemoteCallCount = 0
+        private set
+
+    var clearLocalResult: Result<Unit> = Result.success(Unit)
+    var clearLocalCallCount = 0
+        private set
+
     override fun observeEntries(): Flow<List<JournalEntry>> = entriesFlow
 
     override suspend fun getEntry(id: String): JournalEntry? = entriesFlow.value.find { it.id == id }
@@ -49,5 +57,15 @@ class FakeJournalRepository(
         lastUpdatedId = id
         lastUpdatedText = text
         return updateEntryResult
+    }
+
+    override suspend fun syncWithRemote(): Result<Unit> {
+        syncWithRemoteCallCount++
+        return syncWithRemoteResult
+    }
+
+    override suspend fun clearLocal(): Result<Unit> {
+        clearLocalCallCount++
+        return clearLocalResult
     }
 }

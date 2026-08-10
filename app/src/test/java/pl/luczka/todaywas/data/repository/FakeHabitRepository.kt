@@ -41,6 +41,14 @@ class FakeHabitRepository(
     var lastUpdatedValue: Int? = null
         private set
 
+    var syncWithRemoteResult: Result<Unit> = Result.success(Unit)
+    var syncWithRemoteCallCount = 0
+        private set
+
+    var clearLocalResult: Result<Unit> = Result.success(Unit)
+    var clearLocalCallCount = 0
+        private set
+
     override fun observeHabits(): Flow<List<Habit>> = habitsFlow
 
     override suspend fun createHabit(
@@ -78,5 +86,15 @@ class FakeHabitRepository(
         lastUpdatedDate = date
         lastUpdatedValue = value
         return updateCheckInResult
+    }
+
+    override suspend fun syncWithRemote(): Result<Unit> {
+        syncWithRemoteCallCount++
+        return syncWithRemoteResult
+    }
+
+    override suspend fun clearLocal(): Result<Unit> {
+        clearLocalCallCount++
+        return clearLocalResult
     }
 }
