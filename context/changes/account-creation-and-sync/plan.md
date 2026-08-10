@@ -674,8 +674,8 @@ this pre-release app.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — e476b0d
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — e476b0d
 
 #### Manual
 
