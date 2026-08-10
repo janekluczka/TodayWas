@@ -34,23 +34,29 @@ class PreferencesViewModelTest {
     }
 
     @Test
-    fun `initial state reflects the observed auth state`() = runTest {
+    fun `should reflect the observed auth state on initial state`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
 
+        // Act
         val viewModel = viewModel(repository)
 
+        // Assert
         assertEquals(AuthStateUi.SignedIn(email = "a@b.com"), viewModel.uiState.value.authState)
     }
 
     @Test
-    fun `AccountCardClicked emits NavigateToAccount`() = runTest {
+    fun `should emit NavigateToAccount when AccountCardClicked is dispatched`() = runTest {
+        // Arrange
         val viewModel = viewModel(FakeAuthRepository())
         val events = mutableListOf<PreferencesUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+        // Act
         viewModel.onIntent(PreferencesIntent.AccountCardClicked)
         runCurrent()
 
+        // Assert
         assertEquals(listOf(PreferencesUiEvent.NavigateToAccount), events)
         collectJob.cancel()
     }

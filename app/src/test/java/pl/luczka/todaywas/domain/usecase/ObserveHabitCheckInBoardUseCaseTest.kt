@@ -32,19 +32,49 @@ class ObserveHabitCheckInBoardUseCaseTest {
     )
 
     @Test
-    fun `combined flow reflects both sources' latest values`() =
+    fun `should have no habits or check-ins when neither source has emitted`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository()
             val useCase = ObserveHabitCheckInBoardUseCase(repository)
 
-            assertEquals(0, useCase().first().habits.size)
-
-            repository.habitsFlow.value = listOf(habit)
-            assertEquals(listOf(habit), useCase().first().habits)
-            assertEquals(0, useCase().first().checkIns.size)
-
-            repository.checkInsFlow.value = listOf(checkIn)
+            // Act
             val board = useCase().first()
+
+            // Assert
+            assertEquals(0, board.habits.size)
+            assertEquals(0, board.checkIns.size)
+        }
+
+    @Test
+    fun `should reflect habits with no check-ins when only habitsFlow has emitted`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository()
+            val useCase = ObserveHabitCheckInBoardUseCase(repository)
+            repository.habitsFlow.value = listOf(habit)
+
+            // Act
+            val board = useCase().first()
+
+            // Assert
+            assertEquals(listOf(habit), board.habits)
+            assertEquals(0, board.checkIns.size)
+        }
+
+    @Test
+    fun `should reflect both sources' latest values when both have emitted`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository()
+            val useCase = ObserveHabitCheckInBoardUseCase(repository)
+            repository.habitsFlow.value = listOf(habit)
+            repository.checkInsFlow.value = listOf(checkIn)
+
+            // Act
+            val board = useCase().first()
+
+            // Assert
             assertEquals(listOf(habit), board.habits)
             assertEquals(listOf(checkIn), board.checkIns)
         }

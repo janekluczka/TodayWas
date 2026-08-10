@@ -12,8 +12,9 @@ import java.time.LocalDate
 class GetJournalEntryUseCaseTest {
 
     @Test
-    fun `returns the entry when found`() =
+    fun `should return the entry when found`() =
         runTest {
+            // Arrange
             val entry = JournalEntry(
                 id = 1L,
                 date = LocalDate.of(2026, 7, 27),
@@ -23,19 +24,24 @@ class GetJournalEntryUseCaseTest {
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val useCase = GetJournalEntryUseCase(repository)
 
+            // Act
             val result = useCase(1L)
 
+            // Assert
             assertEquals(entry, result)
         }
 
     @Test
-    fun `returns null when not found`() =
+    fun `should return null when not found`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository()
             val useCase = GetJournalEntryUseCase(repository)
 
+            // Act
             val result = useCase(1L)
 
+            // Assert
             assertNull(result)
         }
 }

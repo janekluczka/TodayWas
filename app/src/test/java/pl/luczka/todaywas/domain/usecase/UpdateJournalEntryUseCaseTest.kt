@@ -16,36 +16,43 @@ class UpdateJournalEntryUseCaseTest {
     private val createdAt = Instant.parse("2026-08-01T00:00:00Z")
 
     @Test
-    fun `within window delegates to the repository with unchanged id`() =
+    fun `should delegate to the repository with unchanged id when within the edit window`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC)
             val repository = FakeJournalRepository()
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, "Edited.", createdAt)
 
+            // Assert
             assertTrue(result.isSuccess)
             assertEquals(1L, repository.lastUpdatedId)
             assertEquals("Edited.", repository.lastUpdatedText)
         }
 
     @Test
-    fun `at the 24h boundary returns failure and never calls the repository`() =
+    fun `should return failure and never call the repository when at the 24h boundary`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(createdAt.plus(Duration.ofHours(24)), ZoneOffset.UTC)
             val repository = FakeJournalRepository()
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, "Edited.", createdAt)
 
+            // Assert
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is EditWindowExpiredException)
             assertEquals(0, repository.updateEntryCallCount)
         }
 
     @Test
-    fun `past the 24h boundary returns failure and never calls the repository`() =
+    fun `should return failure and never call the repository when past the 24h boundary`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(
                 createdAt.plus(Duration.ofHours(24).plusSeconds(1)),
                 ZoneOffset.UTC,
@@ -53,24 +60,29 @@ class UpdateJournalEntryUseCaseTest {
             val repository = FakeJournalRepository()
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, "Edited.", createdAt)
 
+            // Assert
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is EditWindowExpiredException)
             assertEquals(0, repository.updateEntryCallCount)
         }
 
     @Test
-    fun `a repository failure passes through unchanged`() =
+    fun `should pass a repository failure through unchanged`() =
         runTest {
+            // Arrange
             val clock = Clock.fixed(createdAt, ZoneOffset.UTC)
             val repository = FakeJournalRepository()
             val failure = RuntimeException("write failed")
             repository.updateEntryResult = Result.failure(failure)
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
+            // Act
             val result = useCase(1L, "Edited.", createdAt)
 
+            // Assert
             assertTrue(result.isFailure)
             assertEquals(failure, result.exceptionOrNull())
         }

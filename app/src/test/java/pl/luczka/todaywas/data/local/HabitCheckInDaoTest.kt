@@ -16,15 +16,17 @@ import org.robolectric.RobolectricTestRunner
 class HabitCheckInDaoTest {
 
     @Test
-    fun `inserted check-in survives recreating the database instance from the same file`() =
+    fun `should survive recreating the database instance from the same file when a check-in was inserted`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db1 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .build()
+
+            // Act
             db1.habitCheckInDao().insertOne(
                 HabitCheckInEntity(
                     habitId = 1L,
@@ -34,7 +36,6 @@ class HabitCheckInDaoTest {
                 ),
             )
             db1.close()
-
             val db2 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -42,6 +43,7 @@ class HabitCheckInDaoTest {
             val persisted = db2.habitCheckInDao().observeAll().first()
             db2.close()
 
+            // Assert
             assertEquals(1, persisted.size)
             assertEquals(1L, persisted[0].habitId)
             assertEquals("2026-07-27", persisted[0].date)
@@ -49,15 +51,17 @@ class HabitCheckInDaoTest {
         }
 
     @Test
-    fun `insertAll writes every entity in the batch`() =
+    fun `should write every entity in the batch when insertAll is called`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .build()
+
+            // Act
             db.habitCheckInDao().insertAll(
                 listOf(
                     HabitCheckInEntity(
@@ -74,19 +78,19 @@ class HabitCheckInDaoTest {
                     ),
                 ),
             )
-
             val persisted = db.habitCheckInDao().observeAll().first()
             db.close()
 
+            // Assert
             assertEquals(2, persisted.size)
         }
 
     @Test
-    fun `insertAll is atomic - a batch containing a conflicting row commits nothing`() =
+    fun `should commit nothing when insertAll's batch contains a conflicting row`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -101,6 +105,7 @@ class HabitCheckInDaoTest {
                 ),
             )
 
+            // Act
             var threw = false
             try {
                 db.habitCheckInDao().insertAll(
@@ -125,10 +130,10 @@ class HabitCheckInDaoTest {
             } catch (e: Exception) {
                 threw = true
             }
-
             val persisted = db.habitCheckInDao().observeAll().first()
             db.close()
 
+            // Assert
             assertTrue(threw)
             assertEquals(1, persisted.size)
             assertEquals(1L, persisted[0].habitId)
@@ -136,11 +141,11 @@ class HabitCheckInDaoTest {
         }
 
     @Test
-    fun `getByHabitAndDate returns the matching entity or null`() =
+    fun `should return the matching entity or null when getByHabitAndDate is called`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -154,22 +159,24 @@ class HabitCheckInDaoTest {
                 ),
             )
 
+            // Act
             val found = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27")
             val missingDate = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-26")
             val missingHabit = db.habitCheckInDao().getByHabitAndDate(2L, "2026-07-27")
             db.close()
 
+            // Assert
             assertEquals(1, found?.value)
             assertEquals(null, missingDate)
             assertEquals(null, missingHabit)
         }
 
     @Test
-    fun `update persists new value and leaves habitId, date, and createdAt untouched`() =
+    fun `should persist new value and leave habitId, date, and createdAt untouched when update is called`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -184,10 +191,12 @@ class HabitCheckInDaoTest {
             )
             val inserted = checkNotNull(db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27"))
 
+            // Act
             db.habitCheckInDao().update(inserted.copy(value = 0))
             val updated = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27")
             db.close()
 
+            // Assert
             assertEquals(0, updated?.value)
             assertEquals(1L, updated?.habitId)
             assertEquals("2026-07-27", updated?.date)

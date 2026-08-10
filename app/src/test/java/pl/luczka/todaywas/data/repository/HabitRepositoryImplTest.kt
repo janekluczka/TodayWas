@@ -68,14 +68,16 @@ class HabitRepositoryImplTest {
     }
 
     @Test
-    fun `createHabit retries once then succeeds if the retry works`() =
+    fun `should succeed after one retry when createHabit's first write fails`() =
         runTest {
+            // Arrange
             val habitDao = FakeHabitDao(failuresBeforeSuccess = 1)
             val repository = HabitRepositoryImpl(
                 habitDao = habitDao,
                 habitCheckInDao = FakeHabitCheckInDao(failuresBeforeSuccess = 0),
             )
 
+            // Act
             val result = repository.createHabit(
                 name = "Drink water",
                 description = null,
@@ -84,19 +86,22 @@ class HabitRepositoryImplTest {
                 scaleMax = 5,
             )
 
+            // Assert
             assertTrue(result.isSuccess)
             assertEquals(2, habitDao.insertCallCount)
         }
 
     @Test
-    fun `createHabit returns failure after the retry also fails`() =
+    fun `should return failure when createHabit's retry also fails`() =
         runTest {
+            // Arrange
             val habitDao = FakeHabitDao(failuresBeforeSuccess = Int.MAX_VALUE)
             val repository = HabitRepositoryImpl(
                 habitDao = habitDao,
                 habitCheckInDao = FakeHabitCheckInDao(failuresBeforeSuccess = 0),
             )
 
+            // Act
             val result = repository.createHabit(
                 name = "Drink water",
                 description = null,
@@ -105,49 +110,57 @@ class HabitRepositoryImplTest {
                 scaleMax = null,
             )
 
+            // Assert
             assertTrue(result.isFailure)
             assertEquals(2, habitDao.insertCallCount)
         }
 
     @Test
-    fun `addCheckIns retries once then succeeds if the retry works`() =
+    fun `should succeed after one retry when addCheckIns's first write fails`() =
         runTest {
+            // Arrange
             val checkInDao = FakeHabitCheckInDao(failuresBeforeSuccess = 1)
             val repository = HabitRepositoryImpl(
                 habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
                 habitCheckInDao = checkInDao,
             )
 
+            // Act
             val result = repository.addCheckIns(
                 date = LocalDate.of(2026, 7, 27),
                 values = mapOf(1L to 1, 2L to 3),
             )
 
+            // Assert
             assertTrue(result.isSuccess)
             assertEquals(2, checkInDao.insertAllCallCount)
         }
 
     @Test
-    fun `addCheckIns returns failure after the retry also fails`() =
+    fun `should return failure when addCheckIns's retry also fails`() =
         runTest {
+            // Arrange
             val checkInDao = FakeHabitCheckInDao(failuresBeforeSuccess = Int.MAX_VALUE)
             val repository = HabitRepositoryImpl(
                 habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
                 habitCheckInDao = checkInDao,
             )
 
+            // Act
             val result = repository.addCheckIns(
                 date = LocalDate.of(2026, 7, 27),
                 values = mapOf(1L to 1),
             )
 
+            // Assert
             assertTrue(result.isFailure)
             assertEquals(2, checkInDao.insertAllCallCount)
         }
 
     @Test
-    fun `updateCheckIn retries once then succeeds if the retry works`() =
+    fun `should succeed after one retry when updateCheckIn's first write fails`() =
         runTest {
+            // Arrange
             val existing = HabitCheckInEntity(habitId = 1L, date = "2026-07-27", value = 1, createdAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = 1,
@@ -155,16 +168,19 @@ class HabitRepositoryImplTest {
             )
             val repository = HabitRepositoryImpl(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao)
 
+            // Act
             val result = repository.updateCheckIn(habitId = 1L, date = LocalDate.of(2026, 7, 27), value = 0)
 
+            // Assert
             assertTrue(result.isSuccess)
             assertEquals(2, checkInDao.updateCallCount)
             assertEquals(0, checkInDao.getByHabitAndDate(1L, "2026-07-27")?.value)
         }
 
     @Test
-    fun `updateCheckIn returns failure after the retry also fails`() =
+    fun `should return failure when updateCheckIn's retry also fails`() =
         runTest {
+            // Arrange
             val existing = HabitCheckInEntity(habitId = 1L, date = "2026-07-27", value = 1, createdAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = Int.MAX_VALUE,
@@ -172,20 +188,25 @@ class HabitRepositoryImplTest {
             )
             val repository = HabitRepositoryImpl(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao)
 
+            // Act
             val result = repository.updateCheckIn(habitId = 1L, date = LocalDate.of(2026, 7, 27), value = 0)
 
+            // Assert
             assertTrue(result.isFailure)
             assertEquals(2, checkInDao.updateCallCount)
         }
 
     @Test
-    fun `updateCheckIn returns failure for a non-existent habitId and date`() =
+    fun `should return failure when updateCheckIn targets a non-existent habitId and date`() =
         runTest {
+            // Arrange
             val checkInDao = FakeHabitCheckInDao()
             val repository = HabitRepositoryImpl(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao)
 
+            // Act
             val result = repository.updateCheckIn(habitId = 1L, date = LocalDate.of(2026, 7, 27), value = 0)
 
+            // Assert
             assertTrue(result.isFailure)
             assertEquals(0, checkInDao.updateCallCount)
         }

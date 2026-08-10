@@ -10,25 +10,31 @@ import java.time.LocalDate
 class AddJournalEntryUseCaseTest {
 
     @Test
-    fun `TODAY resolves to LocalDate now`() =
+    fun `should resolve TODAY to LocalDate now`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository()
             val useCase = AddJournalEntryUseCase(repository)
 
+            // Act
             useCase(JournalDateSlot.TODAY, "Today was good.")
 
+            // Assert
             assertEquals(LocalDate.now(), repository.lastSavedDate)
             assertEquals("Today was good.", repository.lastSavedText)
         }
 
     @Test
-    fun `YESTERDAY resolves to LocalDate now minus one day`() =
+    fun `should resolve YESTERDAY to LocalDate now minus one day`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository()
             val useCase = AddJournalEntryUseCase(repository)
 
+            // Act
             useCase(JournalDateSlot.YESTERDAY, "Yesterday was good.")
 
+            // Assert
             assertEquals(LocalDate.now().minusDays(1), repository.lastSavedDate)
             assertEquals("Yesterday was good.", repository.lastSavedText)
         }

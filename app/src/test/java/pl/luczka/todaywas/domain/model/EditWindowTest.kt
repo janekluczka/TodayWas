@@ -11,25 +11,50 @@ class EditWindowTest {
     private val createdAt = Instant.parse("2026-08-01T00:00:00Z")
 
     @Test
-    fun `just created is editable`() {
-        assertTrue(EditWindow.isEditable(createdAt, createdAt))
+    fun `should be editable when checked at the moment of creation`() {
+        // Arrange
+        val now = createdAt
+
+        // Act
+        val isEditable = EditWindow.isEditable(createdAt, now)
+
+        // Assert
+        assertTrue(isEditable)
     }
 
     @Test
-    fun `23h59m59s after creation is editable`() {
+    fun `should be editable when checked 23h59m59s after creation`() {
+        // Arrange
         val now = createdAt.plus(Duration.ofHours(23).plusMinutes(59).plusSeconds(59))
-        assertTrue(EditWindow.isEditable(createdAt, now))
+
+        // Act
+        val isEditable = EditWindow.isEditable(createdAt, now)
+
+        // Assert
+        assertTrue(isEditable)
     }
 
     @Test
-    fun `exactly 24h after creation is locked`() {
+    fun `should be locked when checked exactly 24h after creation`() {
+        // Arrange
         val now = createdAt.plus(Duration.ofHours(24))
-        assertFalse(EditWindow.isEditable(createdAt, now))
+
+        // Act
+        val isEditable = EditWindow.isEditable(createdAt, now)
+
+        // Assert
+        assertFalse(isEditable)
     }
 
     @Test
-    fun `24h00m01s after creation is locked`() {
+    fun `should be locked when checked 24h00m01s after creation`() {
+        // Arrange
         val now = createdAt.plus(Duration.ofHours(24).plusSeconds(1))
-        assertFalse(EditWindow.isEditable(createdAt, now))
+
+        // Act
+        val isEditable = EditWindow.isEditable(createdAt, now)
+
+        // Assert
+        assertFalse(isEditable)
     }
 }

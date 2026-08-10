@@ -31,14 +31,17 @@ class SelectFocusUseCaseTest {
     }
 
     @Test
-    fun `invoke passes the given focus through unchanged`() =
+    fun `should pass the given focus through unchanged when invoked`() =
         runTest {
             for (focus in Focus.entries) {
+                // Arrange
                 val repository = FakeRepository()
                 val useCase = SelectFocusUseCase(repository)
 
+                // Act
                 useCase(focus)
 
+                // Assert
                 assertEquals(focus, repository.lastSavedFocus)
             }
         }

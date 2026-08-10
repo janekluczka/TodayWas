@@ -52,11 +52,16 @@ class JournalEntryDetailViewModelTest {
     }
 
     @Test
-    fun `construction loads the entry and populates isEditable when within the window`() =
+    fun `should load the entry and populate isEditable when constructed within the window`() =
         runTest {
-            val viewModel = viewModel()
+            // Arrange
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+
+            // Act
+            val viewModel = viewModel(repository)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isLoading)
             assertEquals(
                 "Original text.",
@@ -67,27 +72,34 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `construction derives isEditable false past the 24h window`() =
+    fun `should derive isEditable false when constructed past the 24h window`() =
         runTest {
+            // Arrange
             val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneOffset.UTC)
+
+            // Act
             val viewModel = viewModel(clock = expiredClock)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isEditable)
         }
 
     @Test
-    fun `edit then save success updates entry text and clears isEditing`() =
+    fun `should update entry text and clear isEditing when edit then save succeeds`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
             runCurrent()
 
+            // Act
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
             viewModel.onIntent(JournalEntryDetailIntent.TextChanged("Edited text."))
             viewModel.onIntent(JournalEntryDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.isEditing)
             assertFalse(viewModel.uiState.value.saveError)
@@ -99,18 +111,21 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `save failure generic keeps isEditing true and sets saveError`() =
+    fun `should keep isEditing true and set saveError when save fails generically`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             repository.updateEntryResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             runCurrent()
 
+            // Act
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
             viewModel.onIntent(JournalEntryDetailIntent.TextChanged("Edited text."))
             viewModel.onIntent(JournalEntryDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.isEditing)
             assertTrue(viewModel.uiState.value.saveError)
@@ -118,8 +133,9 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `save failure expired window clears isEditing and isEditable and sets saveError`() =
+    fun `should clear isEditing and isEditable and set saveError when save fails with an expired window`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
             runCurrent()
@@ -129,9 +145,11 @@ class JournalEntryDetailViewModelTest {
             // produce on a real mid-session expiry, isolating the ViewModel's own branching logic.
             repository.updateEntryResult = Result.failure(EditWindowExpiredException())
 
+            // Act
             viewModel.onIntent(JournalEntryDetailIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.isEditing)
             assertFalse(viewModel.uiState.value.isEditable)

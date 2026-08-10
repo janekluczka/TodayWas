@@ -39,49 +39,63 @@ class AddJournalEntryViewModelTest {
     }
 
     @Test
-    fun `initial state derives both slots as available and defaults selectedSlot to TODAY`() =
+    fun `should derive both slots as available and default selectedSlot to TODAY on initial state`() =
         runTest {
+            // Arrange
             val viewModel = viewModel()
 
+            // Act
+            val state = viewModel.uiState.value
+
+            // Assert
             assertEquals(
                 listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
-                viewModel.uiState.value.availableSlots,
+                state.availableSlots,
             )
-            assertEquals(JournalDateSlotUiState.TODAY, viewModel.uiState.value.selectedSlot)
+            assertEquals(JournalDateSlotUiState.TODAY, state.selectedSlot)
         }
 
     @Test
-    fun `SlotSelected updates selectedSlot`() =
+    fun `should update selectedSlot when SlotSelected is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel()
 
+            // Act
             viewModel.onIntent(AddJournalEntryIntent.SlotSelected(JournalDateSlotUiState.YESTERDAY))
 
+            // Assert
             assertEquals(JournalDateSlotUiState.YESTERDAY, viewModel.uiState.value.selectedSlot)
         }
 
     @Test
-    fun `TextChanged updates text`() =
+    fun `should update text when TextChanged is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel()
 
+            // Act
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
 
+            // Assert
             assertEquals("Today was good.", viewModel.uiState.value.text)
         }
 
     @Test
-    fun `SaveClicked success clears isSaving and emits Saved`() =
+    fun `should clear isSaving and emit Saved when SaveClicked succeeds`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository()
             val viewModel = viewModel(repository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(AddJournalEntryIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.addEntryCallCount)
@@ -90,8 +104,9 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `SaveClicked failure sets saveError and does not emit Saved`() =
+    fun `should set saveError and not emit Saved when SaveClicked fails`() =
         runTest {
+            // Arrange
             val repository = FakeJournalRepository()
             repository.addEntryResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
@@ -99,9 +114,11 @@ class AddJournalEntryViewModelTest {
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(AddJournalEntryIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.saveError)
             assertTrue(events.isEmpty())
@@ -109,15 +126,18 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `CancelClicked emits Cancelled`() =
+    fun `should emit Cancelled when CancelClicked is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel()
             val events = mutableListOf<AddJournalEntryUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(AddJournalEntryIntent.CancelClicked)
             runCurrent()
 
+            // Assert
             assertEquals(listOf(AddJournalEntryUiEvent.Cancelled), events)
             collectJob.cancel()
         }

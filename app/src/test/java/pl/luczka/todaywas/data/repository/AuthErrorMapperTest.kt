@@ -9,38 +9,89 @@ import java.io.IOException
 class AuthErrorMapperTest {
 
     @Test
-    fun `email exists and user already exists codes map to EmailAlreadyRegistered`() {
-        assertEquals(AuthError.EmailAlreadyRegistered, AuthErrorCode.EmailExists.toAuthError())
-        assertEquals(AuthError.EmailAlreadyRegistered, AuthErrorCode.UserAlreadyExists.toAuthError())
+    fun `should map to EmailAlreadyRegistered when code is EmailExists or UserAlreadyExists`() {
+        // Arrange
+        val emailExists = AuthErrorCode.EmailExists
+        val userAlreadyExists = AuthErrorCode.UserAlreadyExists
+
+        // Act
+        val fromEmailExists = emailExists.toAuthError()
+        val fromUserAlreadyExists = userAlreadyExists.toAuthError()
+
+        // Assert
+        assertEquals(AuthError.EmailAlreadyRegistered, fromEmailExists)
+        assertEquals(AuthError.EmailAlreadyRegistered, fromUserAlreadyExists)
     }
 
     @Test
-    fun `invalid credentials code maps to InvalidCredentials`() {
-        assertEquals(AuthError.InvalidCredentials, AuthErrorCode.InvalidCredentials.toAuthError())
+    fun `should map to InvalidCredentials when code is InvalidCredentials`() {
+        // Arrange
+        val code = AuthErrorCode.InvalidCredentials
+
+        // Act
+        val result = code.toAuthError()
+
+        // Assert
+        assertEquals(AuthError.InvalidCredentials, result)
     }
 
     @Test
-    fun `weak password code maps to WeakPassword`() {
-        assertEquals(AuthError.WeakPassword, AuthErrorCode.WeakPassword.toAuthError())
+    fun `should map to WeakPassword when code is WeakPassword`() {
+        // Arrange
+        val code = AuthErrorCode.WeakPassword
+
+        // Act
+        val result = code.toAuthError()
+
+        // Assert
+        assertEquals(AuthError.WeakPassword, result)
     }
 
     @Test
-    fun `unrecognized code maps to Unknown`() {
-        assertEquals(AuthError.Unknown, AuthErrorCode.BadJwt.toAuthError())
+    fun `should map to Unknown when code is unrecognized`() {
+        // Arrange
+        val code = AuthErrorCode.BadJwt
+
+        // Act
+        val result = code.toAuthError()
+
+        // Assert
+        assertEquals(AuthError.Unknown, result)
     }
 
     @Test
-    fun `null code maps to Unknown`() {
-        assertEquals(AuthError.Unknown, null.toAuthError())
+    fun `should map to Unknown when code is null`() {
+        // Arrange
+        val code: AuthErrorCode? = null
+
+        // Act
+        val result = code.toAuthError()
+
+        // Assert
+        assertEquals(AuthError.Unknown, result)
     }
 
     @Test
-    fun `IOException maps to NetworkUnavailable`() {
-        assertEquals(AuthError.NetworkUnavailable, IOException("no connection").toAuthError())
+    fun `should map to NetworkUnavailable when throwable is an IOException`() {
+        // Arrange
+        val throwable = IOException("no connection")
+
+        // Act
+        val result = throwable.toAuthError()
+
+        // Assert
+        assertEquals(AuthError.NetworkUnavailable, result)
     }
 
     @Test
-    fun `unrecognized throwable maps to Unknown`() {
-        assertEquals(AuthError.Unknown, RuntimeException("boom").toAuthError())
+    fun `should map to Unknown when throwable is unrecognized`() {
+        // Arrange
+        val throwable = RuntimeException("boom")
+
+        // Act
+        val result = throwable.toAuthError()
+
+        // Assert
+        assertEquals(AuthError.Unknown, result)
     }
 }

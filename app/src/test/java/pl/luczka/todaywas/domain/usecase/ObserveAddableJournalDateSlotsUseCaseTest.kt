@@ -20,36 +20,45 @@ class ObserveAddableJournalDateSlotsUseCaseTest {
     )
 
     @Test
-    fun `both slots addable when neither today nor yesterday is logged`() =
+    fun `should make both slots addable when neither today nor yesterday is logged`() =
         runTest {
+            // Arrange
             val useCase = ObserveAddableJournalDateSlotsUseCase(FakeJournalRepository())
 
+            // Act
             val slots = useCase().first()
 
+            // Assert
             assertEquals(setOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY), slots.toSet())
         }
 
     @Test
-    fun `only yesterday addable when today is already logged`() =
+    fun `should make only yesterday addable when today is already logged`() =
         runTest {
+            // Arrange
             val useCase = ObserveAddableJournalDateSlotsUseCase(
                 FakeJournalRepository(listOf(entryFor(LocalDate.now()))),
             )
 
+            // Act
             val slots = useCase().first()
 
+            // Assert
             assertEquals(listOf(JournalDateSlot.YESTERDAY), slots)
         }
 
     @Test
-    fun `no slots addable when both today and yesterday are logged`() =
+    fun `should make no slots addable when both today and yesterday are logged`() =
         runTest {
+            // Arrange
             val useCase = ObserveAddableJournalDateSlotsUseCase(
                 FakeJournalRepository(listOf(entryFor(LocalDate.now()), entryFor(LocalDate.now().minusDays(1)))),
             )
 
+            // Act
             val slots = useCase().first()
 
+            // Assert
             assertEquals(emptyList<JournalDateSlot>(), slots)
         }
 }

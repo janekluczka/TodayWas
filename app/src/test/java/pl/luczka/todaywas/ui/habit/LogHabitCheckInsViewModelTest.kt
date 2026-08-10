@@ -71,12 +71,15 @@ class LogHabitCheckInsViewModelTest {
     }
 
     @Test
-    fun `selectableDates contains exactly yesterday and today`() =
+    fun `should contain exactly yesterday and today in selectableDates`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeHabitRepository())
 
+            // Act
             val dates = viewModel.uiState.value.selectableDates
 
+            // Assert
             assertEquals(2, dates.size)
             assertEquals(LocalDate.now(), dates.last())
             assertEquals(LocalDate.now().minusDays(1), dates.first())
@@ -84,14 +87,17 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `unlogged binary habit renders as an editable row with a 0 to 1 range`() =
+    fun `should render as an editable row with a 0 to 1 range when a binary habit is unlogged`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L, name = "Drink water")))
             val viewModel = viewModel(repository)
 
+            // Act
             val row = viewModel.uiState.value.rows
                 .single()
 
+            // Assert
             assertEquals(
                 HabitCheckInRowUiState.Editable(
                     habitId = 1L,
@@ -105,32 +111,38 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `unlogged scale habit renders as an editable row with its range`() =
+    fun `should render as an editable row with its range when a scale habit is unlogged`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit(id = 1L, type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
             )
             val viewModel = viewModel(repository)
 
+            // Act
             val row = viewModel.uiState.value.rows
                 .single() as HabitCheckInRowUiState.Editable
 
+            // Assert
             assertEquals(1..5, row.range)
             assertEquals(null, row.value)
         }
 
     @Test
-    fun `habit already logged for the selected date renders as AlreadyLogged`() =
+    fun `should render as AlreadyLogged when a habit is already logged for the selected date`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit(id = 1L, type = HabitType.BINARY)),
                 initialCheckIns = listOf(checkIn(habitId = 1L, date = LocalDate.now(), value = 1)),
             )
             val viewModel = viewModel(repository)
 
+            // Act
             val row = viewModel.uiState.value.rows
                 .single()
 
+            // Assert
             assertEquals(
                 HabitCheckInRowUiState.AlreadyLogged(
                     habitId = 1L,
@@ -144,57 +156,69 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `mixed habits render as a mix of editable and already-logged rows`() =
+    fun `should render a mix of editable and already-logged rows when habits are mixed`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit(id = 1L), habit(id = 2L)),
                 initialCheckIns = listOf(checkIn(habitId = 1L, date = LocalDate.now(), value = 1)),
             )
             val viewModel = viewModel(repository)
 
+            // Act
             val rows = viewModel.uiState.value.rows
 
+            // Assert
             assertTrue(rows[0] is HabitCheckInRowUiState.AlreadyLogged)
             assertTrue(rows[1] is HabitCheckInRowUiState.Editable)
         }
 
     @Test
-    fun `ValueChanged updates the pending value for that row`() =
+    fun `should update the pending value for that row when ValueChanged is dispatched`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             val viewModel = viewModel(repository)
 
+            // Act
             viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
 
+            // Assert
             val row = viewModel.uiState.value.rows
                 .single() as HabitCheckInRowUiState.Editable
             assertEquals(1, row.value)
         }
 
     @Test
-    fun `ValueChanged with null clears a previously entered pending value`() =
+    fun `should clear a previously entered pending value when ValueChanged is dispatched with null`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             val viewModel = viewModel(repository)
             viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
 
+            // Act
             viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = null))
 
+            // Assert
             val row = viewModel.uiState.value.rows
                 .single() as HabitCheckInRowUiState.Editable
             assertEquals(null, row.value)
         }
 
     @Test
-    fun `DateSelected switches selectedDate and clears pending input`() =
+    fun `should switch selectedDate and clear pending input when DateSelected is dispatched`() =
         runTest {
+            // Arrange
             val yesterday = LocalDate.now().minusDays(1)
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             val viewModel = viewModel(repository)
             viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
 
+            // Act
             viewModel.onIntent(LogHabitCheckInsIntent.DateSelected(yesterday))
 
+            // Assert
             assertEquals(yesterday, viewModel.uiState.value.selectedDate)
             val row = viewModel.uiState.value.rows
                 .single() as HabitCheckInRowUiState.Editable
@@ -202,17 +226,20 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `SaveClicked success saves entered values for the selected date and emits Saved`() =
+    fun `should save entered values for the selected date and emit Saved when SaveClicked succeeds`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             val viewModel = viewModel(repository)
             viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = 1L, value = 1))
             val events = mutableListOf<LogHabitCheckInsUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(LocalDate.now(), repository.lastLoggedDate)
@@ -222,8 +249,9 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `SaveClicked failure sets saveError and does not emit Saved`() =
+    fun `should set saveError and not emit Saved when SaveClicked fails`() =
         runTest {
+            // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = 1L)))
             repository.addCheckInsResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
@@ -231,9 +259,11 @@ class LogHabitCheckInsViewModelTest {
             val events = mutableListOf<LogHabitCheckInsUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
             runCurrent()
 
+            // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.saveError)
             assertTrue(events.isEmpty())
@@ -241,15 +271,18 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `CancelClicked emits Cancelled`() =
+    fun `should emit Cancelled when CancelClicked is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(FakeHabitRepository())
             val events = mutableListOf<LogHabitCheckInsUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(LogHabitCheckInsIntent.CancelClicked)
             runCurrent()
 
+            // Assert
             assertEquals(listOf(LogHabitCheckInsUiEvent.Cancelled), events)
             collectJob.cancel()
         }

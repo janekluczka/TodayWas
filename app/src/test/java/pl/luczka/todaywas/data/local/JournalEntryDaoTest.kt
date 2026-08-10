@@ -14,15 +14,17 @@ import org.robolectric.RobolectricTestRunner
 class JournalEntryDaoTest {
 
     @Test
-    fun `inserted entry survives recreating the database instance from the same file`() =
+    fun `should survive recreating the database instance from the same file when an entry was inserted`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db1 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .build()
+
+            // Act
             db1.journalEntryDao().insert(
                 JournalEntryEntity(
                     date = "2026-07-27",
@@ -31,7 +33,6 @@ class JournalEntryDaoTest {
                 ),
             )
             db1.close()
-
             val db2 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -39,6 +40,7 @@ class JournalEntryDaoTest {
             val persisted = db2.journalEntryDao().observeAll().first()
             db2.close()
 
+            // Assert
             assertEquals(1, persisted.size)
             assertEquals("2026-07-27", persisted[0].date)
             assertEquals("Today was good.", persisted[0].text)
@@ -46,11 +48,11 @@ class JournalEntryDaoTest {
         }
 
     @Test
-    fun `observeAll orders entries by date descending`() =
+    fun `should order entries by date descending when observeAll is called`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -77,18 +79,20 @@ class JournalEntryDaoTest {
                 ),
             )
 
+            // Act
             val entries = db.journalEntryDao().observeAll().first()
             db.close()
 
+            // Assert
             assertEquals(listOf("2026-07-27", "2026-07-26", "2026-07-25"), entries.map { it.date })
         }
 
     @Test
-    fun `getById returns the matching entry or null`() =
+    fun `should return the matching entry or null when getById is called`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -106,20 +110,22 @@ class JournalEntryDaoTest {
                 .first()
                 .single()
 
+            // Act
             val found = db.journalEntryDao().getById(inserted.id)
             val missing = db.journalEntryDao().getById(inserted.id + 1)
             db.close()
 
+            // Assert
             assertEquals(inserted, found)
             assertEquals(null, missing)
         }
 
     @Test
-    fun `update persists new text and leaves date and createdAt untouched`() =
+    fun `should persist new text and leave date and createdAt untouched when update is called`() =
         runTest {
+            // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dbName = "test-todaywas-${System.nanoTime()}.db"
-
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
@@ -137,10 +143,12 @@ class JournalEntryDaoTest {
                 .first()
                 .single()
 
+            // Act
             db.journalEntryDao().update(inserted.copy(text = "Edited text."))
             val updated = db.journalEntryDao().getById(inserted.id)
             db.close()
 
+            // Assert
             assertEquals("Edited text.", updated?.text)
             assertEquals("2026-07-27", updated?.date)
             assertEquals(1_000L, updated?.createdAt)

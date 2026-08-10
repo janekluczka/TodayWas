@@ -54,67 +54,83 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `initial state reflects the observed auth state and starts on SIGN_IN`() = runTest {
+    fun `should reflect the observed auth state and start on SIGN_IN on initial state`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository(initialState = AuthState.SignedOut)
 
+        // Act
         val viewModel = viewModel(repository)
 
+        // Assert
         assertEquals(AuthStateUi.SignedOut, viewModel.uiState.value.authState)
         assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
     }
 
     @Test
-    fun `BackClicked emits NavigatedBack`() = runTest {
+    fun `should emit NavigatedBack when BackClicked is dispatched`() = runTest {
+        // Arrange
         val viewModel = viewModel(FakeAuthRepository())
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+        // Act
         viewModel.onIntent(AccountIntent.BackClicked)
         runCurrent()
 
+        // Assert
         assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
         collectJob.cancel()
     }
 
     @Test
-    fun `SignUpLinkClicked moves to SIGN_UP`() = runTest {
+    fun `should move to SIGN_UP when SignUpLinkClicked is dispatched`() = runTest {
+        // Arrange
         val viewModel = viewModel(FakeAuthRepository())
 
+        // Act
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
 
+        // Assert
         assertEquals(AccountStep.SIGN_UP, viewModel.uiState.value.step)
     }
 
     @Test
-    fun `BackClicked from SIGN_UP returns to SIGN_IN without navigating back`() = runTest {
+    fun `should return to SIGN_IN without navigating back when BackClicked from SIGN_UP`() = runTest {
+        // Arrange
         val viewModel = viewModel(FakeAuthRepository())
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+        // Act
         viewModel.onIntent(AccountIntent.BackClicked)
         runCurrent()
 
+        // Assert
         assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
         assertEquals(emptyList<AccountUiEvent>(), events)
         collectJob.cancel()
     }
 
     @Test
-    fun `sign-in submit with invalid email sets emailError without calling the repository`() = runTest {
+    fun `should set emailError without calling the repository when sign-in submit has an invalid email`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
         viewModel.onIntent(AccountIntent.SignInEmailChanged("not-an-email"))
         viewModel.onIntent(AccountIntent.SignInPasswordChanged("password123"))
 
+        // Act
         viewModel.onIntent(AccountIntent.SignInSubmitClicked)
 
+        // Assert
         assertTrue(viewModel.uiState.value.signInForm.emailError)
         assertEquals(0, repository.signInCallCount)
     }
 
     @Test
-    fun `sign-in submit with valid fields calls signInWithEmail and pops back without a SUCCESS step`() = runTest {
+    fun `should call signInWithEmail and pop back without a SUCCESS step when sign-in submit has valid fields`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
         val events = mutableListOf<AccountUiEvent>()
@@ -122,9 +138,11 @@ class AccountViewModelTest {
         viewModel.onIntent(AccountIntent.SignInEmailChanged("person@example.com"))
         viewModel.onIntent(AccountIntent.SignInPasswordChanged("password123"))
 
+        // Act
         viewModel.onIntent(AccountIntent.SignInSubmitClicked)
         runCurrent()
 
+        // Assert
         assertEquals(1, repository.signInCallCount)
         assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
         assertEquals(SignInFormUiState(), viewModel.uiState.value.signInForm)
@@ -133,7 +151,8 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `sign-in submit failure emits a ShowError event and stops submitting without navigating back`() = runTest {
+    fun `should emit a ShowError event and stop submitting without navigating back when sign-in submit fails`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository()
         repository.signInError = AuthError.InvalidCredentials
         val viewModel = viewModel(repository)
@@ -142,9 +161,11 @@ class AccountViewModelTest {
         viewModel.onIntent(AccountIntent.SignInEmailChanged("person@example.com"))
         viewModel.onIntent(AccountIntent.SignInPasswordChanged("password123"))
 
+        // Act
         viewModel.onIntent(AccountIntent.SignInSubmitClicked)
         runCurrent()
 
+        // Assert
         assertEquals(
             listOf(AccountUiEvent.ShowError(AuthErrorUiState.INVALID_CREDENTIALS)),
             events,
@@ -154,36 +175,43 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `sign-up submit with valid fields calls signUpWithEmail and moves to SUCCESS`() = runTest {
+    fun `should call signUpWithEmail and move to SUCCESS when sign-up submit has valid fields`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
         fillSignUpForm(viewModel)
 
+        // Act
         viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
 
+        // Assert
         assertEquals(1, repository.signUpCallCount)
         assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
         assertFalse(viewModel.uiState.value.signUpForm.isSubmitting)
     }
 
     @Test
-    fun `sign-up submit with mismatched repeat password sets repeatPasswordError without calling the repository`() =
+    fun `should set repeatPasswordError without calling the repository when sign-up submit has a mismatched repeat password`() =
         runTest {
+            // Arrange
             val repository = FakeAuthRepository()
             val viewModel = viewModel(repository)
             viewModel.onIntent(AccountIntent.SignUpLinkClicked)
             fillSignUpForm(viewModel)
             viewModel.onIntent(AccountIntent.SignUpRepeatPasswordChanged("mismatch"))
 
+            // Act
             viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
 
+            // Assert
             assertTrue(viewModel.uiState.value.signUpForm.repeatPasswordError)
             assertEquals(0, repository.signUpCallCount)
         }
 
     @Test
-    fun `sign-up submit failure emits a ShowError event with the mapped error and stops submitting`() = runTest {
+    fun `should emit a ShowError event with the mapped error and stop submitting when sign-up submit fails`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository()
         repository.signUpError = AuthError.EmailAlreadyRegistered
         val viewModel = viewModel(repository)
@@ -192,9 +220,11 @@ class AccountViewModelTest {
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
         fillSignUpForm(viewModel)
 
+        // Act
         viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
         runCurrent()
 
+        // Assert
         assertEquals(
             listOf(AccountUiEvent.ShowError(AuthErrorUiState.EMAIL_ALREADY_REGISTERED)),
             events,
@@ -204,7 +234,8 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `ContinueClicked from SUCCESS emits NavigatedBack`() = runTest {
+    fun `should emit NavigatedBack when ContinueClicked from SUCCESS`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
@@ -213,62 +244,76 @@ class AccountViewModelTest {
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+        // Act
         viewModel.onIntent(AccountIntent.ContinueClicked)
         runCurrent()
 
+        // Assert
         assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
         collectJob.cancel()
     }
 
     @Test
-    fun `SignInGoogleIdTokenReceived calls signInWithGoogleIdToken and pops back on success`() = runTest {
+    fun `should call signInWithGoogleIdToken and pop back on success when SignInGoogleIdTokenReceived is dispatched`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository()
         val viewModel = viewModel(repository)
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+        // Act
         viewModel.onIntent(AccountIntent.SignInGoogleIdTokenReceived("id-token"))
         runCurrent()
 
+        // Assert
         assertFalse(viewModel.uiState.value.signInForm.isSubmitting)
         assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
         collectJob.cancel()
     }
 
     @Test
-    fun `GoogleSignInFailed emits a ShowError event with Unknown`() = runTest {
+    fun `should emit a ShowError event with Unknown when GoogleSignInFailed is dispatched`() = runTest {
+        // Arrange
         val viewModel = viewModel(FakeAuthRepository())
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+        // Act
         viewModel.onIntent(AccountIntent.GoogleSignInFailed)
         runCurrent()
 
+        // Assert
         assertEquals(listOf(AccountUiEvent.ShowError(AuthErrorUiState.UNKNOWN)), events)
         collectJob.cancel()
     }
 
     @Test
-    fun `SignOutClicked calls signOut`() = runTest {
+    fun `should call signOut when SignOutClicked is dispatched`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         val viewModel = viewModel(repository)
 
+        // Act
         viewModel.onIntent(AccountIntent.SignOutClicked)
 
+        // Assert
         assertEquals(1, repository.signOutCallCount)
     }
 
     @Test
-    fun `SignOutClicked failure emits a ShowError event and clears isSigningOut`() = runTest {
+    fun `should emit a ShowError event and clear isSigningOut when SignOutClicked fails`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         repository.signOutError = AuthError.NetworkUnavailable
         val viewModel = viewModel(repository)
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+        // Act
         viewModel.onIntent(AccountIntent.SignOutClicked)
         runCurrent()
 
+        // Assert
         assertEquals(
             listOf(AccountUiEvent.ShowError(AuthErrorUiState.NETWORK_UNAVAILABLE)),
             events,
@@ -278,7 +323,8 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `SignOutClicked resets a stale SUCCESS step back to SIGN_IN`() = runTest {
+    fun `should reset a stale SUCCESS step back to SIGN_IN when SignOutClicked is dispatched`() = runTest {
+        // Arrange
         val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         val viewModel = viewModel(repository)
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
@@ -286,8 +332,10 @@ class AccountViewModelTest {
         viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
         assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
 
+        // Act
         viewModel.onIntent(AccountIntent.SignOutClicked)
 
+        // Assert
         assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
     }
 }

@@ -136,235 +136,292 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `uiState reflects focus and entries from both sources`() =
+    fun `should reflect focus and entries from both sources in uiState`() =
         runTest {
+            // Arrange
             val today = entry(LocalDate.now())
+
+            // Act
             val viewModel = viewModel(
                 focus = Focus.JOURNAL,
                 entries = listOf(today),
             )
-
             val state = viewModel.uiState.value
 
+            // Assert
             assertEquals(FocusUiState.JOURNAL, state.focus)
             assertEquals(listOf(today.toUiState()), state.journalEntries)
         }
 
     @Test
-    fun `habits reflects not-logged status when no check-in exists for today`() =
+    fun `should reflect not-logged status in habits when no check-in exists for today`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
                 habits = listOf(habit(id = 1L, name = "Drink water")),
             )
 
+            // Act
             val state = viewModel.uiState.value.habits
                 .single()
 
+            // Assert
             assertEquals("Drink water", state.name)
             assertEquals(HabitCheckInStatusUiState.NotLogged, state.todayStatus)
         }
 
     @Test
-    fun `habits reflects LoggedBinary status when a binary check-in exists for today`() =
+    fun `should reflect LoggedBinary status in habits when a binary check-in exists for today`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
                 habits = listOf(habit(id = 1L, type = HabitType.BINARY)),
                 checkIns = listOf(checkIn(habitId = 1L, date = LocalDate.now(), value = 1)),
             )
 
+            // Act
             val state = viewModel.uiState.value.habits
                 .single()
 
+            // Assert
             assertEquals(HabitCheckInStatusUiState.LoggedBinary(done = true), state.todayStatus)
         }
 
     @Test
-    fun `habits reflects LoggedScale status when a scale check-in exists for today`() =
+    fun `should reflect LoggedScale status in habits when a scale check-in exists for today`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
                 habits = listOf(habit(id = 1L, type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
                 checkIns = listOf(checkIn(habitId = 1L, date = LocalDate.now(), value = 3)),
             )
 
+            // Act
             val state = viewModel.uiState.value.habits
                 .single()
 
+            // Assert
             assertEquals(HabitCheckInStatusUiState.LoggedScale(value = 3), state.todayStatus)
         }
 
     @Test
-    fun `habits ignores a check-in logged for a different day`() =
+    fun `should ignore a check-in logged for a different day in habits`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
                 habits = listOf(habit(id = 1L)),
                 checkIns = listOf(checkIn(habitId = 1L, date = LocalDate.now().minusDays(1), value = 1)),
             )
 
-            assertEquals(
-                HabitCheckInStatusUiState.NotLogged,
-                viewModel.uiState.value.habits
-                    .single()
-                    .todayStatus,
-            )
+            // Act
+            val status = viewModel.uiState.value.habits
+                .single()
+                .todayStatus
+
+            // Assert
+            assertEquals(HabitCheckInStatusUiState.NotLogged, status)
         }
 
     @Test
-    fun `fabActions includes ADD_JOURNAL_ENTRY when focus is JOURNAL and a slot is addable`() =
+    fun `should include ADD_JOURNAL_ENTRY in fabActions when focus is JOURNAL and a slot is addable`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(
                 focus = Focus.JOURNAL,
                 entries = emptyList(),
             )
 
-            assertEquals(
-                listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
-                viewModel.uiState.value.fabActions,
-            )
+            // Act
+            val fabActions = viewModel.uiState.value.fabActions
+
+            // Assert
+            assertEquals(listOf(FabActionUiState.ADD_JOURNAL_ENTRY), fabActions)
         }
 
     @Test
-    fun `fabActions excludes ADD_JOURNAL_ENTRY when no slots are addable`() =
+    fun `should exclude ADD_JOURNAL_ENTRY from fabActions when no slots are addable`() =
         runTest {
+            // Arrange
             val entries = listOf(entry(LocalDate.now()), entry(LocalDate.now().minusDays(1)))
             val viewModel = viewModel(
                 focus = Focus.JOURNAL,
                 entries = entries,
             )
 
-            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY !in viewModel.uiState.value.fabActions)
+            // Act
+            val fabActions = viewModel.uiState.value.fabActions
+
+            // Assert
+            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY !in fabActions)
         }
 
     @Test
-    fun `fabActions includes CREATE_HABIT but not LOG_HABIT_CHECK_INS when focus is HABIT and no habits exist`() =
+    fun `should include CREATE_HABIT but not LOG_HABIT_CHECK_INS in fabActions when focus is HABIT and no habits exist`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(focus = Focus.HABIT)
 
-            assertEquals(listOf(FabActionUiState.CREATE_HABIT), viewModel.uiState.value.fabActions)
+            // Act
+            val fabActions = viewModel.uiState.value.fabActions
+
+            // Assert
+            assertEquals(listOf(FabActionUiState.CREATE_HABIT), fabActions)
         }
 
     @Test
-    fun `fabActions includes both CREATE_HABIT and LOG_HABIT_CHECK_INS when focus is HABIT and a habit exists`() =
+    fun `should include both CREATE_HABIT and LOG_HABIT_CHECK_INS in fabActions when focus is HABIT and a habit exists`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(
                 focus = Focus.HABIT,
                 habits = listOf(habit(id = 1L)),
             )
 
+            // Act
+            val fabActions = viewModel.uiState.value.fabActions
+
+            // Assert
             assertEquals(
                 listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
-                viewModel.uiState.value.fabActions,
+                fabActions,
             )
         }
 
     @Test
-    fun `fabActions includes journal and habit actions together when focus is BOTH`() =
+    fun `should include journal and habit actions together in fabActions when focus is BOTH`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(
                 focus = Focus.BOTH,
                 habits = listOf(habit(id = 1L)),
             )
 
+            // Act
+            val fabActions = viewModel.uiState.value.fabActions
+
+            // Assert
             assertEquals(
                 listOf(FabActionUiState.ADD_JOURNAL_ENTRY, FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
-                viewModel.uiState.value.fabActions,
+                fabActions,
             )
         }
 
     @Test
-    fun `FabActionClicked with ADD_JOURNAL_ENTRY emits NavigateToAddEntry and collapses the fab`() =
+    fun `should emit NavigateToAddEntry and collapse the fab when FabActionClicked with ADD_JOURNAL_ENTRY`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(entries = listOf(entry(LocalDate.now())))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(MainIntent.FabToggled)
             viewModel.onIntent(MainIntent.FabActionClicked(FabActionUiState.ADD_JOURNAL_ENTRY))
             runCurrent()
 
+            // Assert
             assertEquals(listOf(MainUiEvent.NavigateToAddEntry), events)
             assertEquals(false, viewModel.uiState.value.fabExpanded)
             collectJob.cancel()
         }
 
     @Test
-    fun `FabActionClicked with CREATE_HABIT emits NavigateToCreateHabit`() =
+    fun `should emit NavigateToCreateHabit when FabActionClicked with CREATE_HABIT`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(focus = Focus.HABIT)
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(MainIntent.FabActionClicked(FabActionUiState.CREATE_HABIT))
             runCurrent()
 
+            // Assert
             assertEquals(listOf(MainUiEvent.NavigateToCreateHabit), events)
             collectJob.cancel()
         }
 
     @Test
-    fun `FabActionClicked with LOG_HABIT_CHECK_INS emits NavigateToLogHabitCheckIns`() =
+    fun `should emit NavigateToLogHabitCheckIns when FabActionClicked with LOG_HABIT_CHECK_INS`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = 1L)))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(MainIntent.FabActionClicked(FabActionUiState.LOG_HABIT_CHECK_INS))
             runCurrent()
 
+            // Assert
             assertEquals(listOf(MainUiEvent.NavigateToLogHabitCheckIns), events)
             collectJob.cancel()
         }
 
     @Test
-    fun `FabToggled flips fabExpanded`() =
+    fun `should flip fabExpanded when FabToggled is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(entries = emptyList())
 
+            // Act
             viewModel.onIntent(MainIntent.FabToggled)
 
+            // Assert
             assertTrue(viewModel.uiState.value.fabExpanded)
         }
 
     @Test
-    fun `JournalEntryClicked emits NavigateToJournalDetail with the clicked entry`() =
+    fun `should emit NavigateToJournalDetail with the clicked entry when JournalEntryClicked is dispatched`() =
         runTest {
+            // Arrange
             val today = entry(LocalDate.now())
             val viewModel = viewModel(entries = listOf(today))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(MainIntent.JournalEntryClicked(today.toUiState()))
             runCurrent()
 
+            // Assert
             assertEquals(listOf(MainUiEvent.NavigateToJournalDetail(today.toUiState())), events)
             collectJob.cancel()
         }
 
     @Test
-    fun `HabitClicked emits NavigateToHabitDetail with the clicked habit's id`() =
+    fun `should emit NavigateToHabitDetail with the clicked habit's id when HabitClicked is dispatched`() =
         runTest {
+            // Arrange
             val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = 1L)))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
+            // Act
             viewModel.onIntent(MainIntent.HabitClicked(habit(id = 1L).toUiState(todayCheckIn = null)))
             runCurrent()
 
+            // Assert
             assertEquals(listOf(MainUiEvent.NavigateToHabitDetail(1L)), events)
             collectJob.cancel()
         }
 
     @Test
-    fun `journalContributionGrid and window state reflect loaded entries`() =
+    fun `should reflect loaded entries in journalContributionGrid and window state`() =
         runTest {
+            // Arrange
             val today = entry(LocalDate.now())
-            val viewModel = viewModel(entries = listOf(today))
 
+            // Act
+            val viewModel = viewModel(entries = listOf(today))
             val state = viewModel.uiState.value
 
+            // Assert
             assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.journalSelectedWindow)
             assertTrue(state.journalAvailableWindows.contains(ContributionWindowUiState.RollingTwelveMonths))
             assertTrue(state.journalAvailableWindows.contains(ContributionWindowUiState.CalendarYear(LocalDate.now().year)))
@@ -372,19 +429,21 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `JournalWindowSelected updates journalSelectedWindow and recomputes the grid without changing an already-visible day's level`() =
+    fun `should update journalSelectedWindow without changing an already-visible day's level when JournalWindowSelected is dispatched`() =
         runTest {
+            // Arrange
             val today = entry(LocalDate.now())
             val older = entry(LocalDate.now().minusDays(3))
             val viewModel = viewModel(entries = listOf(today, older))
-
             val levelBefore = levelFor(viewModel.uiState.value.journalContributionGrid.cells, LocalDate.now())
 
+            // Act
             viewModel.onIntent(
                 MainIntent.JournalWindowSelected(ContributionWindowUiState.CalendarYear(LocalDate.now().year)),
             )
             runCurrent()
 
+            // Assert
             assertEquals(
                 ContributionWindowUiState.CalendarYear(LocalDate.now().year),
                 viewModel.uiState.value.journalSelectedWindow,
@@ -393,16 +452,18 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `journalContributionGrid instance is reused across an unrelated state change`() =
+    fun `should reuse the journalContributionGrid instance across an unrelated state change`() =
         runTest {
+            // Arrange
             val today = entry(LocalDate.now())
             val viewModel = viewModel(entries = listOf(today))
-
             val gridBefore = viewModel.uiState.value.journalContributionGrid
 
+            // Act
             viewModel.onIntent(MainIntent.FabToggled)
             runCurrent()
 
+            // Assert
             assertTrue(gridBefore === viewModel.uiState.value.journalContributionGrid)
         }
 }

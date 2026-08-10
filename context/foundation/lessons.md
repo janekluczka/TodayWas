@@ -86,3 +86,10 @@
 - **Problem**: Phase 4's components/screens were built with no previews, so verifying appearance required a working emulator (which wasn't available in this environment) instead of just opening the file.
 - **Rule**: Every new screen and :core:designsystem component ships with @PreviewLightDark preview(s) covering light and dark mode. When a composable has multiple meaningful variants/states (enabled/disabled, selected/unselected, error/loading/success, multi-step), use @PreviewParameter with a PreviewParameterProvider instead of copy-pasting one preview per variant. Both screen and design-system previews wrap in DsTheme (core.designsystem.theme) — the app's real theme lives in :core:designsystem, not :app, so there's no separate placeholder preview theme to keep in sync.
 - **Applies to**: plan, plan-review, implement, impl-review
+
+## Tests are named `should [outcome] when [scenario]` in backticks and structured as commented AAA
+
+- **Context**: All JUnit4 tests under `app/src/test/`
+- **Problem**: Test names like `` `NameChanged updates name` `` or `` `SaveClicked failure sets saveError and does not emit Saved` `` describe the stimulus but not the expected outcome, and test bodies mixed setup, action, and assertion inline with no visual separation — both readable enough at a glance but slower to scan for what a failure actually means.
+- **Rule**: Test method names use backtick-quoted `` `should [expected outcome] when [scenario]` `` (e.g. `` `should set saveError and not emit Saved when SaveClicked fails` ``). Test bodies are structured as Arrange/Act/Assert with a `// Arrange`, `// Act`, `// Assert` comment above each section — an exception to the project's default no-comments rule, since these three are structural labels, not "what does this code do" explanations. Omit a section's comment (and the section itself) when a test has nothing to arrange (e.g. it only uses class-level fixture fields) — don't write an empty labeled block.
+- **Applies to**: plan, plan-review, implement, impl-review
