@@ -341,9 +341,9 @@ None — stateless function, no data migration.
 
 #### Automated
 
-- [x] 2.1 Disposable test-user JWT obtained via curl + `execute_sql`
-- [x] 2.2 Authenticated malformed-body request returns 400 `invalid_request`
-- [x] 2.3 Authenticated well-formed request (no secret yet) returns 502 `upstream_failed`
+- [x] 2.1 Disposable test-user JWT obtained via curl + `execute_sql` — a781192
+- [x] 2.2 Authenticated malformed-body request returns 400 `invalid_request` — a781192
+- [x] 2.3 Authenticated well-formed request (no secret yet) returns 502 `upstream_failed` — a781192
 
 ### Phase 3: Set the Gemini secret (human step)
 
