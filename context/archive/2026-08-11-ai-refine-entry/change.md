@@ -1,10 +1,10 @@
 ---
 change_id: ai-refine-entry
 title: Ai refine entry
-status: impl_reviewed
+status: archived
 created: 2026-08-11
 updated: 2026-08-11
-archived_at: null
+archived_at: 2026-08-11T17:21:22Z
 ---
 
 ## Notes

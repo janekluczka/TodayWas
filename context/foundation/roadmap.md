@@ -45,7 +45,7 @@ Vision frames daily journaling as the primary act and habit tracking as optional
 | S-06 | account-creation-and-sync      | create an account and have existing local data sync automatically  | F-01, S-02, S-03 | US-04, FR-007        | done |
 | F-02 | ai-assist-proxy-foundation     | (foundation) Server-side AI proxy live, JWT-verified via Supabase  | F-01           | FR-009, FR-010, NFR (journal content never reaches AI-assisted features) | done |
 | S-07 | ai-starter-prompt              | tap "help me start" and get a tone-matched AI starter prompt       | F-02, S-02     | US-05, FR-009         | done |
-| S-08 | ai-refine-entry                | tap "help me refine" and get AI-assisted refinement of an entry    | F-02, S-02     | FR-010                | proposed |
+| S-08 | ai-refine-entry                | tap "help me refine" and get AI-assisted refinement of an entry    | F-02, S-02     | FR-010                | done |
 
 ## Streams
 
@@ -225,7 +225,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
     stretch goal? — Owner: user. Block: no.
 - **Risk:** Lowest-priority slice (FR-010 is nice-to-have, unlike every other slice); sequenced last
   so it never displaces must-have work under time pressure.
-- **Status:** proposed
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -277,3 +277,4 @@ to `done` — when a change whose `Change ID` matches the item is archived.)
 - **S-06: User creates an account (email or Google) and all existing local journal/habit data automatically uploads/syncs, with no manual export/import step.** — Archived 2026-08-11 → `context/archive/2026-08-10-account-creation-and-sync/`. Lesson: —.
 - **F-02: (foundation) Server-side AI proxy live, JWT-verified via Supabase.** — Archived 2026-08-11 → `context/archive/2026-08-11-ai-assist-proxy-foundation/`. Lesson: —.
 - **S-07: User taps "help me start" on a journal entry, picks a tone on a 5-point scale, optionally adds a few thoughts, and gets a tone-matched AI-generated prompt inserted as an editable starting point (regenerable up to 3 times).** — Archived 2026-08-11 → `context/archive/2026-08-11-ai-starter-prompt/`. Lesson: —.
+- **S-08: User taps "help me refine" on a journal entry they've written and gets AI-assisted refinement of it.** — Archived 2026-08-11 → `context/archive/2026-08-11-ai-refine-entry/`. Lesson: —.
