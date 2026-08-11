@@ -1,10 +1,10 @@
 ---
 change_id: ai-assist-proxy-foundation
 title: Ai assist proxy foundation
-status: impl_reviewed
+status: archived
 created: 2026-08-11
 updated: 2026-08-11
-archived_at: null
+archived_at: 2026-08-11T06:44:06Z
 ---
 
 ## Notes
