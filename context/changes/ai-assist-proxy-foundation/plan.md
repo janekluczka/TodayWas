@@ -391,16 +391,16 @@ None — stateless function, no data migration.
 
 - [x] 3.1 `OPENROUTER_API_KEY` secret confirmed set in Supabase dashboard (supersedes the
       originally-set `GEMINI_API_KEY`, which hit a billing issue — see Critical Implementation
-      Details)
+      Details) — ca8e819
 
 ### Phase 4: End-to-end success path and cleanup
 
 #### Automated
 
-- [x] 4.1 Authenticated well-formed request returns 200 with non-empty `text`
-- [x] 4.2 `get_logs(service: "edge-function")` shows the recent invocation
-- [x] 4.3 Disposable test user deleted
+- [x] 4.1 Authenticated well-formed request returns 200 with non-empty `text` — ca8e819
+- [x] 4.2 `get_logs(service: "edge-function")` shows the recent invocation — ca8e819
+- [x] 4.3 Disposable test user deleted — ca8e819
 
 #### Manual
 
-- [x] 4.4 Returned prompt text spot-checked across a couple of tone values
+- [x] 4.4 Returned prompt text spot-checked across a couple of tone values — ca8e819
