@@ -113,4 +113,10 @@
     <string name="account_success_title">Account created!</string>
     <string name="account_success_message">Your account is ready. Your data will now sync across devices.</string>
     <string name="account_success_continue_cta">Continue</string>
+    <string name="account_sync_local_data_cta">Sync local data</string>
+
+    <string name="data_sync_review_title">Add your existing data to this account?</string>
+    <string name="data_sync_review_summary_format">%1$d journal entries, %2$d habits, %3$d check-ins</string>
+    <string name="data_sync_review_confirm_cta">Add my data</string>
+    <string name="data_sync_review_skip_cta">Not now</string>
 </resources>

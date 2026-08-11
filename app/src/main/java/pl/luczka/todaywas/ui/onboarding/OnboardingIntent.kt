@@ -49,4 +49,8 @@ sealed interface OnboardingIntent {
     ) : OnboardingIntent
 
     data object SignUpSubmitClicked : OnboardingIntent
+
+    data object SyncConfirmClicked : OnboardingIntent
+
+    data object SyncSkipClicked : OnboardingIntent
 }

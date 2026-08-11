@@ -39,8 +39,10 @@ import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormContent
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.message
+import pl.luczka.todaywas.ui.datasync.DataSyncReviewContent
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
+import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
 
 @Composable
 fun AccountScreen(
@@ -99,16 +101,24 @@ private fun AccountScreenContent(
                 .padding(DsSpacing.space600),
             contentAlignment = Alignment.TopCenter,
         ) {
-            if (uiState.step == AccountStep.SUCCESS) {
-                AccountSuccessContent(onIntent)
-            } else {
-                when (val authState = uiState.authState) {
+            when {
+                uiState.step == AccountStep.SUCCESS -> AccountSuccessContent(onIntent)
+                uiState.step == AccountStep.DATA_SYNC_REVIEW && uiState.dataSyncSummary != null ->
+                    DataSyncReviewContent(
+                        summary = uiState.dataSyncSummary,
+                        isSyncing = uiState.isSyncing,
+                        onConfirmClicked = { onIntent(AccountIntent.SyncConfirmClicked) },
+                        onSkipClicked = { onIntent(AccountIntent.SyncSkipClicked) },
+                    )
+                else -> when (val authState = uiState.authState) {
                     AuthStateUi.Loading -> DsLoadingIndicator()
                     AuthStateUi.SignedOut -> SignedOutContent(uiState, onIntent)
                     is AuthStateUi.SignedIn -> SignedInContent(
                         email = authState.email,
                         isSigningOut = uiState.isSigningOut,
+                        hasSyncedLocalData = uiState.hasSyncedLocalData,
                         onSignOutClicked = { onIntent(AccountIntent.SignOutClicked) },
+                        onSyncLocalDataClicked = { onIntent(AccountIntent.SyncLocalDataClicked) },
                     )
                 }
             }
@@ -139,6 +149,9 @@ private fun SignedOutContent(
             onSubmitClicked = { onIntent(AccountIntent.SignUpSubmitClicked) },
         )
         AccountStep.SUCCESS -> AccountSuccessContent(onIntent)
+        // Unreachable in practice: DATA_SYNC_REVIEW is only entered right after a successful
+        // sign-in/sign-up, by which point authState has already become SignedIn.
+        AccountStep.DATA_SYNC_REVIEW -> Unit
     }
 }
 
@@ -161,13 +174,21 @@ private fun AccountSuccessContent(onIntent: (AccountIntent) -> Unit) {
 private fun SignedInContent(
     email: String?,
     isSigningOut: Boolean,
+    hasSyncedLocalData: Boolean,
     onSignOutClicked: () -> Unit,
+    onSyncLocalDataClicked: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
         modifier = Modifier.fillMaxWidth(),
     ) {
         DsText(text = email ?: stringResource(R.string.preferences_signed_in_no_email))
+        if (!hasSyncedLocalData) {
+            DsButton(
+                text = stringResource(R.string.account_sync_local_data_cta),
+                onClick = onSyncLocalDataClicked,
+            )
+        }
         DsButtonWithLoading(
             text = stringResource(R.string.preferences_sign_out_cta),
             onClick = onSignOutClicked,
@@ -213,6 +234,28 @@ private class AccountUiStatePreviewProvider : PreviewParameterProvider<AccountUi
             step = AccountStep.SUCCESS,
             signInForm = SignInFormUiState(),
             signUpForm = SignUpFormUiState(),
+        ),
+        AccountUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            step = AccountStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+            hasSyncedLocalData = false,
+        ),
+        AccountUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            step = AccountStep.DATA_SYNC_REVIEW,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+        ),
+        AccountUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            step = AccountStep.DATA_SYNC_REVIEW,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            isSyncing = true,
         ),
     )
 }

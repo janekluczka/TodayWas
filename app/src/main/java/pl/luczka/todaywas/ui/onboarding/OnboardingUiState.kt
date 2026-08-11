@@ -5,6 +5,7 @@ import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
 
 @Immutable
 data class OnboardingUiState(
@@ -18,4 +19,7 @@ data class OnboardingUiState(
     val signInForm: SignInFormUiState,
     val signUpForm: SignUpFormUiState,
     val allSetReason: AllSetReason,
+    val hasSyncedLocalData: Boolean = false,
+    val dataSyncSummary: LocalDataSummaryUi? = null,
+    val isSyncing: Boolean = false,
 )

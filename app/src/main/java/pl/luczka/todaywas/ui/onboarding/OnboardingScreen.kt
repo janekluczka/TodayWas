@@ -38,9 +38,11 @@ import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormContent
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.message
+import pl.luczka.todaywas.ui.datasync.DataSyncReviewContent
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FocusUiState
+import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
 
 @Composable
 fun OnboardingScreen(
@@ -203,6 +205,13 @@ private fun AccountInfoStepBody(
 ) {
     val authState = uiState.authState
     when {
+        uiState.accountSubStep == AccountSubStep.DATA_SYNC_REVIEW && uiState.dataSyncSummary != null ->
+            DataSyncReviewContent(
+                summary = uiState.dataSyncSummary,
+                isSyncing = uiState.isSyncing,
+                onConfirmClicked = { onIntent(OnboardingIntent.SyncConfirmClicked) },
+                onSkipClicked = { onIntent(OnboardingIntent.SyncSkipClicked) },
+            )
         authState is AuthStateUi.SignedIn -> AccountSignedInBody(email = authState.email)
         uiState.accountSubStep == AccountSubStep.CHOICE -> AccountChoiceBody(onIntent)
         uiState.accountSubStep == AccountSubStep.SIGN_IN -> AccountSignInBody(uiState.signInForm, onIntent)
@@ -335,6 +344,13 @@ private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<On
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
         ),
         previewState(
+            step = OnboardingStep.ACCOUNT_INFO,
+            confirmedFocus = FocusUiState.JOURNAL,
+            accountSubStep = AccountSubStep.DATA_SYNC_REVIEW,
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+        ),
+        previewState(
             step = OnboardingStep.ALL_SET,
             confirmedFocus = FocusUiState.JOURNAL,
             allSetReason = AllSetReason.NO_ACCOUNT,
@@ -364,6 +380,7 @@ private fun previewState(
     signInForm: SignInFormUiState = SignInFormUiState(),
     signUpForm: SignUpFormUiState = SignUpFormUiState(),
     allSetReason: AllSetReason = AllSetReason.NO_ACCOUNT,
+    dataSyncSummary: LocalDataSummaryUi? = null,
 ) = OnboardingUiState(
     step = step,
     selectedFocus = selectedFocus,
@@ -375,6 +392,7 @@ private fun previewState(
     signInForm = signInForm,
     signUpForm = signUpForm,
     allSetReason = allSetReason,
+    dataSyncSummary = dataSyncSummary,
 )
 
 @PreviewLightDark

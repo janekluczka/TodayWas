@@ -14,11 +14,15 @@ import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.usecase.ClearSyncedLocalDataUseCase
+import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
+import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
+import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.isValidEmail
@@ -31,12 +35,18 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     observeAuthState: ObserveAuthStateUseCase,
+    observeOnboardingState: ObserveOnboardingStateUseCase,
     private val signUpWithEmail: SignUpWithEmailUseCase,
     private val signInWithEmail: SignInWithEmailUseCase,
     private val signInWithGoogle: SignInWithGoogleUseCase,
     private val signOut: SignOutUseCase,
     private val clearSyncedLocalData: ClearSyncedLocalDataUseCase,
+    private val getLocalDataSummary: GetLocalDataSummaryUseCase,
+    private val syncLocalData: SyncLocalDataUseCase,
+    private val markLocalDataSynced: MarkLocalDataSyncedUseCase,
 ) : ViewModel() {
+
+    private enum class PostSyncAction { NAVIGATE_BACK, SHOW_SUCCESS, RETURN_HOME }
 
     private val _uiState = MutableStateFlow(
         AccountUiState(
@@ -51,10 +61,17 @@ class AccountViewModel @Inject constructor(
     private val eventChannel = Channel<AccountUiEvent>(Channel.BUFFERED)
     val events: Flow<AccountUiEvent> = eventChannel.receiveAsFlow()
 
+    private var postSyncAction = PostSyncAction.RETURN_HOME
+
     init {
         viewModelScope.launch {
             observeAuthState().collect { state ->
                 _uiState.update { it.copy(authState = state.toUiState()) }
+            }
+        }
+        viewModelScope.launch {
+            observeOnboardingState().collect { state ->
+                _uiState.update { it.copy(hasSyncedLocalData = state.hasSyncedLocalData) }
             }
         }
     }
@@ -74,6 +91,9 @@ class AccountViewModel @Inject constructor(
             AccountIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
             AccountIntent.ContinueClicked -> eventChannel.trySend(AccountUiEvent.NavigatedBack)
             AccountIntent.SignOutClicked -> onSignOutClicked()
+            AccountIntent.SyncConfirmClicked -> onSyncConfirmClicked()
+            AccountIntent.SyncSkipClicked -> onSyncSkipClicked()
+            AccountIntent.SyncLocalDataClicked -> onSyncLocalDataClicked()
         }
     }
 
@@ -128,10 +148,10 @@ class AccountViewModel @Inject constructor(
         eventChannel.trySend(AccountUiEvent.ShowError(AuthError.Unknown.toUiState()))
     }
 
-    private fun applySignInResult(result: Result<Unit>) {
+    private suspend fun applySignInResult(result: Result<Unit>) {
         if (result.isSuccess) {
             _uiState.update { it.copy(signInForm = SignInFormUiState()) }
-            eventChannel.trySend(AccountUiEvent.NavigatedBack)
+            proceedAfterAuthSuccess(PostSyncAction.NAVIGATE_BACK)
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
@@ -180,18 +200,65 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    private fun applySignUpResult(result: Result<Unit>) {
+    private suspend fun applySignUpResult(result: Result<Unit>) {
         if (result.isSuccess) {
-            _uiState.update {
-                it.copy(
-                    signUpForm = SignUpFormUiState(),
-                    step = AccountStep.SUCCESS,
-                )
-            }
+            _uiState.update { it.copy(signUpForm = SignUpFormUiState()) }
+            proceedAfterAuthSuccess(PostSyncAction.SHOW_SUCCESS)
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = false)) }
             eventChannel.trySend(AccountUiEvent.ShowError(error.toUiState()))
+        }
+    }
+
+    // Shows the data-review step only the first time there's unsynced local data to offer;
+    // otherwise syncs transparently in the background and proceeds as before.
+    private suspend fun proceedAfterAuthSuccess(whenDone: PostSyncAction) {
+        val summary = getLocalDataSummary()
+        if (!_uiState.value.hasSyncedLocalData && !summary.isEmpty) {
+            postSyncAction = whenDone
+            _uiState.update {
+                it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState())
+            }
+        } else {
+            viewModelScope.launch { syncLocalData() }
+            finishPostSyncAction(whenDone)
+        }
+    }
+
+    private fun onSyncConfirmClicked() {
+        if (_uiState.value.isSyncing) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSyncing = true) }
+            val result = syncLocalData()
+            if (result.isSuccess) markLocalDataSynced()
+            _uiState.update { it.copy(isSyncing = false, dataSyncSummary = null) }
+            finishPostSyncAction(postSyncAction)
+        }
+    }
+
+    private fun onSyncSkipClicked() {
+        _uiState.update { it.copy(dataSyncSummary = null) }
+        finishPostSyncAction(postSyncAction)
+    }
+
+    private fun onSyncLocalDataClicked() {
+        viewModelScope.launch {
+            val summary = getLocalDataSummary()
+            if (!summary.isEmpty) {
+                postSyncAction = PostSyncAction.RETURN_HOME
+                _uiState.update {
+                    it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState())
+                }
+            }
+        }
+    }
+
+    private fun finishPostSyncAction(action: PostSyncAction) {
+        when (action) {
+            PostSyncAction.NAVIGATE_BACK -> eventChannel.trySend(AccountUiEvent.NavigatedBack)
+            PostSyncAction.SHOW_SUCCESS -> _uiState.update { it.copy(step = AccountStep.SUCCESS) }
+            PostSyncAction.RETURN_HOME -> _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
         }
     }
 
