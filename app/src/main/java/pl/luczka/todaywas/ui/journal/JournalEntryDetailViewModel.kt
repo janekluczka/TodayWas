@@ -149,7 +149,8 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
     private fun onHelpMeRefineClicked() {
         val state = _uiState.value
         if (state.authState !is AuthStateUi.SignedIn) return
-        if (!state.isEditing || state.editedText.isBlank()) return
+        if (!state.isEditing || !state.isEditable || state.editedText.isBlank()) return
+        if (state.editedText.length > MAX_REFINE_TEXT_LENGTH) return
         refineJob?.cancel()
         _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = true)) }
     }

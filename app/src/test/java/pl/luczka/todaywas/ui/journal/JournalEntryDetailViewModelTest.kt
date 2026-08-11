@@ -242,6 +242,40 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while isEditable is stale-false`() =
+        runTest {
+            // Arrange
+            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneOffset.UTC)
+            val viewModel = viewModel(clock = expiredClock)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while the draft exceeds MAX_REFINE_TEXT_LENGTH`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(
+                initialEntries = listOf(entry.copy(text = "a".repeat(MAX_REFINE_TEXT_LENGTH + 1))),
+            )
+            val viewModel = viewModel(repository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
     fun `should move to PREVIEW step and set refinedText when RefineClicked succeeds`() =
         runTest {
             // Arrange

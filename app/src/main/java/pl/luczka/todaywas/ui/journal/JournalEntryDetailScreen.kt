@@ -127,7 +127,8 @@ private fun JournalEntryDetailScreenContent(
             isSaving = uiState.isSaving,
         ) {
             Column {
-                if (uiState.authState is AuthStateUi.SignedIn && uiState.editedText.isNotBlank()) {
+                val canRefine = uiState.editedText.isNotBlank() && uiState.editedText.length <= MAX_REFINE_TEXT_LENGTH
+                if (uiState.authState is AuthStateUi.SignedIn && canRefine) {
                     DsAssistChip(
                         text = stringResource(R.string.journal_help_me_refine_cta),
                         onClick = { onIntent(JournalEntryDetailIntent.HelpMeRefineClicked) },

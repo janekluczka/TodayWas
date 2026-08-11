@@ -61,6 +61,13 @@ never reads journal content at all.
 - `JournalEntryDetailViewModelTest.kt` and `FakeJournalRepository`/`FakeAuthRepository`/
   `FakeAiAssistRepository` test doubles already exist and follow a consistent `viewModel(repository
   = ..., clock = ..., id = ...)` factory-function-per-test-class style — extended, not replaced.
+- **(Discovered during Phase 3 live verification, fixed in `2aba37c`)** Ktor's `timeout {
+  requestTimeoutMillis = ... }` block does not raise the underlying engine's socket-read timeout —
+  that is a separate `socketTimeoutMillis` setting, and left at its default it fires well before the
+  documented 10-20s real response time even with `requestTimeoutMillis` raised. Both
+  `generateJournalStarterPrompt` and `refineJournalEntry` share the fix via `invokeAiProxy`'s single
+  `timeout {}` block, since "help me start" carried this same latent bug (previously misattributed
+  to OpenRouter free-tier flakiness in its own manual verification notes).
 
 ## Desired End State
 
