@@ -2,6 +2,7 @@ package pl.luczka.todaywas.data.repository
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.UserPreferencesDao
 import pl.luczka.todaywas.data.local.UserPreferencesEntity
@@ -18,29 +19,45 @@ class OnboardingRepositoryImpl @Inject constructor(
             OnboardingState(
                 completed = entity?.onboardingCompleted ?: false,
                 focus = entity?.focus?.let { Focus.valueOf(it) },
+                hasSyncedLocalData = entity?.hasSyncedLocalData ?: false,
             )
         }
 
     override suspend fun saveFocus(focus: Focus): Result<Unit> {
-        val entity = UserPreferencesEntity(
+        val entity = dao.observe().first()?.copy(
+            focus = focus.name,
+            onboardingCompleted = true,
+        ) ?: UserPreferencesEntity(
             focus = focus.name,
             onboardingCompleted = true,
         )
-        return try {
+        return upsertWithRetry(entity)
+    }
+
+    override suspend fun markLocalDataSynced(): Result<Unit> {
+        val entity = dao.observe().first()?.copy(hasSyncedLocalData = true) ?: return Result.success(Unit)
+        return upsertWithRetry(entity)
+    }
+
+    override suspend fun resetSyncFlag(): Result<Unit> {
+        val entity = dao.observe().first()?.copy(hasSyncedLocalData = false) ?: return Result.success(Unit)
+        return upsertWithRetry(entity)
+    }
+
+    private suspend fun upsertWithRetry(entity: UserPreferencesEntity): Result<Unit> = try {
+        dao.upsert(entity)
+        Result.success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        // Retry once before giving up, per the plan's write-resilience contract.
+        try {
             dao.upsert(entity)
             Result.success(Unit)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            // Retry once before giving up, per the plan's write-resilience contract.
-            try {
-                dao.upsert(entity)
-                Result.success(Unit)
-            } catch (retryException: CancellationException) {
-                throw retryException
-            } catch (retryException: Exception) {
-                Result.failure(retryException)
-            }
+        } catch (retryException: CancellationException) {
+            throw retryException
+        } catch (retryException: Exception) {
+            Result.failure(retryException)
         }
     }
 }

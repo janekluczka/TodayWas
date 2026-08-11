@@ -46,7 +46,7 @@ import java.time.format.FormatStyle
 
 @Composable
 fun HabitDetailScreen(
-    habitId: Long,
+    habitId: String,
     onBack: () -> Unit,
     viewModel: HabitDetailViewModel = hiltViewModel<HabitDetailViewModel, HabitDetailViewModel.Factory> { factory ->
         factory.create(habitId)

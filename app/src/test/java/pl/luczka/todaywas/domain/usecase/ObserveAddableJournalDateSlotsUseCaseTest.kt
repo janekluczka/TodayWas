@@ -13,7 +13,7 @@ import java.time.LocalDate
 class ObserveAddableJournalDateSlotsUseCaseTest {
 
     private fun entryFor(date: LocalDate) = JournalEntry(
-        id = 1L,
+        id = "1",
         date = date,
         text = "text",
         createdAt = Instant.EPOCH,

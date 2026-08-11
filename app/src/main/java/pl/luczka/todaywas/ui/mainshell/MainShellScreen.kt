@@ -37,7 +37,7 @@ fun MainShellScreen(
     onJournalEntryClicked: (JournalEntryUiState) -> Unit,
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
-    onHabitClicked: (Long) -> Unit,
+    onHabitClicked: (String) -> Unit,
     onAccountClicked: () -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(BottomNavTab.HOME) }

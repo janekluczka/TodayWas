@@ -75,7 +75,7 @@ private data class ContributionData(
 
 @HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)
 class HabitDetailViewModel @AssistedInject constructor(
-    @Assisted private val habitId: Long,
+    @Assisted private val habitId: String,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val logHabitCheckIns: LogHabitCheckInsUseCase,
     private val updateHabitCheckIn: UpdateHabitCheckInUseCase,
@@ -226,7 +226,7 @@ class HabitDetailViewModel @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            @Assisted habitId: Long,
+            @Assisted habitId: String,
         ): HabitDetailViewModel
     }
 }

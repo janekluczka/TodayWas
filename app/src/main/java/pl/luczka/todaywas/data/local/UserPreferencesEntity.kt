@@ -8,4 +8,5 @@ data class UserPreferencesEntity(
     @PrimaryKey val id: Int = 0,
     val focus: String,
     val onboardingCompleted: Boolean,
+    val hasSyncedLocalData: Boolean = false,
 )

@@ -29,7 +29,7 @@ class LogHabitCheckInsViewModel @Inject constructor(
     }
 
     private val selectedDateFlow = MutableStateFlow(selectableDates.last())
-    private val pendingValuesFlow = MutableStateFlow<Map<Long, Int>>(emptyMap())
+    private val pendingValuesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
 
     private val _uiState = MutableStateFlow(
         LogHabitCheckInsUiState(
@@ -74,7 +74,7 @@ class LogHabitCheckInsViewModel @Inject constructor(
     }
 
     private fun onValueChanged(
-        habitId: Long,
+        habitId: String,
         value: Int?,
     ) {
         pendingValuesFlow.update { if (value == null) it - habitId else it + (habitId to value) }

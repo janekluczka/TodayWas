@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 @Immutable
 data class JournalEntryUiState(
-    val id: Long,
+    val id: String,
     val date: LocalDate,
     val formattedDate: String,
     val text: String,

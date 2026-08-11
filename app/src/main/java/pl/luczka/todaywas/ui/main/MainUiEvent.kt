@@ -15,6 +15,6 @@ sealed interface MainUiEvent {
     data object NavigateToLogHabitCheckIns : MainUiEvent
 
     data class NavigateToHabitDetail(
-        val habitId: Long,
+        val habitId: String,
     ) : MainUiEvent
 }

@@ -21,6 +21,7 @@ class SelectFocusUseCaseTest {
                 OnboardingState(
                     completed = false,
                     focus = null,
+                    hasSyncedLocalData = false,
                 ),
             )
 
@@ -28,6 +29,10 @@ class SelectFocusUseCaseTest {
             lastSavedFocus = focus
             return Result.success(Unit)
         }
+
+        override suspend fun markLocalDataSynced(): Result<Unit> = Result.success(Unit)
+
+        override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
     }
 
     @Test

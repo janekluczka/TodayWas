@@ -1,0 +1,22 @@
+package pl.luczka.todaywas.data.repository
+
+class FakeRemoteJournalDataSource(
+    private val entries: MutableMap<String, JournalEntryRemoteDto> = mutableMapOf(),
+    var shouldFail: Boolean = false,
+) : RemoteJournalDataSource {
+
+    var upsertCallCount = 0
+        private set
+
+    override suspend fun upsert(entries: List<JournalEntryRemoteDto>): Result<Unit> {
+        upsertCallCount++
+        if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
+        entries.forEach { this.entries[it.id] = it }
+        return Result.success(Unit)
+    }
+
+    override suspend fun fetchAll(userId: String): Result<List<JournalEntryRemoteDto>> {
+        if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
+        return Result.success(entries.values.filter { it.userId == userId })
+    }
+}

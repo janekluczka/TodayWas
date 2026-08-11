@@ -22,14 +22,22 @@ class FakeJournalRepository(
     var updateEntryResult: Result<Unit> = Result.success(Unit)
     var updateEntryCallCount = 0
         private set
-    var lastUpdatedId: Long? = null
+    var lastUpdatedId: String? = null
         private set
     var lastUpdatedText: String? = null
         private set
 
+    var syncWithRemoteResult: Result<Unit> = Result.success(Unit)
+    var syncWithRemoteCallCount = 0
+        private set
+
+    var clearLocalResult: Result<Unit> = Result.success(Unit)
+    var clearLocalCallCount = 0
+        private set
+
     override fun observeEntries(): Flow<List<JournalEntry>> = entriesFlow
 
-    override suspend fun getEntry(id: Long): JournalEntry? = entriesFlow.value.find { it.id == id }
+    override suspend fun getEntry(id: String): JournalEntry? = entriesFlow.value.find { it.id == id }
 
     override suspend fun addEntry(
         date: LocalDate,
@@ -42,12 +50,22 @@ class FakeJournalRepository(
     }
 
     override suspend fun updateEntry(
-        id: Long,
+        id: String,
         text: String,
     ): Result<Unit> {
         updateEntryCallCount++
         lastUpdatedId = id
         lastUpdatedText = text
         return updateEntryResult
+    }
+
+    override suspend fun syncWithRemote(): Result<Unit> {
+        syncWithRemoteCallCount++
+        return syncWithRemoteResult
+    }
+
+    override suspend fun clearLocal(): Result<Unit> {
+        clearLocalCallCount++
+        return clearLocalResult
     }
 }

@@ -29,7 +29,8 @@ class HabitCheckInDaoTest {
             // Act
             db1.habitCheckInDao().insertOne(
                 HabitCheckInEntity(
-                    habitId = 1L,
+                    id = "check-in-1",
+                    habitId = "1",
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
@@ -45,7 +46,7 @@ class HabitCheckInDaoTest {
 
             // Assert
             assertEquals(1, persisted.size)
-            assertEquals(1L, persisted[0].habitId)
+            assertEquals("1", persisted[0].habitId)
             assertEquals("2026-07-27", persisted[0].date)
             assertEquals(1, persisted[0].value)
         }
@@ -65,13 +66,15 @@ class HabitCheckInDaoTest {
             db.habitCheckInDao().insertAll(
                 listOf(
                     HabitCheckInEntity(
-                        habitId = 1L,
+                        id = "check-in-1",
+                        habitId = "1",
                         date = "2026-07-27",
                         value = 1,
                         createdAt = 1_000L,
                     ),
                     HabitCheckInEntity(
-                        habitId = 2L,
+                        id = "check-in-2",
+                        habitId = "2",
                         date = "2026-07-27",
                         value = 3,
                         createdAt = 1_000L,
@@ -98,7 +101,8 @@ class HabitCheckInDaoTest {
             // Pre-existing row that the batch's second entity will conflict with (same habitId+date).
             db.habitCheckInDao().insertOne(
                 HabitCheckInEntity(
-                    habitId = 1L,
+                    id = "check-in-1",
+                    habitId = "1",
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
@@ -112,14 +116,16 @@ class HabitCheckInDaoTest {
                     listOf(
                         // Would succeed in isolation - proves the transaction rolls this back too.
                         HabitCheckInEntity(
-                            habitId = 2L,
+                            id = "check-in-2",
+                            habitId = "2",
                             date = "2026-07-27",
                             value = 3,
                             createdAt = 2_000L,
                         ),
                         // Conflicts with the pre-existing row on the unique (habitId, date) index.
                         HabitCheckInEntity(
-                            habitId = 1L,
+                            id = "check-in-3",
+                            habitId = "1",
                             date = "2026-07-27",
                             value = 0,
                             createdAt = 2_000L,
@@ -136,7 +142,7 @@ class HabitCheckInDaoTest {
             // Assert
             assertTrue(threw)
             assertEquals(1, persisted.size)
-            assertEquals(1L, persisted[0].habitId)
+            assertEquals("1", persisted[0].habitId)
             assertEquals(1_000L, persisted[0].createdAt)
         }
 
@@ -152,7 +158,8 @@ class HabitCheckInDaoTest {
                 .build()
             db.habitCheckInDao().insertOne(
                 HabitCheckInEntity(
-                    habitId = 1L,
+                    id = "check-in-1",
+                    habitId = "1",
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
@@ -160,9 +167,9 @@ class HabitCheckInDaoTest {
             )
 
             // Act
-            val found = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27")
-            val missingDate = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-26")
-            val missingHabit = db.habitCheckInDao().getByHabitAndDate(2L, "2026-07-27")
+            val found = db.habitCheckInDao().getByHabitAndDate("1", "2026-07-27")
+            val missingDate = db.habitCheckInDao().getByHabitAndDate("1", "2026-07-26")
+            val missingHabit = db.habitCheckInDao().getByHabitAndDate("2", "2026-07-27")
             db.close()
 
             // Assert
@@ -183,22 +190,23 @@ class HabitCheckInDaoTest {
                 .build()
             db.habitCheckInDao().insertOne(
                 HabitCheckInEntity(
-                    habitId = 1L,
+                    id = "check-in-1",
+                    habitId = "1",
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
                 ),
             )
-            val inserted = checkNotNull(db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27"))
+            val inserted = checkNotNull(db.habitCheckInDao().getByHabitAndDate("1", "2026-07-27"))
 
             // Act
             db.habitCheckInDao().update(inserted.copy(value = 0))
-            val updated = db.habitCheckInDao().getByHabitAndDate(1L, "2026-07-27")
+            val updated = db.habitCheckInDao().getByHabitAndDate("1", "2026-07-27")
             db.close()
 
             // Assert
             assertEquals(0, updated?.value)
-            assertEquals(1L, updated?.habitId)
+            assertEquals("1", updated?.habitId)
             assertEquals("2026-07-27", updated?.date)
             assertEquals(1_000L, updated?.createdAt)
         }

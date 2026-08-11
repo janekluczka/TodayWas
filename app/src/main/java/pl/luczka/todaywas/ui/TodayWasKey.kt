@@ -17,7 +17,7 @@ data object AddJournalEntryKey : TodayWasKey
 
 @Serializable
 data class JournalEntryDetailKey(
-    val id: Long,
+    val id: String,
 ) : TodayWasKey
 
 @Serializable
@@ -28,7 +28,7 @@ data object LogHabitCheckInsKey : TodayWasKey
 
 @Serializable
 data class HabitDetailKey(
-    val habitId: Long,
+    val habitId: String,
 ) : TodayWasKey
 
 @Serializable

@@ -29,6 +29,10 @@ class RootViewModelTest {
         override fun observeState(): Flow<OnboardingState> = stateFlow
 
         override suspend fun saveFocus(focus: Focus): Result<Unit> = Result.success(Unit)
+
+        override suspend fun markLocalDataSynced(): Result<Unit> = Result.success(Unit)
+
+        override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
     }
 
     private fun viewModel(repository: OnboardingRepository) =
@@ -52,6 +56,7 @@ class RootViewModelTest {
                 OnboardingState(
                     completed = false,
                     focus = null,
+                    hasSyncedLocalData = false,
                 ),
             )
 
@@ -71,6 +76,7 @@ class RootViewModelTest {
                 OnboardingState(
                     completed = true,
                     focus = Focus.BOTH,
+                    hasSyncedLocalData = false,
                 ),
             )
 
@@ -90,6 +96,7 @@ class RootViewModelTest {
                 OnboardingState(
                     completed = false,
                     focus = null,
+                    hasSyncedLocalData = false,
                 ),
             )
             val viewModel = viewModel(repository)
@@ -100,6 +107,7 @@ class RootViewModelTest {
             repository.stateFlow.value = OnboardingState(
                 completed = true,
                 focus = Focus.JOURNAL,
+                hasSyncedLocalData = false,
             )
 
             // Assert

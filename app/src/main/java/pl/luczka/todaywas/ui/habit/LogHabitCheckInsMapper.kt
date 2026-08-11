@@ -9,7 +9,7 @@ import java.time.LocalDate
 
 fun HabitCheckInBoard.toRows(
     selectedDate: LocalDate,
-    pendingValues: Map<Long, Int>,
+    pendingValues: Map<String, Int>,
 ): List<HabitCheckInRowUiState> = habits.map { habit ->
     val existing = checkIns.find { it.habitId == habit.id && it.date == selectedDate }
     if (existing != null) habit.toAlreadyLoggedRow(existing) else habit.toEditableRow(pendingValues[habit.id])

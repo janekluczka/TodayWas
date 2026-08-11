@@ -8,6 +8,7 @@ import pl.luczka.todaywas.domain.model.AuthState
 
 class FakeAuthRepository(
     initialState: AuthState = AuthState.SignedOut,
+    var currentUserId: String? = null,
 ) : AuthRepository {
 
     private val state = MutableStateFlow(initialState)
@@ -30,6 +31,8 @@ class FakeAuthRepository(
 
     override fun observeAuthState(): Flow<AuthState> = state
 
+    override fun currentUserId(): String? = currentUserId
+
     override suspend fun signUpWithEmail(
         email: String,
         password: String,
@@ -51,6 +54,9 @@ class FakeAuthRepository(
 
     override suspend fun signOut(): Result<Unit> {
         signOutCallCount++
-        return signOutError?.let { Result.failure(AuthException(it)) } ?: Result.success(Unit)
+        return signOutError?.let { Result.failure(AuthException(it)) } ?: run {
+            state.value = AuthState.SignedOut
+            Result.success(Unit)
+        }
     }
 }

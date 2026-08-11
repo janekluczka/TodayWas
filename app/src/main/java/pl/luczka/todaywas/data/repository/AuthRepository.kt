@@ -7,6 +7,8 @@ interface AuthRepository {
 
     fun observeAuthState(): Flow<AuthState>
 
+    fun currentUserId(): String?
+
     suspend fun signUpWithEmail(
         email: String,
         password: String,

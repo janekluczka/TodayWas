@@ -18,6 +18,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun observeAuthState(): Flow<AuthState> = supabase.auth.sessionStatus.map { it.toAuthState() }
 
+    override fun currentUserId(): String? = supabase.auth.currentUserOrNull()?.id
+
     override suspend fun signUpWithEmail(
         email: String,
         password: String,

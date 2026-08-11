@@ -24,6 +24,10 @@ class SkipOnboardingUseCaseTest {
             lastSavedFocus = focus
             return Result.success(Unit)
         }
+
+        override suspend fun markLocalDataSynced(): Result<Unit> = Result.success(Unit)
+
+        override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
     }
 
     @Test
@@ -33,14 +37,17 @@ class SkipOnboardingUseCaseTest {
                 OnboardingState(
                     completed = false,
                     focus = null,
+                    hasSyncedLocalData = false,
                 ),
                 OnboardingState(
                     completed = true,
                     focus = Focus.JOURNAL,
+                    hasSyncedLocalData = false,
                 ),
                 OnboardingState(
                     completed = true,
                     focus = Focus.HABIT,
+                    hasSyncedLocalData = false,
                 ),
             )
 

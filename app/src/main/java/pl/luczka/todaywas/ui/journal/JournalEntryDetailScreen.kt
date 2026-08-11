@@ -36,7 +36,7 @@ import java.time.LocalDate
 
 @Composable
 fun JournalEntryDetailScreen(
-    id: Long,
+    id: String,
     onBack: () -> Unit,
     viewModel: JournalEntryDetailViewModel = hiltViewModel<JournalEntryDetailViewModel, JournalEntryDetailViewModel.Factory> { factory ->
         factory.create(id)
@@ -147,7 +147,7 @@ private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterPro
         JournalEntryDetailUiState(
             isLoading = false,
             entry = JournalEntryUiState(
-                id = 1L,
+                id = "1",
                 date = LocalDate.of(2026, 7, 27),
                 formattedDate = "Jul 27, 2026",
                 text = "Today was a good day. I went for a walk and read a book.",
@@ -162,7 +162,7 @@ private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterPro
         JournalEntryDetailUiState(
             isLoading = false,
             entry = JournalEntryUiState(
-                id = 1L,
+                id = "1",
                 date = LocalDate.of(2026, 7, 27),
                 formattedDate = "Jul 27, 2026",
                 text = "Today was a good day.",
@@ -177,7 +177,7 @@ private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterPro
         JournalEntryDetailUiState(
             isLoading = false,
             entry = JournalEntryUiState(
-                id = 1L,
+                id = "1",
                 date = LocalDate.of(2026, 7, 20),
                 formattedDate = "Jul 20, 2026",
                 text = "An older entry, no longer editable.",

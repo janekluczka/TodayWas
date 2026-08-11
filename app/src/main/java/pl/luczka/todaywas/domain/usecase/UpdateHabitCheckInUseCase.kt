@@ -13,7 +13,7 @@ class UpdateHabitCheckInUseCase @Inject constructor(
     private val clock: Clock,
 ) {
     suspend operator fun invoke(
-        habitId: Long,
+        habitId: String,
         date: LocalDate,
         value: Int,
         createdAt: Instant,

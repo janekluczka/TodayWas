@@ -14,7 +14,13 @@ class HabitContributionCalculatorTest {
     private fun checkIn(
         date: LocalDate,
         value: Int,
-    ) = HabitCheckIn(id = date.toEpochDay(), habitId = 1L, date = date, value = value, createdAt = now)
+    ) = HabitCheckIn(
+        id = date.toEpochDay().toString(),
+        habitId = "1",
+        date = date,
+        value = value,
+        createdAt = now,
+    )
 
     @Test
     fun `should yield empty days when there are no check-ins`() {

@@ -16,7 +16,7 @@ class GetJournalEntryUseCaseTest {
         runTest {
             // Arrange
             val entry = JournalEntry(
-                id = 1L,
+                id = "1",
                 date = LocalDate.of(2026, 7, 27),
                 text = "Today was good.",
                 createdAt = Instant.EPOCH,
@@ -25,7 +25,7 @@ class GetJournalEntryUseCaseTest {
             val useCase = GetJournalEntryUseCase(repository)
 
             // Act
-            val result = useCase(1L)
+            val result = useCase("1")
 
             // Assert
             assertEquals(entry, result)
@@ -39,7 +39,7 @@ class GetJournalEntryUseCaseTest {
             val useCase = GetJournalEntryUseCase(repository)
 
             // Act
-            val result = useCase(1L)
+            val result = useCase("1")
 
             // Assert
             assertNull(result)

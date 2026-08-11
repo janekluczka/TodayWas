@@ -15,26 +15,48 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.data.repository.FakeAuthRepository
+import pl.luczka.todaywas.data.repository.FakeHabitRepository
+import pl.luczka.todaywas.data.repository.FakeJournalRepository
+import pl.luczka.todaywas.data.repository.FakeOnboardingRepository
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthState
+import pl.luczka.todaywas.domain.model.JournalEntry
+import pl.luczka.todaywas.domain.model.OnboardingState
+import pl.luczka.todaywas.domain.usecase.ClearSyncedLocalDataUseCase
+import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
+import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
+import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
+import java.time.Instant
+import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {
 
-    private fun viewModel(repository: FakeAuthRepository) = AccountViewModel(
+    private fun viewModel(
+        repository: FakeAuthRepository,
+        journalRepository: FakeJournalRepository = FakeJournalRepository(),
+        habitRepository: FakeHabitRepository = FakeHabitRepository(),
+        onboardingRepository: FakeOnboardingRepository = FakeOnboardingRepository(),
+    ) = AccountViewModel(
         observeAuthState = ObserveAuthStateUseCase(repository),
+        observeOnboardingState = ObserveOnboardingStateUseCase(onboardingRepository),
         signUpWithEmail = SignUpWithEmailUseCase(repository),
         signInWithEmail = SignInWithEmailUseCase(repository),
         signInWithGoogle = SignInWithGoogleUseCase(repository),
         signOut = SignOutUseCase(repository),
+        clearSyncedLocalData = ClearSyncedLocalDataUseCase(journalRepository, habitRepository, onboardingRepository),
+        getLocalDataSummary = GetLocalDataSummaryUseCase(journalRepository, habitRepository),
+        syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+        markLocalDataSynced = MarkLocalDataSyncedUseCase(onboardingRepository),
     )
 
     private fun fillSignUpForm(viewModel: AccountViewModel) {
@@ -301,6 +323,45 @@ class AccountViewModelTest {
     }
 
     @Test
+    fun `should clear synced local data when SignOutClicked succeeds`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val journalRepository = FakeJournalRepository()
+        val habitRepository = FakeHabitRepository()
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository, habitRepository, onboardingRepository)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignOutClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(1, journalRepository.clearLocalCallCount)
+        assertEquals(1, habitRepository.clearLocalCallCount)
+        assertEquals(1, onboardingRepository.resetSyncFlagCallCount)
+    }
+
+    @Test
+    fun `should not clear local data when SignOutClicked fails`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        repository.signOutError = AuthError.NetworkUnavailable
+        val journalRepository = FakeJournalRepository()
+        val habitRepository = FakeHabitRepository()
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository, habitRepository, onboardingRepository)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignOutClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(0, journalRepository.clearLocalCallCount)
+        assertEquals(0, habitRepository.clearLocalCallCount)
+        assertEquals(0, onboardingRepository.resetSyncFlagCallCount)
+    }
+
+    @Test
     fun `should emit a ShowError event and clear isSigningOut when SignOutClicked fails`() = runTest {
         // Arrange
         val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
@@ -338,4 +399,163 @@ class AccountViewModelTest {
         // Assert
         assertEquals(AccountStep.SIGN_IN, viewModel.uiState.value.step)
     }
+
+    @Test
+    fun `should go to DATA_SYNC_REVIEW with counts when sign-up succeeds with unsynced local data present`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository()
+        val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+
+        // Assert
+        assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
+        assertEquals(
+            1,
+            viewModel.uiState.value.dataSyncSummary
+                ?.journalEntryCount,
+        )
+    }
+
+    @Test
+    fun `should go straight to SUCCESS when sign-up succeeds with no local data`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository()
+        val viewModel = viewModel(repository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+
+        // Assert
+        assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
+    }
+
+    @Test
+    fun `should go straight to SUCCESS when sign-up succeeds and local data was already synced`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository()
+        val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+        val onboardingRepository = FakeOnboardingRepository(
+            initialState = OnboardingState(
+                completed = true,
+                focus = null,
+                hasSyncedLocalData = true,
+            ),
+        )
+        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+
+        // Assert
+        assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
+    }
+
+    @Test
+    fun `should mark data synced and reach SUCCESS when SyncConfirmClicked succeeds after sign-up`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository()
+        val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+        assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SyncConfirmClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(1, journalRepository.syncWithRemoteCallCount)
+        assertEquals(1, onboardingRepository.markLocalDataSyncedCallCount)
+        assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
+    }
+
+    @Test
+    fun `should reach SUCCESS without marking synced when SyncSkipClicked after sign-up`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository()
+        val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+        assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SyncSkipClicked)
+
+        // Assert
+        assertEquals(0, onboardingRepository.markLocalDataSyncedCallCount)
+        assertEquals(AccountStep.SUCCESS, viewModel.uiState.value.step)
+    }
+
+    @Test
+    fun `should go to DATA_SYNC_REVIEW and NavigatedBack after confirm when sign-in succeeds with unsynced local data`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository()
+        val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
+        viewModel.onIntent(AccountIntent.SignInEmailChanged("person@example.com"))
+        viewModel.onIntent(AccountIntent.SignInPasswordChanged("password123"))
+
+        // Act
+        viewModel.onIntent(AccountIntent.SignInSubmitClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
+        assertEquals(emptyList<AccountUiEvent>(), events)
+
+        // Act (confirm)
+        viewModel.onIntent(AccountIntent.SyncConfirmClicked)
+        runCurrent()
+
+        // Assert (confirm)
+        assertEquals(listOf(AccountUiEvent.NavigatedBack), events)
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `should show DATA_SYNC_REVIEW when SyncLocalDataClicked is dispatched with unsynced local data`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SyncLocalDataClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
+        assertEquals(
+            1,
+            viewModel.uiState.value.dataSyncSummary
+                ?.journalEntryCount,
+        )
+    }
+
+    private fun entry() = JournalEntry(
+        id = "1",
+        date = LocalDate.of(2026, 8, 1),
+        text = "text",
+        createdAt = Instant.EPOCH,
+    )
 }

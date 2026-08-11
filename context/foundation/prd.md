@@ -103,7 +103,9 @@ has bounced off heavier journal apps or pressure-inducing streak trackers before
 #### Acceptance Criteria
 
 - No existing data is lost or duplicated during the upload
-- The user takes no additional action beyond creating the account
+- After creating (or signing into) the account, the user sees a one-time review screen showing
+  how much local data exists (journal entries, habits, check-ins) and confirms before it
+  uploads — no separate export/import step is required beyond that one confirmation
 - The main screen shows the same data before and after account creation
 
 ### US-05: User gets an AI-generated starter prompt

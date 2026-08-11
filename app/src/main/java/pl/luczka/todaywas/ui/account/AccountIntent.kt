@@ -39,4 +39,10 @@ sealed interface AccountIntent {
     data object ContinueClicked : AccountIntent
 
     data object SignOutClicked : AccountIntent
+
+    data object SyncConfirmClicked : AccountIntent
+
+    data object SyncSkipClicked : AccountIntent
+
+    data object SyncLocalDataClicked : AccountIntent
 }

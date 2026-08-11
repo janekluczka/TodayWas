@@ -1,10 +1,10 @@
 ---
 change_id: supabase-auth-foundation
 title: Supabase auth foundation
-status: impl_reviewed
+status: archived
 created: 2026-08-03
-updated: 2026-08-09
-archived_at: null
+updated: 2026-08-10
+archived_at: 2026-08-10T13:00:02Z
 ---
 
 ## Notes
