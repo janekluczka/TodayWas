@@ -24,4 +24,16 @@ sealed interface MainIntent {
     data class JournalWindowSelected(
         val window: ContributionWindowUiState,
     ) : MainIntent
+
+    data object AccountIconClicked : MainIntent
+
+    data object AccountSheetDismissed : MainIntent
+
+    data object SignInSignUpPromptClicked : MainIntent
+
+    data object SignOutClicked : MainIntent
+
+    data object SignOutConfirmed : MainIntent
+
+    data object SignOutCancelled : MainIntent
 }

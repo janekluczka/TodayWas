@@ -53,6 +53,7 @@ fun MainShellScreen(
                 onCreateHabitClicked = onCreateHabitClicked,
                 onLogCheckInsClicked = onLogCheckInsClicked,
                 onHabitClicked = onHabitClicked,
+                onAccountClicked = onAccountClicked,
             )
             BottomNavTab.JOURNAL -> TabPlaceholder(stringResource(R.string.main_journal_tab_placeholder))
             BottomNavTab.HABITS -> TabPlaceholder(stringResource(R.string.main_habit_tab_placeholder))

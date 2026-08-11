@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.ui.main
 
 import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
@@ -16,4 +17,8 @@ data class MainUiState(
     val journalSelectedWindow: ContributionWindowUiState,
     val fabActions: List<FabActionUiState>,
     val fabExpanded: Boolean,
+    val authState: AuthStateUi,
+    val isAccountSheetVisible: Boolean,
+    val isSignOutConfirmVisible: Boolean,
+    val isSigningOut: Boolean,
 )

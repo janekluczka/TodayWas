@@ -23,7 +23,9 @@ import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
@@ -43,6 +45,7 @@ class MainViewModel @Inject constructor(
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val observeAuthState: ObserveAuthStateUseCase,
     private val syncLocalData: SyncLocalDataUseCase,
+    private val signOut: SignOutUseCase,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -62,6 +65,10 @@ class MainViewModel @Inject constructor(
             journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = emptyList(),
             fabExpanded = false,
+            authState = AuthStateUi.Loading,
+            isAccountSheetVisible = false,
+            isSignOutConfirmVisible = false,
+            isSigningOut = false,
         ),
     )
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -129,6 +136,13 @@ class MainViewModel @Inject constructor(
                 syncLocalData()
             }
         }
+        // Feeds the account bottom sheet live — a continuous collect, unlike the one-shot first{}
+        // above, so sign-out (or a session expiring) updates the open sheet in place.
+        viewModelScope.launch {
+            observeAuthState().collect { state ->
+                _uiState.update { it.copy(authState = state.toUiState()) }
+            }
+        }
     }
 
     fun onIntent(intent: MainIntent) {
@@ -138,6 +152,32 @@ class MainViewModel @Inject constructor(
             is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
             is MainIntent.HabitClicked -> onHabitClicked(intent.habit)
             is MainIntent.JournalWindowSelected -> onJournalWindowSelected(intent.window)
+            MainIntent.AccountIconClicked -> _uiState.update { it.copy(isAccountSheetVisible = true) }
+            MainIntent.AccountSheetDismissed -> _uiState.update { it.copy(isAccountSheetVisible = false) }
+            MainIntent.SignInSignUpPromptClicked -> onSignInSignUpPromptClicked()
+            MainIntent.SignOutClicked -> _uiState.update { it.copy(isSignOutConfirmVisible = true) }
+            MainIntent.SignOutConfirmed -> onSignOutConfirmed()
+            MainIntent.SignOutCancelled -> _uiState.update { it.copy(isSignOutConfirmVisible = false) }
+        }
+    }
+
+    private fun onSignInSignUpPromptClicked() {
+        _uiState.update { it.copy(isAccountSheetVisible = false) }
+        eventChannel.trySend(MainUiEvent.NavigateToAccount)
+    }
+
+    private fun onSignOutConfirmed() {
+        if (_uiState.value.isSigningOut) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSigningOut = true) }
+            val result = signOut()
+            _uiState.update {
+                it.copy(
+                    isSigningOut = false,
+                    isSignOutConfirmVisible = if (result.isSuccess) false else it.isSignOutConfirmVisible,
+                    isAccountSheetVisible = if (result.isSuccess) false else it.isAccountSheetVisible,
+                )
+            }
         }
     }
 

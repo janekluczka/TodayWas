@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,8 +28,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
+import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
+import pl.luczka.todaywas.core.designsystem.components.dialogs.DsModalBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
@@ -35,6 +43,7 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
@@ -52,6 +61,7 @@ fun MainScreen(
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
     onHabitClicked: (String) -> Unit,
+    onAccountClicked: () -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,6 +74,7 @@ fun MainScreen(
                 MainUiEvent.NavigateToCreateHabit -> onCreateHabitClicked()
                 MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
                 is MainUiEvent.NavigateToHabitDetail -> onHabitClicked(event.habitId)
+                MainUiEvent.NavigateToAccount -> onAccountClicked()
             }
         }
     }
@@ -80,7 +91,19 @@ private fun MainScreenContent(
     onIntent: (MainIntent) -> Unit,
 ) {
     DsScaffold(
-        topBar = { DsTopBar(title = stringResource(R.string.main_top_bar_title)) },
+        topBar = {
+            DsTopBar(
+                title = stringResource(R.string.main_top_bar_title),
+                actions = {
+                    DsIconButton(onClick = { onIntent(MainIntent.AccountIconClicked) }) {
+                        DsIcon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = stringResource(R.string.content_description_account),
+                        )
+                    }
+                },
+            )
+        },
         floatingActionButton = { MainFab(uiState, onIntent) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
@@ -93,6 +116,70 @@ private fun MainScreenContent(
             HabitSection(uiState, onIntent, modifier = Modifier.weight(1f))
         }
     }
+
+    if (uiState.isAccountSheetVisible) {
+        AccountBottomSheet(uiState, onIntent)
+    }
+
+    if (uiState.isSignOutConfirmVisible) {
+        SignOutConfirmDialog(onIntent)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AccountBottomSheet(
+    uiState: MainUiState,
+    onIntent: (MainIntent) -> Unit,
+) {
+    DsModalBottomSheet(onDismissRequest = { onIntent(MainIntent.AccountSheetDismissed) }) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(DsSpacing.space600),
+        ) {
+            when (val authState = uiState.authState) {
+                AuthStateUi.Loading -> Unit
+                is AuthStateUi.SignedIn -> {
+                    DsText(text = authState.email ?: stringResource(R.string.preferences_signed_in_no_email))
+                    DsButtonWithLoading(
+                        text = stringResource(R.string.preferences_sign_out_cta),
+                        onClick = { onIntent(MainIntent.SignOutClicked) },
+                        loading = uiState.isSigningOut,
+                    )
+                }
+                AuthStateUi.SignedOut -> {
+                    DsText(text = stringResource(R.string.account_sheet_signed_out_description))
+                    DsButton(
+                        text = stringResource(R.string.onboarding_account_signin_signup_cta),
+                        onClick = { onIntent(MainIntent.SignInSignUpPromptClicked) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SignOutConfirmDialog(onIntent: (MainIntent) -> Unit) {
+    DsAlertDialog(
+        onDismissRequest = { onIntent(MainIntent.SignOutCancelled) },
+        confirmButton = {
+            DsTextButton(
+                text = stringResource(R.string.account_sign_out_confirm_cta),
+                onClick = { onIntent(MainIntent.SignOutConfirmed) },
+            )
+        },
+        dismissButton = {
+            DsTextButton(
+                text = stringResource(R.string.account_sign_out_cancel_cta),
+                onClick = { onIntent(MainIntent.SignOutCancelled) },
+            )
+        },
+        title = { DsText(text = stringResource(R.string.account_sign_out_confirm_title)) },
+        text = { DsText(text = stringResource(R.string.account_sign_out_confirm_message)) },
+    )
 }
 
 @Composable
@@ -274,16 +361,10 @@ private fun HabitCheckInStatusUiState.displayText(): String = when (this) {
 
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
     override val values = sequenceOf(
-        MainUiState(
-            journalEntries = emptyList(),
-            habits = emptyList(),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+        previewMainUiState(
             fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY, FabActionUiState.CREATE_HABIT),
-            fabExpanded = false,
         ),
-        MainUiState(
+        previewMainUiState(
             journalEntries = listOf(
                 JournalEntryUiState(
                     id = "1",
@@ -314,14 +395,44 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 4),
                 ),
             ),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
-            fabExpanded = false,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.SignedOut,
+            isAccountSheetVisible = true,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            isAccountSheetVisible = true,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            isAccountSheetVisible = true,
+            isSignOutConfirmVisible = true,
         ),
     )
 }
+
+private fun previewMainUiState(
+    journalEntries: List<JournalEntryUiState> = emptyList(),
+    habits: List<HabitUiState> = emptyList(),
+    fabActions: List<FabActionUiState> = emptyList(),
+    authState: AuthStateUi = AuthStateUi.SignedOut,
+    isAccountSheetVisible: Boolean = false,
+    isSignOutConfirmVisible: Boolean = false,
+) = MainUiState(
+    journalEntries = journalEntries,
+    habits = habits,
+    journalContributionGrid = previewJournalContributionGrid,
+    journalAvailableWindows = previewJournalAvailableWindows,
+    journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+    fabActions = fabActions,
+    fabExpanded = false,
+    authState = authState,
+    isAccountSheetVisible = isAccountSheetVisible,
+    isSignOutConfirmVisible = isSignOutConfirmVisible,
+    isSigningOut = false,
+)
 
 private val previewJournalContributionGrid = ContributionGridUiState(cells = emptyList())
 

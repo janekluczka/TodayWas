@@ -17,4 +17,6 @@ sealed interface MainUiEvent {
     data class NavigateToHabitDetail(
         val habitId: String,
     ) : MainUiEvent
+
+    data object NavigateToAccount : MainUiEvent
 }

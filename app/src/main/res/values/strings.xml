@@ -13,6 +13,7 @@
     <string name="main_fab_log_check_ins">Log check-ins</string>
     <string name="content_description_add">Add</string>
     <string name="content_description_back">Back</string>
+    <string name="content_description_account">Account</string>
 
     <string name="bottom_nav_home_label">Home</string>
     <string name="bottom_nav_journal_label">Journal</string>
@@ -128,6 +129,12 @@
     <string name="account_success_message">Your account is ready. Your data will now sync across devices.</string>
     <string name="account_success_continue_cta">Continue</string>
     <string name="account_sync_local_data_cta">Sync local data</string>
+
+    <string name="account_sheet_signed_out_description">Sign in to sync your data across devices.</string>
+    <string name="account_sign_out_confirm_title">Sign out?</string>
+    <string name="account_sign_out_confirm_message">You can sign back in anytime — your data stays synced.</string>
+    <string name="account_sign_out_confirm_cta">Sign out</string>
+    <string name="account_sign_out_cancel_cta">Cancel</string>
 
     <string name="data_sync_review_title">Add your existing data to this account?</string>
     <string name="data_sync_review_summary_format">%1$d journal entries, %2$d habits, %3$d check-ins</string>

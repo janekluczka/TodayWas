@@ -701,28 +701,28 @@ Bumping `TodayWasDatabase`'s version with the already-configured
 
 #### Automated
 
-- [x] 3.1 Unit tests pass
-- [x] 3.2 Lint passes
-- [x] 3.3 Debug build compiles
+- [x] 3.1 Unit tests pass — 8ea0cc7
+- [x] 3.2 Lint passes — 8ea0cc7
+- [x] 3.3 Debug build compiles — 8ea0cc7
 
 #### Manual
 
-- [x] 3.4 Main screen always shows both sections
-- [x] 3.5 FAB offers both actions together
+- [x] 3.4 Main screen always shows both sections — 8ea0cc7
+- [x] 3.5 FAB offers both actions together — 8ea0cc7
 
 ### Phase 4: Account bottom sheet + top bar
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass
-- [ ] 4.2 Lint passes
-- [ ] 4.3 Debug build compiles
+- [x] 4.1 Unit tests pass
+- [x] 4.2 Lint passes
+- [x] 4.3 Debug build compiles
 
 #### Manual
 
-- [ ] 4.4 Signed-out sheet prompts and navigates to AccountScreen
-- [ ] 4.5 Signed-in sheet shows email + sign-out, live-updates after sign-out
-- [ ] 4.6 Cancelling sign-out confirmation leaves user signed in
+- [x] 4.4 Signed-out sheet prompts and navigates to AccountScreen
+- [x] 4.5 Signed-in sheet shows email + sign-out, live-updates after sign-out
+- [x] 4.6 Cancelling sign-out confirmation leaves user signed in
 
 ### Phase 5: Remove bottom nav & Preferences
 

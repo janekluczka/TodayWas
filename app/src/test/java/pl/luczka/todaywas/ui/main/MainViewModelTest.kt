@@ -18,6 +18,7 @@ import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributi
 import pl.luczka.todaywas.data.repository.FakeAuthRepository
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
@@ -27,7 +28,9 @@ import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
@@ -93,6 +96,7 @@ class MainViewModelTest {
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
             observeAuthState = ObserveAuthStateUseCase(authRepository),
             syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+            signOut = SignOutUseCase(authRepository),
             clock = clock,
         )
     }
@@ -426,6 +430,7 @@ class MainViewModelTest {
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository),
                 clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
             )
 
@@ -449,11 +454,144 @@ class MainViewModelTest {
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository),
                 clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
             )
 
             // Assert
             assertEquals(0, journalRepository.syncWithRemoteCallCount)
             assertEquals(0, habitRepository.syncWithRemoteCallCount)
+        }
+
+    @Test
+    fun `should show the account sheet when AccountIconClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+
+            // Act
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should hide the account sheet when AccountSheetDismissed is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.AccountSheetDismissed)
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should reflect a session that becomes signed in in authState`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)
+            val viewModel = viewModel(authRepository = authRepository)
+
+            // Act
+            authRepository.emit(AuthState.SignedIn(userId = "u1", email = "person@example.com"))
+
+            // Assert
+            assertEquals(AuthStateUi.SignedIn(email = "person@example.com"), viewModel.uiState.value.authState)
+        }
+
+    @Test
+    fun `should close the sheet and emit NavigateToAccount when SignInSignUpPromptClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            val events = mutableListOf<MainUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(MainIntent.SignInSignUpPromptClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(listOf(MainUiEvent.NavigateToAccount), events)
+            assertTrue(!viewModel.uiState.value.isAccountSheetVisible)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should show the sign-out confirmation when SignOutClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.isSignOutConfirmVisible)
+        }
+
+    @Test
+    fun `should hide the sign-out confirmation without signing out when SignOutCancelled is dispatched`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutCancelled)
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isSignOutConfirmVisible)
+            assertEquals(0, authRepository.signOutCallCount)
+        }
+
+    @Test
+    fun `should sign out and close the dialog and sheet when SignOutConfirmed succeeds`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            val state = viewModel.uiState.value
+            assertEquals(1, authRepository.signOutCallCount)
+            assertTrue(!state.isSigningOut)
+            assertTrue(!state.isSignOutConfirmVisible)
+            assertTrue(!state.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should stop signing out but leave the dialog and sheet open when SignOutConfirmed fails`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            authRepository.signOutError = AuthError.Unknown
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            val state = viewModel.uiState.value
+            assertEquals(1, authRepository.signOutCallCount)
+            assertTrue(!state.isSigningOut)
+            assertTrue(state.isSignOutConfirmVisible)
+            assertTrue(state.isAccountSheetVisible)
         }
 }
