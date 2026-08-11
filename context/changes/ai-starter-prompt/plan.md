@@ -408,15 +408,15 @@ None — no data model or persisted-schema changes; all new state is in-memory V
 
 #### Automated
 
-- [x] 2.1 `AddJournalEntryViewModelTest` passes (new dialog-flow cases)
-- [x] 2.2 `ktlintCheck` passes
-- [x] 2.3 New dialog previews render
+- [x] 2.1 `AddJournalEntryViewModelTest` passes (new dialog-flow cases) — 992ec02
+- [x] 2.2 `ktlintCheck` passes — 992ec02
+- [x] 2.3 New dialog previews render — 992ec02
 
 #### Manual
 
-- [x] 2.4 5-tone generation spot-check, output reads as plausible first-person starter
-- [x] 2.5 "Use this" replaces entry text field content
-- [x] 2.6 Regenerate cap disables at 3, resets only on leaving/re-entering the screen (cap-at-3 disabling verified via unit test, not live — live retries were blocked by real OpenRouter free-tier flakiness during manual testing; failures-don't-consume-an-attempt was verified live repeatedly)
-- [x] 2.7 Forced failure shows inline error, doesn't consume a regenerate attempt
-- [x] 2.8 Entry point hidden signed-out, shown signed-in
-- [x] 2.9 Existing save/cancel flow unaffected
+- [x] 2.4 5-tone generation spot-check, output reads as plausible first-person starter — 992ec02
+- [x] 2.5 "Use this" replaces entry text field content — 992ec02
+- [x] 2.6 Regenerate cap disables at 3, resets only on leaving/re-entering the screen (cap-at-3 disabling verified via unit test, not live — live retries were blocked by real OpenRouter free-tier flakiness during manual testing; failures-don't-consume-an-attempt was verified live repeatedly) — 992ec02
+- [x] 2.7 Forced failure shows inline error, doesn't consume a regenerate attempt — 992ec02
+- [x] 2.8 Entry point hidden signed-out, shown signed-in — 992ec02
+- [x] 2.9 Existing save/cancel flow unaffected — 992ec02
