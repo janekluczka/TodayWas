@@ -675,13 +675,13 @@ Bumping `TodayWasDatabase`'s version with the already-configured
 
 #### Automated
 
-- [x] 1.1 Unit tests pass
-- [x] 1.2 Lint passes
-- [x] 1.3 Debug build compiles
+- [x] 1.1 Unit tests pass — 388db9e
+- [x] 1.2 Lint passes — 388db9e
+- [x] 1.3 Debug build compiles — 388db9e
 
 #### Manual
 
-- [x] 1.4 Fresh install/clear-data launches past the destructive migration
+- [x] 1.4 Fresh install/clear-data launches past the destructive migration — 388db9e
 
 ### Phase 2: Onboarding UI — drop the focus-pick step
 

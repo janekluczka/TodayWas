@@ -28,7 +28,6 @@ import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
-import pl.luczka.todaywas.core.designsystem.components.selectioncontrols.DsRadioOption
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
@@ -41,7 +40,6 @@ import pl.luczka.todaywas.ui.auth.message
 import pl.luczka.todaywas.ui.datasync.DataSyncReviewContent
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
 
 @Composable
@@ -115,7 +113,6 @@ private fun OnboardingScreenContent(
             ) {
                 when (OnboardingStep.entries[page]) {
                     OnboardingStep.WELCOME -> WelcomeStepBody()
-                    OnboardingStep.FOCUS_PICK -> FocusPickStepBody(uiState, onIntent)
                     OnboardingStep.ACCOUNT_INFO -> AccountInfoStepBody(uiState, onIntent)
                     OnboardingStep.ALL_SET -> AllSetStepBody(uiState)
                 }
@@ -146,7 +143,7 @@ private fun OnboardingBottomBar(
             text = nextButtonLabel(uiState),
             onClick = { onIntent(OnboardingIntent.NextClicked) },
             enabled = nextButtonEnabled(uiState),
-            loading = uiState.step == OnboardingStep.FOCUS_PICK && uiState.isSaving,
+            loading = uiState.step == OnboardingStep.ACCOUNT_INFO && uiState.isSaving,
         )
     }
 }
@@ -154,19 +151,18 @@ private fun OnboardingBottomBar(
 @Composable
 private fun nextButtonLabel(uiState: OnboardingUiState): String = when (uiState.step) {
     OnboardingStep.WELCOME -> stringResource(R.string.onboarding_welcome_cta)
-    OnboardingStep.FOCUS_PICK ->
+    OnboardingStep.ACCOUNT_INFO ->
         if (uiState.saveError) {
-            stringResource(R.string.onboarding_focus_pick_retry)
+            stringResource(R.string.onboarding_account_retry)
         } else {
-            stringResource(R.string.onboarding_focus_pick_confirm)
+            stringResource(R.string.onboarding_account_continue_cta)
         }
-    OnboardingStep.ACCOUNT_INFO -> stringResource(R.string.onboarding_account_continue_cta)
     OnboardingStep.ALL_SET -> stringResource(R.string.onboarding_all_set_cta)
 }
 
 private fun nextButtonEnabled(uiState: OnboardingUiState): Boolean = when (uiState.step) {
-    OnboardingStep.WELCOME, OnboardingStep.ACCOUNT_INFO, OnboardingStep.ALL_SET -> true
-    OnboardingStep.FOCUS_PICK -> !uiState.isSaving && (uiState.saveError || uiState.selectedFocus != null)
+    OnboardingStep.WELCOME, OnboardingStep.ALL_SET -> true
+    OnboardingStep.ACCOUNT_INFO -> !uiState.isSaving
 }
 
 @Composable
@@ -178,44 +174,28 @@ private fun WelcomeStepBody() {
 }
 
 @Composable
-private fun FocusPickStepBody(
-    uiState: OnboardingUiState,
-    onIntent: (OnboardingIntent) -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        DsText(text = stringResource(R.string.onboarding_focus_pick_title))
-        for (focus in FocusUiState.entries) {
-            DsRadioOption(
-                text = focus.label(),
-                selected = uiState.selectedFocus == focus,
-                onClick = { onIntent(OnboardingIntent.FocusOptionSelected(focus)) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        if (uiState.saveError) {
-            DsText(text = stringResource(R.string.onboarding_focus_pick_error))
-        }
-    }
-}
-
-@Composable
 private fun AccountInfoStepBody(
     uiState: OnboardingUiState,
     onIntent: (OnboardingIntent) -> Unit,
 ) {
     val authState = uiState.authState
-    when {
-        uiState.accountSubStep == AccountSubStep.DATA_SYNC_REVIEW && uiState.dataSyncSummary != null ->
-            DataSyncReviewContent(
-                summary = uiState.dataSyncSummary,
-                isSyncing = uiState.isSyncing,
-                onConfirmClicked = { onIntent(OnboardingIntent.SyncConfirmClicked) },
-                onSkipClicked = { onIntent(OnboardingIntent.SyncSkipClicked) },
-            )
-        authState is AuthStateUi.SignedIn -> AccountSignedInBody(email = authState.email)
-        uiState.accountSubStep == AccountSubStep.CHOICE -> AccountChoiceBody(onIntent)
-        uiState.accountSubStep == AccountSubStep.SIGN_IN -> AccountSignInBody(uiState.signInForm, onIntent)
-        else -> AccountSignUpBody(uiState.signUpForm, onIntent)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        when {
+            uiState.accountSubStep == AccountSubStep.DATA_SYNC_REVIEW && uiState.dataSyncSummary != null ->
+                DataSyncReviewContent(
+                    summary = uiState.dataSyncSummary,
+                    isSyncing = uiState.isSyncing,
+                    onConfirmClicked = { onIntent(OnboardingIntent.SyncConfirmClicked) },
+                    onSkipClicked = { onIntent(OnboardingIntent.SyncSkipClicked) },
+                )
+            authState is AuthStateUi.SignedIn -> AccountSignedInBody(email = authState.email)
+            uiState.accountSubStep == AccountSubStep.CHOICE -> AccountChoiceBody(onIntent)
+            uiState.accountSubStep == AccountSubStep.SIGN_IN -> AccountSignInBody(uiState.signInForm, onIntent)
+            else -> AccountSignUpBody(uiState.signUpForm, onIntent)
+        }
+        if (uiState.saveError) {
+            DsText(text = stringResource(R.string.onboarding_account_error))
+        }
     }
 }
 
@@ -296,74 +276,54 @@ private fun allSetMessage(
     AllSetReason.ACCOUNT_CREATED -> stringResource(R.string.onboarding_all_set_account_created_message)
 }
 
-@Composable
-private fun FocusUiState.label(): String = when (this) {
-    FocusUiState.JOURNAL -> stringResource(R.string.focus_journal)
-    FocusUiState.HABIT -> stringResource(R.string.focus_habit)
-    FocusUiState.BOTH -> stringResource(R.string.focus_both)
-}
-
 private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<OnboardingUiState> {
     override val values = sequenceOf(
         previewState(step = OnboardingStep.WELCOME),
-        previewState(step = OnboardingStep.FOCUS_PICK),
-        previewState(
-            step = OnboardingStep.FOCUS_PICK,
-            selectedFocus = FocusUiState.JOURNAL,
-        ),
-        previewState(
-            step = OnboardingStep.FOCUS_PICK,
-            selectedFocus = FocusUiState.HABIT,
-            isSaving = true,
-        ),
-        previewState(
-            step = OnboardingStep.FOCUS_PICK,
-            selectedFocus = FocusUiState.BOTH,
-            saveError = true,
-        ),
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
-            confirmedFocus = FocusUiState.JOURNAL,
             accountSubStep = AccountSubStep.CHOICE,
         ),
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
-            confirmedFocus = FocusUiState.JOURNAL,
+            accountSubStep = AccountSubStep.CHOICE,
+            isSaving = true,
+        ),
+        previewState(
+            step = OnboardingStep.ACCOUNT_INFO,
+            accountSubStep = AccountSubStep.CHOICE,
+            saveError = true,
+        ),
+        previewState(
+            step = OnboardingStep.ACCOUNT_INFO,
             accountSubStep = AccountSubStep.SIGN_IN,
             signInForm = SignInFormUiState(),
         ),
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
-            confirmedFocus = FocusUiState.JOURNAL,
             accountSubStep = AccountSubStep.SIGN_UP,
             signUpForm = SignUpFormUiState(),
         ),
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
-            confirmedFocus = FocusUiState.JOURNAL,
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
         ),
         previewState(
             step = OnboardingStep.ACCOUNT_INFO,
-            confirmedFocus = FocusUiState.JOURNAL,
             accountSubStep = AccountSubStep.DATA_SYNC_REVIEW,
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
             dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
         ),
         previewState(
             step = OnboardingStep.ALL_SET,
-            confirmedFocus = FocusUiState.JOURNAL,
             allSetReason = AllSetReason.NO_ACCOUNT,
         ),
         previewState(
             step = OnboardingStep.ALL_SET,
-            confirmedFocus = FocusUiState.JOURNAL,
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
             allSetReason = AllSetReason.SIGNED_IN,
         ),
         previewState(
             step = OnboardingStep.ALL_SET,
-            confirmedFocus = FocusUiState.JOURNAL,
             allSetReason = AllSetReason.ACCOUNT_CREATED,
         ),
     )
@@ -371,8 +331,6 @@ private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<On
 
 private fun previewState(
     step: OnboardingStep,
-    selectedFocus: FocusUiState? = null,
-    confirmedFocus: FocusUiState? = null,
     isSaving: Boolean = false,
     saveError: Boolean = false,
     accountSubStep: AccountSubStep = AccountSubStep.CHOICE,
@@ -383,8 +341,6 @@ private fun previewState(
     dataSyncSummary: LocalDataSummaryUi? = null,
 ) = OnboardingUiState(
     step = step,
-    selectedFocus = selectedFocus,
-    confirmedFocus = confirmedFocus,
     isSaving = isSaving,
     saveError = saveError,
     accountSubStep = accountSubStep,

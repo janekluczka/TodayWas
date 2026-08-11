@@ -445,7 +445,6 @@ class AccountViewModelTest {
         val onboardingRepository = FakeOnboardingRepository(
             initialState = OnboardingState(
                 completed = true,
-                focus = null,
                 hasSyncedLocalData = true,
             ),
         )
