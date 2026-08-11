@@ -1,9 +1,9 @@
 ---
 change_id: account-creation-and-sync
 title: Account creation and sync
-status: implementing
+status: implemented
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-11
 archived_at: null
 ---
 
