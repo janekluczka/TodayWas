@@ -714,29 +714,29 @@ Bumping `TodayWasDatabase`'s version with the already-configured
 
 #### Automated
 
-- [x] 4.1 Unit tests pass
-- [x] 4.2 Lint passes
-- [x] 4.3 Debug build compiles
+- [x] 4.1 Unit tests pass — 2a96a1a
+- [x] 4.2 Lint passes — 2a96a1a
+- [x] 4.3 Debug build compiles — 2a96a1a
 
 #### Manual
 
-- [x] 4.4 Signed-out sheet prompts and navigates to AccountScreen
-- [x] 4.5 Signed-in sheet shows email + sign-out, live-updates after sign-out
-- [x] 4.6 Cancelling sign-out confirmation leaves user signed in
+- [x] 4.4 Signed-out sheet prompts and navigates to AccountScreen — 2a96a1a
+- [x] 4.5 Signed-in sheet shows email + sign-out, live-updates after sign-out — 2a96a1a
+- [x] 4.6 Cancelling sign-out confirmation leaves user signed in — 2a96a1a
 
 ### Phase 5: Remove bottom nav & Preferences
 
 #### Automated
 
-- [ ] 5.1 Unit tests pass
-- [ ] 5.2 Lint passes
-- [ ] 5.3 Debug build compiles
-- [ ] 5.4 No remaining references to MainShellScreen/BottomNavTab/ui.preferences
+- [x] 5.1 Unit tests pass
+- [x] 5.2 Lint passes
+- [x] 5.3 Debug build compiles
+- [x] 5.4 No remaining references to MainShellScreen/BottomNavTab/ui.preferences
 
 #### Manual
 
-- [ ] 5.5 No bottom nav bar visible anywhere
-- [ ] 5.6 All destinations still reachable from the hub
+- [x] 5.5 No bottom nav bar visible anywhere
+- [x] 5.6 All destinations still reachable from the hub
 
 ### Phase 6: Foundation docs
 

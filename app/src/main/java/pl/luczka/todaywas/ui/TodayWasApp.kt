@@ -15,7 +15,7 @@ import pl.luczka.todaywas.ui.habit.HabitDetailScreen
 import pl.luczka.todaywas.ui.habit.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
-import pl.luczka.todaywas.ui.mainshell.MainShellScreen
+import pl.luczka.todaywas.ui.main.MainScreen
 import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
 
 @Composable
@@ -48,7 +48,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                 )
             }
             entry<MainKey> {
-                MainShellScreen(
+                MainScreen(
                     onAddEntryClicked = { backStack.add(AddJournalEntryKey) },
                     onJournalEntryClicked = { entry -> backStack.add(JournalEntryDetailKey(id = entry.id)) },
                     onCreateHabitClicked = { backStack.add(CreateHabitKey) },

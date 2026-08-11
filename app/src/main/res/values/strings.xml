@@ -15,12 +15,6 @@
     <string name="content_description_back">Back</string>
     <string name="content_description_account">Account</string>
 
-    <string name="bottom_nav_home_label">Home</string>
-    <string name="bottom_nav_journal_label">Journal</string>
-    <string name="bottom_nav_habits_label">Habits</string>
-    <string name="bottom_nav_preferences_label">Preferences</string>
-    <string name="main_journal_tab_placeholder">Coming soon</string>
-    <string name="main_habit_tab_placeholder">Coming soon</string>
     <string name="content_description_decrease">Decrease</string>
     <string name="content_description_increase">Increase</string>
 
@@ -118,9 +112,6 @@
     <string name="auth_error_network_unavailable">No internet connection</string>
     <string name="auth_error_unknown">Something went wrong. Please try again.</string>
 
-    <string name="preferences_top_bar_title">Preferences</string>
-    <string name="preferences_account_section_title">Account</string>
-    <string name="preferences_account_signed_out_subtitle">Not signed in</string>
     <string name="preferences_sign_out_cta">Sign out</string>
     <string name="preferences_signed_in_no_email">Signed in</string>
 
