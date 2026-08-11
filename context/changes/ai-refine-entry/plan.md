@@ -533,9 +533,9 @@ as "help me start."
 
 #### Manual
 
-- [ ] 3.4 Refine → "Use this" → Save persists correctly
-- [ ] 3.5 Regenerate cap disables at 3, resets only on leaving/re-entering the screen
-- [ ] 3.6 Forced failure shows inline error, doesn't consume a regenerate attempt
-- [ ] 3.7 Entry point hidden when signed out / not editing / draft blank
-- [ ] 3.8 Existing edit/save/cancel and read-only-when-expired flows unaffected
-- [ ] 3.9 Edit-window expiry race verified (live if reproducible, otherwise via the automated test case)
+- [x] 3.4 Refine → "Use this" → Save persists correctly
+- [ ] 3.5 Regenerate cap disables at 3, resets only on leaving/re-entering the screen (covered by automated test only — not exercised live, to avoid burning multiple free-tier round trips)
+- [x] 3.6 Forced failure shows inline error, doesn't consume a regenerate attempt (exercised live via a real client-side timeout before the socketTimeoutMillis fix — error rendered correctly, tone selection and dialog state preserved)
+- [x] 3.7 Entry point hidden when signed out / not editing / draft blank
+- [x] 3.8 Existing edit/save/cancel and read-only-when-expired flows unaffected (edit/save/cancel verified live; read-only-when-expired unchanged code path, not re-exercised)
+- [x] 3.9 Edit-window expiry race verified via the automated test case (not reproduced live)
