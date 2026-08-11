@@ -8,7 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import pl.luczka.todaywas.data.local.UserPreferencesDao
 import pl.luczka.todaywas.data.local.UserPreferencesEntity
-import pl.luczka.todaywas.domain.model.Focus
 
 class OnboardingRepositoryImplTest {
 
@@ -30,14 +29,14 @@ class OnboardingRepositoryImplTest {
     }
 
     @Test
-    fun `should succeed after one retry when saveFocus's first write fails`() =
+    fun `should succeed after one retry when completeOnboarding's first write fails`() =
         runTest {
             // Arrange
             val dao = FakeDao(failuresBeforeSuccess = 1)
             val repository = OnboardingRepositoryImpl(dao)
 
             // Act
-            val result = repository.saveFocus(Focus.JOURNAL)
+            val result = repository.completeOnboarding()
 
             // Assert
             assertTrue(result.isSuccess)
@@ -45,14 +44,14 @@ class OnboardingRepositoryImplTest {
         }
 
     @Test
-    fun `should return failure when saveFocus's retry also fails`() =
+    fun `should return failure when completeOnboarding's retry also fails`() =
         runTest {
             // Arrange
             val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE)
             val repository = OnboardingRepositoryImpl(dao)
 
             // Act
-            val result = repository.saveFocus(Focus.JOURNAL)
+            val result = repository.completeOnboarding()
 
             // Assert
             assertTrue(result.isFailure)

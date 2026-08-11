@@ -2,17 +2,16 @@ package pl.luczka.todaywas.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.OnboardingState
 
 class FakeOnboardingRepository(
-    initialState: OnboardingState = OnboardingState(completed = false, focus = null, hasSyncedLocalData = false),
+    initialState: OnboardingState = OnboardingState(completed = false, hasSyncedLocalData = false),
 ) : OnboardingRepository {
 
     val stateFlow = MutableStateFlow(initialState)
 
-    var saveFocusResult: Result<Unit> = Result.success(Unit)
-    var saveFocusCallCount = 0
+    var completeOnboardingResult: Result<Unit> = Result.success(Unit)
+    var completeOnboardingCallCount = 0
         private set
 
     var markLocalDataSyncedResult: Result<Unit> = Result.success(Unit)
@@ -25,9 +24,9 @@ class FakeOnboardingRepository(
 
     override fun observeState(): Flow<OnboardingState> = stateFlow
 
-    override suspend fun saveFocus(focus: Focus): Result<Unit> {
-        saveFocusCallCount++
-        return saveFocusResult
+    override suspend fun completeOnboarding(): Result<Unit> {
+        completeOnboardingCallCount++
+        return completeOnboardingResult
     }
 
     override suspend fun markLocalDataSynced(): Result<Unit> {

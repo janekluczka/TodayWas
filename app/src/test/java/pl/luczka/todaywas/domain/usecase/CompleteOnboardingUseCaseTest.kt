@@ -6,22 +6,21 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import pl.luczka.todaywas.data.repository.OnboardingRepository
-import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.OnboardingState
 
-class SkipOnboardingUseCaseTest {
+class CompleteOnboardingUseCaseTest {
 
     private class FakeRepository(
         private val priorState: OnboardingState,
     ) : OnboardingRepository {
 
-        var lastSavedFocus: Focus? = null
+        var completeOnboardingCallCount = 0
             private set
 
         override fun observeState(): Flow<OnboardingState> = flowOf(priorState)
 
-        override suspend fun saveFocus(focus: Focus): Result<Unit> {
-            lastSavedFocus = focus
+        override suspend fun completeOnboarding(): Result<Unit> {
+            completeOnboardingCallCount++
             return Result.success(Unit)
         }
 
@@ -31,36 +30,23 @@ class SkipOnboardingUseCaseTest {
     }
 
     @Test
-    fun `should save Both regardless of prior state when invoked`() =
+    fun `should mark onboarding completed regardless of prior state when invoked`() =
         runTest {
             val priorStates = listOf(
-                OnboardingState(
-                    completed = false,
-                    focus = null,
-                    hasSyncedLocalData = false,
-                ),
-                OnboardingState(
-                    completed = true,
-                    focus = Focus.JOURNAL,
-                    hasSyncedLocalData = false,
-                ),
-                OnboardingState(
-                    completed = true,
-                    focus = Focus.HABIT,
-                    hasSyncedLocalData = false,
-                ),
+                OnboardingState(completed = false, hasSyncedLocalData = false),
+                OnboardingState(completed = true, hasSyncedLocalData = false),
             )
 
             for (priorState in priorStates) {
                 // Arrange
                 val repository = FakeRepository(priorState)
-                val useCase = SkipOnboardingUseCase(repository)
+                val useCase = CompleteOnboardingUseCase(repository)
 
                 // Act
                 useCase()
 
                 // Assert
-                assertEquals(Focus.BOTH, repository.lastSavedFocus)
+                assertEquals(1, repository.completeOnboardingCallCount)
             }
         }
 }
