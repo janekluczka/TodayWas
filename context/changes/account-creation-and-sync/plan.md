@@ -685,9 +685,9 @@ this pre-release app.
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 `DataSyncReviewContent` `@PreviewLightDark` previews (counts, syncing, post-confirm)
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 1c65ddb
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — 1c65ddb
+- [x] 4.3 `DataSyncReviewContent` `@PreviewLightDark` previews (counts, syncing, post-confirm) — 1c65ddb
 
 #### Manual
 
