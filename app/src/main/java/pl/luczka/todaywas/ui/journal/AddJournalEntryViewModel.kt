@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.journal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,8 +24,6 @@ import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 import pl.luczka.todaywas.ui.model.toDomain
 import pl.luczka.todaywas.ui.model.toUiState
 import javax.inject.Inject
-
-private const val MAX_REGENERATIONS = 3
 
 @HiltViewModel
 class AddJournalEntryViewModel @Inject constructor(
@@ -47,6 +46,10 @@ class AddJournalEntryViewModel @Inject constructor(
 
     private val eventChannel = Channel<AddJournalEntryUiEvent>(Channel.BUFFERED)
     val events: Flow<AddJournalEntryUiEvent> = eventChannel.receiveAsFlow()
+
+    // Tracks the in-flight generate/regenerate call so a stale response can never land after the
+    // dialog session it belongs to has already been reset (dismissed, reopened, or accepted).
+    private var generateJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -127,10 +130,12 @@ class AddJournalEntryViewModel @Inject constructor(
 
     private fun onHelpMeStartClicked() {
         if (_uiState.value.authState !is AuthStateUi.SignedIn) return
+        generateJob?.cancel()
         _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true)) }
     }
 
     private fun onHelpMeStartDismissed() {
+        generateJob?.cancel()
         _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false)) }
     }
 
@@ -147,8 +152,8 @@ class AddJournalEntryViewModel @Inject constructor(
         val tone = helpMeStart.selectedTone ?: return
         if (helpMeStart.isGenerating) return
         if (isRegenerate && helpMeStart.regenerationsUsed >= MAX_REGENERATIONS) return
-        viewModelScope.launch {
-            _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null)) }
+        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null)) }
+        generateJob = viewModelScope.launch {
             val result = requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
             _uiState.update { current ->
                 current.copy(helpMeStart = current.helpMeStart.applyResult(result, isRegenerate))
@@ -158,6 +163,7 @@ class AddJournalEntryViewModel @Inject constructor(
 
     private fun onUseGeneratedTextClicked() {
         val generatedText = _uiState.value.helpMeStart.generatedText ?: return
+        generateJob?.cancel()
         _uiState.update {
             it.copy(
                 text = generatedText,

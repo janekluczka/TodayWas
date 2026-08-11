@@ -1,7 +1,7 @@
 ---
 change_id: ai-starter-prompt
 title: Ai starter prompt
-status: implemented
+status: impl_reviewed
 created: 2026-08-11
 updated: 2026-08-11
 archived_at: null

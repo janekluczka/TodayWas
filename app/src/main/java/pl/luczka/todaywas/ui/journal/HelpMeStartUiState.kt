@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
+const val MAX_REGENERATIONS = 3
+
 @Immutable
 data class HelpMeStartUiState(
     val isVisible: Boolean = false,

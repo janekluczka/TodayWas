@@ -3,7 +3,9 @@ package pl.luczka.todaywas.ui.journal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -223,6 +225,26 @@ class AddJournalEntryViewModelTest {
             assertEquals("Generated prompt.", helpMeStart.generatedText)
             assertFalse(helpMeStart.isGenerating)
             assertEquals(0, helpMeStart.regenerationsUsed)
+        }
+
+    @Test
+    fun `should call the repository only once when GenerateClicked is dispatched twice before the first call completes`() =
+        runTest {
+            // Arrange
+            val dispatcher = StandardTestDispatcher(testScheduler)
+            Dispatchers.setMain(dispatcher)
+            val aiAssistRepository = FakeAiAssistRepository()
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            advanceUntilIdle()
+
+            // Assert
+            assertEquals(1, aiAssistRepository.generateCallCount)
         }
 
     @Test

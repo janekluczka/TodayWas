@@ -233,8 +233,6 @@ private fun HelpMeStartDialog(
     )
 }
 
-private const val MAX_REGENERATIONS = 3
-
 @Composable
 private fun toneLabel(tone: JournalPromptToneUiState): String = when (tone) {
     JournalPromptToneUiState.VERY_BAD -> stringResource(R.string.journal_help_me_start_tone_very_bad)
