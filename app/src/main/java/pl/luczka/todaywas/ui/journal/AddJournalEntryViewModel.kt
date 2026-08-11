@@ -11,17 +11,27 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.model.AiAssistException
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.usecase.RequestJournalStarterPromptUseCase
+import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 import pl.luczka.todaywas.ui.model.toDomain
 import pl.luczka.todaywas.ui.model.toUiState
 import javax.inject.Inject
 
+private const val MAX_REGENERATIONS = 3
+
 @HiltViewModel
 class AddJournalEntryViewModel @Inject constructor(
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
+    observeAuthState: ObserveAuthStateUseCase,
     private val addJournalEntry: AddJournalEntryUseCase,
+    private val requestJournalStarterPrompt: RequestJournalStarterPromptUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -55,6 +65,11 @@ class AddJournalEntryViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            observeAuthState().collect { authState ->
+                _uiState.update { it.copy(authState = authState.toUiState()) }
+            }
+        }
     }
 
     fun onIntent(intent: AddJournalEntryIntent) {
@@ -63,6 +78,13 @@ class AddJournalEntryViewModel @Inject constructor(
             is AddJournalEntryIntent.TextChanged -> onTextChanged(intent.text)
             AddJournalEntryIntent.SaveClicked -> onSaveClicked()
             AddJournalEntryIntent.CancelClicked -> onCancelClicked()
+            AddJournalEntryIntent.HelpMeStartClicked -> onHelpMeStartClicked()
+            AddJournalEntryIntent.HelpMeStartDismissed -> onHelpMeStartDismissed()
+            is AddJournalEntryIntent.ToneSelected -> onToneSelected(intent.tone)
+            is AddJournalEntryIntent.ThoughtsChanged -> onThoughtsChanged(intent.thoughts)
+            AddJournalEntryIntent.GenerateClicked -> onGenerate(isRegenerate = false)
+            AddJournalEntryIntent.RegenerateClicked -> onGenerate(isRegenerate = true)
+            AddJournalEntryIntent.UseGeneratedTextClicked -> onUseGeneratedTextClicked()
         }
     }
 
@@ -102,4 +124,76 @@ class AddJournalEntryViewModel @Inject constructor(
             }
         }
     }
+
+    private fun onHelpMeStartClicked() {
+        if (_uiState.value.authState !is AuthStateUi.SignedIn) return
+        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true)) }
+    }
+
+    private fun onHelpMeStartDismissed() {
+        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false)) }
+    }
+
+    private fun onToneSelected(tone: JournalPromptToneUiState) {
+        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(selectedTone = tone)) }
+    }
+
+    private fun onThoughtsChanged(thoughts: String) {
+        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(thoughts = thoughts)) }
+    }
+
+    private fun onGenerate(isRegenerate: Boolean) {
+        val helpMeStart = _uiState.value.helpMeStart
+        val tone = helpMeStart.selectedTone ?: return
+        if (helpMeStart.isGenerating) return
+        if (isRegenerate && helpMeStart.regenerationsUsed >= MAX_REGENERATIONS) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null)) }
+            val result = requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
+            _uiState.update { current ->
+                current.copy(helpMeStart = current.helpMeStart.applyResult(result, isRegenerate))
+            }
+        }
+    }
+
+    private fun onUseGeneratedTextClicked() {
+        val generatedText = _uiState.value.helpMeStart.generatedText ?: return
+        _uiState.update {
+            it.copy(
+                text = generatedText,
+                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
+            )
+        }
+    }
+
+    // Preserves regenerationsUsed — the cap persists across dialog close/reopen for this screen
+    // visit and only resets when a new AddJournalEntryViewModel instance is created.
+    private fun HelpMeStartUiState.resetForNewSession(isVisible: Boolean): HelpMeStartUiState = copy(
+        isVisible = isVisible,
+        step = HelpMeStartStep.INPUT,
+        selectedTone = null,
+        thoughts = "",
+        generatedText = null,
+        isGenerating = false,
+        error = null,
+    )
+
+    private fun HelpMeStartUiState.applyResult(
+        result: Result<String>,
+        isRegenerate: Boolean,
+    ): HelpMeStartUiState = result.fold(
+        onSuccess = { text ->
+            copy(
+                step = HelpMeStartStep.PREVIEW,
+                generatedText = text,
+                isGenerating = false,
+                error = null,
+                regenerationsUsed = if (isRegenerate) regenerationsUsed + 1 else regenerationsUsed,
+            )
+        },
+        onFailure = { throwable ->
+            val error = (throwable as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
+            copy(isGenerating = false, error = error)
+        },
+    )
 }

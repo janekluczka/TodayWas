@@ -400,23 +400,23 @@ None — no data model or persisted-schema changes; all new state is in-memory V
 
 #### Automated
 
-- [x] 1.1 Unit tests pass (`AiAssistErrorMapperTest`, `RequestJournalStarterPromptUseCaseTest`)
-- [x] 1.2 `ktlintCheck` passes
-- [x] 1.3 `assembleDebug` succeeds (Hilt graph resolves)
+- [x] 1.1 Unit tests pass (`AiAssistErrorMapperTest`, `RequestJournalStarterPromptUseCaseTest`) — 5f1924a
+- [x] 1.2 `ktlintCheck` passes — 5f1924a
+- [x] 1.3 `assembleDebug` succeeds (Hilt graph resolves) — 5f1924a
 
 ### Phase 2: UI — dialog, sign-in gating, regenerate cap
 
 #### Automated
 
-- [ ] 2.1 `AddJournalEntryViewModelTest` passes (new dialog-flow cases)
-- [ ] 2.2 `ktlintCheck` passes
-- [ ] 2.3 New dialog previews render
+- [x] 2.1 `AddJournalEntryViewModelTest` passes (new dialog-flow cases)
+- [x] 2.2 `ktlintCheck` passes
+- [x] 2.3 New dialog previews render
 
 #### Manual
 
-- [ ] 2.4 5-tone generation spot-check, output reads as plausible first-person starter
-- [ ] 2.5 "Use this" replaces entry text field content
-- [ ] 2.6 Regenerate cap disables at 3, resets only on leaving/re-entering the screen
-- [ ] 2.7 Forced failure shows inline error, doesn't consume a regenerate attempt
-- [ ] 2.8 Entry point hidden signed-out, shown signed-in
-- [ ] 2.9 Existing save/cancel flow unaffected
+- [x] 2.4 5-tone generation spot-check, output reads as plausible first-person starter
+- [x] 2.5 "Use this" replaces entry text field content
+- [x] 2.6 Regenerate cap disables at 3, resets only on leaving/re-entering the screen (cap-at-3 disabling verified via unit test, not live — live retries were blocked by real OpenRouter free-tier flakiness during manual testing; failures-don't-consume-an-attempt was verified live repeatedly)
+- [x] 2.7 Forced failure shows inline error, doesn't consume a regenerate attempt
+- [x] 2.8 Entry point hidden signed-out, shown signed-in
+- [x] 2.9 Existing save/cancel flow unaffected

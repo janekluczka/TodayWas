@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.ui.journal
 
 import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 
 @Immutable
@@ -10,4 +11,6 @@ data class AddJournalEntryUiState(
     val text: String,
     val isSaving: Boolean,
     val saveError: Boolean,
+    val authState: AuthStateUi = AuthStateUi.Loading,
+    val helpMeStart: HelpMeStartUiState = HelpMeStartUiState(),
 )

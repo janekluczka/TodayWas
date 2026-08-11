@@ -11,21 +11,41 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import pl.luczka.todaywas.data.repository.AiAssistRepository
+import pl.luczka.todaywas.data.repository.AuthRepository
+import pl.luczka.todaywas.data.repository.FakeAiAssistRepository
+import pl.luczka.todaywas.data.repository.FakeAuthRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.data.repository.JournalRepository
+import pl.luczka.todaywas.domain.model.AiAssistError
+import pl.luczka.todaywas.domain.model.AiAssistException
+import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.usecase.RequestJournalStarterPromptUseCase
+import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddJournalEntryViewModelTest {
 
-    private fun viewModel(repository: JournalRepository = FakeJournalRepository()) = AddJournalEntryViewModel(
+    private fun viewModel(
+        repository: JournalRepository = FakeJournalRepository(),
+        authRepository: AuthRepository = FakeAuthRepository(
+            initialState = AuthState.SignedIn(userId = "1", email = "person@example.com"),
+        ),
+        aiAssistRepository: AiAssistRepository = FakeAiAssistRepository(),
+    ) = AddJournalEntryViewModel(
         observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(repository),
+        observeAuthState = ObserveAuthStateUseCase(authRepository),
         addJournalEntry = AddJournalEntryUseCase(repository),
+        requestJournalStarterPrompt = RequestJournalStarterPromptUseCase(aiAssistRepository),
     )
 
     @Before
@@ -140,5 +160,219 @@ class AddJournalEntryViewModelTest {
             // Assert
             assertEquals(listOf(AddJournalEntryUiEvent.Cancelled), events)
             collectJob.cancel()
+        }
+
+    @Test
+    fun `should not make helpMeStart visible when HelpMeStartClicked is dispatched while signed out`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeStart.isVisible)
+        }
+
+    @Test
+    fun `should update selectedTone when ToneSelected is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+
+            // Assert
+            assertEquals(JournalPromptToneUiState.GOOD, viewModel.uiState.value.helpMeStart.selectedTone)
+        }
+
+    @Test
+    fun `should update thoughts when ThoughtsChanged is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.ThoughtsChanged("made progress on a hard bug"))
+
+            // Assert
+            assertEquals("made progress on a hard bug", viewModel.uiState.value.helpMeStart.thoughts)
+        }
+
+    @Test
+    fun `should move to PREVIEW step and set generatedText when GenerateClicked succeeds`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.generateResult = Result.success("Generated prompt.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeStart = viewModel.uiState.value.helpMeStart
+            assertEquals(HelpMeStartStep.PREVIEW, helpMeStart.step)
+            assertEquals("Generated prompt.", helpMeStart.generatedText)
+            assertFalse(helpMeStart.isGenerating)
+            assertEquals(0, helpMeStart.regenerationsUsed)
+        }
+
+    @Test
+    fun `should stay on INPUT step and set error without touching regenerationsUsed when GenerateClicked fails`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.generateResult = Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeStart = viewModel.uiState.value.helpMeStart
+            assertEquals(HelpMeStartStep.INPUT, helpMeStart.step)
+            assertNull(helpMeStart.generatedText)
+            assertEquals(AiAssistErrorUiState.NETWORK_UNAVAILABLE, helpMeStart.error)
+            assertEquals(0, helpMeStart.regenerationsUsed)
+        }
+
+    @Test
+    fun `should increment regenerationsUsed and update generatedText when RegenerateClicked succeeds`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.generateResult = Result.success("First prompt.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            runCurrent()
+            aiAssistRepository.generateResult = Result.success("Second prompt.")
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeStart = viewModel.uiState.value.helpMeStart
+            assertEquals(1, helpMeStart.regenerationsUsed)
+            assertEquals("Second prompt.", helpMeStart.generatedText)
+        }
+
+    @Test
+    fun `should set error without incrementing regenerationsUsed or losing generatedText when RegenerateClicked fails`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.generateResult = Result.success("First prompt.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            runCurrent()
+            aiAssistRepository.generateResult = Result.failure(AiAssistException(AiAssistError.UpstreamFailed))
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeStart = viewModel.uiState.value.helpMeStart
+            assertEquals(0, helpMeStart.regenerationsUsed)
+            assertEquals("First prompt.", helpMeStart.generatedText)
+            assertEquals(AiAssistErrorUiState.UPSTREAM_FAILED, helpMeStart.error)
+        }
+
+    @Test
+    fun `should not call the repository when RegenerateClicked is dispatched at the cap`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            runCurrent()
+            repeat(3) {
+                viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)
+                runCurrent()
+            }
+            val callCountAtCap = aiAssistRepository.generateCallCount
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(3, viewModel.uiState.value.helpMeStart.regenerationsUsed)
+            assertEquals(callCountAtCap, aiAssistRepository.generateCallCount)
+        }
+
+    @Test
+    fun `should copy generatedText into text and reset helpMeStart except regenerationsUsed when UseGeneratedTextClicked`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.generateResult = Result.success("Generated prompt.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            runCurrent()
+            viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.UseGeneratedTextClicked)
+
+            // Assert
+            val state = viewModel.uiState.value
+            assertEquals("Generated prompt.", state.text)
+            assertFalse(state.helpMeStart.isVisible)
+            assertNull(state.helpMeStart.generatedText)
+            assertNull(state.helpMeStart.selectedTone)
+            assertEquals(1, state.helpMeStart.regenerationsUsed)
+        }
+
+    @Test
+    fun `should preserve regenerationsUsed but reset other fields when HelpMeStartDismissed is dispatched`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.generateResult = Result.success("Generated prompt.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
+            runCurrent()
+            viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartDismissed)
+
+            // Assert
+            val helpMeStart = viewModel.uiState.value.helpMeStart
+            assertFalse(helpMeStart.isVisible)
+            assertNull(helpMeStart.generatedText)
+            assertNull(helpMeStart.selectedTone)
+            assertEquals(1, helpMeStart.regenerationsUsed)
+
+            // Act again: reopening the dialog must not reset the cap either
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
+
+            // Assert
+            assertEquals(1, viewModel.uiState.value.helpMeStart.regenerationsUsed)
         }
 }
