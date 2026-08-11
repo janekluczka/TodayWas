@@ -24,8 +24,8 @@ trivially extractable. This document scopes to that single decision.
 
 ## Decision history
 
-This decision changed twice after the initial research pass — recorded here rather than silently
-overwritten, since the reasoning at each step still matters:
+This decision changed three times after the initial research pass — recorded here rather than
+silently overwritten, since the reasoning at each step still matters:
 
 1. **FR-009 corrected first.** It originally (incorrectly) said the AI prompt was personalized using
    "the user's own recent journal entries." Corrected: "help me start" only ever uses the tone pick
@@ -52,6 +52,17 @@ overwritten, since the reasoning at each step still matters:
    bar than a string extracted from an APK), and it further reinforces staying on Supabase —
    Cloudflare Workers would need to manually re-implement verification against Supabase-issued JWTs,
    which is more work, not less.
+5. **AI upstream swapped from Gemini directly to OpenRouter (2026-08-11, during
+   `ai-assist-proxy-foundation` implementation).** The provisioned Gemini API key turned out to
+   belong to a billing-enabled Google Cloud project with depleted prepayment credits, not a
+   zero-cost AI Studio key — the `429 RESOURCE_EXHAUSTED` response was reproducible and unrelated
+   to code. Rather than debug that project's billing setup, the function was pointed at
+   OpenRouter's OpenAI-compatible `chat/completions` endpoint using a `:free`-suffixed model. This
+   does **not** change the hosting decision above (still Supabase Edge Functions) — only which
+   upstream LLM API the function calls internally; the `{tone, thoughts} → {text}` contract and
+   `verify_jwt` gate are unaffected. It does add a second AI vendor/account beyond Supabase, and
+   OpenRouter's free-tier models are known to rotate/rate-limit without notice — a new standing
+   risk, tracked below.
 
 ## Recommendation
 
@@ -139,16 +150,18 @@ meant to differentiate the app from every other journaling app.
   conflate into one generic error if not designed for explicitly.
 - Supabase's free-tier Edge Function invocation budget (500K/month) is shared account-wide with any
   other functions added later — not ring-fenced per feature.
-- Gemini's 60 req/min free-tier rate limit is global to the API key, not per-user — login-gating
-  reduces abuse risk but doesn't eliminate the shared-rate-limit ceiling if legitimate usage grows.
+- OpenRouter's free-tier models are shared-pool and rate-limited per model, not per-user —
+  login-gating reduces abuse risk but doesn't eliminate the shared ceiling if legitimate usage
+  grows (superseded from the original Gemini-specific framing; see Decision History #5).
 
 ## Operational Story
 
 - **Preview deploys**: not applicable in the traditional PR-preview sense — a single low-traffic
   function, not a web app with per-branch preview URLs.
-- **Secrets**: the Gemini API key lives in Supabase's project secrets
-  (`supabase secrets set GEMINI_API_KEY=<value>`), never present in the Android app or committed to
-  git. Rotation is a manual CLI command with no automatic reminder — treat as a standing to-do.
+- **Secrets**: the OpenRouter API key lives in Supabase's project secrets
+  (`OPENROUTER_API_KEY`, set via the dashboard's Edge Functions → Secrets UI or `supabase secrets
+  set`), never present in the Android app or committed to git. Rotation is a manual step with no
+  automatic reminder — treat as a standing to-do.
 - **Auth**: Supabase's built-in `verify_jwt = true` (the Edge Functions default) rejects any request
   without a valid Supabase session token before the function code runs. The Android app must send
   the signed-in user's session token as a Bearer token on every "help me start"/"help me refine"
@@ -156,7 +169,7 @@ meant to differentiate the app from every other journaling app.
 - **Rollback**: `supabase functions deploy` re-deploys the previous version's code on revert (no
   built-in one-command rollback equivalent to `wrangler rollback` — confirm current CLI behavior at
   implementation time); stateless function, no data-migration concerns.
-- **Approval**: deploying/updating the function and rotating the Gemini key are safe for a solo dev
+- **Approval**: deploying/updating the function and rotating the OpenRouter key are safe for a solo dev
   to run directly at this scale — no team or production traffic yet, no human-approval gate needed
   beyond normal git review. Key rotation should be a scheduled task, not a reactive one.
 - **Logs**: `supabase functions logs ai-proxy` or the dashboard's realtime log view, both read-only.
@@ -169,8 +182,8 @@ meant to differentiate the app from every other journaling app.
 | Login-gating stacks friction (sign-in + AI wait) on top of each other, suppressing usage   | Pre-mortem                          | M          | M      | Android app should surface a clear, low-friction sign-in CTA at the "help me start" entry point, not a dead end.                               |
 | Shared failure domain — a Supabase incident takes down journaling, habits, and AI together | Devil's advocate / Unknown unknowns | L          | M      | Android app should distinguish "service unavailable" from "not signed in" from "AI call failed" in its error states, not one generic error.    |
 | "3 regenerations per entry" cap (FR-009) has no server-side enforcement                    | Devil's advocate / Unknown unknowns | M          | L      | Accept as a client-side-only guard for the MVP; now easier to add later since the function has verified caller identity. Revisit if abused.    |
-| Gemini's 60 req/min free-tier limit is global to the API key, not per-user                 | Research finding                    | L          | M      | Login-gating reduces abuse surface versus an open proxy; monitor usage once real users are live.                                               |
-| Secret rotation (`GEMINI_API_KEY`) is manual with no reminder                              | Unknown unknowns                    | L          | L      | Write down a rotation checklist once the key is actually provisioned; revisit if this becomes recurring friction.                              |
+| OpenRouter free-tier models rotate/rate-limit without notice                               | Decision history #5                 | M          | M      | Keep the model id in one easily-changeable constant; if a model 404s or degrades, swap to another current `:free` model from openrouter.ai/models. |
+| Secret rotation (`OPENROUTER_API_KEY`) is manual with no reminder                           | Unknown unknowns                    | L          | L      | Write down a rotation checklist once the key is actually provisioned; revisit if this becomes recurring friction.                              |
 
 ## Getting Started
 
@@ -182,14 +195,22 @@ Summary:
    `supabase init`, `supabase link --project-ref <ref>`.
 2. `supabase functions new ai-proxy` — leave `verify_jwt` at its default (`true`); this is now the
    actual auth gate, so confirm the current config syntax rather than assuming.
-3. Implement the function: accept `{ tone, thoughts? }`, call Gemini, return the generated text. No
-   custom auth code needed — Supabase rejects unauthenticated requests before the handler runs.
-4. `supabase secrets set GEMINI_API_KEY=<value>`.
+3. Implement the function: accept `{ tone, thoughts? }`, call an upstream LLM, return the generated
+   text. No custom auth code needed — Supabase rejects unauthenticated requests before the handler
+   runs.
+4. `supabase secrets set OPENROUTER_API_KEY=<value>` (originally scoped as `GEMINI_API_KEY`; see
+   Decision History #5 for why it changed).
 5. Add a path-scoped job to the existing GitHub Actions workflow (triggered on
    `supabase/functions/**` changes) using `supabase/setup-cli`, with `SUPABASE_ACCESS_TOKEN` and
    `SUPABASE_PROJECT_REF` as repo secrets.
-6. Verify: unauthenticated request rejected, authenticated request returns a real Gemini response,
-   push-to-main triggers an automatic redeploy.
+6. Verify: unauthenticated request rejected, authenticated request returns a real generated
+   response, push-to-main triggers an automatic redeploy.
+
+**What actually shipped for `ai-assist-proxy-foundation` differs from steps 1, 2, and 5 above**:
+deployment went through the Supabase MCP server's `deploy_edge_function` tool directly rather than
+the local CLI, and no GitHub Actions job was built (no CI existed in this repo at all yet — see
+`context/changes/ai-assist-proxy-foundation/plan.md` for the full rationale). Steps 1/2/5 remain
+here as the originally-researched path, in case a future change revisits CLI/CI-based deploys.
 
 ## Out of Scope
 
