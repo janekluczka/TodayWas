@@ -334,8 +334,8 @@ None — stateless function, no data migration.
 
 #### Automated
 
-- [x] 1.1 `deploy_edge_function` succeeds; `ai-proxy` appears in `list_edge_functions`
-- [x] 1.2 Unauthenticated curl returns 401
+- [x] 1.1 `deploy_edge_function` succeeds; `ai-proxy` appears in `list_edge_functions` — 6009d08
+- [x] 1.2 Unauthenticated curl returns 401 — 6009d08
 
 ### Phase 2: Request-validation checks via a disposable test identity
 
