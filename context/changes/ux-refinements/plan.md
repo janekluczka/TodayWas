@@ -742,4 +742,4 @@ Bumping `TodayWasDatabase`'s version with the already-configured
 
 #### Manual
 
-- [x] 6.1 prd.md matches shipped behavior
+- [x] 6.1 prd.md matches shipped behavior — 88cccc9
