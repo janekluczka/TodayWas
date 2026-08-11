@@ -22,6 +22,9 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
 
     @Binds
+    abstract fun bindAiAssistRepository(impl: AiAssistRepositoryImpl): AiAssistRepository
+
+    @Binds
     abstract fun bindRemoteJournalDataSource(impl: RemoteJournalDataSourceImpl): RemoteJournalDataSource
 
     @Binds
