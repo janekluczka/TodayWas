@@ -512,16 +512,16 @@ as "help me start."
 
 #### Manual
 
-- [x] 1.1 Refine-mode request returns a tone-matched rewrite; existing start-mode request unaffected
-- [x] 1.2 Oversized/empty `text` returns 400; unauthenticated request still returns 401
+- [x] 1.1 Refine-mode request returns a tone-matched rewrite; existing start-mode request unaffected — 9f0132e
+- [x] 1.2 Oversized/empty `text` returns 400; unauthenticated request still returns 401 — 9f0132e
 
 ### Phase 2: Domain & data layer (client)
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass (`RequestJournalRefinementPromptUseCaseTest`, extended `FakeAiAssistRepository`)
-- [ ] 2.2 `ktlintCheck` passes
-- [ ] 2.3 `assembleDebug` succeeds
+- [x] 2.1 Unit tests pass (`RequestJournalRefinementPromptUseCaseTest`, extended `FakeAiAssistRepository`)
+- [x] 2.2 `ktlintCheck` passes
+- [x] 2.3 `assembleDebug` succeeds
 
 ### Phase 3: UI — refine dialog on the edit-within-24h screen
 

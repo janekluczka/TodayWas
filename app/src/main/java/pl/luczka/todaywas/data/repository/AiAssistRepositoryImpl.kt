@@ -30,10 +30,17 @@ class AiAssistRepositoryImpl @Inject constructor(
     override suspend fun generateJournalStarterPrompt(
         tone: JournalPromptTone,
         thoughts: String?,
-    ): Result<String> = try {
+    ): Result<String> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, thoughts = thoughts))
+
+    override suspend fun refineJournalEntry(
+        text: String,
+        tone: JournalPromptTone,
+    ): Result<String> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, text = text))
+
+    private suspend fun invokeAiProxy(request: AiPromptRequestDto): Result<String> = try {
         val response = supabase.functions.invoke(function = FUNCTION_NAME) {
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(supabase.functions.serializer.encode(AiPromptRequestDto(tone = tone.level, thoughts = thoughts)))
+            setBody(supabase.functions.serializer.encode(request))
             timeout { requestTimeoutMillis = FUNCTION_TIMEOUT_MS }
         }
         Result.success(response.body<AiPromptResponseDto>().text)

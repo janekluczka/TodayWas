@@ -1,0 +1,45 @@
+package pl.luczka.todaywas.domain.usecase
+
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import pl.luczka.todaywas.data.repository.FakeAiAssistRepository
+import pl.luczka.todaywas.domain.model.JournalPromptTone
+
+class RequestJournalRefinementPromptUseCaseTest {
+
+    @Test
+    fun `should delegate text and tone to the repository`() =
+        runTest {
+            // Arrange
+            val repository = FakeAiAssistRepository()
+            val useCase = RequestJournalRefinementPromptUseCase(repository)
+
+            // Act
+            val result = useCase("Original draft text.", JournalPromptTone.GOOD)
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(1, repository.refineCallCount)
+            assertEquals("Original draft text.", repository.lastRefineText)
+            assertEquals(JournalPromptTone.GOOD, repository.lastRefineTone)
+        }
+
+    @Test
+    fun `should pass a repository failure through unchanged`() =
+        runTest {
+            // Arrange
+            val repository = FakeAiAssistRepository()
+            val failure = RuntimeException("upstream failed")
+            repository.refineResult = Result.failure(failure)
+            val useCase = RequestJournalRefinementPromptUseCase(repository)
+
+            // Act
+            val result = useCase("Original draft text.", JournalPromptTone.BAD)
+
+            // Assert
+            assertTrue(result.isFailure)
+            assertEquals(failure, result.exceptionOrNull())
+        }
+}

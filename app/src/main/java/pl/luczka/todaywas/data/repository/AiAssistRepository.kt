@@ -8,4 +8,9 @@ interface AiAssistRepository {
         tone: JournalPromptTone,
         thoughts: String?,
     ): Result<String>
+
+    suspend fun refineJournalEntry(
+        text: String,
+        tone: JournalPromptTone,
+    ): Result<String>
 }
