@@ -527,9 +527,9 @@ as "help me start."
 
 #### Automated
 
-- [x] 3.1 `JournalEntryDetailViewModelTest` passes (new refine-flow cases)
-- [x] 3.2 `ktlintCheck` passes
-- [x] 3.3 New refine-dialog previews render
+- [x] 3.1 `JournalEntryDetailViewModelTest` passes (new refine-flow cases) — bdfcb5b
+- [x] 3.2 `ktlintCheck` passes — bdfcb5b
+- [x] 3.3 New refine-dialog previews render — bdfcb5b
 
 #### Manual
 
