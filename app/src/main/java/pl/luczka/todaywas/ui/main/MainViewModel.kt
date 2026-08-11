@@ -10,17 +10,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.JournalContributionCalculator
 import pl.luczka.todaywas.domain.model.availableWindows
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
@@ -40,6 +44,8 @@ class MainViewModel @Inject constructor(
     observeJournalEntries: ObserveJournalEntriesUseCase,
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
+    private val observeAuthState: ObserveAuthStateUseCase,
+    private val syncLocalData: SyncLocalDataUseCase,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -120,6 +126,15 @@ class MainViewModel @Inject constructor(
                         fabActions = combined.focus.toFabActions(combined.addableSlots, combined.habits),
                     )
                 }
+            }
+        }
+        // Basic reinstall/new-device restore: silently refresh local data from remote once, when
+        // the Main screen itself loads while signed in — Room stays the read source, so this
+        // screen's own observeJournalEntries()/observeHabitCheckInBoard() flows above pick up
+        // whatever lands locally without any extra wiring.
+        viewModelScope.launch {
+            if (observeAuthState().first { it !is AuthState.Loading } is AuthState.SignedIn) {
+                syncLocalData()
             }
         }
     }

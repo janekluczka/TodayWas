@@ -17,9 +17,11 @@ import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
+import pl.luczka.todaywas.data.repository.FakeAuthRepository
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.data.repository.OnboardingRepository
+import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
@@ -27,9 +29,11 @@ import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.model.OnboardingState
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.FocusUiState
@@ -118,6 +122,8 @@ class MainViewModelTest {
             observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
             observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+            observeAuthState = ObserveAuthStateUseCase(FakeAuthRepository()),
+            syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
             clock = clock,
         )
     }
@@ -470,5 +476,57 @@ class MainViewModelTest {
 
             // Assert
             assertTrue(gridBefore === viewModel.uiState.value.journalContributionGrid)
+        }
+
+    @Test
+    fun `should sync local data when the screen loads while already signed in`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+
+            // Act
+            MainViewModel(
+                observeOnboardingState = ObserveOnboardingStateUseCase(
+                    FakeOnboardingRepository(OnboardingState(completed = true, focus = Focus.JOURNAL, hasSyncedLocalData = false)),
+                ),
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+            )
+
+            // Assert
+            assertEquals(1, journalRepository.syncWithRemoteCallCount)
+            assertEquals(1, habitRepository.syncWithRemoteCallCount)
+        }
+
+    @Test
+    fun `should not sync local data when the screen loads while signed out`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)
+
+            // Act
+            MainViewModel(
+                observeOnboardingState = ObserveOnboardingStateUseCase(
+                    FakeOnboardingRepository(OnboardingState(completed = true, focus = Focus.JOURNAL, hasSyncedLocalData = false)),
+                ),
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+            )
+
+            // Assert
+            assertEquals(0, journalRepository.syncWithRemoteCallCount)
+            assertEquals(0, habitRepository.syncWithRemoteCallCount)
         }
 }
