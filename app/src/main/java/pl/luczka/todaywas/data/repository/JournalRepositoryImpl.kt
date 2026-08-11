@@ -4,6 +4,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import pl.luczka.todaywas.data.local.JournalEntryDao
 import pl.luczka.todaywas.data.local.JournalEntryEntity
 import pl.luczka.todaywas.di.ApplicationScope
@@ -19,6 +21,11 @@ class JournalRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
     @ApplicationScope private val syncScope: CoroutineScope,
 ) : JournalRepository {
+
+    // Guards against a bulk syncWithRemote() push-then-pull racing an individual
+    // pushInBackground() for the same row: without this, a syncWithRemote() call that snapshot
+    // a row before a concurrent edit can push/pull that stale snapshot back over the edit.
+    private val syncMutex = Mutex()
 
     override fun observeEntries(): Flow<List<JournalEntry>> = dao.observeAll().map { entities -> entities.map { it.toDomain() } }
 
@@ -52,22 +59,33 @@ class JournalRepositoryImpl @Inject constructor(
 
     override suspend fun syncWithRemote(): Result<Unit> {
         val userId = authRepository.currentUserId() ?: return Result.success(Unit)
-        return remoteCall {
-            val local = dao.getAll()
-            remoteDataSource.upsert(local.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
-            val remote = remoteDataSource.fetchAll(userId).getOrThrow()
-            remote.forEach { dao.upsert(it.toEntity()) }
+        return syncMutex.withLock {
+            remoteCall {
+                val local = dao.getAll()
+                remoteDataSource.upsert(local.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+                val remote = remoteDataSource.fetchAll(userId).getOrThrow()
+                remote.forEach { dao.upsert(it.toEntity()) }
+            }
         }
     }
 
     override suspend fun clearLocal(): Result<Unit> = safeDbCall { dao.clearAll() }
 
     // Best-effort - failures are silently swallowed since the local write already succeeded;
-    // the next successful write (or the next sync pass) naturally retries via upsert.
+    // the next successful write (or the next sync pass) naturally retries via upsert. Skipped
+    // entirely (rather than awaiting the lock) while a syncWithRemote() is in flight, since that
+    // sync's own push/pull already covers this row - the edit isn't lost, just picked up on the
+    // next successful push or sync pass instead of duplicating work against a stale snapshot.
     private fun pushInBackground(entity: JournalEntryEntity) {
         val userId = authRepository.currentUserId() ?: return
         syncScope.launch {
-            runCatching { remoteDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId))) }
+            if (syncMutex.tryLock()) {
+                try {
+                    remoteDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId)))
+                } finally {
+                    syncMutex.unlock()
+                }
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import pl.luczka.todaywas.data.local.HabitCheckInDao
 import pl.luczka.todaywas.data.local.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.HabitDao
@@ -25,6 +27,11 @@ class HabitRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
     @ApplicationScope private val syncScope: CoroutineScope,
 ) : HabitRepository {
+
+    // Guards against a bulk syncWithRemote() push-then-pull racing an individual
+    // pushInBackground() for the same row: without this, a syncWithRemote() call that snapshot
+    // a row before a concurrent edit can push/pull that stale snapshot back over the edit.
+    private val syncMutex = Mutex()
 
     override fun observeHabits(): Flow<List<Habit>> = habitDao.observeAll().map { entities ->
         entities.map { it.toDomain() }
@@ -88,16 +95,18 @@ class HabitRepositoryImpl @Inject constructor(
 
     override suspend fun syncWithRemote(): Result<Unit> {
         val userId = authRepository.currentUserId() ?: return Result.success(Unit)
-        return remoteCall {
-            val localHabits = habitDao.getAll()
-            remoteHabitDataSource.upsert(localHabits.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
-            val localCheckIns = habitCheckInDao.getAll()
-            remoteHabitCheckInDataSource.upsert(localCheckIns.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+        return syncMutex.withLock {
+            remoteCall {
+                val localHabits = habitDao.getAll()
+                remoteHabitDataSource.upsert(localHabits.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+                val localCheckIns = habitCheckInDao.getAll()
+                remoteHabitCheckInDataSource.upsert(localCheckIns.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
 
-            val remoteHabits = remoteHabitDataSource.fetchAll(userId).getOrThrow()
-            remoteHabits.forEach { habitDao.upsert(it.toEntity()) }
-            val remoteCheckIns = remoteHabitCheckInDataSource.fetchAll(userId).getOrThrow()
-            habitCheckInDao.upsertAll(remoteCheckIns.map { it.toEntity() })
+                val remoteHabits = remoteHabitDataSource.fetchAll(userId).getOrThrow()
+                remoteHabits.forEach { habitDao.upsert(it.toEntity()) }
+                val remoteCheckIns = remoteHabitCheckInDataSource.fetchAll(userId).getOrThrow()
+                habitCheckInDao.upsertAll(remoteCheckIns.map { it.toEntity() })
+            }
         }
     }
 
@@ -107,18 +116,33 @@ class HabitRepositoryImpl @Inject constructor(
     }
 
     // Best-effort - failures are silently swallowed since the local write already succeeded;
-    // the next successful write (or the next sync pass) naturally retries via upsert.
+    // the next successful write (or the next sync pass) naturally retries via upsert. Skipped
+    // entirely (rather than awaiting the lock) while a syncWithRemote() is in flight, since that
+    // sync's own push/pull already covers this row - the edit isn't lost, just picked up on the
+    // next successful push or sync pass instead of duplicating work against a stale snapshot.
     private fun pushHabitInBackground(entity: HabitEntity) {
         val userId = authRepository.currentUserId() ?: return
         syncScope.launch {
-            runCatching { remoteHabitDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId))) }
+            if (syncMutex.tryLock()) {
+                try {
+                    remoteHabitDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId)))
+                } finally {
+                    syncMutex.unlock()
+                }
+            }
         }
     }
 
     private fun pushCheckInsInBackground(entities: List<HabitCheckInEntity>) {
         val userId = authRepository.currentUserId() ?: return
         syncScope.launch {
-            runCatching { remoteHabitCheckInDataSource.upsert(entities.map { it.toDomain().toRemoteDto(userId) }) }
+            if (syncMutex.tryLock()) {
+                try {
+                    remoteHabitCheckInDataSource.upsert(entities.map { it.toDomain().toRemoteDto(userId) })
+                } finally {
+                    syncMutex.unlock()
+                }
+            }
         }
     }
 }

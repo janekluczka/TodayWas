@@ -2,6 +2,13 @@
 
 > Append-only register of recurring rules and patterns. Re-read at start by /10x-frame, /10x-research, /10x-plan, /10x-plan-review, /10x-implement, /10x-impl-review.
 
+## A Result-returning wrapper should not be re-wrapped in another runCatching by its callers
+
+- **Context**: `data/repository/HabitRepositoryImpl.kt` / `JournalRepositoryImpl.kt`'s push-in-background methods, and any future caller of `RemoteCall.kt`'s `remoteCall {}` helper.
+- **Problem**: `remoteCall {}` already catches all non-`CancellationException` exceptions internally and returns `Result.failure` — it never throws except `CancellationException`. Callers (`pushHabitInBackground`, `pushCheckInsInBackground`, `pushInBackground`) wrapped the call in an outer `runCatching {}` anyway, which is redundant and — worse — silently swallows `CancellationException`, a general coroutines anti-pattern (cancellation should always propagate).
+- **Rule**: Once a helper already returns `Result`, callers must not re-wrap it in `runCatching` — call it directly. If cancellation-safety matters at the call site, catch `CancellationException` explicitly and rethrow rather than adding a blanket `runCatching`.
+- **Applies to**: plan, implement, impl-review
+
 ## ViewModels expose a sealed Intent + onIntent(), and a sealed UiEvent flow
 
 - **Context**: ViewModels under ui/<feature>/

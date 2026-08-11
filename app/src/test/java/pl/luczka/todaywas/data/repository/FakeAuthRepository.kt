@@ -54,6 +54,9 @@ class FakeAuthRepository(
 
     override suspend fun signOut(): Result<Unit> {
         signOutCallCount++
-        return signOutError?.let { Result.failure(AuthException(it)) } ?: Result.success(Unit)
+        return signOutError?.let { Result.failure(AuthException(it)) } ?: run {
+            state.value = AuthState.SignedOut
+            Result.success(Unit)
+        }
     }
 }

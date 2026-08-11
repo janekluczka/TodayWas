@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
+import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.usecase.ClearSyncedLocalDataUseCase
 import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
@@ -65,8 +66,16 @@ class AccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            var previousAuthState: AuthState? = null
             observeAuthState().collect { state ->
                 _uiState.update { it.copy(authState = state.toUiState()) }
+                // Reacts to the actual local sign-out rather than signOut()'s network Result, so a
+                // stale hasSyncedLocalData flag can never survive a sign-out whose local session
+                // already cleared even though the remote revoke call failed.
+                if (previousAuthState is AuthState.SignedIn && state is AuthState.SignedOut) {
+                    clearSyncedLocalData()
+                }
+                previousAuthState = state
             }
         }
         viewModelScope.launch {
@@ -268,7 +277,6 @@ class AccountViewModel @Inject constructor(
             _uiState.update { it.copy(isSigningOut = true) }
             val result = signOut()
             if (result.isSuccess) {
-                clearSyncedLocalData()
                 _uiState.update { it.copy(step = AccountStep.SIGN_IN, isSigningOut = false) }
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown

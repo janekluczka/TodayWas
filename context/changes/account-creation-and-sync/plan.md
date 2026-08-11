@@ -493,6 +493,14 @@ straight to `SUCCESS` as today. `SyncConfirmClicked` sets `isSyncing = true`, ca
 `SyncSkipClicked` goes straight to `SUCCESS` without marking synced. `SyncLocalDataClicked`
 (available once signed in, flag false) re-enters `DATA_SYNC_REVIEW` directly.
 
+**Implementation note (added during impl-review)**: sign-in and sign-up don't actually share one
+terminal transition — sign-in resolves to `NavigatedBack`, sign-up to `SUCCESS` (pre-existing
+behavior, unrelated to this plan). The literal "go straight to SUCCESS as today" text above glosses
+over that difference. The actual implementation introduces a private `PostSyncAction` enum
+(`NAVIGATE_BACK` / `SHOW_SUCCESS` / `RETURN_HOME`) captured by `proceedAfterAuthSuccess()` at entry
+and resolved by `finishPostSyncAction()` once the review step (or its skip) completes, so each entry
+point reaches its own correct terminal state instead of both collapsing onto `SUCCESS`.
+
 #### 4. `AccountSubStep`/`OnboardingUiState`/`OnboardingViewModel` wiring
 
 **File**: `ui/onboarding/AccountSubStep.kt`, `OnboardingUiState.kt`, `OnboardingIntent.kt`,
@@ -643,6 +651,15 @@ this pre-release app.
   `app/src/main/java` and `app/src/test/java`; the exhaustive list is mechanical type
   propagation and is not repeated in full here (see Phase 1's Changes Required for the
   non-mechanical exceptions).
+
+## Addenda
+
+- **`data/repository/RemoteCall.kt`** (Phase 2, discovered during impl-review): Phase 2 item 5's
+  intent said each `Remote*DataSourceImpl` should wrap its Postgrest calls "in `runCatching`"
+  individually. The actual implementation factors this into one shared `remoteCall(block):
+  Result<T>` helper, reused by all three `Remote*DataSourceImpl` classes and by both
+  repositories' `syncWithRemote()`. A benign DRY refactor of the same contract, not called out
+  in the original plan text.
 
 ## Progress
 
