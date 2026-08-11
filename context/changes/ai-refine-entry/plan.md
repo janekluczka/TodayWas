@@ -519,17 +519,17 @@ as "help me start."
 
 #### Automated
 
-- [x] 2.1 Unit tests pass (`RequestJournalRefinementPromptUseCaseTest`, extended `FakeAiAssistRepository`)
-- [x] 2.2 `ktlintCheck` passes
-- [x] 2.3 `assembleDebug` succeeds
+- [x] 2.1 Unit tests pass (`RequestJournalRefinementPromptUseCaseTest`, extended `FakeAiAssistRepository`) — 7ad9174
+- [x] 2.2 `ktlintCheck` passes — 7ad9174
+- [x] 2.3 `assembleDebug` succeeds — 7ad9174
 
 ### Phase 3: UI — refine dialog on the edit-within-24h screen
 
 #### Automated
 
-- [ ] 3.1 `JournalEntryDetailViewModelTest` passes (new refine-flow cases)
-- [ ] 3.2 `ktlintCheck` passes
-- [ ] 3.3 New refine-dialog previews render
+- [x] 3.1 `JournalEntryDetailViewModelTest` passes (new refine-flow cases)
+- [x] 3.2 `ktlintCheck` passes
+- [x] 3.3 New refine-dialog previews render
 
 #### Manual
 
