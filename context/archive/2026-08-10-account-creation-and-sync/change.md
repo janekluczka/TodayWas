@@ -1,10 +1,10 @@
 ---
 change_id: account-creation-and-sync
 title: Account creation and sync
-status: impl_reviewed
+status: archived
 created: 2026-08-10
 updated: 2026-08-11
-archived_at: null
+archived_at: 2026-08-11T05:14:20Z
 ---
 
 ## Notes

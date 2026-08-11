@@ -3,7 +3,7 @@ project: "TodayWas"
 version: 1
 status: draft
 created: 2026-07-25
-updated: 2026-08-10
+updated: 2026-08-11
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -42,7 +42,7 @@ Vision frames daily journaling as the primary act and habit tracking as optional
 | S-03 | habit-create-and-checkin       | create a habit and log check-ins for it, seen on the main screen   | S-01           | US-02, FR-002, FR-004, FR-005, FR-008 | done |
 | S-04 | edit-within-24h-window         | edit a recent journal entry or habit check-in within 24 hours      | S-02, S-03     | US-03, FR-006         | done |
 | S-05 | detailed-contribution-history  | drill into a detailed contribution history for a journal or habit  | S-02, S-03     | FR-011                | done |
-| S-06 | account-creation-and-sync      | create an account and have existing local data sync automatically  | F-01, S-02, S-03 | US-04, FR-007        | proposed |
+| S-06 | account-creation-and-sync      | create an account and have existing local data sync automatically  | F-01, S-02, S-03 | US-04, FR-007        | done |
 | F-02 | ai-assist-proxy-foundation     | (foundation) Server-side AI proxy live, JWT-verified via Supabase  | F-01           | FR-009, FR-010, NFR (journal content never reaches AI-assisted features) | proposed |
 | S-07 | ai-starter-prompt              | tap "help me start" and get a tone-matched AI starter prompt       | F-02, S-02     | US-05, FR-009         | proposed |
 | S-08 | ai-refine-entry                | tap "help me refine" and get AI-assisted refinement of an entry    | F-02, S-02     | FR-010                | proposed |
@@ -194,7 +194,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:** —
 - **Risk:** Needs local journal and habit data to actually exist (US-04's Given clause presupposes
   it) plus the auth scaffold — sequenced after both core-loop slices and F-01.
-- **Status:** proposed
+- **Status:** done
 
 ### S-07: AI starter prompt
 
@@ -274,3 +274,4 @@ to `done` — when a change whose `Change ID` matches the item is archived.)
 - **S-04: User opens a journal entry or habit check-in created less than 24 hours ago and edits it; after 24 hours it's viewable but read-only.** — Archived 2026-08-02 → `context/archive/2026-08-01-edit-within-24h-window/`. Lesson: —.
 - **S-05: User drills down from the main screen into a detailed contribution-style history for a single journal or habit.** — Archived 2026-08-03 → `context/archive/2026-08-02-detailed-contribution-history/`. Lesson: —.
 - **F-01: (foundation) Supabase project + email/Google sign-in scaffold live.** — Archived 2026-08-10 → `context/archive/2026-08-03-supabase-auth-foundation/`. Lesson: —.
+- **S-06: User creates an account (email or Google) and all existing local journal/habit data automatically uploads/syncs, with no manual export/import step.** — Archived 2026-08-11 → `context/archive/2026-08-10-account-creation-and-sync/`. Lesson: —.
