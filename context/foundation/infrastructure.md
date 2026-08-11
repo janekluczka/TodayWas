@@ -150,8 +150,9 @@ meant to differentiate the app from every other journaling app.
   conflate into one generic error if not designed for explicitly.
 - Supabase's free-tier Edge Function invocation budget (500K/month) is shared account-wide with any
   other functions added later — not ring-fenced per feature.
-- Gemini's 60 req/min free-tier rate limit is global to the API key, not per-user — login-gating
-  reduces abuse risk but doesn't eliminate the shared-rate-limit ceiling if legitimate usage grows.
+- OpenRouter's free-tier models are shared-pool and rate-limited per model, not per-user —
+  login-gating reduces abuse risk but doesn't eliminate the shared ceiling if legitimate usage
+  grows (superseded from the original Gemini-specific framing; see Decision History #5).
 
 ## Operational Story
 
@@ -194,14 +195,22 @@ Summary:
    `supabase init`, `supabase link --project-ref <ref>`.
 2. `supabase functions new ai-proxy` — leave `verify_jwt` at its default (`true`); this is now the
    actual auth gate, so confirm the current config syntax rather than assuming.
-3. Implement the function: accept `{ tone, thoughts? }`, call Gemini, return the generated text. No
-   custom auth code needed — Supabase rejects unauthenticated requests before the handler runs.
-4. `supabase secrets set GEMINI_API_KEY=<value>`.
+3. Implement the function: accept `{ tone, thoughts? }`, call an upstream LLM, return the generated
+   text. No custom auth code needed — Supabase rejects unauthenticated requests before the handler
+   runs.
+4. `supabase secrets set OPENROUTER_API_KEY=<value>` (originally scoped as `GEMINI_API_KEY`; see
+   Decision History #5 for why it changed).
 5. Add a path-scoped job to the existing GitHub Actions workflow (triggered on
    `supabase/functions/**` changes) using `supabase/setup-cli`, with `SUPABASE_ACCESS_TOKEN` and
    `SUPABASE_PROJECT_REF` as repo secrets.
-6. Verify: unauthenticated request rejected, authenticated request returns a real Gemini response,
-   push-to-main triggers an automatic redeploy.
+6. Verify: unauthenticated request rejected, authenticated request returns a real generated
+   response, push-to-main triggers an automatic redeploy.
+
+**What actually shipped for `ai-assist-proxy-foundation` differs from steps 1, 2, and 5 above**:
+deployment went through the Supabase MCP server's `deploy_edge_function` tool directly rather than
+the local CLI, and no GitHub Actions job was built (no CI existed in this repo at all yet — see
+`context/changes/ai-assist-proxy-foundation/plan.md` for the full rationale). Steps 1/2/5 remain
+here as the originally-researched path, in case a future change revisits CLI/CI-based deploys.
 
 ## Out of Scope
 
