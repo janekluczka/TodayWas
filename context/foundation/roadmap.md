@@ -43,7 +43,7 @@ Vision frames daily journaling as the primary act and habit tracking as optional
 | S-04 | edit-within-24h-window         | edit a recent journal entry or habit check-in within 24 hours      | S-02, S-03     | US-03, FR-006         | done |
 | S-05 | detailed-contribution-history  | drill into a detailed contribution history for a journal or habit  | S-02, S-03     | FR-011                | done |
 | S-06 | account-creation-and-sync      | create an account and have existing local data sync automatically  | F-01, S-02, S-03 | US-04, FR-007        | done |
-| F-02 | ai-assist-proxy-foundation     | (foundation) Server-side AI proxy live, JWT-verified via Supabase  | F-01           | FR-009, FR-010, NFR (journal content never reaches AI-assisted features) | proposed |
+| F-02 | ai-assist-proxy-foundation     | (foundation) Server-side AI proxy live, JWT-verified via Supabase  | F-01           | FR-009, FR-010, NFR (journal content never reaches AI-assisted features) | done |
 | S-07 | ai-starter-prompt              | tap "help me start" and get a tone-matched AI starter prompt       | F-02, S-02     | US-05, FR-009         | proposed |
 | S-08 | ai-refine-entry                | tap "help me refine" and get AI-assisted refinement of an entry    | F-02, S-02     | FR-010                | proposed |
 
@@ -108,7 +108,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** The privacy NFR (journal content must never reach the AI layer) is a correctness gate
   on this Foundation's implementation, not an optional hardening pass — scoped minimal but not
   skippable.
-- **Status:** proposed
+- **Status:** done
 
 ## Slices
 
@@ -275,3 +275,4 @@ to `done` — when a change whose `Change ID` matches the item is archived.)
 - **S-05: User drills down from the main screen into a detailed contribution-style history for a single journal or habit.** — Archived 2026-08-03 → `context/archive/2026-08-02-detailed-contribution-history/`. Lesson: —.
 - **F-01: (foundation) Supabase project + email/Google sign-in scaffold live.** — Archived 2026-08-10 → `context/archive/2026-08-03-supabase-auth-foundation/`. Lesson: —.
 - **S-06: User creates an account (email or Google) and all existing local journal/habit data automatically uploads/syncs, with no manual export/import step.** — Archived 2026-08-11 → `context/archive/2026-08-10-account-creation-and-sync/`. Lesson: —.
+- **F-02: (foundation) Server-side AI proxy live, JWT-verified via Supabase.** — Archived 2026-08-11 → `context/archive/2026-08-11-ai-assist-proxy-foundation/`. Lesson: —.

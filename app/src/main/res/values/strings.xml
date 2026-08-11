@@ -56,6 +56,24 @@
     <string name="journal_add_entry_save_cta">Save</string>
     <string name="journal_add_entry_error">Something went wrong. Please try again.</string>
 
+    <string name="journal_help_me_start_cta">Help me start</string>
+    <string name="journal_help_me_start_dialog_title">What\'s today\'s mood?</string>
+    <string name="journal_help_me_start_tone_very_bad">Very bad</string>
+    <string name="journal_help_me_start_tone_bad">Bad</string>
+    <string name="journal_help_me_start_tone_neutral">Neutral</string>
+    <string name="journal_help_me_start_tone_good">Good</string>
+    <string name="journal_help_me_start_tone_very_good">Very good</string>
+    <string name="journal_help_me_start_thoughts_label">A few thoughts (optional)</string>
+    <string name="journal_help_me_start_generate_cta">Generate</string>
+    <string name="journal_help_me_start_regenerate_cta">Regenerate</string>
+    <string name="journal_help_me_start_use_this_cta">Use this</string>
+    <string name="journal_help_me_start_cancel_cta">Cancel</string>
+    <string name="journal_help_me_start_error_invalid_request">Something went wrong. Please try again.</string>
+    <string name="journal_help_me_start_error_upstream_failed">Couldn\'t generate a prompt right now. Please try again.</string>
+    <string name="journal_help_me_start_error_not_signed_in">Please sign in to use this feature.</string>
+    <string name="journal_help_me_start_error_network_unavailable">No internet connection.</string>
+    <string name="journal_help_me_start_error_unknown">Something went wrong. Please try again.</string>
+
     <string name="journal_detail_title">Journal entry</string>
     <string name="journal_detail_edit_action">Edit</string>
     <string name="journal_detail_save_cta">Save</string>
