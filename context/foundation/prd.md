@@ -128,10 +128,9 @@ has bounced off heavier journal apps or pressure-inducing streak trackers before
 
 ### Onboarding
 
-- FR-001: User can pick a focus during onboarding (journaling, habit tracking, or both). Priority:
-  must-have
-  > Socrates: Counter-argument considered: onboarding adds friction before first value. Resolution:
-  > kept; treated as a first input/setup step rather than pure overhead.
+Onboarding has no focus-pick step. The main screen always shows both journaling and habit tracking
+together (see FR-005), so a new user sees the app's full tracking capability right away rather than
+committing to one before trying it. Onboarding is Welcome → optional account setup → All set.
 
 ### Journaling
 

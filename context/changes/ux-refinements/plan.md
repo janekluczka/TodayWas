@@ -728,18 +728,18 @@ Bumping `TodayWasDatabase`'s version with the already-configured
 
 #### Automated
 
-- [x] 5.1 Unit tests pass
-- [x] 5.2 Lint passes
-- [x] 5.3 Debug build compiles
-- [x] 5.4 No remaining references to MainShellScreen/BottomNavTab/ui.preferences
+- [x] 5.1 Unit tests pass — 422e435
+- [x] 5.2 Lint passes — 422e435
+- [x] 5.3 Debug build compiles — 422e435
+- [x] 5.4 No remaining references to MainShellScreen/BottomNavTab/ui.preferences — 422e435
 
 #### Manual
 
-- [x] 5.5 No bottom nav bar visible anywhere
-- [x] 5.6 All destinations still reachable from the hub
+- [x] 5.5 No bottom nav bar visible anywhere — 422e435
+- [x] 5.6 All destinations still reachable from the hub — 422e435
 
 ### Phase 6: Foundation docs
 
 #### Manual
 
-- [ ] 6.1 prd.md matches shipped behavior
+- [x] 6.1 prd.md matches shipped behavior
