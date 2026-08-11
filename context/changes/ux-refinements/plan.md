@@ -687,15 +687,15 @@ Bumping `TodayWasDatabase`'s version with the already-configured
 
 #### Automated
 
-- [x] 2.1 Unit tests pass
-- [x] 2.2 Lint passes
-- [x] 2.3 Debug build compiles
+- [x] 2.1 Unit tests pass — 5f4effb
+- [x] 2.2 Lint passes — 5f4effb
+- [x] 2.3 Debug build compiles — 5f4effb
 
 #### Manual
 
-- [x] 2.4 Fresh onboarding run has no focus-pick screen
-- [x] 2.5 Skip from any step finishes onboarding
-- [x] 2.6 Kill/reopen mid-ACCOUNT_INFO still completes correctly
+- [x] 2.4 Fresh onboarding run has no focus-pick screen — 5f4effb
+- [x] 2.5 Skip from any step finishes onboarding — 5f4effb
+- [x] 2.6 Kill/reopen mid-ACCOUNT_INFO still completes correctly — 5f4effb
 
 ### Phase 3: Main screen becomes the hub
 

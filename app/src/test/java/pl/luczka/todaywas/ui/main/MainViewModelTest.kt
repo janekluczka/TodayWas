@@ -2,8 +2,6 @@ package pl.luczka.todaywas.ui.main
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -20,23 +18,18 @@ import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributi
 import pl.luczka.todaywas.data.repository.FakeAuthRepository
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
-import pl.luczka.todaywas.data.repository.OnboardingRepository
 import pl.luczka.todaywas.domain.model.AuthState
-import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.model.JournalEntry
-import pl.luczka.todaywas.domain.model.OnboardingState
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
-import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
-import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.toUiState
 import java.time.Clock
@@ -46,21 +39,6 @@ import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
-
-    private class FakeOnboardingRepository(
-        initialState: OnboardingState,
-    ) : OnboardingRepository {
-
-        private val stateFlow = MutableStateFlow(initialState)
-
-        override fun observeState(): Flow<OnboardingState> = stateFlow
-
-        override suspend fun saveFocus(focus: Focus): Result<Unit> = Result.success(Unit)
-
-        override suspend fun markLocalDataSynced(): Result<Unit> = Result.success(Unit)
-
-        override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
-    }
 
     private fun entry(
         date: LocalDate,
@@ -101,28 +79,19 @@ class MainViewModelTest {
     )
 
     private fun viewModel(
-        focus: Focus? = Focus.JOURNAL,
         entries: List<JournalEntry> = emptyList(),
         habits: List<Habit> = emptyList(),
         checkIns: List<HabitCheckIn> = emptyList(),
+        authRepository: FakeAuthRepository = FakeAuthRepository(),
         clock: Clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
     ): MainViewModel {
         val journalRepository = FakeJournalRepository(entries)
         val habitRepository = FakeHabitRepository(habits, checkIns)
         return MainViewModel(
-            observeOnboardingState = ObserveOnboardingStateUseCase(
-                FakeOnboardingRepository(
-                    OnboardingState(
-                        completed = true,
-                        focus = focus,
-                        hasSyncedLocalData = false,
-                    ),
-                ),
-            ),
             observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
             observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-            observeAuthState = ObserveAuthStateUseCase(FakeAuthRepository()),
+            observeAuthState = ObserveAuthStateUseCase(authRepository),
             syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
             clock = clock,
         )
@@ -147,20 +116,16 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `should reflect focus and entries from both sources in uiState`() =
+    fun `should reflect entries from both sources in uiState`() =
         runTest {
             // Arrange
             val today = entry(LocalDate.now())
 
             // Act
-            val viewModel = viewModel(
-                focus = Focus.JOURNAL,
-                entries = listOf(today),
-            )
+            val viewModel = viewModel(entries = listOf(today))
             val state = viewModel.uiState.value
 
             // Assert
-            assertEquals(FocusUiState.JOURNAL, state.focus)
             assertEquals(listOf(today.toUiState()), state.journalEntries)
         }
 
@@ -168,10 +133,7 @@ class MainViewModelTest {
     fun `should reflect not-logged status in habits when no check-in exists for today`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(
-                focus = Focus.HABIT,
-                habits = listOf(habit(id = "1", name = "Drink water")),
-            )
+            val viewModel = viewModel(habits = listOf(habit(id = "1", name = "Drink water")))
 
             // Act
             val state = viewModel.uiState.value.habits
@@ -187,7 +149,6 @@ class MainViewModelTest {
         runTest {
             // Arrange
             val viewModel = viewModel(
-                focus = Focus.HABIT,
                 habits = listOf(habit(id = "1", type = HabitType.BINARY)),
                 checkIns = listOf(checkIn(habitId = "1", date = LocalDate.now(), value = 1)),
             )
@@ -205,7 +166,6 @@ class MainViewModelTest {
         runTest {
             // Arrange
             val viewModel = viewModel(
-                focus = Focus.HABIT,
                 habits = listOf(habit(id = "1", type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
                 checkIns = listOf(checkIn(habitId = "1", date = LocalDate.now(), value = 3)),
             )
@@ -223,7 +183,6 @@ class MainViewModelTest {
         runTest {
             // Arrange
             val viewModel = viewModel(
-                focus = Focus.HABIT,
                 habits = listOf(habit(id = "1")),
                 checkIns = listOf(checkIn(habitId = "1", date = LocalDate.now().minusDays(1), value = 1)),
             )
@@ -238,19 +197,16 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should include ADD_JOURNAL_ENTRY in fabActions when focus is JOURNAL and a slot is addable`() =
+    fun `should include ADD_JOURNAL_ENTRY in fabActions when a journal slot is addable`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(
-                focus = Focus.JOURNAL,
-                entries = emptyList(),
-            )
+            val viewModel = viewModel(entries = emptyList())
 
             // Act
             val fabActions = viewModel.uiState.value.fabActions
 
             // Assert
-            assertEquals(listOf(FabActionUiState.ADD_JOURNAL_ENTRY), fabActions)
+            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY in fabActions)
         }
 
     @Test
@@ -258,10 +214,7 @@ class MainViewModelTest {
         runTest {
             // Arrange
             val entries = listOf(entry(LocalDate.now()), entry(LocalDate.now().minusDays(1)))
-            val viewModel = viewModel(
-                focus = Focus.JOURNAL,
-                entries = entries,
-            )
+            val viewModel = viewModel(entries = entries)
 
             // Act
             val fabActions = viewModel.uiState.value.fabActions
@@ -271,45 +224,25 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should include CREATE_HABIT but not LOG_HABIT_CHECK_INS in fabActions when focus is HABIT and no habits exist`() =
+    fun `should include CREATE_HABIT but not LOG_HABIT_CHECK_INS in fabActions when no habits exist`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(focus = Focus.HABIT)
+            val entries = listOf(entry(LocalDate.now()))
+            val viewModel = viewModel(entries = entries)
 
             // Act
             val fabActions = viewModel.uiState.value.fabActions
 
             // Assert
-            assertEquals(listOf(FabActionUiState.CREATE_HABIT), fabActions)
+            assertTrue(FabActionUiState.CREATE_HABIT in fabActions)
+            assertTrue(FabActionUiState.LOG_HABIT_CHECK_INS !in fabActions)
         }
 
     @Test
-    fun `should include both CREATE_HABIT and LOG_HABIT_CHECK_INS in fabActions when focus is HABIT and a habit exists`() =
+    fun `should include journal and habit actions together in fabActions when slots and habits exist`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(
-                focus = Focus.HABIT,
-                habits = listOf(habit(id = "1")),
-            )
-
-            // Act
-            val fabActions = viewModel.uiState.value.fabActions
-
-            // Assert
-            assertEquals(
-                listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
-                fabActions,
-            )
-        }
-
-    @Test
-    fun `should include journal and habit actions together in fabActions when focus is BOTH`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel(
-                focus = Focus.BOTH,
-                habits = listOf(habit(id = "1")),
-            )
+            val viewModel = viewModel(habits = listOf(habit(id = "1")))
 
             // Act
             val fabActions = viewModel.uiState.value.fabActions
@@ -344,7 +277,7 @@ class MainViewModelTest {
     fun `should emit NavigateToCreateHabit when FabActionClicked with CREATE_HABIT`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(focus = Focus.HABIT)
+            val viewModel = viewModel()
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
@@ -361,7 +294,7 @@ class MainViewModelTest {
     fun `should emit NavigateToLogHabitCheckIns when FabActionClicked with LOG_HABIT_CHECK_INS`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = "1")))
+            val viewModel = viewModel(habits = listOf(habit(id = "1")))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
@@ -409,7 +342,7 @@ class MainViewModelTest {
     fun `should emit NavigateToHabitDetail with the clicked habit's id when HabitClicked is dispatched`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(focus = Focus.HABIT, habits = listOf(habit(id = "1")))
+            val viewModel = viewModel(habits = listOf(habit(id = "1")))
             val events = mutableListOf<MainUiEvent>()
             val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
@@ -488,9 +421,6 @@ class MainViewModelTest {
 
             // Act
             MainViewModel(
-                observeOnboardingState = ObserveOnboardingStateUseCase(
-                    FakeOnboardingRepository(OnboardingState(completed = true, focus = Focus.JOURNAL, hasSyncedLocalData = false)),
-                ),
                 observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
@@ -514,9 +444,6 @@ class MainViewModelTest {
 
             // Act
             MainViewModel(
-                observeOnboardingState = ObserveOnboardingStateUseCase(
-                    FakeOnboardingRepository(OnboardingState(completed = true, focus = Focus.JOURNAL, hasSyncedLocalData = false)),
-                ),
                 observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),

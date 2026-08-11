@@ -2,7 +2,6 @@ package pl.luczka.todaywas.ui.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +38,6 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
-import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
@@ -86,21 +84,13 @@ private fun MainScreenContent(
         floatingActionButton = { MainFab(uiState, onIntent) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            when (uiState.focus) {
-                null -> DsText(text = stringResource(R.string.main_empty_state))
-                FocusUiState.JOURNAL -> JournalSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
-                FocusUiState.HABIT -> HabitSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
-                FocusUiState.BOTH ->
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        JournalSection(uiState, onIntent, modifier = Modifier.weight(1f))
-                        HabitSection(uiState, onIntent, modifier = Modifier.weight(1f))
-                    }
-            }
+            JournalSection(uiState, onIntent, modifier = Modifier.weight(1f))
+            HabitSection(uiState, onIntent, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -285,27 +275,15 @@ private fun HabitCheckInStatusUiState.displayText(): String = when (this) {
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
     override val values = sequenceOf(
         MainUiState(
-            focus = null,
             journalEntries = emptyList(),
             habits = emptyList(),
             journalContributionGrid = previewJournalContributionGrid,
             journalAvailableWindows = previewJournalAvailableWindows,
             journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            fabActions = emptyList(),
+            fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY, FabActionUiState.CREATE_HABIT),
             fabExpanded = false,
         ),
         MainUiState(
-            focus = FocusUiState.JOURNAL,
-            journalEntries = emptyList(),
-            habits = emptyList(),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
-            fabExpanded = false,
-        ),
-        MainUiState(
-            focus = FocusUiState.BOTH,
             journalEntries = listOf(
                 JournalEntryUiState(
                     id = "1",
@@ -322,16 +300,6 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     createdAt = Instant.now(),
                 ),
             ),
-            habits = emptyList(),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            fabActions = emptyList(),
-            fabExpanded = false,
-        ),
-        MainUiState(
-            focus = FocusUiState.HABIT,
-            journalEntries = emptyList(),
             habits = listOf(
                 HabitUiState(
                     id = "1",
