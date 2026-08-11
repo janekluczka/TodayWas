@@ -10,18 +10,31 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import pl.luczka.todaywas.data.repository.AiAssistRepository
+import pl.luczka.todaywas.data.repository.AuthRepository
+import pl.luczka.todaywas.data.repository.FakeAiAssistRepository
+import pl.luczka.todaywas.data.repository.FakeAuthRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.model.AiAssistError
+import pl.luczka.todaywas.domain.model.AiAssistException
+import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
+import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,13 +51,33 @@ class JournalEntryDetailViewModelTest {
     private fun viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
         clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC),
+        authRepository: AuthRepository = FakeAuthRepository(
+            initialState = AuthState.SignedIn(userId = "1", email = "person@example.com"),
+        ),
+        aiAssistRepository: AiAssistRepository = FakeAiAssistRepository(),
         id: String = "1",
     ) = JournalEntryDetailViewModel(
         id = id,
         getJournalEntry = GetJournalEntryUseCase(repository),
         updateJournalEntry = UpdateJournalEntryUseCase(repository, clock),
+        observeAuthState = ObserveAuthStateUseCase(authRepository),
+        requestJournalRefinementPrompt = RequestJournalRefinementPromptUseCase(aiAssistRepository),
         clock = clock,
     )
+
+    private class MutableClock(
+        private var current: Instant,
+    ) : Clock() {
+        override fun getZone(): ZoneId = ZoneOffset.UTC
+
+        override fun withZone(zone: ZoneId): Clock = this
+
+        override fun instant(): Instant = current
+
+        fun advanceTo(instant: Instant) {
+            current = instant
+        }
+    }
 
     @Before
     fun setUp() {
@@ -159,5 +192,239 @@ class JournalEntryDetailViewModelTest {
             assertFalse(viewModel.uiState.value.isEditing)
             assertFalse(viewModel.uiState.value.isEditable)
             assertTrue(viewModel.uiState.value.saveError)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while signed out`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while not editing`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while the draft is blank`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(
+                initialEntries = listOf(entry.copy(text = "")),
+            )
+            val viewModel = viewModel(repository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while isEditable is stale-false`() =
+        runTest {
+            // Arrange
+            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneOffset.UTC)
+            val viewModel = viewModel(clock = expiredClock)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while the draft exceeds MAX_REFINE_TEXT_LENGTH`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(
+                initialEntries = listOf(entry.copy(text = "a".repeat(MAX_REFINE_TEXT_LENGTH + 1))),
+            )
+            val viewModel = viewModel(repository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should move to PREVIEW step and set refinedText when RefineClicked succeeds`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult = Result.success("Refined text.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.RefineClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeRefine = viewModel.uiState.value.helpMeRefine
+            assertEquals(HelpMeRefineStep.PREVIEW, helpMeRefine.step)
+            assertEquals("Refined text.", helpMeRefine.refinedText)
+            assertFalse(helpMeRefine.isGenerating)
+            assertEquals(0, helpMeRefine.regenerationsUsed)
+            assertEquals("Original text.", aiAssistRepository.lastRefineText)
+        }
+
+    @Test
+    fun `should stay on INPUT step and set error without touching regenerationsUsed when RefineClicked fails`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult = Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.RefineClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeRefine = viewModel.uiState.value.helpMeRefine
+            assertEquals(HelpMeRefineStep.INPUT, helpMeRefine.step)
+            assertNull(helpMeRefine.refinedText)
+            assertEquals(AiAssistErrorUiState.NETWORK_UNAVAILABLE, helpMeRefine.error)
+            assertEquals(0, helpMeRefine.regenerationsUsed)
+        }
+
+    @Test
+    fun `should increment regenerationsUsed and update refinedText when RegenerateRefineClicked succeeds`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult = Result.success("First refinement.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(JournalEntryDetailIntent.RefineClicked)
+            runCurrent()
+            aiAssistRepository.refineResult = Result.success("Second refinement.")
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.RegenerateRefineClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeRefine = viewModel.uiState.value.helpMeRefine
+            assertEquals(1, helpMeRefine.regenerationsUsed)
+            assertEquals("Second refinement.", helpMeRefine.refinedText)
+        }
+
+    @Test
+    fun `should not call the repository when RegenerateRefineClicked is dispatched at the cap`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(JournalEntryDetailIntent.RefineClicked)
+            runCurrent()
+            repeat(3) {
+                viewModel.onIntent(JournalEntryDetailIntent.RegenerateRefineClicked)
+                runCurrent()
+            }
+            val callCountAtCap = aiAssistRepository.refineCallCount
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.RegenerateRefineClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(3, viewModel.uiState.value.helpMeRefine.regenerationsUsed)
+            assertEquals(callCountAtCap, aiAssistRepository.refineCallCount)
+        }
+
+    @Test
+    fun `should copy refinedText into editedText without touching entry when UseRefinedTextClicked`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult = Result.success("Refined text.")
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(JournalEntryDetailIntent.RefineClicked)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.UseRefinedTextClicked)
+
+            // Assert
+            val state = viewModel.uiState.value
+            assertEquals("Refined text.", state.editedText)
+            assertEquals("Original text.", state.entry?.text)
+            assertFalse(state.helpMeRefine.isVisible)
+            assertNull(state.helpMeRefine.refinedText)
+        }
+
+    @Test
+    fun `should discard the result and mirror Save's expired-window handling when the edit window closes during a refine`() =
+        runTest {
+            // Arrange
+            val clock = MutableClock(createdAt.plus(Duration.ofHours(1)))
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult = Result.success("Refined text.")
+            val viewModel = viewModel(clock = clock, aiAssistRepository = aiAssistRepository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.HelpMeRefineClicked)
+            viewModel.onIntent(JournalEntryDetailIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            clock.advanceTo(createdAt.plus(Duration.ofHours(25)))
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.RefineClicked)
+            runCurrent()
+
+            // Assert
+            val state = viewModel.uiState.value
+            assertFalse(state.isEditing)
+            assertFalse(state.isEditable)
+            assertTrue(state.saveError)
+            assertFalse(state.helpMeRefine.isVisible)
+            assertNull(state.helpMeRefine.refinedText)
         }
 }

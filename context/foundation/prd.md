@@ -202,9 +202,11 @@ has bounced off heavier journal apps or pressure-inducing streak trackers before
 ## Non-Functional Requirements
 
 - A user's journal content is never accessible to anyone other than the user — not shared with third
-  parties, and never read by AI-assisted features (FR-009, FR-010) at all. The tone pick and any
-  optional thoughts the user types when requesting AI help are used only for that specific request,
-  never logged or reused beyond it.
+  parties, and never read by AI-assisted features beyond what the user actively submits to them. For
+  "help me start" (FR-009), that's only the tone pick and any optional thoughts typed in the moment.
+  For "help me refine" (FR-010), that additionally includes the text of the single entry the user is
+  actively refining — sent only for that one request, never any other entry, never journal history,
+  and never logged or reused beyond that request.
 
 ## Business Logic
 
@@ -213,12 +215,14 @@ that specific journal or habit, and — only when the user taps "help me start" 
 presents a 5-point tone scale (very bad, bad, neutral, good, very good) to choose from, then
 generates a journal-entry prompt personalized to the chosen tone and any optional thoughts the user
 provides. The AI prompt generation does not read the user's journal history or habit-tracking data —
-its only inputs are the chosen tone and the optional thoughts typed in the moment.
+its only inputs are the chosen tone and, for "help me start", the optional thoughts typed in the
+moment, or, for "help me refine", the text of the single entry actively being refined.
 
 Inputs are the user's own logged values for a given journal or habit (for intensity calculation,
-never data from other users or a fixed global scale) and, separately, the tone pick plus optional
-thoughts typed at the moment of the request (for prompt personalization — no journal history
-involved). Output is (a) a per-day, per-habit/journal color intensity reflecting where that day
+never data from other users or a fixed global scale) and, separately, the tone pick plus — for
+"help me start" — optional thoughts typed at the moment of the request, or — for "help me refine" —
+the text of the single entry actively being refined (for prompt personalization — no other journal
+history involved). Output is (a) a per-day, per-habit/journal color intensity reflecting where that day
 falls in the user's own range, and (b) an on-demand, tone-matched journal prompt or refinement. The
 user encounters (a) on the main screen and detail views as colored cells, and (b) only when
 explicitly requesting help via "help me start" or "help me refine" on a journal entry — never shown

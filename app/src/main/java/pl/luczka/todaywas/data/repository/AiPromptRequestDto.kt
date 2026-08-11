@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class AiPromptRequestDto(
     val tone: Int,
     val thoughts: String? = null,
+    val text: String? = null,
 )
