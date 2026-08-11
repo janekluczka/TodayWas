@@ -3,7 +3,9 @@
 ## Overview
 
 Implement and deploy the `ai-proxy` Supabase Edge Function — a stateless server-side proxy that
-calls Google Gemini Flash on behalf of the future "help me start" / "help me refine" features
+calls an LLM (originally Google Gemini Flash; pivoted to an OpenRouter free-tier model during
+Phase 3/4, see Critical Implementation Details) on behalf of the future "help me start" / "help me
+refine" features
 (FR-009, FR-010), gated entirely by Supabase's built-in JWT verification (`verify_jwt = true`) so
 the Gemini API key never ships in the Android APK and no custom auth code is needed. This is the
 F-02 roadmap Foundation: no Android app code changes, no user-facing screen — S-07 (`ai-starter-
@@ -44,9 +46,14 @@ scope note.
   test the auth-gated path end to end.
 - Gemini's REST contract (confirmed via web search, since API versions move fast): `POST
   https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`, auth via an
-  `x-goog-api-key` header, body shape `{"contents": [{"parts": [{"text": "..."}]}]}`. The exact
-  current Flash model id should be confirmed at implementation time (recent search results
-  reference `gemini-3.6-flash` as of August 2026) rather than hardcoded from training data.
+  `x-goog-api-key` header, body shape `{"contents": [{"parts": [{"text": "..."}]}]}`. Superseded —
+  see Critical Implementation Details below for why this wasn't used in the end.
+- OpenRouter's REST contract (what's actually deployed): `POST
+  https://openrouter.ai/api/v1/chat/completions`, OpenAI-compatible, auth via `Authorization:
+  Bearer <key>`, body `{"model": "<id>", "messages": [{"role": "user", "content": "..."}]}`,
+  response text at `choices[0].message.content`. Free-tier (`:free`-suffixed) model ids are listed
+  at `https://openrouter.ai/api/v1/models` (public, no auth) and are known to rotate/rate-limit
+  without notice — confirmed empirically twice during Phase 3/4 (see below).
 
 ## Desired End State
 
@@ -56,10 +63,10 @@ A live, deployed `ai-proxy` Edge Function on the linked Supabase project, gated 
 - Rejects any request without a valid Supabase session JWT (401, platform-level).
 - Rejects a malformed body — missing/out-of-range `tone`, wrong types — with `400
   {"error": "invalid_request"}`.
-- On a well-formed authenticated request, calls Gemini with a prompt built only from the tone pick
-  and optional `thoughts` (never journal/habit data), and returns `200 {"text": "<generated
-  prompt>"}`.
-- Returns `502 {"error": "upstream_failed"}` if the Gemini call itself fails, without leaking the
+- On a well-formed authenticated request, calls the upstream LLM with a prompt built only from the
+  tone pick and optional `thoughts` (never journal/habit data), and returns `200 {"text":
+  "<generated prompt>"}`.
+- Returns `502 {"error": "upstream_failed"}` if the upstream call itself fails, without leaking the
   raw upstream error or the API key.
 
 Verification: every behavior above is exercised via curl (a disposable test user provides the JWT)
@@ -105,6 +112,33 @@ user, run `list_tables(schemas: ["auth"], verbose: true)` against the live proje
 real column name(s) rather than assuming `email_confirmed_at`/`confirmed_at` from general
 knowledge.
 
+### Pivoted from Gemini to OpenRouter mid-implementation (Phase 3/4)
+
+The `GEMINI_API_KEY` set in Phase 3 belonged to a billing-enabled Google Cloud project with
+depleted prepayment credits, not a zero-cost AI Studio key — every call returned `429
+RESOURCE_EXHAUSTED`, reproducible and unrelated to this function's code (confirmed via a temporary
+debug deploy that echoed the raw upstream response). Rather than debug that project's billing, the
+function was repointed at OpenRouter's OpenAI-compatible endpoint using a `:free`-suffixed model,
+with the secret renamed to `OPENROUTER_API_KEY`. Two free models were tried and failed before one
+worked: `meta-llama/llama-3.3-70b-instruct:free` had been pulled from the free tier entirely (404,
+"unavailable for free"), and `google/gemma-4-31b-it:free` hit a transient shared-pool `429`. The
+model actually deployed is `openai/gpt-oss-20b:free`, verified end-to-end in Phase 4 across three
+tone values plus a Polish-language `thoughts` input (the response matched the input language, per
+the prompt's explicit instruction). `tech-stack.md` and `infrastructure.md` were updated in place
+to record this — see their Decision History entries. **If this model is later pulled from the free
+tier too**, re-run `curl https://openrouter.ai/api/v1/models` (public, no auth) to find a current
+`:free` id and swap the `OPENROUTER_MODEL` constant in `index.ts` — no other code changes needed.
+
+### Prompt must read as first-person inner dialog, not second-person address
+
+The first Phase 4 spot-check ("Today feels bright, and you've just cracked a tough bug—let's
+celebrate...") read as a coach talking *to* the user rather than the user's own journal voice —
+flagged in manual review and fixed by rewriting `buildPrompt()`'s instruction to explicitly request
+a first-person opening line ("I ...") that reads like inner dialog the user could keep typing, with
+an explicit "do not address the reader as you" constraint. Re-verified across the same three cases
+(tone 4 + English thoughts, tone 1 + no thoughts, tone 3 + Polish thoughts) — confirmed by the user.
+Any future change to this prompt template should preserve the first-person constraint.
+
 ### The `{error: "..."}` shape is a contract future changes depend on
 
 S-07/S-08's Android client will branch on this function's error responses to distinguish "you're
@@ -130,10 +164,11 @@ behavior that don't require the Gemini secret to exist yet: the platform's auth 
 **File**: `supabase/functions/ai-proxy/index.ts`
 
 **Intent**: A single `Deno.serve` handler that parses `{tone, thoughts?}` from the request body,
-validates `tone` is an integer 1–5, maps it to a mood label, builds a Gemini prompt from the label
-and optional `thoughts` only (no journal/habit data ever touches this function, per the NFR), calls
-Gemini's `generateContent` endpoint using the `GEMINI_API_KEY` secret via `Deno.env.get`, and
-returns the generated text.
+validates `tone` is an integer 1–5, maps it to a mood label, builds a prompt from the label and
+optional `thoughts` only (no journal/habit data ever touches this function, per the NFR), calls an
+upstream LLM using an API-key secret via `Deno.env.get`, and returns the generated text. *(As
+deployed: OpenRouter's chat-completions endpoint with `OPENROUTER_API_KEY` — see Critical
+Implementation Details for why this superseded the originally-planned Gemini call.)*
 
 **Contract**:
 - Request: `POST`, JSON body `{"tone": 1-5, "thoughts"?: string}`.
@@ -212,24 +247,28 @@ limitation noted in the `account-creation-and-sync` change).
 
 ---
 
-## Phase 3: Set the Gemini secret (human step)
+## Phase 3: Set the upstream LLM secret (human step)
 
 ### Overview
 
 The one step in this change that can't be done by MCP or CLI without the raw key passing through
-chat context: you create the Gemini API key and set it directly in the Supabase dashboard.
+chat context: you create the API key and set it directly in the Supabase dashboard. Originally
+scoped as a Gemini key; pivoted to OpenRouter mid-phase after the Gemini key hit a billing issue
+unrelated to this change's code (see Critical Implementation Details).
 
 ### Changes Required:
 
-#### 1. `GEMINI_API_KEY` secret
+#### 1. `OPENROUTER_API_KEY` secret
 
-**Intent**: You obtain a Gemini API key (Google AI Studio) and add it as a secret named exactly
-`GEMINI_API_KEY` via the Supabase dashboard's Project Settings → Edge Functions → Secrets UI, on
-the same linked project. I never see or handle the raw key.
+**Intent**: You obtain an OpenRouter API key (openrouter.ai/keys, no card needed) and add it as a
+secret named exactly `OPENROUTER_API_KEY` via the Supabase dashboard's Project Settings → Edge
+Functions → Secrets UI, on the same linked project. I never see or handle the raw key. (A
+`GEMINI_API_KEY` secret was set first per the original plan, then superseded by this one once the
+Gemini project's billing issue surfaced.)
 
-**Contract**: A secret named `GEMINI_API_KEY` exists on the linked project, readable by the
-function via `Deno.env.get("GEMINI_API_KEY")`. Nothing to verify programmatically beyond Phase 4's
-success-path test actually succeeding.
+**Contract**: A secret named `OPENROUTER_API_KEY` exists on the linked project, readable by the
+function via `Deno.env.get("OPENROUTER_API_KEY")`. Nothing to verify programmatically beyond
+Phase 4's success-path test actually succeeding.
 
 ### Success Criteria:
 
@@ -239,7 +278,8 @@ success-path test actually succeeding.
 
 #### Manual Verification:
 
-- You confirm the secret is set (name matches exactly `GEMINI_API_KEY`) before Phase 4 proceeds.
+- You confirm the secret is set (name matches exactly `OPENROUTER_API_KEY`) before Phase 4
+  proceeds.
 
 ---
 
@@ -255,7 +295,7 @@ logs, and clean up the disposable test user.
 #### 1. Success-path verification
 
 **Intent**: Re-run the well-formed authenticated request from Phase 2 now that the secret exists,
-confirm a real Gemini-generated string comes back, and confirm the invocation is visible in logs.
+confirm a real upstream-generated string comes back, and confirm the invocation is visible in logs.
 
 **Contract**: Authenticated `POST` with `{"tone": 4, "thoughts": "made progress on a hard bug"}` (or
 similar) returns `200 {"text": "<non-empty string>"}`. `get_logs(service: "edge-function")`
@@ -345,20 +385,22 @@ None — stateless function, no data migration.
 - [x] 2.2 Authenticated malformed-body request returns 400 `invalid_request` — a781192
 - [x] 2.3 Authenticated well-formed request (no secret yet) returns 502 `upstream_failed` — a781192
 
-### Phase 3: Set the Gemini secret (human step)
+### Phase 3: Set the upstream LLM secret (human step)
 
 #### Manual
 
-- [ ] 3.1 `GEMINI_API_KEY` secret confirmed set in Supabase dashboard
+- [x] 3.1 `OPENROUTER_API_KEY` secret confirmed set in Supabase dashboard (supersedes the
+      originally-set `GEMINI_API_KEY`, which hit a billing issue — see Critical Implementation
+      Details)
 
 ### Phase 4: End-to-end success path and cleanup
 
 #### Automated
 
-- [ ] 4.1 Authenticated well-formed request returns 200 with non-empty `text`
-- [ ] 4.2 `get_logs(service: "edge-function")` shows the recent invocation
-- [ ] 4.3 Disposable test user deleted
+- [x] 4.1 Authenticated well-formed request returns 200 with non-empty `text`
+- [x] 4.2 `get_logs(service: "edge-function")` shows the recent invocation
+- [x] 4.3 Disposable test user deleted
 
 #### Manual
 
-- [ ] 4.4 Returned prompt text spot-checked across a couple of tone values
+- [x] 4.4 Returned prompt text spot-checked across a couple of tone values

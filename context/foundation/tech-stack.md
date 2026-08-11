@@ -32,9 +32,15 @@ starter exists for this ecosystem, so this is a documented custom pick rather th
 Local persistence uses Room (SQLite) as the default for on-device journal/habit data, matching
 FR-008's no-account-required guarantee. FR-007's optional account + auto-sync uses Supabase (Auth +
 Postgres) — solid Kotlin SDK support, Google Sign-In compatible, and avoids building/maintaining a
-custom backend solo within the timeline. FR-009/FR-010's AI-generated tone-based prompts use Google
-Gemini Flash: its free tier (60 req/min) very likely covers the entire MVP's AI usage at zero cost,
-given the capped 3-regenerations-per-entry limit and ~500-1000 target users. Deployment is
+custom backend solo within the timeline. FR-009/FR-010's AI-generated tone-based prompts originally
+targeted Google Gemini Flash directly, but switched to OpenRouter's free-tier models
+(`openrouter.ai/api/v1/chat/completions`, OpenAI-compatible request shape) during
+`ai-assist-proxy-foundation` implementation: the provisioned Gemini API key's Google Cloud project
+had billing enabled with depleted prepayment credits rather than being a genuine zero-cost AI
+Studio key, and OpenRouter's `:free`-suffixed models sidestep that without needing a
+billing-verified Google Cloud project. This is a second vendor/account beyond Supabase, accepted as
+the pragmatic unblock; free-model availability on OpenRouter is known to rotate without notice, a
+standing risk noted in `infrastructure.md`. Deployment is
 internal/sideload only for the MVP — no Play Store listing yet, revisited after the deadline. CI
 runs on GitHub Actions with build+test on every merge to main; actual release signing/publishing
 stays a manual step since there's no store listing yet. All five self-check points came back clean
