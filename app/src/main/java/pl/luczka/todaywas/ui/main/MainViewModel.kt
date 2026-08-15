@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.model.AuthError
+import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.JournalContributionCalculator
@@ -177,6 +179,10 @@ class MainViewModel @Inject constructor(
                     isSignOutConfirmVisible = if (result.isSuccess) false else it.isSignOutConfirmVisible,
                     isAccountSheetVisible = if (result.isSuccess) false else it.isAccountSheetVisible,
                 )
+            }
+            if (result.isFailure) {
+                val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+                eventChannel.trySend(MainUiEvent.ShowError(error.toUiState()))
             }
         }
     }

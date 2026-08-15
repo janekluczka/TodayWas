@@ -14,9 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,9 +42,13 @@ import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingAct
 import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.progress.DsLoadingIndicator
+import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.auth.message
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
@@ -65,6 +71,8 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -75,6 +83,7 @@ fun MainScreen(
                 MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
                 is MainUiEvent.NavigateToHabitDetail -> onHabitClicked(event.habitId)
                 MainUiEvent.NavigateToAccount -> onAccountClicked()
+                is MainUiEvent.ShowError -> snackbarHostState.showSnackbar(errorMessages.getValue(event.error))
             }
         }
     }
@@ -82,6 +91,7 @@ fun MainScreen(
     MainScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -89,6 +99,7 @@ fun MainScreen(
 private fun MainScreenContent(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     DsScaffold(
         topBar = {
@@ -105,6 +116,7 @@ private fun MainScreenContent(
             )
         },
         floatingActionButton = { MainFab(uiState, onIntent) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(
@@ -140,7 +152,7 @@ private fun AccountBottomSheet(
                 .padding(DsSpacing.space600),
         ) {
             when (val authState = uiState.authState) {
-                AuthStateUi.Loading -> Unit
+                AuthStateUi.Loading -> DsLoadingIndicator()
                 is AuthStateUi.SignedIn -> {
                     DsText(text = authState.email ?: stringResource(R.string.preferences_signed_in_no_email))
                     DsButtonWithLoading(
@@ -396,6 +408,10 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                 ),
             ),
             fabActions = listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.Loading,
+            isAccountSheetVisible = true,
         ),
         previewMainUiState(
             authState = AuthStateUi.SignedOut,

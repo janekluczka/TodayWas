@@ -22,7 +22,6 @@ import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.model.OnboardingState
-import pl.luczka.todaywas.domain.usecase.ClearSyncedLocalDataUseCase
 import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
@@ -52,8 +51,7 @@ class AccountViewModelTest {
         signUpWithEmail = SignUpWithEmailUseCase(repository),
         signInWithEmail = SignInWithEmailUseCase(repository),
         signInWithGoogle = SignInWithGoogleUseCase(repository),
-        signOut = SignOutUseCase(repository),
-        clearSyncedLocalData = ClearSyncedLocalDataUseCase(journalRepository, habitRepository, onboardingRepository),
+        signOut = SignOutUseCase(repository, journalRepository, habitRepository, onboardingRepository),
         getLocalDataSummary = GetLocalDataSummaryUseCase(journalRepository, habitRepository),
         syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
         markLocalDataSynced = MarkLocalDataSyncedUseCase(onboardingRepository),

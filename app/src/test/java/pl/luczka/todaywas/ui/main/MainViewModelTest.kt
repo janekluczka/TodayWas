@@ -18,6 +18,7 @@ import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributi
 import pl.luczka.todaywas.data.repository.FakeAuthRepository
 import pl.luczka.todaywas.data.repository.FakeHabitRepository
 import pl.luczka.todaywas.data.repository.FakeJournalRepository
+import pl.luczka.todaywas.data.repository.FakeOnboardingRepository
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.Habit
@@ -90,13 +91,14 @@ class MainViewModelTest {
     ): MainViewModel {
         val journalRepository = FakeJournalRepository(entries)
         val habitRepository = FakeHabitRepository(habits, checkIns)
+        val onboardingRepository = FakeOnboardingRepository()
         return MainViewModel(
             observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
             observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
             observeAuthState = ObserveAuthStateUseCase(authRepository),
             syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
-            signOut = SignOutUseCase(authRepository),
+            signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
             clock = clock,
         )
     }
@@ -421,6 +423,7 @@ class MainViewModelTest {
             // Arrange
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
             val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
 
             // Act
@@ -430,7 +433,7 @@ class MainViewModelTest {
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
-                signOut = SignOutUseCase(authRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
                 clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
             )
 
@@ -445,6 +448,7 @@ class MainViewModelTest {
             // Arrange
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
             val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)
 
             // Act
@@ -454,7 +458,7 @@ class MainViewModelTest {
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
-                signOut = SignOutUseCase(authRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
                 clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
             )
 
@@ -593,5 +597,66 @@ class MainViewModelTest {
             assertTrue(!state.isSigningOut)
             assertTrue(state.isSignOutConfirmVisible)
             assertTrue(state.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should clear synced local data when SignOutConfirmed succeeds`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val viewModel = MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+            )
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(1, journalRepository.clearLocalCallCount)
+            assertEquals(1, habitRepository.clearLocalCallCount)
+            assertEquals(1, onboardingRepository.resetSyncFlagCallCount)
+        }
+
+    @Test
+    fun `should not clear local data when SignOutConfirmed fails`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            authRepository.signOutError = AuthError.Unknown
+            val viewModel = MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+            )
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(0, journalRepository.clearLocalCallCount)
+            assertEquals(0, habitRepository.clearLocalCallCount)
+            assertEquals(0, onboardingRepository.resetSyncFlagCallCount)
         }
 }
