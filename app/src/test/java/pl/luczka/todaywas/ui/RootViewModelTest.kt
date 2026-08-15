@@ -13,7 +13,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.data.repository.OnboardingRepository
-import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.OnboardingState
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
 
@@ -28,7 +27,7 @@ class RootViewModelTest {
 
         override fun observeState(): Flow<OnboardingState> = stateFlow
 
-        override suspend fun saveFocus(focus: Focus): Result<Unit> = Result.success(Unit)
+        override suspend fun completeOnboarding(): Result<Unit> = Result.success(Unit)
 
         override suspend fun markLocalDataSynced(): Result<Unit> = Result.success(Unit)
 
@@ -53,11 +52,7 @@ class RootViewModelTest {
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository(
-                OnboardingState(
-                    completed = false,
-                    focus = null,
-                    hasSyncedLocalData = false,
-                ),
+                OnboardingState(completed = false, hasSyncedLocalData = false),
             )
 
             // Act
@@ -73,11 +68,7 @@ class RootViewModelTest {
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository(
-                OnboardingState(
-                    completed = true,
-                    focus = Focus.BOTH,
-                    hasSyncedLocalData = false,
-                ),
+                OnboardingState(completed = true, hasSyncedLocalData = false),
             )
 
             // Act
@@ -93,22 +84,14 @@ class RootViewModelTest {
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository(
-                OnboardingState(
-                    completed = false,
-                    focus = null,
-                    hasSyncedLocalData = false,
-                ),
+                OnboardingState(completed = false, hasSyncedLocalData = false),
             )
             val viewModel = viewModel(repository)
             assertEquals(OnboardingKey, viewModel.initialDestination.value)
 
             // Act
-            // Mirrors selecting a focus mid-flow: Room flips `completed` before Account/All-set show.
-            repository.stateFlow.value = OnboardingState(
-                completed = true,
-                focus = Focus.JOURNAL,
-                hasSyncedLocalData = false,
-            )
+            // Mirrors reaching ALL_SET (or Skip) mid-flow: Room flips `completed` before Main shows.
+            repository.stateFlow.value = OnboardingState(completed = true, hasSyncedLocalData = false)
 
             // Assert
             assertEquals(OnboardingKey, viewModel.initialDestination.value)

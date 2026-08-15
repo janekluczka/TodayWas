@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "user_preferences")
 data class UserPreferencesEntity(
     @PrimaryKey val id: Int = 0,
-    val focus: String,
     val onboardingCompleted: Boolean,
     val hasSyncedLocalData: Boolean = false,
 )

@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 class TodayWasDatabaseTest {
 
     @Test
-    fun `should survive recreating the database instance from the same file when a focus was saved`() =
+    fun `should survive recreating the database instance from the same file when onboarding was completed`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
@@ -26,10 +26,7 @@ class TodayWasDatabaseTest {
 
             // Act
             db1.userPreferencesDao().upsert(
-                UserPreferencesEntity(
-                    focus = "JOURNAL",
-                    onboardingCompleted = true,
-                ),
+                UserPreferencesEntity(onboardingCompleted = true),
             )
             db1.close()
             val db2 = Room
@@ -40,7 +37,6 @@ class TodayWasDatabaseTest {
             db2.close()
 
             // Assert
-            assertEquals("JOURNAL", persisted?.focus)
             assertEquals(true, persisted?.onboardingCompleted)
         }
 }

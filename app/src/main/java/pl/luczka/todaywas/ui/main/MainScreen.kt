@@ -2,7 +2,6 @@ package pl.luczka.todaywas.ui.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,9 +12,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,19 +30,29 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
+import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
+import pl.luczka.todaywas.core.designsystem.components.dialogs.DsModalBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.progress.DsLoadingIndicator
+import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.auth.message
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
-import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
@@ -54,9 +67,12 @@ fun MainScreen(
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
     onHabitClicked: (String) -> Unit,
+    onAccountClicked: () -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -66,6 +82,8 @@ fun MainScreen(
                 MainUiEvent.NavigateToCreateHabit -> onCreateHabitClicked()
                 MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
                 is MainUiEvent.NavigateToHabitDetail -> onHabitClicked(event.habitId)
+                MainUiEvent.NavigateToAccount -> onAccountClicked()
+                is MainUiEvent.ShowError -> snackbarHostState.showSnackbar(errorMessages.getValue(event.error))
             }
         }
     }
@@ -73,6 +91,7 @@ fun MainScreen(
     MainScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -80,29 +99,99 @@ fun MainScreen(
 private fun MainScreenContent(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     DsScaffold(
-        topBar = { DsTopBar(title = stringResource(R.string.main_top_bar_title)) },
+        topBar = {
+            DsTopBar(
+                title = stringResource(R.string.main_top_bar_title),
+                actions = {
+                    DsIconButton(onClick = { onIntent(MainIntent.AccountIconClicked) }) {
+                        DsIcon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = stringResource(R.string.content_description_account),
+                        )
+                    }
+                },
+            )
+        },
         floatingActionButton = { MainFab(uiState, onIntent) },
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            when (uiState.focus) {
-                null -> DsText(text = stringResource(R.string.main_empty_state))
-                FocusUiState.JOURNAL -> JournalSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
-                FocusUiState.HABIT -> HabitSection(uiState, onIntent, modifier = Modifier.fillMaxSize())
-                FocusUiState.BOTH ->
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        JournalSection(uiState, onIntent, modifier = Modifier.weight(1f))
-                        HabitSection(uiState, onIntent, modifier = Modifier.weight(1f))
-                    }
+            JournalSection(uiState, onIntent, modifier = Modifier.weight(1f))
+            HabitSection(uiState, onIntent, modifier = Modifier.weight(1f))
+        }
+    }
+
+    if (uiState.isAccountSheetVisible) {
+        AccountBottomSheet(uiState, onIntent)
+    }
+
+    if (uiState.isSignOutConfirmVisible) {
+        SignOutConfirmDialog(onIntent)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AccountBottomSheet(
+    uiState: MainUiState,
+    onIntent: (MainIntent) -> Unit,
+) {
+    DsModalBottomSheet(onDismissRequest = { onIntent(MainIntent.AccountSheetDismissed) }) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(DsSpacing.space600),
+        ) {
+            when (val authState = uiState.authState) {
+                AuthStateUi.Loading -> DsLoadingIndicator()
+                is AuthStateUi.SignedIn -> {
+                    DsText(text = authState.email ?: stringResource(R.string.preferences_signed_in_no_email))
+                    DsButtonWithLoading(
+                        text = stringResource(R.string.preferences_sign_out_cta),
+                        onClick = { onIntent(MainIntent.SignOutClicked) },
+                        loading = uiState.isSigningOut,
+                    )
+                }
+                AuthStateUi.SignedOut -> {
+                    DsText(text = stringResource(R.string.account_sheet_signed_out_description))
+                    DsButton(
+                        text = stringResource(R.string.onboarding_account_signin_signup_cta),
+                        onClick = { onIntent(MainIntent.SignInSignUpPromptClicked) },
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun SignOutConfirmDialog(onIntent: (MainIntent) -> Unit) {
+    DsAlertDialog(
+        onDismissRequest = { onIntent(MainIntent.SignOutCancelled) },
+        confirmButton = {
+            DsTextButton(
+                text = stringResource(R.string.account_sign_out_confirm_cta),
+                onClick = { onIntent(MainIntent.SignOutConfirmed) },
+            )
+        },
+        dismissButton = {
+            DsTextButton(
+                text = stringResource(R.string.account_sign_out_cancel_cta),
+                onClick = { onIntent(MainIntent.SignOutCancelled) },
+            )
+        },
+        title = { DsText(text = stringResource(R.string.account_sign_out_confirm_title)) },
+        text = { DsText(text = stringResource(R.string.account_sign_out_confirm_message)) },
+    )
 }
 
 @Composable
@@ -284,28 +373,10 @@ private fun HabitCheckInStatusUiState.displayText(): String = when (this) {
 
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
     override val values = sequenceOf(
-        MainUiState(
-            focus = null,
-            journalEntries = emptyList(),
-            habits = emptyList(),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            fabActions = emptyList(),
-            fabExpanded = false,
+        previewMainUiState(
+            fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY, FabActionUiState.CREATE_HABIT),
         ),
-        MainUiState(
-            focus = FocusUiState.JOURNAL,
-            journalEntries = emptyList(),
-            habits = emptyList(),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY),
-            fabExpanded = false,
-        ),
-        MainUiState(
-            focus = FocusUiState.BOTH,
+        previewMainUiState(
             journalEntries = listOf(
                 JournalEntryUiState(
                     id = "1",
@@ -322,16 +393,6 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     createdAt = Instant.now(),
                 ),
             ),
-            habits = emptyList(),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            fabActions = emptyList(),
-            fabExpanded = false,
-        ),
-        MainUiState(
-            focus = FocusUiState.HABIT,
-            journalEntries = emptyList(),
             habits = listOf(
                 HabitUiState(
                     id = "1",
@@ -346,14 +407,48 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 4),
                 ),
             ),
-            journalContributionGrid = previewJournalContributionGrid,
-            journalAvailableWindows = previewJournalAvailableWindows,
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
-            fabExpanded = false,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.Loading,
+            isAccountSheetVisible = true,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.SignedOut,
+            isAccountSheetVisible = true,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            isAccountSheetVisible = true,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.SignedIn(email = "person@example.com"),
+            isAccountSheetVisible = true,
+            isSignOutConfirmVisible = true,
         ),
     )
 }
+
+private fun previewMainUiState(
+    journalEntries: List<JournalEntryUiState> = emptyList(),
+    habits: List<HabitUiState> = emptyList(),
+    fabActions: List<FabActionUiState> = emptyList(),
+    authState: AuthStateUi = AuthStateUi.SignedOut,
+    isAccountSheetVisible: Boolean = false,
+    isSignOutConfirmVisible: Boolean = false,
+) = MainUiState(
+    journalEntries = journalEntries,
+    habits = habits,
+    journalContributionGrid = previewJournalContributionGrid,
+    journalAvailableWindows = previewJournalAvailableWindows,
+    journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+    fabActions = fabActions,
+    fabExpanded = false,
+    authState = authState,
+    isAccountSheetVisible = isAccountSheetVisible,
+    isSignOutConfirmVisible = isSignOutConfirmVisible,
+    isSigningOut = false,
+)
 
 private val previewJournalContributionGrid = ContributionGridUiState(cells = emptyList())
 

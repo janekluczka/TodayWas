@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.UserPreferencesDao
 import pl.luczka.todaywas.data.local.UserPreferencesEntity
-import pl.luczka.todaywas.domain.model.Focus
 import pl.luczka.todaywas.domain.model.OnboardingState
 import javax.inject.Inject
 
@@ -18,17 +17,14 @@ class OnboardingRepositoryImpl @Inject constructor(
         dao.observe().map { entity ->
             OnboardingState(
                 completed = entity?.onboardingCompleted ?: false,
-                focus = entity?.focus?.let { Focus.valueOf(it) },
                 hasSyncedLocalData = entity?.hasSyncedLocalData ?: false,
             )
         }
 
-    override suspend fun saveFocus(focus: Focus): Result<Unit> {
+    override suspend fun completeOnboarding(): Result<Unit> {
         val entity = dao.observe().first()?.copy(
-            focus = focus.name,
             onboardingCompleted = true,
         ) ?: UserPreferencesEntity(
-            focus = focus.name,
             onboardingCompleted = true,
         )
         return upsertWithRetry(entity)

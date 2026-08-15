@@ -18,9 +18,9 @@ class RootViewModel @Inject constructor(
     private val _initialDestination = MutableStateFlow<TodayWasKey?>(null)
     val initialDestination: StateFlow<TodayWasKey?> = _initialDestination.asStateFlow()
 
-    // Guards the one-time routing decision — a focus confirmed mid-onboarding flips the
-    // persisted `completed` flag before the Account/All-set steps are shown, so later
-    // emissions must not re-trigger routing (see OnboardingRepositoryImpl.saveFocus()).
+    // Guards the one-time routing decision — onboarding flips the persisted `completed` flag
+    // when the user reaches All-set (or taps Skip from any step), so later emissions must not
+    // re-trigger routing (see OnboardingRepositoryImpl.completeOnboarding()).
     private var initialized = false
 
     init {

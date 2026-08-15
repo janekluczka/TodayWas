@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.model.AuthError
+import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.JournalContributionCalculator
@@ -23,12 +25,12 @@ import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
-import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
-import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
@@ -40,12 +42,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    observeOnboardingState: ObserveOnboardingStateUseCase,
     observeJournalEntries: ObserveJournalEntriesUseCase,
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val observeAuthState: ObserveAuthStateUseCase,
     private val syncLocalData: SyncLocalDataUseCase,
+    private val signOut: SignOutUseCase,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -53,7 +55,6 @@ class MainViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         MainUiState(
-            focus = null,
             journalEntries = emptyList(),
             habits = emptyList(),
             journalContributionGrid = JournalContributionCalculator
@@ -66,6 +67,10 @@ class MainViewModel @Inject constructor(
             journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = emptyList(),
             fabExpanded = false,
+            authState = AuthStateUi.Loading,
+            isAccountSheetVisible = false,
+            isSignOutConfirmVisible = false,
+            isSigningOut = false,
         ),
     )
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -92,13 +97,11 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val rawSources = combine(
-                observeOnboardingState(),
                 observeJournalEntries(),
                 observeAddableJournalDateSlots(),
                 observeHabitCheckInBoard(),
-            ) { onboardingState, entries, addableSlots, board ->
+            ) { entries, addableSlots, board ->
                 RawMainSources(
-                    focus = onboardingState.focus?.toUiState(),
                     journalEntries = entries.map { it.toUiState() },
                     addableSlots = addableSlots.map { it.toUiState() },
                     habits = board.toHabitUiStates(),
@@ -106,7 +109,6 @@ class MainViewModel @Inject constructor(
             }
             combine(rawSources, selectedJournalWindow, journalContributionData) { raw, selectedWindow, contribution ->
                 CombinedMainState(
-                    focus = raw.focus,
                     journalEntries = raw.journalEntries,
                     addableSlots = raw.addableSlots,
                     habits = raw.habits,
@@ -117,13 +119,12 @@ class MainViewModel @Inject constructor(
             }.collect { combined ->
                 _uiState.update {
                     it.copy(
-                        focus = combined.focus,
                         journalEntries = combined.journalEntries,
                         habits = combined.habits,
                         journalContributionGrid = combined.journalContributionGrid,
                         journalAvailableWindows = combined.journalAvailableWindows,
                         journalSelectedWindow = combined.journalSelectedWindow,
-                        fabActions = combined.focus.toFabActions(combined.addableSlots, combined.habits),
+                        fabActions = toFabActions(combined.addableSlots, combined.habits),
                     )
                 }
             }
@@ -137,6 +138,13 @@ class MainViewModel @Inject constructor(
                 syncLocalData()
             }
         }
+        // Feeds the account bottom sheet live — a continuous collect, unlike the one-shot first{}
+        // above, so sign-out (or a session expiring) updates the open sheet in place.
+        viewModelScope.launch {
+            observeAuthState().collect { state ->
+                _uiState.update { it.copy(authState = state.toUiState()) }
+            }
+        }
     }
 
     fun onIntent(intent: MainIntent) {
@@ -146,6 +154,36 @@ class MainViewModel @Inject constructor(
             is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
             is MainIntent.HabitClicked -> onHabitClicked(intent.habit)
             is MainIntent.JournalWindowSelected -> onJournalWindowSelected(intent.window)
+            MainIntent.AccountIconClicked -> _uiState.update { it.copy(isAccountSheetVisible = true) }
+            MainIntent.AccountSheetDismissed -> _uiState.update { it.copy(isAccountSheetVisible = false) }
+            MainIntent.SignInSignUpPromptClicked -> onSignInSignUpPromptClicked()
+            MainIntent.SignOutClicked -> _uiState.update { it.copy(isSignOutConfirmVisible = true) }
+            MainIntent.SignOutConfirmed -> onSignOutConfirmed()
+            MainIntent.SignOutCancelled -> _uiState.update { it.copy(isSignOutConfirmVisible = false) }
+        }
+    }
+
+    private fun onSignInSignUpPromptClicked() {
+        _uiState.update { it.copy(isAccountSheetVisible = false) }
+        eventChannel.trySend(MainUiEvent.NavigateToAccount)
+    }
+
+    private fun onSignOutConfirmed() {
+        if (_uiState.value.isSigningOut) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSigningOut = true) }
+            val result = signOut()
+            _uiState.update {
+                it.copy(
+                    isSigningOut = false,
+                    isSignOutConfirmVisible = if (result.isSuccess) false else it.isSignOutConfirmVisible,
+                    isAccountSheetVisible = if (result.isSuccess) false else it.isAccountSheetVisible,
+                )
+            }
+            if (result.isFailure) {
+                val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+                eventChannel.trySend(MainUiEvent.ShowError(error.toUiState()))
+            }
         }
     }
 
@@ -174,22 +212,16 @@ class MainViewModel @Inject constructor(
         eventChannel.trySend(MainUiEvent.NavigateToHabitDetail(habit.id))
     }
 
-    private fun FocusUiState?.toFabActions(
+    private fun toFabActions(
         addableSlots: List<JournalDateSlotUiState>,
         habits: List<HabitUiState>,
-    ): List<FabActionUiState> {
-        val journalActionAvailable =
-            (this == FocusUiState.JOURNAL || this == FocusUiState.BOTH) && addableSlots.isNotEmpty()
-        val habitFocusActive = this == FocusUiState.HABIT || this == FocusUiState.BOTH
-        return listOfNotNull(
-            FabActionUiState.ADD_JOURNAL_ENTRY.takeIf { journalActionAvailable },
-            FabActionUiState.CREATE_HABIT.takeIf { habitFocusActive },
-            FabActionUiState.LOG_HABIT_CHECK_INS.takeIf { habitFocusActive && habits.isNotEmpty() },
-        )
-    }
+    ): List<FabActionUiState> = listOfNotNull(
+        FabActionUiState.ADD_JOURNAL_ENTRY.takeIf { addableSlots.isNotEmpty() },
+        FabActionUiState.CREATE_HABIT,
+        FabActionUiState.LOG_HABIT_CHECK_INS.takeIf { habits.isNotEmpty() },
+    )
 
     private data class RawMainSources(
-        val focus: FocusUiState?,
         val journalEntries: List<JournalEntryUiState>,
         val addableSlots: List<JournalDateSlotUiState>,
         val habits: List<HabitUiState>,
@@ -201,7 +233,6 @@ class MainViewModel @Inject constructor(
     )
 
     private data class CombinedMainState(
-        val focus: FocusUiState?,
         val journalEntries: List<JournalEntryUiState>,
         val addableSlots: List<JournalDateSlotUiState>,
         val habits: List<HabitUiState>,

@@ -4,14 +4,11 @@ import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.FocusUiState
 import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
 
 @Immutable
 data class OnboardingUiState(
     val step: OnboardingStep,
-    val selectedFocus: FocusUiState?,
-    val confirmedFocus: FocusUiState?,
     val isSaving: Boolean,
     val saveError: Boolean,
     val accountSubStep: AccountSubStep,

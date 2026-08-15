@@ -13,15 +13,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
+import pl.luczka.todaywas.domain.usecase.CompleteOnboardingUseCase
 import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
-import pl.luczka.todaywas.domain.usecase.SelectFocusUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
-import pl.luczka.todaywas.domain.usecase.SkipOnboardingUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
@@ -29,15 +28,12 @@ import pl.luczka.todaywas.ui.auth.isValidEmail
 import pl.luczka.todaywas.ui.auth.isValidPassword
 import pl.luczka.todaywas.ui.auth.isValidRepeatPassword
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.FocusUiState
-import pl.luczka.todaywas.ui.model.toDomain
 import pl.luczka.todaywas.ui.model.toUiState
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val selectFocus: SelectFocusUseCase,
-    private val skipOnboarding: SkipOnboardingUseCase,
+    private val completeOnboarding: CompleteOnboardingUseCase,
     observeAuthState: ObserveAuthStateUseCase,
     observeOnboardingState: ObserveOnboardingStateUseCase,
     private val signUpWithEmail: SignUpWithEmailUseCase,
@@ -51,8 +47,6 @@ class OnboardingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         OnboardingUiState(
             step = OnboardingStep.WELCOME,
-            selectedFocus = null,
-            confirmedFocus = null,
             isSaving = false,
             saveError = false,
             accountSubStep = AccountSubStep.CHOICE,
@@ -87,7 +81,6 @@ class OnboardingViewModel @Inject constructor(
             OnboardingIntent.NextClicked -> onNextClicked()
             OnboardingIntent.SkipClicked -> onSkipClicked()
             OnboardingIntent.StepBack -> onStepBack()
-            is OnboardingIntent.FocusOptionSelected -> onFocusOptionSelected(intent.focus)
             OnboardingIntent.ContinueWithoutAccountClicked -> onContinueWithoutAccountClicked()
             OnboardingIntent.SignInSignUpClicked ->
                 _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_IN) }
@@ -109,23 +102,19 @@ class OnboardingViewModel @Inject constructor(
 
     private fun onNextClicked() {
         when (_uiState.value.step) {
-            OnboardingStep.WELCOME -> _uiState.update { it.copy(step = OnboardingStep.FOCUS_PICK) }
-            OnboardingStep.FOCUS_PICK -> onConfirmFocus()
-            OnboardingStep.ACCOUNT_INFO -> {
-                val reason = if (_uiState.value.authState is AuthStateUi.SignedIn) {
-                    AllSetReason.SIGNED_IN
-                } else {
-                    AllSetReason.NO_ACCOUNT
-                }
-                _uiState.update { it.copy(step = OnboardingStep.ALL_SET, allSetReason = reason) }
-            }
+            OnboardingStep.WELCOME -> _uiState.update { it.copy(step = OnboardingStep.ACCOUNT_INFO) }
+            OnboardingStep.ACCOUNT_INFO -> onCompleteAccountStep()
             OnboardingStep.ALL_SET -> eventChannel.trySend(OnboardingUiEvent.Finished)
         }
     }
 
-    private fun onConfirmFocus() {
+    private fun onCompleteAccountStep() {
         if (_uiState.value.isSaving) return
-        val focus = _uiState.value.selectedFocus ?: return
+        val reason = if (_uiState.value.authState is AuthStateUi.SignedIn) {
+            AllSetReason.SIGNED_IN
+        } else {
+            AllSetReason.NO_ACCOUNT
+        }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -133,31 +122,31 @@ class OnboardingViewModel @Inject constructor(
                     saveError = false,
                 )
             }
-            val result = selectFocus(focus.toDomain())
-            _uiState.update { current ->
-                if (result.isSuccess) {
-                    current.copy(
-                        isSaving = false,
-                        confirmedFocus = focus,
-                        step = OnboardingStep.ACCOUNT_INFO,
-                    )
-                } else {
-                    current.copy(
-                        isSaving = false,
-                        saveError = true,
-                    )
-                }
+            val result = reachAllSet(reason)
+            _uiState.update {
+                it.copy(
+                    isSaving = false,
+                    saveError = result.isFailure,
+                )
             }
         }
     }
 
-    private fun onFocusOptionSelected(focus: FocusUiState) {
-        _uiState.update { it.copy(selectedFocus = focus) }
+    // The single place onboarding is marked complete for every path that actually visits the
+    // ALL_SET step. SkipClicked bypasses ALL_SET entirely (it finishes straight from wherever the
+    // user is) and persists via completeOnboarding() directly instead. Both persist before
+    // advancing so RootViewModel's routing decision on a later cold start never races an
+    // unpersisted completion.
+    private suspend fun reachAllSet(reason: AllSetReason): Result<Unit> {
+        val result = completeOnboarding()
+        if (result.isSuccess) {
+            _uiState.update { it.copy(step = OnboardingStep.ALL_SET, allSetReason = reason) }
+        }
+        return result
     }
 
     private fun onStepBack() {
         when (_uiState.value.step) {
-            OnboardingStep.FOCUS_PICK -> _uiState.update { it.copy(step = OnboardingStep.WELCOME) }
             OnboardingStep.ACCOUNT_INFO -> onAccountInfoStepBack()
             OnboardingStep.ALL_SET -> _uiState.update { it.copy(step = OnboardingStep.ACCOUNT_INFO) }
             OnboardingStep.WELCOME -> eventChannel.trySend(OnboardingUiEvent.ExitApp)
@@ -169,22 +158,12 @@ class OnboardingViewModel @Inject constructor(
             AccountSubStep.SIGN_UP -> _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_IN) }
             AccountSubStep.SIGN_IN -> _uiState.update { it.copy(accountSubStep = AccountSubStep.CHOICE) }
             AccountSubStep.DATA_SYNC_REVIEW -> Unit
-            AccountSubStep.CHOICE ->
-                _uiState.update {
-                    it.copy(
-                        step = OnboardingStep.FOCUS_PICK,
-                        selectedFocus = it.confirmedFocus,
-                    )
-                }
+            AccountSubStep.CHOICE -> _uiState.update { it.copy(step = OnboardingStep.WELCOME) }
         }
     }
 
     private fun onSkipClicked() {
         if (_uiState.value.isSaving) return
-        if (_uiState.value.confirmedFocus != null) {
-            eventChannel.trySend(OnboardingUiEvent.Finished)
-            return
-        }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -192,7 +171,7 @@ class OnboardingViewModel @Inject constructor(
                     saveError = false,
                 )
             }
-            val result = skipOnboarding()
+            val result = completeOnboarding()
             _uiState.update {
                 it.copy(
                     isSaving = false,
@@ -206,7 +185,7 @@ class OnboardingViewModel @Inject constructor(
     }
 
     private fun onContinueWithoutAccountClicked() {
-        _uiState.update { it.copy(step = OnboardingStep.ALL_SET, allSetReason = AllSetReason.NO_ACCOUNT) }
+        viewModelScope.launch { reachAllSet(AllSetReason.NO_ACCOUNT) }
     }
 
     private fun onSignInEmailChanged(value: String) {
@@ -329,7 +308,7 @@ class OnboardingViewModel @Inject constructor(
             }
         } else {
             viewModelScope.launch { syncLocalData() }
-            _uiState.update { it.copy(step = OnboardingStep.ALL_SET, allSetReason = reason) }
+            reachAllSet(reason)
         }
     }
 
@@ -339,24 +318,15 @@ class OnboardingViewModel @Inject constructor(
             _uiState.update { it.copy(isSyncing = true) }
             val result = syncLocalData()
             if (result.isSuccess) markLocalDataSynced()
-            _uiState.update {
-                it.copy(
-                    isSyncing = false,
-                    dataSyncSummary = null,
-                    step = OnboardingStep.ALL_SET,
-                    allSetReason = pendingAllSetReason,
-                )
-            }
+            reachAllSet(pendingAllSetReason)
+            _uiState.update { it.copy(isSyncing = false, dataSyncSummary = null) }
         }
     }
 
     private fun onSyncSkipClicked() {
-        _uiState.update {
-            it.copy(
-                dataSyncSummary = null,
-                step = OnboardingStep.ALL_SET,
-                allSetReason = pendingAllSetReason,
-            )
+        viewModelScope.launch {
+            reachAllSet(pendingAllSetReason)
+            _uiState.update { it.copy(dataSyncSummary = null) }
         }
     }
 }

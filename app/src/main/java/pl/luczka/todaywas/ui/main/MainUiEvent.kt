@@ -1,5 +1,6 @@
 package pl.luczka.todaywas.ui.main
 
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 
 sealed interface MainUiEvent {
@@ -16,5 +17,11 @@ sealed interface MainUiEvent {
 
     data class NavigateToHabitDetail(
         val habitId: String,
+    ) : MainUiEvent
+
+    data object NavigateToAccount : MainUiEvent
+
+    data class ShowError(
+        val error: AuthErrorUiState,
     ) : MainUiEvent
 }
