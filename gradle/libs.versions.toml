@@ -19,7 +19,7 @@ androidxHiltLifecycleViewmodelCompose = "1.3.0"
 nav3Core = "1.1.4"
 kotlinxSerializationCore = "1.9.0"
 supabaseBom = "3.7.0"
-ktorClientOkhttp = "3.5.1"
+ktorClientOkhttp = "3.5.2"
 androidxCredentials = "1.6.0"
 googleid = "1.1.1"
 
