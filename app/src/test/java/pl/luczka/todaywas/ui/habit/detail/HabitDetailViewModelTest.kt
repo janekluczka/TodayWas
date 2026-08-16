@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.habit
+package pl.luczka.todaywas.ui.habit.detail
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

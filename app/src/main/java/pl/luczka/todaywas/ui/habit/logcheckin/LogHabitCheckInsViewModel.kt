@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.habit
+package pl.luczka.todaywas.ui.habit.logcheckin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.ui.habit.mapper.toRows
 import java.time.LocalDate
 import javax.inject.Inject
 

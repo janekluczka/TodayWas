@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.habit
+package pl.luczka.todaywas.ui.habit.detail
 
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.LocalDate

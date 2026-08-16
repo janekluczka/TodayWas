@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.habit
+package pl.luczka.todaywas.ui.habit.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -10,9 +10,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import pl.luczka.todaywas.ui.account.AccountScreen
-import pl.luczka.todaywas.ui.habit.CreateHabitScreen
-import pl.luczka.todaywas.ui.habit.HabitDetailScreen
-import pl.luczka.todaywas.ui.habit.LogHabitCheckInsScreen
+import pl.luczka.todaywas.ui.habit.create.CreateHabitScreen
+import pl.luczka.todaywas.ui.habit.detail.HabitDetailScreen
+import pl.luczka.todaywas.ui.habit.logcheckin.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen

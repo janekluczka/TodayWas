@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.habit
+package pl.luczka.todaywas.ui.habit.detail
 
 import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.model.ContributionGridUiState

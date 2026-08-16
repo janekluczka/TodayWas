@@ -1,10 +1,9 @@
-package pl.luczka.todaywas.ui.habit.mapper
+package pl.luczka.todaywas.ui.habit.logcheckin
 
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.model.HabitType
-import pl.luczka.todaywas.ui.habit.HabitCheckInRowUiState
 import pl.luczka.todaywas.ui.mapper.toUiState
 import java.time.LocalDate
 

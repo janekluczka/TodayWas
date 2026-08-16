@@ -98,8 +98,9 @@ ui/
                    LocalDataSummaryMapper)
   habit/
     create/      — CreateHabitIntent/UiEvent/UiState/Screen/ViewModel
-    detail/      — HabitDetailIntent/UiEvent/UiState/Screen/ViewModel + detail/mapper/HabitDetailMapper
-    logcheckin/  — LogHabitCheckInsIntent/UiEvent/UiState/Screen/ViewModel + logcheckin/mapper/LogHabitCheckInsMapper
+    detail/      — HabitDetailIntent/UiEvent/UiState/Screen/ViewModel/HabitDetailMapper (flat — a
+                   nested mapper/ subpackage was dropped as unnecessary for a single mapper file)
+    logcheckin/  — LogHabitCheckInsIntent/UiEvent/UiState/Screen/ViewModel/LogHabitCheckInsMapper (flat)
   journal/
     create/      — AddJournalEntryIntent/UiEvent/UiState/Screen/ViewModel, HelpMeStartStep/UiState
     detail/      — JournalEntryDetailIntent/UiEvent/UiState/Screen/ViewModel, HelpMeRefineStep/UiState
@@ -566,7 +567,9 @@ in one package (resolved by receiver type, not by import). Moving them all into 
 `ui/habit/` bundles 3 independent flows (create a habit, view/edit a habit's history, log today's
 check-ins) flat in one package. Split into `ui/habit/create/`, `ui/habit/detail/`,
 `ui/habit/logcheckin/`, each self-contained with its own `Intent`/`UiEvent`/`UiState`/`Screen`/
-`ViewModel` (+ `mapper/` for the two flows that have one, carried over unchanged from Phase 5).
+`ViewModel` (+ its single mapper file, from Phase 5, flattened directly into the flow's package
+rather than a nested `mapper/` subpackage — with only one file, the extra directory level added
+nothing).
 
 ### Changes Required:
 
@@ -582,26 +585,29 @@ check-ins) flat in one package. Split into `ui/habit/create/`, `ui/habit/detail/
 #### 2. `ui/habit/detail/`
 
 **Files**: `HabitDetailIntent.kt`, `HabitDetailUiEvent.kt`, `HabitDetailUiState.kt`,
-`HabitDetailScreen.kt`, `HabitDetailViewModel.kt`, `mapper/HabitDetailMapper.kt`
+`HabitDetailScreen.kt`, `HabitDetailViewModel.kt`, `HabitDetailMapper.kt`
 
-**Intent**: Isolate the habit-detail flow (view/edit history) into its own subpackage; its
-`mapper/` subpackage (from Phase 5) moves along with it, unchanged in shape.
+**Intent**: Isolate the habit-detail flow (view/edit history) into its own subpackage.
+`HabitDetailMapper.kt` (nested under `mapper/` since Phase 5) flattens directly into `detail/` —
+a dedicated `mapper/` subpackage for exactly one file added a directory level without separating
+anything.
 
-**Contract**: `package pl.luczka.todaywas.ui.habit` → `pl.luczka.todaywas.ui.habit.detail` (the
-mapper file's package becomes `pl.luczka.todaywas.ui.habit.detail.mapper`). `HabitDetailMapper.kt`'s
-import of `HabitDetailRowUiState` updates to the new `ui.habit.detail` package.
+**Contract**: `package pl.luczka.todaywas.ui.habit`/`pl.luczka.todaywas.ui.habit.mapper` →
+`pl.luczka.todaywas.ui.habit.detail` for all 6 files. Since `HabitDetailMapper.kt` is now
+same-package as `HabitDetailRowUiState` (declared in `HabitDetailUiState.kt`), its import of that
+type is removed rather than updated.
 
 #### 3. `ui/habit/logcheckin/`
 
 **Files**: `LogHabitCheckInsIntent.kt`, `LogHabitCheckInsUiEvent.kt`, `LogHabitCheckInsUiState.kt`,
-`LogHabitCheckInsScreen.kt`, `LogHabitCheckInsViewModel.kt`, `mapper/LogHabitCheckInsMapper.kt`
+`LogHabitCheckInsScreen.kt`, `LogHabitCheckInsViewModel.kt`, `LogHabitCheckInsMapper.kt`
 
-**Intent**: Isolate the log-check-ins flow into its own subpackage.
+**Intent**: Isolate the log-check-ins flow into its own subpackage, with the same flattening
+applied to its mapper file.
 
-**Contract**: `package pl.luczka.todaywas.ui.habit` → `pl.luczka.todaywas.ui.habit.logcheckin` (the
-mapper file's package becomes `pl.luczka.todaywas.ui.habit.logcheckin.mapper`).
-`LogHabitCheckInsMapper.kt`'s import of `HabitCheckInRowUiState` updates to the new
-`ui.habit.logcheckin` package.
+**Contract**: `package pl.luczka.todaywas.ui.habit`/`pl.luczka.todaywas.ui.habit.mapper` →
+`pl.luczka.todaywas.ui.habit.logcheckin` for all 6 files. `LogHabitCheckInsMapper.kt`'s import of
+`HabitCheckInRowUiState` is removed (now same-package, declared in `LogHabitCheckInsUiState.kt`).
 
 #### 4. Callers + test mirrors
 
@@ -842,26 +848,26 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 6.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 6.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
-- [x] 6.3 assembleDebug succeeds
+- [x] 6.1 ktlintFormat runs clean, then ktlintCheck passes — 1ebbf11
+- [x] 6.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1) — 1ebbf11
+- [x] 6.3 assembleDebug succeeds — 1ebbf11
 
 #### Manual
 
-- [ ] 6.4 git status shows the 9 mapper files + new ContributionUiState.kt as expected, callers diffed import-only
-- [ ] 6.5 `ui/model/` contains only model files afterward
+- [x] 6.4 git status shows the 9 mapper files + new ContributionUiState.kt as expected, callers diffed import-only — 1ebbf11
+- [x] 6.5 `ui/model/` contains only model files afterward — 1ebbf11
 
 ### Phase 7: `ui/habit` split by sub-flow
 
 #### Automated
 
-- [ ] 7.1 ktlintFormat runs clean, then ktlintCheck passes
-- [ ] 7.2 testDebugUnitTest passes (full suite)
-- [ ] 7.3 assembleDebug succeeds
+- [x] 7.1 ktlintFormat runs clean, then ktlintCheck passes
+- [x] 7.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
+- [x] 7.3 assembleDebug succeeds
 
 #### Manual
 
-- [ ] 7.4 git status shows all ui/habit/ files moved into create/detail/logcheckin with no unintended diff
+- [ ] 7.4 git status shows all ui/habit/ files moved into create/detail/logcheckin (mapper files flattened directly into detail/logcheckin, no nested mapper/) with no unintended diff
 - [ ] 7.5 `ui/habit/` contains no loose files at its root
 
 ### Phase 8: `ui/journal` split by sub-flow
