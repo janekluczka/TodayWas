@@ -10,6 +10,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.CancellationException
+import pl.luczka.todaywas.data.mapper.toAiAssistError
 import pl.luczka.todaywas.data.remote.dto.AiPromptRequestDto
 import pl.luczka.todaywas.data.remote.dto.AiPromptResponseDto
 import pl.luczka.todaywas.domain.model.AiAssistException

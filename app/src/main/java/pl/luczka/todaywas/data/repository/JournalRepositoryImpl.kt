@@ -8,7 +8,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import pl.luczka.todaywas.data.local.dao.JournalEntryDao
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
+import pl.luczka.todaywas.data.mapper.toDomain
+import pl.luczka.todaywas.data.mapper.toEntity
+import pl.luczka.todaywas.data.mapper.toRemoteDto
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
+import pl.luczka.todaywas.data.util.remoteCall
+import pl.luczka.todaywas.data.util.safeDbCall
 import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.AuthRepository

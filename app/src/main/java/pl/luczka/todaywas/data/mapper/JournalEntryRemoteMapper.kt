@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.repository
+package pl.luczka.todaywas.data.mapper
 
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto

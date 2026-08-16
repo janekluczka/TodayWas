@@ -8,6 +8,8 @@ import io.github.jan.supabase.auth.providers.builtin.IDToken
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import pl.luczka.todaywas.data.mapper.toAuthError
+import pl.luczka.todaywas.data.mapper.toAuthState
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.repository.AuthRepository

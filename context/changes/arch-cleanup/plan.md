@@ -581,22 +581,22 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 3.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 3.2 testDebugUnitTest passes (full suite) (full green — the Phase 1/2 `TodayWasDatabaseTest` failure did not recur, confirming it's flaky rather than a real regression)
-- [x] 3.3 assembleDebug succeeds
+- [x] 3.1 ktlintFormat runs clean, then ktlintCheck passes — 19eac82
+- [x] 3.2 testDebugUnitTest passes (full suite) (full green — the Phase 1/2 `TodayWasDatabaseTest` failure did not recur, confirming it's flaky rather than a real regression) — 19eac82
+- [x] 3.3 assembleDebug succeeds — 19eac82
 
 #### Manual
 
-- [ ] 3.4 git status shows moved files with no unintended content diff
-- [ ] 3.5 Spot-check use case + ViewModel imports resolved to new packages
+- [x] 3.4 git status shows moved files with no unintended content diff — 19eac82
+- [x] 3.5 Spot-check use case + ViewModel imports resolved to new packages — 19eac82
 
 ### Phase 4: `data/repository` consolidation — impls, mapper, util
 
 #### Automated
 
-- [ ] 4.1 ktlintFormat runs clean, then ktlintCheck passes
-- [ ] 4.2 testDebugUnitTest passes (full suite)
-- [ ] 4.3 assembleDebug succeeds
+- [x] 4.1 ktlintFormat runs clean, then ktlintCheck passes
+- [x] 4.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
+- [x] 4.3 assembleDebug succeeds
 
 #### Manual
 

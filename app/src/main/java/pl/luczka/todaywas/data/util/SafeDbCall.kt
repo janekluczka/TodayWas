@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.repository
+package pl.luczka.todaywas.data.util
 
 import kotlinx.coroutines.CancellationException
 

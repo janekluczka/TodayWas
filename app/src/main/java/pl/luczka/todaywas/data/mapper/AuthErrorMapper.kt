@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.repository
+package pl.luczka.todaywas.data.mapper
 
 import io.github.jan.supabase.auth.exception.AuthErrorCode
 import io.github.jan.supabase.auth.exception.AuthRestException

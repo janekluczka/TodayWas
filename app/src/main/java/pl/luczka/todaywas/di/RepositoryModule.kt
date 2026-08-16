@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.repository
+package pl.luczka.todaywas.di
 
 import dagger.Binds
 import dagger.Module
@@ -10,6 +10,11 @@ import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSourceImpl
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSourceImpl
+import pl.luczka.todaywas.data.repository.AiAssistRepositoryImpl
+import pl.luczka.todaywas.data.repository.AuthRepositoryImpl
+import pl.luczka.todaywas.data.repository.HabitRepositoryImpl
+import pl.luczka.todaywas.data.repository.JournalRepositoryImpl
+import pl.luczka.todaywas.data.repository.OnboardingRepositoryImpl
 import pl.luczka.todaywas.domain.repository.AiAssistRepository
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.HabitRepository
