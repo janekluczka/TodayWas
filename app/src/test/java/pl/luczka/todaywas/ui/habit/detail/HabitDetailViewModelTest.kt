@@ -20,6 +20,8 @@ import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.usecase.DeleteHabitCheckInUseCase
+import pl.luczka.todaywas.domain.usecase.DeleteHabitUseCase
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
@@ -55,6 +57,8 @@ class HabitDetailViewModelTest {
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
         logHabitCheckIns = LogHabitCheckInsUseCase(repository),
         updateHabitCheckIn = UpdateHabitCheckInUseCase(repository, clock),
+        deleteHabit = DeleteHabitUseCase(repository),
+        deleteHabitCheckIn = DeleteHabitCheckInUseCase(repository),
         clock = clock,
     )
 
@@ -445,6 +449,171 @@ class HabitDetailViewModelTest {
             // Assert
             assertTrue(viewModel.uiState.value.saveError)
             assertFalse(viewModel.uiState.value.saveErrorIsWindowExpired)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should show isDeleteHabitDialogVisible when DeleteHabitClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitClicked)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.isDeleteHabitDialogVisible)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should hide isDeleteHabitDialogVisible when DeleteHabitDismissed is dispatched`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitClicked)
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitDismissed)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.isDeleteHabitDialogVisible)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should delete and emit NavigatedBack when DeleteHabitConfirmed succeeds`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val stateCollectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitClicked)
+            val events = mutableListOf<HabitDetailUiEvent>()
+            val eventsCollectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(1, repository.deleteHabitCallCount)
+            assertEquals("1", repository.lastDeletedHabitId)
+            assertEquals(listOf(HabitDetailUiEvent.NavigatedBack), events)
+            stateCollectJob.cancel()
+            eventsCollectJob.cancel()
+        }
+
+    @Test
+    fun `should hide the dialog and set deleteHabitError when DeleteHabitConfirmed fails`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            repository.deleteHabitResult = Result.failure(RuntimeException("delete failed"))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitClicked)
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitConfirmed)
+            runCurrent()
+
+            // Assert
+            assertFalse(viewModel.uiState.value.isDeletingHabit)
+            assertFalse(viewModel.uiState.value.isDeleteHabitDialogVisible)
+            assertTrue(viewModel.uiState.value.deleteHabitError)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should set checkInPendingDelete when DeleteCheckInClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
+
+            // Assert
+            assertEquals(today, viewModel.uiState.value.checkInPendingDelete)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should clear checkInPendingDelete when DeleteCheckInDismissed is dispatched`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInDismissed)
+
+            // Assert
+            assertEquals(null, viewModel.uiState.value.checkInPendingDelete)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should delete the check-in and clear checkInPendingDelete when DeleteCheckInConfirmed succeeds`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(1, repository.deleteCheckInCallCount)
+            assertEquals(today, repository.lastDeletedCheckInDate)
+            assertFalse(viewModel.uiState.value.isDeletingCheckIn)
+            assertEquals(null, viewModel.uiState.value.checkInPendingDelete)
+            assertFalse(viewModel.uiState.value.deleteCheckInError)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should clear checkInPendingDelete and set deleteCheckInError when DeleteCheckInConfirmed fails`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            repository.deleteCheckInResult = Result.failure(RuntimeException("delete failed"))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(null, viewModel.uiState.value.checkInPendingDelete)
+            assertTrue(viewModel.uiState.value.deleteCheckInError)
             collectJob.cancel()
         }
 }

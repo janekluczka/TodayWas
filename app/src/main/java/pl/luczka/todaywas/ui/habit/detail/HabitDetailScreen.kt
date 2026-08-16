@@ -1,6 +1,8 @@
 package pl.luczka.todaywas.ui.habit.detail
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -10,12 +12,16 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -27,8 +33,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionTimeline
+import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
@@ -80,6 +88,17 @@ private fun HabitDetailScreenContent(
         if (uiState.saveError) {
             val message = if (uiState.saveErrorIsWindowExpired) expiredErrorMessage else genericErrorMessage
             snackbarHostState.showSnackbar(message)
+        }
+    }
+    val deleteErrorMessage = stringResource(R.string.habit_detail_delete_error)
+    LaunchedEffect(uiState.deleteHabitError) {
+        if (uiState.deleteHabitError) {
+            snackbarHostState.showSnackbar(deleteErrorMessage)
+        }
+    }
+    LaunchedEffect(uiState.deleteCheckInError) {
+        if (uiState.deleteCheckInError) {
+            snackbarHostState.showSnackbar(deleteErrorMessage)
         }
     }
 
@@ -143,6 +162,17 @@ private fun HabitDetailScreenContent(
             HabitDetailEditSheetContent(uiState, onIntent)
         }
     }
+
+    if (uiState.isDeleteHabitDialogVisible) {
+        DeleteHabitDialog(
+            checkInCount = uiState.rows.count { it.alreadyLogged },
+            onIntent = onIntent,
+        )
+    }
+
+    if (uiState.checkInPendingDelete != null) {
+        DeleteCheckInDialog(onIntent = onIntent)
+    }
 }
 
 @Composable
@@ -158,6 +188,61 @@ private fun HabitDetailActions(
             )
         }
     }
+    DsIconButton(onClick = { onIntent(HabitDetailIntent.DeleteHabitClicked) }) {
+        DsIcon(
+            imageVector = Icons.Filled.Delete,
+            contentDescription = stringResource(R.string.habit_detail_delete_action),
+        )
+    }
+}
+
+@Composable
+private fun DeleteHabitDialog(
+    checkInCount: Int,
+    onIntent: (HabitDetailIntent) -> Unit,
+) {
+    DsAlertDialog(
+        onDismissRequest = { onIntent(HabitDetailIntent.DeleteHabitDismissed) },
+        title = { DsText(text = stringResource(R.string.habit_detail_delete_dialog_title)) },
+        text = { DsText(text = stringResource(R.string.habit_detail_delete_dialog_text_format, checkInCount)) },
+        confirmButton = {
+            DsTextButton(
+                text = stringResource(R.string.habit_detail_delete_confirm_cta),
+                onClick = { onIntent(HabitDetailIntent.DeleteHabitConfirmed) },
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            )
+        },
+        dismissButton = {
+            DsTextButton(
+                text = stringResource(R.string.habit_detail_delete_cancel_cta),
+                onClick = { onIntent(HabitDetailIntent.DeleteHabitDismissed) },
+            )
+        },
+    )
+}
+
+@Composable
+private fun DeleteCheckInDialog(
+    onIntent: (HabitDetailIntent) -> Unit,
+) {
+    DsAlertDialog(
+        onDismissRequest = { onIntent(HabitDetailIntent.DeleteCheckInDismissed) },
+        title = { DsText(text = stringResource(R.string.habit_detail_delete_checkin_dialog_title)) },
+        text = { DsText(text = stringResource(R.string.habit_detail_delete_checkin_dialog_text)) },
+        confirmButton = {
+            DsTextButton(
+                text = stringResource(R.string.habit_detail_delete_confirm_cta),
+                onClick = { onIntent(HabitDetailIntent.DeleteCheckInConfirmed) },
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            )
+        },
+        dismissButton = {
+            DsTextButton(
+                text = stringResource(R.string.habit_detail_delete_cancel_cta),
+                onClick = { onIntent(HabitDetailIntent.DeleteCheckInDismissed) },
+            )
+        },
+    )
 }
 
 @Composable
@@ -190,19 +275,22 @@ private fun HabitDetailEditSheetContent(
     uiState: HabitDetailUiState,
     onIntent: (HabitDetailIntent) -> Unit,
 ) {
-    val editableRows = uiState.rows.filter { it.eligibleForEdit }
+    // Includes rows outside the 24h edit window too, unlike a plain eligibleForEdit filter -
+    // check-in delete has no such window, so a previously-logged-but-no-longer-editable row must
+    // still appear here to stay reachable for deletion (its value editor stays disabled below).
+    val visibleRows = uiState.rows.filter { it.eligibleForEdit || it.alreadyLogged }
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = 400.dp)
             .padding(horizontal = DsSpacing.space600),
     ) {
-        items(editableRows) { row ->
+        items(visibleRows) { row ->
             HabitDetailRow(
                 row = row,
                 type = uiState.type,
                 range = uiState.range,
-                enabled = true,
+                enabled = row.eligibleForEdit,
                 onIntent = onIntent,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -236,7 +324,21 @@ private fun HabitDetailRow(
     }
 
     Column(modifier = modifier) {
-        DsText(text = dateLabel)
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            DsText(text = dateLabel)
+            if (row.alreadyLogged) {
+                DsIconButton(onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(row.date)) }) {
+                    DsIcon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = stringResource(R.string.habit_detail_delete_checkin_action),
+                    )
+                }
+            }
+        }
         DsSegmentedRow(
             items = range.toList(),
             selectedItem = row.value,

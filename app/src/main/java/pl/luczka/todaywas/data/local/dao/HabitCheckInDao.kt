@@ -43,6 +43,12 @@ interface HabitCheckInDao {
     @Update
     suspend fun update(entity: HabitCheckInEntity)
 
+    @Query("DELETE FROM habit_check_ins WHERE id = :id")
+    suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM habit_check_ins WHERE habitId = :habitId")
+    suspend fun deleteByHabitId(habitId: String)
+
     @Query("DELETE FROM habit_check_ins")
     suspend fun clearAll()
 }

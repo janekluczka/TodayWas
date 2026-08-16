@@ -22,6 +22,8 @@ import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.availableWindows
+import pl.luczka.todaywas.domain.usecase.DeleteHabitCheckInUseCase
+import pl.luczka.todaywas.domain.usecase.DeleteHabitUseCase
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
@@ -47,6 +49,12 @@ private data class HabitDetailViewModelState(
     val isSaving: Boolean = false,
     val saveError: Boolean = false,
     val saveErrorIsWindowExpired: Boolean = false,
+    val isDeleteHabitDialogVisible: Boolean = false,
+    val isDeletingHabit: Boolean = false,
+    val deleteHabitError: Boolean = false,
+    val checkInPendingDelete: LocalDate? = null,
+    val isDeletingCheckIn: Boolean = false,
+    val deleteCheckInError: Boolean = false,
 ) {
     fun toUiState(
         now: Instant,
@@ -65,6 +73,12 @@ private data class HabitDetailViewModelState(
         isSaving = isSaving,
         saveError = saveError,
         saveErrorIsWindowExpired = saveErrorIsWindowExpired,
+        isDeleteHabitDialogVisible = isDeleteHabitDialogVisible,
+        isDeletingHabit = isDeletingHabit,
+        deleteHabitError = deleteHabitError,
+        checkInPendingDelete = checkInPendingDelete,
+        isDeletingCheckIn = isDeletingCheckIn,
+        deleteCheckInError = deleteCheckInError,
     )
 }
 
@@ -79,6 +93,8 @@ class HabitDetailViewModel @AssistedInject constructor(
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val logHabitCheckIns: LogHabitCheckInsUseCase,
     private val updateHabitCheckIn: UpdateHabitCheckInUseCase,
+    private val deleteHabit: DeleteHabitUseCase,
+    private val deleteHabitCheckIn: DeleteHabitCheckInUseCase,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -143,6 +159,12 @@ class HabitDetailViewModel @AssistedInject constructor(
             HabitDetailIntent.CancelEditClicked -> onCancelEditClicked()
             HabitDetailIntent.BackClicked -> onBackClicked()
             is HabitDetailIntent.WindowSelected -> onWindowSelected(intent.window)
+            HabitDetailIntent.DeleteHabitClicked -> onDeleteHabitClicked()
+            HabitDetailIntent.DeleteHabitConfirmed -> onDeleteHabitConfirmed()
+            HabitDetailIntent.DeleteHabitDismissed -> onDeleteHabitDismissed()
+            is HabitDetailIntent.DeleteCheckInClicked -> onDeleteCheckInClicked(intent.date)
+            HabitDetailIntent.DeleteCheckInConfirmed -> onDeleteCheckInConfirmed()
+            HabitDetailIntent.DeleteCheckInDismissed -> onDeleteCheckInDismissed()
         }
     }
 
@@ -219,6 +241,54 @@ class HabitDetailViewModel @AssistedInject constructor(
                         saveErrorIsWindowExpired = windowExpired,
                     )
                 }
+            }
+        }
+    }
+
+    private fun onDeleteHabitClicked() {
+        viewModelState.update { it.copy(isDeleteHabitDialogVisible = true) }
+    }
+
+    private fun onDeleteHabitDismissed() {
+        viewModelState.update { it.copy(isDeleteHabitDialogVisible = false) }
+    }
+
+    private fun onDeleteHabitConfirmed() {
+        if (viewModelState.value.isDeletingHabit) return
+        viewModelScope.launch {
+            viewModelState.update { it.copy(isDeletingHabit = true, deleteHabitError = false) }
+            val result = deleteHabit(habitId)
+            if (result.isSuccess) {
+                eventChannel.trySend(HabitDetailUiEvent.NavigatedBack)
+            } else {
+                viewModelState.update {
+                    it.copy(isDeletingHabit = false, deleteHabitError = true, isDeleteHabitDialogVisible = false)
+                }
+            }
+        }
+    }
+
+    private fun onDeleteCheckInClicked(date: LocalDate) {
+        viewModelState.update { it.copy(checkInPendingDelete = date) }
+    }
+
+    private fun onDeleteCheckInDismissed() {
+        viewModelState.update { it.copy(checkInPendingDelete = null) }
+    }
+
+    private fun onDeleteCheckInConfirmed() {
+        val state = viewModelState.value
+        val date = state.checkInPendingDelete ?: return
+        if (state.isDeletingCheckIn) return
+        viewModelScope.launch {
+            viewModelState.update { it.copy(isDeletingCheckIn = true, deleteCheckInError = false) }
+            val result = deleteHabitCheckIn(habitId, date)
+            viewModelState.update {
+                it.copy(
+                    isDeletingCheckIn = false,
+                    deleteCheckInError = result.isFailure,
+                    checkInPendingDelete = null,
+                )
             }
         }
     }

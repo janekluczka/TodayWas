@@ -7,4 +7,6 @@ interface RemoteHabitDataSource {
     suspend fun upsert(habits: List<HabitRemoteDto>): Result<Unit>
 
     suspend fun fetchAll(userId: String): Result<List<HabitRemoteDto>>
+
+    suspend fun delete(id: String): Result<Unit>
 }

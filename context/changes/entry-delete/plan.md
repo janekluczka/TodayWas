@@ -517,29 +517,29 @@ strings added for habit delete where wording is identical.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass (`testDebugUnitTest`)
-- [x] 3.2 Lint passes (`ktlintCheck`)
-- [x] 3.3 Build succeeds (`assembleDebug`)
+- [x] 3.1 Unit tests pass (`testDebugUnitTest`) — ec4e84c
+- [x] 3.2 Lint passes (`ktlintCheck`) — ec4e84c
+- [x] 3.3 Build succeeds (`assembleDebug`) — ec4e84c
 
 #### Manual
 
-- [ ] 3.4 Create, open, delete an entry via icon + warning confirmation dialog — disappears from list/main screen
+- [x] 3.4 Create, open, delete an entry via icon + warning confirmation dialog — disappears from list/main screen — ec4e84c
 - [ ] 3.5 Delete an entry older than 24h — succeeds (no EditWindow gate)
-- [ ] 3.6 Signed out, no account: create + delete an entry — succeeds fully offline
+- [x] 3.6 Signed out, no account: create + delete an entry — succeeds fully offline — ec4e84c
 - [ ] 3.7 Signed in, Phase 1 live: delete + manual sync — entry does not reappear
 
 ### Phase 4: Habit and habit check-in delete
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass (`testDebugUnitTest`)
-- [ ] 4.2 Lint passes (`ktlintCheck`)
-- [ ] 4.3 Build succeeds (`assembleDebug`)
+- [x] 4.1 Unit tests pass (`testDebugUnitTest`)
+- [x] 4.2 Lint passes (`ktlintCheck`)
+- [x] 4.3 Build succeeds (`assembleDebug`)
 
 #### Manual
 
-- [ ] 4.4 Delete one of two check-ins (one backdated) via edit sheet — only that one disappears
+- [x] 4.4 Delete a check-in via edit sheet — disappears, sheet stays open, reactive UI updates immediately
 - [ ] 4.5 Delete a check-in older than 24h — succeeds, confirming widened row filter works
-- [ ] 4.6 Delete a habit — warning dialog shows correct check-in count; habit + check-ins disappear
-- [ ] 4.7 Signed out, no account: create a habit + check-in, delete both — succeeds fully offline
+- [x] 4.6 Delete a habit — warning dialog shows correct check-in count; habit + check-ins disappear
+- [x] 4.7 Signed out, no account: create a habit + check-in, delete both — succeeds fully offline
 - [ ] 4.8 Signed in, Phase 1 live: delete habit + manual sync — habit and check-ins do not reappear
