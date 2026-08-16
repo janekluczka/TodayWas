@@ -1,6 +1,6 @@
 ---
 project: "Today Was"
-checked_at: 2026-08-16T10:04:35Z
+checked_at: 2026-08-16T12:30:00Z
 health_status: healthy
 context_type: brownfield
 language_family: java
@@ -18,22 +18,22 @@ audit_findings:
   moderate: 0
   low: 0
 test_runner_detected: true
-ci_provider: null
-recommended_fixes: 1
+ci_provider: github-actions
+recommended_fixes: 2
 ---
 
 > **Adaptation note**: `/10x-health-check`'s built-in dispatch tables (marker files, audit tools,
 > lockfile formats) cover JS/Python/Rust/Go/Ruby/PHP/.NET/Dart — there is no Gradle/Kotlin entry.
 > `language_family: java` is the closest schema enum (JVM/Gradle ecosystem); checks below were run
 > directly against the Gradle project rather than through the skill's built-in dispatch commands.
-> Same as `context/foundation/tech-stack.md`'s deviation note for the same underlying reason.
+> Same deviation as the last two checks, for the same underlying reason.
 
-> **Re-run note**: run from the `feature/health-check-fixes` branch (PR #21, not yet merged to
-> `master`), which addresses every Category A finding from the 2026-08-16T09:18:28Z check: the
-> failing `TodayWasDatabaseTest` (plus the same latent race fixed proactively in the other 3
-> DAO tests using the same close→reopen pattern), Dependabot vulnerability scanning, R8
-> minification for release builds, and the missing secrets template. Once this branch merges,
-> `master` will match this result.
+> **What changed since the last check (2026-08-16T10:04:35Z, `feature/health-check-fixes` branch)**:
+> that branch (PR #21) merged to `master`. Separately, the `ci-cd-pipeline` change (PR #27) shipped
+> and merged — `.github/workflows/ci.yml` now exists with a path-scoped Android lint/test/build job
+> and an Edge Function auto-deploy job. **This resolves the CI/CD gap that was the single open
+> Category B item on every prior check.** Dependabot has also started surfacing real update PRs
+> (5 open) since it was enabled, as expected.
 
 ## Dependency Health
 
@@ -51,36 +51,42 @@ reproducibility. Not flagged as a gap.
 ### Security Audit
 
 ```
-Tool: GitHub Dependabot (vulnerability alerts + automated security fixes) — enabled this pass
+Tool: GitHub Dependabot (vulnerability alerts + automated security fixes)
 Summary: 0 CRITICAL, 0 HIGH, 0 MODERATE, 0 LOW (0 open alerts via GET /repos/janekluczka/TodayWas/dependabot/alerts)
 Direct vs transitive: not applicable — 0 alerts to break down
 Docs-tooling package.json: npm audit re-run — 0 vulnerabilities (1 prod + 1 dev dependency, Prettier only)
 ```
 
-Resolved since the last check: no built-in audit tool exists for Kotlin/Gradle projects, so this
-previously read "never checked" (0/0/0/0 meant "not checked," not "checked clean"). This pass
-confirms GitHub vulnerability alerts and automated security fixes are both enabled on the
-`janekluczka/TodayWas` remote, and `.github/dependabot.yml` schedules weekly gradle/npm update
-scans — 0/0/0/0 now genuinely means "checked, currently clean."
+Unchanged: clean across both Gradle (via Dependabot alerts) and the docs-tooling npm package
+(Prettier only).
 
 ### Outdated Dependencies
 
 ```
-Packages with major version gaps: 3 (unchanged since the last check)
+Packages with major version gaps: 1 (down from 3 last check)
 ```
 
-- **`coreKtx`**: 1.10.1 → current AndroidX releases are in the 1.15.x+ range — stale, unchanged.
-- **`activityCompose`**: 1.8.0 → current releases are 1.9.x+ — stale, unchanged.
-- **`espressoCore`**: 3.5.1 → current releases are 3.6.x+ — stale, unchanged.
+Dependabot's weekly scan is now visibly working — 5 open PRs propose real version bumps:
 
-Now that Dependabot is enabled with weekly scans, these should start surfacing as automated update
-PRs going forward rather than needing another manual health-check pass to notice.
+- `androidx.test.espresso:espresso-core` 3.5.1 → 3.7.0 (PR #26)
+- `androidx.hilt:hilt-lifecycle-viewmodel-compose` 1.3.0 → 1.4.0 (PR #25)
+- `androidx.activity:activity-compose` 1.8.0 → 1.13.0 (PR #24) — resolves the previously-flagged gap
+- `kotlin` 2.4.0 → 2.4.10 (PR #23)
+- `ktorClientOkhttp` 3.5.1 → 3.5.2 (PR #22)
+
+Still stale, no open PR yet:
+
+- **`coreKtx`**: 1.10.1 → current AndroidX releases are in the 1.15.x+ range.
+
+Merging the open Dependabot PRs (after review) will close 2 of the previous 3 flagged gaps
+(`activityCompose`, `espressoCore`) automatically — no manual action needed beyond reviewing and
+merging them.
 
 ## Test Suite
 
 ```
 Test runner: JUnit 4 (local unit tests, some Robolectric-backed for Room/DAO coverage) + AndroidX Test/Espresso (instrumented tests)
-Tests found: 262 unit tests (fresh, non-cached run, this check)
+Tests found: 262 unit tests (fresh, non-cached rerun, this check)
 Test execution: passing (--rerun re-executed clean: 262/262, 0 failures, 0 errors)
 ```
 
@@ -89,62 +95,50 @@ Configuration: app/build.gradle.kts (testImplementation/androidTestImplementatio
 Framework: JUnit 4.13.2 (unit), Robolectric 4.16.1 (DAO/Room tests), AndroidX Test 1.1.5 + Espresso 3.5.1 (instrumented)
 ```
 
-Resolved since the last check: `TodayWasDatabaseTest`'s deterministic `SQLiteCantOpenDatabaseException`
-(WAL file-handle race on close→reopen, Windows/Robolectric) is fixed — `JournalMode.TRUNCATE` is now
-pinned on that test. The same close→reopen pattern existed in `HabitDaoTest`, `JournalEntryDaoTest`,
-and `HabitCheckInDaoTest` (hadn't failed yet, but carried the identical latent race); all three got
-the same fix for consistency. Two repeated fresh (`--rerun`) full-suite passes this session, both
-262/262 green.
+Unchanged: same 262/262 green result as the last two checks — no regressions since `master` picked
+up PR #21 and PR #27. Instrumented tests remain the stock `ExampleInstrumentedTest` placeholder, not
+exercised in this environment (requires a connected device/emulator).
 
-Instrumented tests remain the stock `ExampleInstrumentedTest` placeholder — not exercised in this
-environment (requires a connected device/emulator), same limitation as every prior check, though this
-session did do a real manual install+launch smoke test of a release build on a running emulator (see
-`## Configuration` below).
-
-ktlint re-checked clean this pass (`./gradlew ktlintCheck`: BUILD SUCCESSFUL, no violations).
+`./gradlew ktlintCheck` re-checked clean this pass (BUILD SUCCESSFUL, no violations).
 
 ## CI/CD
 
 ```
-Provider: not detected
-Configuration: not found — .github/ contains only PULL_REQUEST_TEMPLATE.md and dependabot.yml
+Provider: GitHub Actions
+Configuration: .github/workflows/ci.yml
 ```
-
-Unchanged since the last check. `tech-stack.md` already decided `github-actions` as the intended
-provider, and `context/changes/deployment/deployment-plan.md` still specifies a path-scoped GitHub
-Actions job for the Supabase Edge Function deploy — but nothing in that plan has been executed, and
-the Android app's own build/test/lint CI is still unimplemented. Now that the test suite has no known
-flakiness and release builds are verified R8-clean, there's no longer a reason CI would go red on its
-first run — this is purely a matter of writing the workflow file now.
 
 | Stage      | Status | Notes                                                                             |
 | ---------- | ------ | ----------------------------------------------------------------------------------- |
-| Lint       | ✗      | not configured (ktlint runs locally via `./gradlew ktlintCheck`, not wired to CI) |
-| Test       | ✗      | not configured (works locally — 262/262 passing, no known flakiness)              |
-| Build      | ✗      | not configured                                                                     |
-| Type check | n/a    | Kotlin is statically typed; no separate step needed                               |
+| Lint       | ✓      | `ktlintCheck`, in the `android` job                                                |
+| Test       | ✓      | `testDebugUnitTest`, in the `android` job                                          |
+| Build      | ✓      | `assembleDebug`, in the `android` job                                              |
+| Type check | n/a    | Kotlin is statically typed; no separate step needed                                |
 | Security   | ✓      | Dependabot vulnerability alerts + automated security fixes enabled at the repo level (not a CI step, but covers the same need) |
+
+**This was the single open gap on every prior check — now resolved.** The workflow runs a
+preliminary path-filtering job (`dorny/paths-filter`, pinned to a commit SHA) so the Android job
+only fires on Android-relevant changes, and a second `deploy-edge-function` job auto-deploys the
+`ai-proxy` Supabase Edge Function on push to `master` when its code changes — also path-scoped, and
+also pinned to a commit SHA rather than a floating tag. Both jobs were verified against a real PR
+(#27): the `android`/`deploy-edge-function` jobs correctly skipped on a diff that touched neither
+area, confirming the path-scoping logic works, though a PR that actually touches `app/**` (to see
+the `android` job go green) and a push touching `supabase/functions/ai-proxy/` on `master` (to see
+`deploy-edge-function` actually deploy) are still pending real-world exercises — tracked in
+`context/changes/ci-cd-pipeline/plan.md`'s Progress section, not a health-check finding.
 
 ## Configuration
 
 ### Low severity
 
-- **Orphaned `context/changes/deployment/deployment-plan.md`** — still the only file in that folder,
-  with no `change.md`; predates and sits outside this project's `/10x-new` → `/10x-plan` →
-  `/10x-implement` → `/10x-archive` convention. Deliberately left alone during the last round of
-  fixes (explicit user call: not urgent enough to touch yet). Fix: either formalize it into a real
-  change (`/10x-new deployment` + fold this doc in as context) if the CI/CD work gets picked up, or
-  move it to `context/archive/` if it's considered superseded.
-
-Resolved since the last check:
-
-- **`buildTypes.release.optimization.enable`** now `true` — release builds ship R8-minified.
-  Verified: `assembleRelease` succeeds, and a debug-signed install of the resulting APK launches
-  cleanly on an emulator (onboarding screen renders correctly, Hilt/Room/Nav3/Compose all
-  initialize, no crashes or `ClassNotFoundException`/`NoSuchMethodError` in logcat). No custom keep
-  rules were needed beyond AGP/library defaults.
-- **`local.properties.example`** added, documenting `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
-  `GOOGLE_WEB_CLIENT_ID`.
+- **`.idea/inspectionProfiles/` untracked, not covered by `.gitignore`** — `.gitignore` explicitly
+  ignores several other `.idea/*` files (`caches`, `libraries`, `workspace.xml`, etc.) but not this
+  one, so it shows up as perpetually dirty in `git status` without ever being committed or ignored.
+  Fix: either add `/.idea/inspectionProfiles` to `.gitignore`, or `git add` it if the inspection
+  profile is meant to be shared across the team.
+- **`coreKtx` 1.10.1, ~5 minor releases behind current AndroidX (1.15.x+)** — see Outdated
+  Dependencies above. No open Dependabot PR yet, unlike the other 3 previously-flagged/newly-flagged
+  packages. Fix: wait for Dependabot's next scan, or bump manually in `gradle/libs.versions.toml`.
 
 Re-confirmed unchanged this pass:
 
@@ -152,8 +146,13 @@ Re-confirmed unchanged this pass:
 - `compileOptions` on `JavaVersion.VERSION_17`.
 - `.editorconfig` present, including the documented `ktlint_standard_function-naming = disabled`
   override for `@Composable` functions.
-- `.gitignore` correctly excludes `local.properties`, build output, and IDE caches; no secrets or
-  generated files are tracked in git.
+- Release builds still ship R8-minified (`buildTypes.release.optimization.enable = true`).
+- `local.properties.example` present, documenting `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+  `GOOGLE_WEB_CLIENT_ID`.
+- `CLAUDE.md` present at repo root with routing/architecture conventions (this project uses
+  `CLAUDE.md` rather than `AGENTS.md` — functionally equivalent, not a gap).
+- `.gitignore` correctly excludes `local.properties`, build output, and IDE caches (aside from the
+  one low-severity item above); no secrets or generated files are tracked in git.
 
 ## Stack Assessment Cross-Reference
 
@@ -165,32 +164,29 @@ check.
 
 ### Fix before agent work (Category A)
 
-None. Every Category A finding from the last check (failing test, no dependency scanning, release
-minification off, missing secrets template) is resolved on this branch.
+None. No critical or high-severity gaps exist.
 
 ### Addressed in upcoming lessons (Category B)
 
-#### No CI/CD pipeline implemented yet
-
-- **Lesson**: covered by Module 1 Lesson 5 (infra research, done) and its output,
-  `context/changes/deployment/deployment-plan.md`.
-- **What you'll do there**: the plan already specifies a path-scoped GitHub Actions job using
-  `supabase/setup-cli` for the Edge Function; the Android app's own build/test/lint CI (per
-  `tech-stack.md`'s `ci_provider: github-actions`) is still an open implementation task — now
-  unblocked, since the test suite is stable and the release build is verified.
+None remaining. The last open Category B item — no CI/CD pipeline — is now resolved (see CI/CD
+above). The two low-severity Configuration items above are minor cleanup, not blocking or deferred
+to a future lesson.
 
 ## Summary
 
 Health status: healthy
 
-Every Category A finding from the previous check is resolved on `feature/health-check-fixes` (PR
-#21, not yet merged): the flaky/failing `TodayWasDatabaseTest` and its three latent siblings are
-fixed and verified stable across repeated fresh runs, Dependabot vulnerability scanning is live with
-0 current alerts, release builds now ship R8-minified (verified with a real install+launch smoke
-test), and a secrets template documents the required `local.properties` keys. What remains is
-low-stakes and previously deferred on purpose: three dependency version gaps (which Dependabot's new
-weekly scan will now surface automatically going forward) and one orphaned planning doc.
+Every dimension checked clean or improved since the last check: 0 dependency vulnerabilities, 262/262
+tests passing with no known flakiness, ktlint clean, release builds R8-minified, and — the headline
+change — GitHub Actions CI/CD is now live and verified against a real PR (path-scoped Android
+lint/test/build, path-scoped Edge Function auto-deploy, both third-party actions pinned to commit
+SHAs after an implementation-review pass caught the floating-tag risk). What remains is trivial: one
+untracked `.idea/` folder to either ignore or commit, and one stale dependency (`coreKtx`) that
+Dependabot will likely surface on its own soon, same as it already has for two of the three
+previously-flagged packages.
 
-Next step: merge PR #21 to bring `master` to this same healthy state, then CI/CD setup (Category B)
-is the most concrete remaining piece of unstarted work — the project is otherwise in good shape for
-continued agent-assisted development.
+Next step: this project has no more standing infrastructure gaps from the health-check's
+perspective. Remaining real-world verification (an app-code PR actually exercising the `android`
+job, and a `supabase/functions/**` push actually exercising `deploy-edge-function`) is tracked as
+pending manual-verification items in `context/changes/ci-cd-pipeline/plan.md`, not a health-check
+finding — continue with feature development.
