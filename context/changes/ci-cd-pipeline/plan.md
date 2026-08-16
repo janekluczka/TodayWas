@@ -325,10 +325,10 @@ None — no data model or schema changes.
 
 #### Automated
 
-- [x] 2.1 `.github/workflows/ci.yml` valid YAML, contains `android` and `deploy-edge-function` job ids
-- [x] 2.2 `context/changes/deployment/deployment-plan.md` no longer exists
-- [x] 2.3 `context/archive/2026-08-16-deployment/deployment-plan.md` exists
-- [x] 2.4 `context/changes/deployment/` directory no longer exists
+- [x] 2.1 `.github/workflows/ci.yml` valid YAML, contains `android` and `deploy-edge-function` job ids — d2a0601
+- [x] 2.2 `context/changes/deployment/deployment-plan.md` no longer exists — d2a0601
+- [x] 2.3 `context/archive/2026-08-16-deployment/deployment-plan.md` exists — d2a0601
+- [x] 2.4 `context/changes/deployment/` directory no longer exists — d2a0601
 
 #### Manual
 
