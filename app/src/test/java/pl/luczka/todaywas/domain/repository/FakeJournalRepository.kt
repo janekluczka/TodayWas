@@ -27,6 +27,12 @@ class FakeJournalRepository(
     var lastUpdatedText: String? = null
         private set
 
+    var deleteEntryResult: Result<Unit> = Result.success(Unit)
+    var deleteEntryCallCount = 0
+        private set
+    var lastDeletedId: String? = null
+        private set
+
     var syncWithRemoteResult: Result<Unit> = Result.success(Unit)
     var syncWithRemoteCallCount = 0
         private set
@@ -57,6 +63,12 @@ class FakeJournalRepository(
         lastUpdatedId = id
         lastUpdatedText = text
         return updateEntryResult
+    }
+
+    override suspend fun deleteEntry(id: String): Result<Unit> {
+        deleteEntryCallCount++
+        lastDeletedId = id
+        return deleteEntryResult
     }
 
     override suspend fun syncWithRemote(): Result<Unit> {

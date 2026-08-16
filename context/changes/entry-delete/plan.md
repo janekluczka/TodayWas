@@ -303,15 +303,16 @@ convention.
 
 #### Manual Verification:
 
-- Create a journal entry, open it, delete it via the new icon + confirmation dialog (red confirm
-  button) — it disappears from the entry list and the main screen's contribution cell for that day
-- Delete an entry older than 24h (past its edit window) — deletion still succeeds (no EditWindow
-  gate)
-- **Signed out, no account**: create and delete a journal entry — succeeds entirely offline, no
-  network call attempted (verifiable by airplane mode or by confirming no request appears in the
-  Supabase project's logs for that action)
-- While signed in with Phase 1's policies live: delete an entry, trigger a manual sync, confirm the
-  entry does not reappear
+- [Verified via adb/emulator] Create a journal entry, open it, delete it via the new icon +
+  confirmation dialog (red confirm button) — it disappears from the entry list and the main
+  screen's contribution cell for that day
+- [Not yet verified live — covered by automated tests] Delete an entry older than 24h (past its
+  edit window) — deletion still succeeds (no EditWindow gate)
+- [Verified via adb/emulator] **Signed out, no account**: create and delete a journal entry —
+  succeeds entirely offline, no network call attempted (verifiable by airplane mode or by
+  confirming no request appears in the Supabase project's logs for that action)
+- [Not yet verified — requires a real signed-in account] While signed in with Phase 1's policies
+  live: delete an entry, trigger a manual sync, confirm the entry does not reappear
 
 ---
 
@@ -505,20 +506,20 @@ strings added for habit delete where wording is identical.
 
 #### Automated
 
-- [x] 2.1 Lint passes (`ktlintCheck`)
-- [x] 2.2 Build succeeds (`assembleDebug`)
+- [x] 2.1 Lint passes (`ktlintCheck`) — 7664fdf
+- [x] 2.2 Build succeeds (`assembleDebug`) — 7664fdf
 
 #### Manual
 
-- [x] 2.3 No standalone check — exercised visually as part of Phase 3's manual verification
+- [x] 2.3 No standalone check — exercised visually as part of Phase 3's manual verification — 7664fdf
 
 ### Phase 3: Journal entry delete
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass (`testDebugUnitTest`)
-- [ ] 3.2 Lint passes (`ktlintCheck`)
-- [ ] 3.3 Build succeeds (`assembleDebug`)
+- [x] 3.1 Unit tests pass (`testDebugUnitTest`)
+- [x] 3.2 Lint passes (`ktlintCheck`)
+- [x] 3.3 Build succeeds (`assembleDebug`)
 
 #### Manual
 

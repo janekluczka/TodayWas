@@ -16,6 +16,12 @@ sealed interface JournalEntryDetailIntent {
 
     data object BackClicked : JournalEntryDetailIntent
 
+    data object DeleteClicked : JournalEntryDetailIntent
+
+    data object DeleteConfirmed : JournalEntryDetailIntent
+
+    data object DeleteDismissed : JournalEntryDetailIntent
+
     data object HelpMeRefineClicked : JournalEntryDetailIntent
 
     data object HelpMeRefineDismissed : JournalEntryDetailIntent

@@ -37,6 +37,8 @@ class JournalRepositoryImplTest {
             private set
         var updateCallCount = 0
             private set
+        var deleteCallCount = 0
+            private set
 
         override fun observeAll(): Flow<List<JournalEntryEntity>> = flowOf(entities.values.toList())
 
@@ -62,6 +64,14 @@ class JournalRepositoryImplTest {
                 throw RuntimeException("simulated write failure")
             }
             entities[entity.id] = entity
+        }
+
+        override suspend fun deleteById(id: String) {
+            deleteCallCount++
+            if (deleteCallCount <= failuresBeforeSuccess) {
+                throw RuntimeException("simulated write failure")
+            }
+            entities.remove(id)
         }
 
         override suspend fun clearAll() {
@@ -175,6 +185,60 @@ class JournalRepositoryImplTest {
             // Assert
             assertTrue(result.isFailure)
             assertEquals(0, dao.updateCallCount)
+        }
+
+    @Test
+    fun `should remove the entry from the DAO when deleteEntry is called`() =
+        runTest {
+            // Arrange
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val dao = FakeDao(entities = mutableMapOf("1" to entity))
+            val repository = repository(dao, backgroundScope)
+
+            // Act
+            val result = repository.deleteEntry("1")
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(null, dao.getById("1"))
+        }
+
+    @Test
+    fun `should push the remote delete when signed in and deleteEntry succeeds`() =
+        runTest {
+            // Arrange
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val dao = FakeDao(entities = mutableMapOf("1" to entity))
+            val remote = FakeRemoteJournalDataSource()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            repository.deleteEntry("1")
+            runCurrent()
+
+            // Assert
+            assertEquals(1, remote.deleteCallCount)
+        }
+
+    @Test
+    fun `should delete locally without any remote call when signed out`() =
+        runTest {
+            // Arrange
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val dao = FakeDao(entities = mutableMapOf("1" to entity))
+            val remote = FakeRemoteJournalDataSource()
+            val auth = FakeAuthRepository(currentUserId = null)
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            val result = repository.deleteEntry("1")
+            runCurrent()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(null, dao.getById("1"))
+            assertEquals(0, remote.deleteCallCount)
         }
 
     @Test

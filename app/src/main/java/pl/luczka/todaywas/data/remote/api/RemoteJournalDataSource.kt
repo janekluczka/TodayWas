@@ -7,4 +7,6 @@ interface RemoteJournalDataSource {
     suspend fun upsert(entries: List<JournalEntryRemoteDto>): Result<Unit>
 
     suspend fun fetchAll(userId: String): Result<List<JournalEntryRemoteDto>>
+
+    suspend fun delete(id: String): Result<Unit>
 }

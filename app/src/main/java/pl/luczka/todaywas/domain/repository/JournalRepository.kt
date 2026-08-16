@@ -22,6 +22,8 @@ interface JournalRepository {
         text: String,
     ): Result<Unit>
 
+    suspend fun deleteEntry(id: String): Result<Unit>
+
     suspend fun syncWithRemote(): Result<Unit>
 
     suspend fun clearLocal(): Result<Unit>

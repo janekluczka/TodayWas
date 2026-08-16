@@ -22,4 +22,8 @@ class RemoteJournalDataSourceImpl @Inject constructor(
             .select { filter { eq("user_id", userId) } }
             .decodeList<JournalEntryRemoteDto>()
     }
+
+    override suspend fun delete(id: String): Result<Unit> = remoteCall {
+        supabase.postgrest.from(TABLE).delete { filter { eq("id", id) } }
+    }
 }
