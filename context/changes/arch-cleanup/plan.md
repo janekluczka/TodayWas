@@ -891,12 +891,12 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 9.1 ktlintCheck passes
-- [x] 9.2 testDebugUnitTest passes (full suite) (clean pass, no failures)
-- [x] 9.3 assembleDebug succeeds
-- [x] 9.4 connectedAndroidTest — skipped, no device/emulator attached (`adb` not found in this environment)
+- [x] 9.1 ktlintCheck passes — 8248363
+- [x] 9.2 testDebugUnitTest passes (full suite) (clean pass, no failures) — 8248363
+- [x] 9.3 assembleDebug succeeds — 8248363
+- [x] 9.4 connectedAndroidTest — skipped, no device/emulator attached (`adb` not found in this environment) — 8248363
 
 #### Manual
 
-- [x] 9.5 CLAUDE.md Project Structure section matches Desired End State
-- [x] 9.6 git log --follow confirms rename history preserved on spot-checked files
+- [x] 9.5 CLAUDE.md Project Structure section matches Desired End State — 8248363
+- [x] 9.6 git log --follow confirms rename history preserved on spot-checked files — 8248363
