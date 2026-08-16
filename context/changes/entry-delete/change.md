@@ -1,7 +1,7 @@
 ---
 change_id: entry-delete
 title: Per-item delete for journal entries, habits, and habit check-ins
-status: implementing
+status: implemented
 created: 2026-08-16
 updated: 2026-08-16
 archived_at: null

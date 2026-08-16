@@ -532,14 +532,14 @@ strings added for habit delete where wording is identical.
 
 #### Automated
 
-- [x] 4.1 Unit tests pass (`testDebugUnitTest`)
-- [x] 4.2 Lint passes (`ktlintCheck`)
-- [x] 4.3 Build succeeds (`assembleDebug`)
+- [x] 4.1 Unit tests pass (`testDebugUnitTest`) — 34aff9d
+- [x] 4.2 Lint passes (`ktlintCheck`) — 34aff9d
+- [x] 4.3 Build succeeds (`assembleDebug`) — 34aff9d
 
 #### Manual
 
-- [x] 4.4 Delete a check-in via edit sheet — disappears, sheet stays open, reactive UI updates immediately
+- [x] 4.4 Delete a check-in via edit sheet — disappears, sheet stays open, reactive UI updates immediately — 34aff9d
 - [ ] 4.5 Delete a check-in older than 24h — succeeds, confirming widened row filter works
-- [x] 4.6 Delete a habit — warning dialog shows correct check-in count; habit + check-ins disappear
-- [x] 4.7 Signed out, no account: create a habit + check-in, delete both — succeeds fully offline
+- [x] 4.6 Delete a habit — warning dialog shows correct check-in count; habit + check-ins disappear — 34aff9d
+- [x] 4.7 Signed out, no account: create a habit + check-in, delete both — succeeds fully offline — 34aff9d
 - [ ] 4.8 Signed in, Phase 1 live: delete habit + manual sync — habit and check-ins do not reappear
