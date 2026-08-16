@@ -878,25 +878,25 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 8.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 8.2 testDebugUnitTest passes (full suite) (clean pass, no failures)
-- [x] 8.3 assembleDebug succeeds
+- [x] 8.1 ktlintFormat runs clean, then ktlintCheck passes — 1b7b260
+- [x] 8.2 testDebugUnitTest passes (full suite) (clean pass, no failures) — 1b7b260
+- [x] 8.3 assembleDebug succeeds — 1b7b260
 
 #### Manual
 
-- [ ] 8.4 git status shows all ui/journal/ files moved into create/detail with no unintended diff
-- [ ] 8.5 `ui/journal/` contains no loose files at its root
+- [x] 8.4 git status shows all ui/journal/ files moved into create/detail with no unintended diff — 1b7b260
+- [x] 8.5 `ui/journal/` contains no loose files at its root — 1b7b260
 
 ### Phase 9: Docs + full verification
 
 #### Automated
 
-- [ ] 9.1 ktlintCheck passes
-- [ ] 9.2 testDebugUnitTest passes (full suite)
-- [ ] 9.3 assembleDebug succeeds
-- [ ] 9.4 connectedAndroidTest passes or is explicitly noted as skipped (no device)
+- [x] 9.1 ktlintCheck passes
+- [x] 9.2 testDebugUnitTest passes (full suite) (clean pass, no failures)
+- [x] 9.3 assembleDebug succeeds
+- [x] 9.4 connectedAndroidTest — skipped, no device/emulator attached (`adb` not found in this environment)
 
 #### Manual
 
-- [ ] 9.5 CLAUDE.md Project Structure section matches Desired End State
-- [ ] 9.6 git log --follow confirms rename history preserved on spot-checked files
+- [x] 9.5 CLAUDE.md Project Structure section matches Desired End State
+- [x] 9.6 git log --follow confirms rename history preserved on spot-checked files
