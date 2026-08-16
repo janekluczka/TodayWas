@@ -16,12 +16,12 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AiAssistException
-import pl.luczka.todaywas.domain.model.EditWindow
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
+import pl.luczka.todaywas.domain.util.EditWindow
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState

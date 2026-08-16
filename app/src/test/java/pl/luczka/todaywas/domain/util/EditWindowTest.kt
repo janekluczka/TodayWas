@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.domain.model
+package pl.luczka.todaywas.domain.util
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

@@ -569,21 +569,21 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 2.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 2.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing `TodayWasDatabaseTest` failure noted in Phase 1)
-- [x] 2.3 assembleDebug succeeds
+- [x] 2.1 ktlintFormat runs clean, then ktlintCheck passes — e575749
+- [x] 2.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing `TodayWasDatabaseTest` failure noted in Phase 1) — e575749
+- [x] 2.3 assembleDebug succeeds — e575749
 
 #### Manual
 
-- [ ] 2.4 git status shows moved files with no unintended content diff
+- [x] 2.4 git status shows moved files with no unintended content diff — e575749
 
 ### Phase 3: `domain/repository` + `domain/util` extraction
 
 #### Automated
 
-- [ ] 3.1 ktlintFormat runs clean, then ktlintCheck passes
-- [ ] 3.2 testDebugUnitTest passes (full suite)
-- [ ] 3.3 assembleDebug succeeds
+- [x] 3.1 ktlintFormat runs clean, then ktlintCheck passes
+- [x] 3.2 testDebugUnitTest passes (full suite) (full green — the Phase 1/2 `TodayWasDatabaseTest` failure did not recur, confirming it's flaky rather than a real regression)
+- [x] 3.3 assembleDebug succeeds
 
 #### Manual
 

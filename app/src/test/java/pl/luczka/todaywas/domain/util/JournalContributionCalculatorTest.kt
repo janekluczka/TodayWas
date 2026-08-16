@@ -1,8 +1,11 @@
-package pl.luczka.todaywas.domain.model
+package pl.luczka.todaywas.domain.util
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import pl.luczka.todaywas.domain.model.ContributionLevel
+import pl.luczka.todaywas.domain.model.ContributionWindow
+import pl.luczka.todaywas.domain.model.JournalEntry
 import java.time.Instant
 import java.time.LocalDate
 

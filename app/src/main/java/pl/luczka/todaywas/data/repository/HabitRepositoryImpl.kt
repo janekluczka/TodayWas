@@ -16,6 +16,8 @@ import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
+import pl.luczka.todaywas.domain.repository.AuthRepository
+import pl.luczka.todaywas.domain.repository.HabitRepository
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID

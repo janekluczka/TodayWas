@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.ui.habit
 
-import pl.luczka.todaywas.domain.model.EditWindow
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
+import pl.luczka.todaywas.domain.util.EditWindow
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

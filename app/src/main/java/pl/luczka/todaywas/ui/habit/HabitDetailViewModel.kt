@@ -21,11 +21,11 @@ import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.model.HabitCheckIn
-import pl.luczka.todaywas.domain.model.HabitContributionCalculator
 import pl.luczka.todaywas.domain.model.availableWindows
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
+import pl.luczka.todaywas.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState

@@ -14,6 +14,8 @@ import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.api.FakeRemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
+import pl.luczka.todaywas.domain.repository.AuthRepository
+import pl.luczka.todaywas.domain.repository.FakeAuthRepository
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)

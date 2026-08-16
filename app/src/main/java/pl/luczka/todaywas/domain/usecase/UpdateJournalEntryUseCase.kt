@@ -1,8 +1,8 @@
 package pl.luczka.todaywas.domain.usecase
 
-import pl.luczka.todaywas.data.repository.JournalRepository
-import pl.luczka.todaywas.domain.model.EditWindow
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
+import pl.luczka.todaywas.domain.repository.JournalRepository
+import pl.luczka.todaywas.domain.util.EditWindow
 import java.time.Clock
 import java.time.Instant
 import javax.inject.Inject

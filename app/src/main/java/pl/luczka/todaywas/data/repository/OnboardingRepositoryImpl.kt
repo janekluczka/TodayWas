@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
 import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 import pl.luczka.todaywas.domain.model.OnboardingState
+import pl.luczka.todaywas.domain.repository.OnboardingRepository
 import javax.inject.Inject
 
 class OnboardingRepositoryImpl @Inject constructor(

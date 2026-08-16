@@ -1,5 +1,10 @@
-package pl.luczka.todaywas.domain.model
+package pl.luczka.todaywas.domain.util
 
+import pl.luczka.todaywas.domain.model.ContributionGrid
+import pl.luczka.todaywas.domain.model.ContributionLevel
+import pl.luczka.todaywas.domain.model.ContributionWindow
+import pl.luczka.todaywas.domain.model.HabitCheckIn
+import pl.luczka.todaywas.domain.model.dateRange
 import java.time.Instant
 import kotlin.math.ceil
 

@@ -10,6 +10,11 @@ import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSourceImpl
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSourceImpl
+import pl.luczka.todaywas.domain.repository.AiAssistRepository
+import pl.luczka.todaywas.domain.repository.AuthRepository
+import pl.luczka.todaywas.domain.repository.HabitRepository
+import pl.luczka.todaywas.domain.repository.JournalRepository
+import pl.luczka.todaywas.domain.repository.OnboardingRepository
 
 @Module
 @InstallIn(SingletonComponent::class)

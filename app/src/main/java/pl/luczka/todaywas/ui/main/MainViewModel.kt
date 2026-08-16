@@ -19,7 +19,6 @@ import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.ContributionWindow
-import pl.luczka.todaywas.domain.model.JournalContributionCalculator
 import pl.luczka.todaywas.domain.model.availableWindows
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
@@ -27,6 +26,7 @@ import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.domain.util.JournalContributionCalculator
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState

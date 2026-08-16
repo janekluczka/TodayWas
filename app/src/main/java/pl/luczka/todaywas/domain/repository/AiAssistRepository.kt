@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.repository
+package pl.luczka.todaywas.domain.repository
 
 import pl.luczka.todaywas.domain.model.JournalPromptTone
 

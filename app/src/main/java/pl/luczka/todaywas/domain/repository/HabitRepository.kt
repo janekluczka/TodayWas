@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.repository
+package pl.luczka.todaywas.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.domain.model.Habit
