@@ -1,0 +1,10 @@
+# Copy this file to local.properties and fill in the values below.
+# local.properties is gitignored — never commit real keys.
+
+# Required — Supabase project URL and anon/public API key (Settings > API in the Supabase dashboard).
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+
+# Optional — Google Sign-In web client ID (Google Cloud Console > Credentials).
+# Leave blank to disable Google Sign-In.
+GOOGLE_WEB_CLIENT_ID=
