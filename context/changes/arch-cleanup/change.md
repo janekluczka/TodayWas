@@ -1,7 +1,7 @@
 ---
 change_id: arch-cleanup
 title: Restructure app package layout by responsibility (data/domain/ui subpackages)
-status: implemented
+status: impl_reviewed
 created: 2026-08-15
 updated: 2026-08-16
 archived_at: null
