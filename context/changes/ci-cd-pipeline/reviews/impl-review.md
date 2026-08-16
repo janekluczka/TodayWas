@@ -85,5 +85,12 @@ for 2.6.
   pushes, no releases) — an explicit `permissions: contents: read` would follow CI least-privilege
   hardening, though it changes no actual behavior today given what the jobs do.
 - **Fix**: Add `permissions:\n  contents: read` at the workflow's top level.
-- **Decision**: FIXED — added `permissions:\n  contents: read` at the workflow's top level.
+- **Decision**: FIXED, then corrected — `contents: read` alone broke the `changes` job on PR runs:
+  `dorny/paths-filter` calls the GitHub API to list a PR's changed files
+  (`Invoking listFiles(pull_number, ...)`), which needs `pull-requests: read`; the default
+  `GITHUB_TOKEN` had that implicitly, `contents: read` alone did not. Discovered via a live PR run
+  (`Resource not accessible by integration`) rather than caught in review — added
+  `pull-requests: read` alongside `contents: read` to fix. Lesson: least-privilege `permissions:`
+  blocks need to account for what every third-party action in the workflow actually calls, not just
+  what the jobs' own steps do.
 
