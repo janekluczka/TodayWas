@@ -2,6 +2,7 @@ package pl.luczka.todaywas.data.local.dao
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -24,6 +25,7 @@ class HabitDaoTest {
             val db1 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                 .build()
 
             // Act
@@ -42,6 +44,7 @@ class HabitDaoTest {
             val db2 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                 .build()
             val persisted = db2.habitDao().observeAll().first()
             db2.close()
@@ -63,6 +66,7 @@ class HabitDaoTest {
             val db = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                 .build()
             db.habitDao().insert(
                 HabitEntity(
