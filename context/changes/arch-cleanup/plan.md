@@ -557,21 +557,21 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 1.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 1.2 testDebugUnitTest passes for `data.local.*` (261/262; `TodayWasDatabaseTest`'s one failure confirmed pre-existing and unrelated — reproduces identically on unmoved code)
-- [x] 1.3 assembleDebug succeeds
+- [x] 1.1 ktlintFormat runs clean, then ktlintCheck passes — f714b31
+- [x] 1.2 testDebugUnitTest passes for `data.local.*` (261/262; `TodayWasDatabaseTest`'s one failure confirmed pre-existing and unrelated — reproduces identically on unmoved code) — f714b31
+- [x] 1.3 assembleDebug succeeds — f714b31
 
 #### Manual
 
-- [ ] 1.4 git status shows moved files with no unintended content diff
+- [x] 1.4 git status shows moved files with no unintended content diff — f714b31
 
 ### Phase 2: `data/remote` split — dto / api
 
 #### Automated
 
-- [ ] 2.1 ktlintFormat runs clean, then ktlintCheck passes
-- [ ] 2.2 testDebugUnitTest passes (full suite)
-- [ ] 2.3 assembleDebug succeeds
+- [x] 2.1 ktlintFormat runs clean, then ktlintCheck passes
+- [x] 2.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing `TodayWasDatabaseTest` failure noted in Phase 1)
+- [x] 2.3 assembleDebug succeeds
 
 #### Manual
 

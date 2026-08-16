@@ -4,6 +4,12 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSourceImpl
+import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSourceImpl
+import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSourceImpl
 
 @Module
 @InstallIn(SingletonComponent::class)

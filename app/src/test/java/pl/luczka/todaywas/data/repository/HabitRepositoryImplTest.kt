@@ -13,6 +13,11 @@ import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
 import pl.luczka.todaywas.data.local.dao.HabitDao
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.entity.HabitEntity
+import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitCheckInDataSource
+import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
+import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
 import pl.luczka.todaywas.domain.model.HabitType
 import java.time.LocalDate
 

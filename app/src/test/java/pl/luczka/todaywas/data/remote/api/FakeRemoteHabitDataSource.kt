@@ -1,4 +1,6 @@
-package pl.luczka.todaywas.data.repository
+package pl.luczka.todaywas.data.remote.api
+
+import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
 
 class FakeRemoteHabitDataSource(
     private val habits: MutableMap<String, HabitRemoteDto> = mutableMapOf(),

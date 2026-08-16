@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.data.repository
 
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
+import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
 import pl.luczka.todaywas.domain.model.JournalEntry
 import java.time.Instant
 

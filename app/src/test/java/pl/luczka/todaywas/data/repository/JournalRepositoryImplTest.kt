@@ -11,6 +11,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import pl.luczka.todaywas.data.local.dao.JournalEntryDao
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
+import pl.luczka.todaywas.data.remote.api.FakeRemoteJournalDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
+import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.data.repository
 
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
+import pl.luczka.todaywas.data.remote.dto.HabitCheckInRemoteDto
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import java.time.Instant
 
