@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import pl.luczka.todaywas.data.local.HabitCheckInDao
-import pl.luczka.todaywas.data.local.HabitCheckInEntity
-import pl.luczka.todaywas.data.local.HabitDao
-import pl.luczka.todaywas.data.local.HabitEntity
+import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
+import pl.luczka.todaywas.data.local.dao.HabitDao
+import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
+import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn

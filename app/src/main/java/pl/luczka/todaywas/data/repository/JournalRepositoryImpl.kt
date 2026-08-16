@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import pl.luczka.todaywas.data.local.JournalEntryDao
-import pl.luczka.todaywas.data.local.JournalEntryEntity
+import pl.luczka.todaywas.data.local.dao.JournalEntryDao
+import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.JournalEntry
 import java.time.Instant

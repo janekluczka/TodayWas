@@ -6,8 +6,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.data.local.UserPreferencesDao
-import pl.luczka.todaywas.data.local.UserPreferencesEntity
+import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
+import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 
 class OnboardingRepositoryImplTest {
 

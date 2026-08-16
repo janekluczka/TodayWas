@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.local
+package pl.luczka.todaywas.di
 
 import android.content.Context
 import androidx.room.Room
@@ -7,6 +7,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
+import pl.luczka.todaywas.data.local.dao.HabitDao
+import pl.luczka.todaywas.data.local.dao.JournalEntryDao
+import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
+import pl.luczka.todaywas.data.local.database.TodayWasDatabase
 import javax.inject.Singleton
 
 @Module

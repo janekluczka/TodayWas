@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.data.local
+package pl.luczka.todaywas.data.local.database
 
 import android.content.Context
 import androidx.room.Room
@@ -9,6 +9,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 
 @RunWith(RobolectricTestRunner::class)
 class TodayWasDatabaseTest {

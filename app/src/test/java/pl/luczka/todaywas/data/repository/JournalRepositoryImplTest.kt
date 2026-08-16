@@ -9,8 +9,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.data.local.JournalEntryDao
-import pl.luczka.todaywas.data.local.JournalEntryEntity
+import pl.luczka.todaywas.data.local.dao.JournalEntryDao
+import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.data.repository
 
-import pl.luczka.todaywas.data.local.HabitEntity
+import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitType
 import java.time.Instant

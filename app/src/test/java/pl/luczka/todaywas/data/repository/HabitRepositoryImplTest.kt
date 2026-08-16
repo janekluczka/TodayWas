@@ -9,10 +9,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.data.local.HabitCheckInDao
-import pl.luczka.todaywas.data.local.HabitCheckInEntity
-import pl.luczka.todaywas.data.local.HabitDao
-import pl.luczka.todaywas.data.local.HabitEntity
+import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
+import pl.luczka.todaywas.data.local.dao.HabitDao
+import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
+import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.domain.model.HabitType
 import java.time.LocalDate
 
