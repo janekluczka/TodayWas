@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.auth
+package pl.luczka.todaywas.ui.auth.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource

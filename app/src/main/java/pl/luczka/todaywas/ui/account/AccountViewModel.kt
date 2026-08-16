@@ -24,9 +24,9 @@ import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
-import pl.luczka.todaywas.ui.auth.isValidEmail
-import pl.luczka.todaywas.ui.auth.isValidPassword
-import pl.luczka.todaywas.ui.auth.isValidRepeatPassword
+import pl.luczka.todaywas.ui.auth.util.isValidEmail
+import pl.luczka.todaywas.ui.auth.util.isValidPassword
+import pl.luczka.todaywas.ui.auth.util.isValidRepeatPassword
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.toUiState
 import javax.inject.Inject

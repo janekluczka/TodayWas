@@ -594,22 +594,22 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 4.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 4.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
-- [x] 4.3 assembleDebug succeeds
+- [x] 4.1 ktlintFormat runs clean, then ktlintCheck passes — ddc47c4
+- [x] 4.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1) — ddc47c4
+- [x] 4.3 assembleDebug succeeds — ddc47c4
 
 #### Manual
 
-- [ ] 4.4 git status shows moved/diffed files as expected
-- [ ] 4.5 `data/repository/` contains exactly 5 files
+- [x] 4.4 git status shows moved/diffed files as expected — ddc47c4
+- [x] 4.5 `data/repository/` contains exactly 5 files — ddc47c4
 
 ### Phase 5: `ui/habit/mapper` + `ui/auth/util`
 
 #### Automated
 
-- [ ] 5.1 ktlintFormat runs clean, then ktlintCheck passes
-- [ ] 5.2 testDebugUnitTest passes (full suite)
-- [ ] 5.3 assembleDebug succeeds
+- [x] 5.1 ktlintFormat runs clean, then ktlintCheck passes
+- [x] 5.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
+- [x] 5.3 assembleDebug succeeds
 
 #### Manual
 

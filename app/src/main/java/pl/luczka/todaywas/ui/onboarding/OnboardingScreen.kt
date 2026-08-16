@@ -36,7 +36,7 @@ import pl.luczka.todaywas.ui.auth.SignInFormContent
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormContent
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
-import pl.luczka.todaywas.ui.auth.message
+import pl.luczka.todaywas.ui.auth.util.message
 import pl.luczka.todaywas.ui.datasync.DataSyncReviewContent
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi

@@ -26,6 +26,8 @@ import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
 import pl.luczka.todaywas.domain.util.HabitContributionCalculator
+import pl.luczka.todaywas.ui.habit.mapper.detailRange
+import pl.luczka.todaywas.ui.habit.mapper.toHabitDetailRows
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
