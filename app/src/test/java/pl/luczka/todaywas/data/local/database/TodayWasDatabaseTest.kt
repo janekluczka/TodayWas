@@ -2,6 +2,7 @@ package pl.luczka.todaywas.data.local.database
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -23,6 +24,7 @@ class TodayWasDatabaseTest {
             val db1 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                 .build()
 
             // Act
@@ -33,6 +35,7 @@ class TodayWasDatabaseTest {
             val db2 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                 .build()
             val persisted = db2.userPreferencesDao().observe().first()
             db2.close()
