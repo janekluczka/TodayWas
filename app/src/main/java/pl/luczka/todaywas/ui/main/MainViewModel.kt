@@ -27,6 +27,9 @@ import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.domain.util.JournalContributionCalculator
+import pl.luczka.todaywas.ui.mapper.toDomain
+import pl.luczka.todaywas.ui.mapper.toHabitUiStates
+import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
@@ -34,9 +37,6 @@ import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.model.toDomain
-import pl.luczka.todaywas.ui.model.toHabitUiStates
-import pl.luczka.todaywas.ui.model.toUiState
 import java.time.Clock
 import javax.inject.Inject
 

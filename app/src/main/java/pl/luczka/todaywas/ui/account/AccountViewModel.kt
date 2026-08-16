@@ -27,8 +27,8 @@ import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.util.isValidEmail
 import pl.luczka.todaywas.ui.auth.util.isValidPassword
 import pl.luczka.todaywas.ui.auth.util.isValidRepeatPassword
+import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.toUiState
 import javax.inject.Inject
 
 @HiltViewModel

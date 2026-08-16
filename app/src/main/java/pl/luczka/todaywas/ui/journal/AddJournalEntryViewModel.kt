@@ -17,12 +17,12 @@ import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalStarterPromptUseCase
+import pl.luczka.todaywas.ui.mapper.toDomain
+import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import pl.luczka.todaywas.ui.model.toDomain
-import pl.luczka.todaywas.ui.model.toUiState
 import javax.inject.Inject
 
 @HiltViewModel

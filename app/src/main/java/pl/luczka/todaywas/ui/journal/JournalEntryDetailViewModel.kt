@@ -22,11 +22,11 @@ import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.domain.util.EditWindow
+import pl.luczka.todaywas.ui.mapper.toDomain
+import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import pl.luczka.todaywas.ui.model.toDomain
-import pl.luczka.todaywas.ui.model.toUiState
 import java.time.Clock
 
 @HiltViewModel(assistedFactory = JournalEntryDetailViewModel.Factory::class)

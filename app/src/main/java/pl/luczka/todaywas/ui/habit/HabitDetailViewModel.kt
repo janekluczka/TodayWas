@@ -28,11 +28,11 @@ import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
 import pl.luczka.todaywas.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.ui.habit.mapper.detailRange
 import pl.luczka.todaywas.ui.habit.mapper.toHabitDetailRows
+import pl.luczka.todaywas.ui.mapper.toDomain
+import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import pl.luczka.todaywas.ui.model.toDomain
-import pl.luczka.todaywas.ui.model.toUiState
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate

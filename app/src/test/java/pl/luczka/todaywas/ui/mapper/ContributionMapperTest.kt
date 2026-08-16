@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.model
+package pl.luczka.todaywas.ui.mapper
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,6 +9,7 @@ import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributi
 import pl.luczka.todaywas.domain.model.ContributionGrid
 import pl.luczka.todaywas.domain.model.ContributionLevel
 import pl.luczka.todaywas.domain.model.ContributionWindow
+import pl.luczka.todaywas.ui.model.ContributionGridType
 import java.time.Instant
 import java.time.LocalDate
 

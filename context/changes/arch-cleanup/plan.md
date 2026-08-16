@@ -89,9 +89,20 @@ domain/
   repository/    — AuthRepository, HabitRepository, JournalRepository, OnboardingRepository,
                    AiAssistRepository
 ui/
+  model/         — UI models only (UiState/Ui types), incl. new ContributionUiState.kt
+                   (ContributionGridUiState, ContributionWindowUiState, ContributionGridType,
+                   split out of the old ContributionMapper.kt)
+  mapper/        — every domain→UI mapper function formerly in ui/model/ (HabitMapper,
+                   JournalEntryMapper, ContributionMapper, AuthStateMapper, AuthErrorUiStateMapper,
+                   AiAssistErrorUiStateMapper, JournalDateSlotMapper, JournalPromptToneMapper,
+                   LocalDataSummaryMapper)
   habit/
-    mapper/      — HabitDetailMapper, LogHabitCheckInsMapper
-    (rest unchanged)
+    create/      — CreateHabitIntent/UiEvent/UiState/Screen/ViewModel
+    detail/      — HabitDetailIntent/UiEvent/UiState/Screen/ViewModel + detail/mapper/HabitDetailMapper
+    logcheckin/  — LogHabitCheckInsIntent/UiEvent/UiState/Screen/ViewModel + logcheckin/mapper/LogHabitCheckInsMapper
+  journal/
+    create/      — AddJournalEntryIntent/UiEvent/UiState/Screen/ViewModel, HelpMeStartStep/UiState
+    detail/      — JournalEntryDetailIntent/UiEvent/UiState/Screen/ViewModel, HelpMeRefineStep/UiState
   auth/
     util/        — AuthFormValidation
     (rest unchanged)
@@ -114,9 +125,10 @@ show renames (`R`), not deletions+additions with logic diffs, for every moved fi
 - No renaming of the `Remote*DataSource` classes (e.g. no `HabitApi` rename) — `data/remote/api/`
   is a directory name, not a type-naming convention change.
 - No splitting of `AuthError.kt`/`AiAssistError.kt`'s bundled model+exception shape.
-- No touching `domain/usecase/`, `:core:designsystem`, `ui/main/`, `ui/journal/`,
-  `ui/onboarding/`, `ui/account/`, `ui/datasync/`, `di/`, `MainActivity.kt`, or
-  `TodayWasApplication.kt` beyond import-line fixes where they reference a moved type.
+- No touching `domain/usecase/`, `:core:designsystem`, `ui/onboarding/`, `ui/account/`,
+  `ui/datasync/`, `MainActivity.kt`, or `TodayWasApplication.kt` beyond import-line fixes where they
+  reference a moved type. (`ui/main/` gets import-line fixes only, no restructuring; `ui/journal/`
+  and `di/` are explicitly in scope per Phases 6–8 and Phases 1/4 respectively.)
 - No new tests. Existing tests are the regression safety net — same assertions, same coverage,
   just relocated alongside the code they test.
 
@@ -472,7 +484,215 @@ their screens) needs an import added.
 
 ---
 
-## Phase 6: Docs + full verification
+## Phase 6: `ui/model` → `ui/mapper` split
+
+### Overview
+
+`ui/model/` (18 files) mixes ~9 UI model files with 9 domain→UI mapper files in one package —
+discovered after Phase 5 shipped, when it became clear the same flat-mixing problem this whole plan
+targets in `data/` was still present in `ui/`. Split it: models stay in `ui/model/`, every mapper
+function moves to a new top-level `ui/mapper/` package (sibling to `ui/model/`, mirroring
+`data/mapper/`'s relationship to `data/local/`/`data/remote/`).
+
+### Changes Required:
+
+#### 1. Split `ContributionMapper.kt`
+
+**Files**: `ui/model/ContributionMapper.kt` → new `ui/model/ContributionUiState.kt` (models) +
+`ui/mapper/ContributionMapper.kt` (mapper functions)
+
+**Intent**: Unlike the other 8 mapper files, `ContributionMapper.kt` bundles 3 model type
+definitions (`ContributionGridUiState`, `ContributionWindowUiState`, `ContributionGridType`) together
+with its 6 mapper functions in one file. Pull the 3 model types into a new `ContributionUiState.kt`
+that stays in `ui/model/`; the mapper functions (`toUiState()` overloads on `ContributionGrid`,
+`ContributionLevel`, `ContributionWindow`; `toDomain()` on `ContributionWindowUiState`; the two
+private `toContinuousCells`/`toByMonthCells` helpers) move to `ui/mapper/ContributionMapper.kt`.
+
+**Contract**: `ContributionUiState.kt`: `package pl.luczka.todaywas.ui.model`, contains the 3 type
+definitions unchanged. `ContributionMapper.kt`: `package pl.luczka.todaywas.ui.mapper`, adds an
+import for `pl.luczka.todaywas.ui.model.{ContributionGridUiState, ContributionWindowUiState,
+ContributionGridType}`. The 12 files that reference these 3 types (`ui/main/*`, `ui/habit/*`, the
+mapper itself, `ContributionMapperTest.kt`) are unaffected — the types stay in `ui/model/`, only the
+mapper functions moved.
+
+#### 2. Move the remaining 8 mapper files → `ui/mapper/`
+
+**Files**: `HabitMapper.kt`, `JournalEntryMapper.kt`, `AuthStateMapper.kt`,
+`AuthErrorUiStateMapper.kt`, `AiAssistErrorUiStateMapper.kt`, `JournalDateSlotMapper.kt`,
+`JournalPromptToneMapper.kt`, `LocalDataSummaryMapper.kt`
+
+**Intent**: Isolate domain→UI mapping logic from the UI model shapes it targets, matching the
+`data/mapper/` precedent from Phase 4.
+
+**Contract**: `package pl.luczka.todaywas.ui.model` → `pl.luczka.todaywas.ui.mapper` on all 8. Each
+needs a new import for whichever `ui.model` type(s) it maps to (e.g. `HabitMapper.kt` needs
+`HabitUiState`, `HabitCheckInStatusUiState`, `HabitTypeUiState`; `JournalEntryMapper.kt` needs
+`JournalEntryUiState`; etc. — the specific model type(s) each file's functions return). Most of
+these functions are named `toUiState()`/`toDomain()` — multiple overloads of the same name coexisting
+in one package (resolved by receiver type, not by import). Moving them all into the same new
+`ui.mapper` package preserves that overload grouping, so every caller's import line changes from
+`pl.luczka.todaywas.ui.model.toUiState`/`.toDomain` to `pl.luczka.todaywas.ui.mapper.toUiState`/
+`.toDomain` — one mechanical substitution, not per-overload disambiguation.
+
+#### 3. Test mirror
+
+**File**: `app/src/test/.../ui/model/ContributionMapperTest.kt` → `ui/mapper/ContributionMapperTest.kt`
+
+**Intent**: Keep the 1:1 test/main package mirror.
+
+**Contract**: Package-line change; add imports for the 3 model types now in `ui.model`.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `./gradlew.bat ktlintFormat` runs clean, then `./gradlew.bat ktlintCheck` passes
+- `./gradlew.bat testDebugUnitTest` passes (full suite)
+- `./gradlew.bat assembleDebug` succeeds
+
+#### Manual Verification:
+
+- `git status` shows 9 mapper files moved into `ui/mapper/`, a new `ui/model/ContributionUiState.kt`,
+  and every caller of a `ui.model` mapper function (ViewModels/Screens across every feature) diffed
+  with import-only changes
+- `ui/model/` contains only `*UiState.kt`/`*Ui.kt` model files afterward
+
+---
+
+## Phase 7: `ui/habit` split by sub-flow
+
+### Overview
+
+`ui/habit/` bundles 3 independent flows (create a habit, view/edit a habit's history, log today's
+check-ins) flat in one package. Split into `ui/habit/create/`, `ui/habit/detail/`,
+`ui/habit/logcheckin/`, each self-contained with its own `Intent`/`UiEvent`/`UiState`/`Screen`/
+`ViewModel` (+ `mapper/` for the two flows that have one, carried over unchanged from Phase 5).
+
+### Changes Required:
+
+#### 1. `ui/habit/create/`
+
+**Files**: `CreateHabitIntent.kt`, `CreateHabitUiEvent.kt`, `CreateHabitUiState.kt`,
+`CreateHabitScreen.kt`, `CreateHabitViewModel.kt`
+
+**Intent**: Isolate the create-habit flow into its own subpackage.
+
+**Contract**: `package pl.luczka.todaywas.ui.habit` → `pl.luczka.todaywas.ui.habit.create`.
+
+#### 2. `ui/habit/detail/`
+
+**Files**: `HabitDetailIntent.kt`, `HabitDetailUiEvent.kt`, `HabitDetailUiState.kt`,
+`HabitDetailScreen.kt`, `HabitDetailViewModel.kt`, `mapper/HabitDetailMapper.kt`
+
+**Intent**: Isolate the habit-detail flow (view/edit history) into its own subpackage; its
+`mapper/` subpackage (from Phase 5) moves along with it, unchanged in shape.
+
+**Contract**: `package pl.luczka.todaywas.ui.habit` → `pl.luczka.todaywas.ui.habit.detail` (the
+mapper file's package becomes `pl.luczka.todaywas.ui.habit.detail.mapper`). `HabitDetailMapper.kt`'s
+import of `HabitDetailRowUiState` updates to the new `ui.habit.detail` package.
+
+#### 3. `ui/habit/logcheckin/`
+
+**Files**: `LogHabitCheckInsIntent.kt`, `LogHabitCheckInsUiEvent.kt`, `LogHabitCheckInsUiState.kt`,
+`LogHabitCheckInsScreen.kt`, `LogHabitCheckInsViewModel.kt`, `mapper/LogHabitCheckInsMapper.kt`
+
+**Intent**: Isolate the log-check-ins flow into its own subpackage.
+
+**Contract**: `package pl.luczka.todaywas.ui.habit` → `pl.luczka.todaywas.ui.habit.logcheckin` (the
+mapper file's package becomes `pl.luczka.todaywas.ui.habit.logcheckin.mapper`).
+`LogHabitCheckInsMapper.kt`'s import of `HabitCheckInRowUiState` updates to the new
+`ui.habit.logcheckin` package.
+
+#### 4. Callers + test mirrors
+
+**Files**: `ui/TodayWasApp.kt` (imports `CreateHabitScreen`, `HabitDetailScreen`,
+`LogHabitCheckInsScreen`); `app/src/test/.../ui/habit/CreateHabitViewModelTest.kt` →
+`ui/habit/create/`, `HabitDetailViewModelTest.kt` → `ui/habit/detail/`,
+`LogHabitCheckInsViewModelTest.kt` → `ui/habit/logcheckin/`
+
+**Intent**: Fix the root nav host's screen imports; keep the 1:1 test/main package mirror.
+
+**Contract**: `TodayWasApp.kt`'s 3 `ui.habit.*Screen` imports updated to their new subpackages. Test
+files get matching package-line + import fixes.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `./gradlew.bat ktlintFormat` runs clean, then `./gradlew.bat ktlintCheck` passes
+- `./gradlew.bat testDebugUnitTest` passes (full suite)
+- `./gradlew.bat assembleDebug` succeeds
+
+#### Manual Verification:
+
+- `git status` shows all `ui/habit/` files moved into `create/`/`detail/`/`logcheckin/` with no
+  unintended content diff, and `TodayWasApp.kt` diffed with import-only changes
+- `ui/habit/` contains no loose `.kt` files at its root — every file lives under one of the 3
+  subpackages
+
+---
+
+## Phase 8: `ui/journal` split by sub-flow
+
+### Overview
+
+`ui/journal/` bundles 2 independent flows (add a new entry, with its "help me start" sub-flow;
+view/edit an existing entry, with its "help me refine" sub-flow) flat in one package. Split into
+`ui/journal/create/` and `ui/journal/detail/`, each carrying its own help-me-* step/state files.
+
+### Changes Required:
+
+#### 1. `ui/journal/create/`
+
+**Files**: `AddJournalEntryIntent.kt`, `AddJournalEntryUiEvent.kt`, `AddJournalEntryUiState.kt`,
+`AddJournalEntryScreen.kt`, `AddJournalEntryViewModel.kt`, `HelpMeStartStep.kt`,
+`HelpMeStartUiState.kt`
+
+**Intent**: Isolate the add-entry flow (and its "help me start" sub-state, confirmed used only by
+this flow) into its own subpackage.
+
+**Contract**: `package pl.luczka.todaywas.ui.journal` → `pl.luczka.todaywas.ui.journal.create`.
+
+#### 2. `ui/journal/detail/`
+
+**Files**: `JournalEntryDetailIntent.kt`, `JournalEntryDetailUiEvent.kt`,
+`JournalEntryDetailUiState.kt`, `JournalEntryDetailScreen.kt`, `JournalEntryDetailViewModel.kt`,
+`HelpMeRefineStep.kt`, `HelpMeRefineUiState.kt`
+
+**Intent**: Isolate the entry-detail flow (and its "help me refine" sub-state, confirmed used only
+by this flow) into its own subpackage.
+
+**Contract**: `package pl.luczka.todaywas.ui.journal` → `pl.luczka.todaywas.ui.journal.detail`.
+
+#### 3. Callers + test mirrors
+
+**Files**: `ui/TodayWasApp.kt` (imports `AddJournalEntryScreen`, `JournalEntryDetailScreen`);
+`app/src/test/.../ui/journal/AddJournalEntryViewModelTest.kt` → `ui/journal/create/`,
+`JournalEntryDetailViewModelTest.kt` → `ui/journal/detail/`
+
+**Intent**: Fix the root nav host's screen imports; keep the 1:1 test/main package mirror.
+
+**Contract**: `TodayWasApp.kt`'s 2 `ui.journal.*Screen` imports updated to their new subpackages.
+Test files get matching package-line + import fixes.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `./gradlew.bat ktlintFormat` runs clean, then `./gradlew.bat ktlintCheck` passes
+- `./gradlew.bat testDebugUnitTest` passes (full suite)
+- `./gradlew.bat assembleDebug` succeeds
+
+#### Manual Verification:
+
+- `git status` shows all `ui/journal/` files moved into `create/`/`detail/` with no unintended
+  content diff, and `TodayWasApp.kt` diffed with import-only changes
+- `ui/journal/` contains no loose `.kt` files at its root — every file lives under one of the 2
+  subpackages
+
+---
+
+## Phase 9: Docs + full verification
 
 ### Overview
 
@@ -492,9 +712,11 @@ next session reading CLAUDE.md sees accurate paths.
 
 **Contract**: Rewrite the bullet list under "## Project Structure" → the `app/src/main/java/...`
 tree to enumerate `data/local/{entity,dao,database}/`, `data/remote/{dto,api}/`, `data/repository/`
-(impls + Hilt module only), `data/mapper/`, `data/util/`, `domain/model/`, `domain/usecase/`,
-`domain/util/`, `domain/repository/`, and the two `ui/habit/mapper/`/`ui/auth/util/` additions —
-matching each existing bullet's style (one-line purpose description per subpackage).
+(impls + Hilt module only), `data/mapper/`, `data/util/`, `di/` (every Hilt module), `domain/model/`,
+`domain/usecase/`, `domain/util/`, `domain/repository/`, `ui/model/` (models only), `ui/mapper/`
+(every domain→UI mapper), `ui/habit/{create,detail,logcheckin}/`, `ui/journal/{create,detail}/`, and
+`ui/auth/util/` — matching each existing bullet's style (one-line purpose description per
+subpackage).
 
 ### Success Criteria:
 
@@ -530,7 +752,7 @@ assertions) — untouched by this plan.
 
 ### Manual Testing Steps:
 
-1. After Phase 6, run `./gradlew.bat assembleDebug` and sideload the resulting APK; smoke-test
+1. After Phase 9, run `./gradlew.bat assembleDebug` and sideload the resulting APK; smoke-test
    journaling (add entry), habit check-in (log a value), and sign-in (if a Supabase project is
    configured locally) to confirm nothing regressed end-to-end beyond what the automated test suite
    already covers.
@@ -607,25 +829,64 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 5.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 5.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
-- [x] 5.3 assembleDebug succeeds
+- [x] 5.1 ktlintFormat runs clean, then ktlintCheck passes — 376298a
+- [x] 5.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1) — 376298a
+- [x] 5.3 assembleDebug succeeds — 376298a
 
 #### Manual
 
-- [ ] 5.4 git status shows moved files with no unintended content diff
-- [ ] 5.5 Dependent ViewModel tests still pass
+- [x] 5.4 git status shows moved files with no unintended content diff — 376298a
+- [x] 5.5 Dependent ViewModel tests still pass — 376298a
 
-### Phase 6: Docs + full verification
+### Phase 6: `ui/model` → `ui/mapper` split
 
 #### Automated
 
-- [ ] 6.1 ktlintCheck passes
-- [ ] 6.2 testDebugUnitTest passes (full suite)
-- [ ] 6.3 assembleDebug succeeds
-- [ ] 6.4 connectedAndroidTest passes or is explicitly noted as skipped (no device)
+- [x] 6.1 ktlintFormat runs clean, then ktlintCheck passes
+- [x] 6.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
+- [x] 6.3 assembleDebug succeeds
 
 #### Manual
 
-- [ ] 6.5 CLAUDE.md Project Structure section matches Desired End State
-- [ ] 6.6 git log --follow confirms rename history preserved on spot-checked files
+- [ ] 6.4 git status shows the 9 mapper files + new ContributionUiState.kt as expected, callers diffed import-only
+- [ ] 6.5 `ui/model/` contains only model files afterward
+
+### Phase 7: `ui/habit` split by sub-flow
+
+#### Automated
+
+- [ ] 7.1 ktlintFormat runs clean, then ktlintCheck passes
+- [ ] 7.2 testDebugUnitTest passes (full suite)
+- [ ] 7.3 assembleDebug succeeds
+
+#### Manual
+
+- [ ] 7.4 git status shows all ui/habit/ files moved into create/detail/logcheckin with no unintended diff
+- [ ] 7.5 `ui/habit/` contains no loose files at its root
+
+### Phase 8: `ui/journal` split by sub-flow
+
+#### Automated
+
+- [ ] 8.1 ktlintFormat runs clean, then ktlintCheck passes
+- [ ] 8.2 testDebugUnitTest passes (full suite)
+- [ ] 8.3 assembleDebug succeeds
+
+#### Manual
+
+- [ ] 8.4 git status shows all ui/journal/ files moved into create/detail with no unintended diff
+- [ ] 8.5 `ui/journal/` contains no loose files at its root
+
+### Phase 9: Docs + full verification
+
+#### Automated
+
+- [ ] 9.1 ktlintCheck passes
+- [ ] 9.2 testDebugUnitTest passes (full suite)
+- [ ] 9.3 assembleDebug succeeds
+- [ ] 9.4 connectedAndroidTest passes or is explicitly noted as skipped (no device)
+
+#### Manual
+
+- [ ] 9.5 CLAUDE.md Project Structure section matches Desired End State
+- [ ] 9.6 git log --follow confirms rename history preserved on spot-checked files
