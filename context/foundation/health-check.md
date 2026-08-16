@@ -1,7 +1,7 @@
 ---
 project: "Today Was"
-checked_at: 2026-07-24T21:47:42Z
-health_status: healthy
+checked_at: 2026-08-16T09:18:28Z
+health_status: needs-attention
 context_type: brownfield
 language_family: java
 stack_assessment_available: false
@@ -18,20 +18,25 @@ audit_findings:
   moderate: 0
   low: 0
 test_runner_detected: true
-ci_provider: github-actions (decided, not yet implemented)
-recommended_fixes: 2
+ci_provider: null
+recommended_fixes: 5
 ---
 
 > **Adaptation note**: `/10x-health-check`'s built-in dispatch tables (marker files, audit tools,
 > lockfile formats) cover JS/Python/Rust/Go/Ruby/PHP/.NET/Dart — there is no Gradle/Kotlin entry.
 > `language_family: java` is the closest schema enum (JVM/Gradle ecosystem); checks below were run
 > directly against the Gradle project rather than through the skill's built-in dispatch commands.
-> Same as `context/foundation/tech-stack.md`'s deviation note for the same underlying reason.
->
-> **Re-run note**: this is a regeneration of the original 2026-07-24T14:50:13Z check, not a fresh
-> first pass — three of the five original findings (ktlint, JVM target, `.editorconfig`) were fixed
-> in the meantime. Per the health-check schema, re-runs overwrite rather than appending a log; the
-> prior version's reasoning for what was fixed and why lives in git history on this file.
+> Same as `context/foundation/tech-stack.md`'s deviation note for the same underlying reason. The
+> repo root also has a small `package.json` (Prettier for Markdown formatting only, `"description":
+> "Not a build dependency of the Android app"`) — `npm audit` on it is clean (0 vulnerabilities) but
+> it is not the project's real dependency tree; the Gradle version catalog is.
+
+> **Re-run note**: this is a re-run of the 2026-08-11 check (that version was never committed —
+> found as an uncommitted working-tree change at the start of this run; its content is preserved in
+> `git diff`/history if needed). The main change since then: a large `arch-cleanup` refactor
+> (12 commits, merged via PR #20) restructured the package layout to match `CLAUDE.md`'s
+> `## Project Structure` section, and a fresh, non-cached test run surfaced **one genuinely failing
+> test** that the previous check's cached test run had not caught.
 
 ## Dependency Health
 
@@ -42,166 +47,217 @@ Status: no traditional lockfile (gradle.lockfile not present/enabled)
 Package manager: Gradle (version catalog: gradle/libs.versions.toml)
 ```
 
-Gradle doesn't use a lockfile by default the way npm/cargo do. `gradle/libs.versions.toml` already
-pins an exact version string for every dependency (no floating ranges), which gives equivalent
-reproducibility for this project's purposes. Gradle's native dependency locking
-(`./gradlew dependencies --write-locks`) is an optional extra layer on top, not a gap — not flagged
-as a fix.
+Unchanged: Gradle doesn't use a lockfile the way npm/cargo do, but `gradle/libs.versions.toml` pins
+an exact version string for every dependency (no floating ranges), which gives equivalent
+reproducibility. Not flagged as a gap.
 
 ### Security Audit
 
 ```
 Tool: skipped — no built-in audit tool for Kotlin/Gradle projects (matches the skill's own "Java, Dart: skip" line)
 Recommended external tool: OWASP dependency-check-gradle plugin, or enable GitHub Dependabot alerts on the janekluczka/TodayWas remote
+Docs-tooling package.json: npm audit re-run — 0 vulnerabilities (1 prod + 1 dev dependency, Prettier only)
 ```
 
-No audit was run — 0/0/0/0 above reflects "not checked," not "checked clean." Still an open
-question, unchanged since the original check.
+Unchanged: no audit has ever been run against the actual Gradle dependency tree — 0/0/0/0 in the
+frontmatter reflects "not checked," not "checked clean." The app has a live Supabase backend and
+calls a third-party LLM (OpenRouter) via an Edge Function, so this remains a real gap, not a
+theoretical one.
 
 ### Outdated Dependencies
 
 ```
-Packages with major version gaps: unable to determine precisely (no network dependency-resolution check run)
+Packages with major version gaps: 3 (unchanged since the last check)
 ```
 
-Unchanged since the original check: `agp` (9.3.1), `kotlin` (2.2.10), and `compose-bom` (2026.02.01)
-are current/recent, but `coreKtx` (1.10.1), `lifecycleRuntimeKtx` (2.6.1), `activityCompose`
-(1.8.0), and `espressoCore` (3.5.1) look noticeably older by comparison. Still worth a pass through
-Android Studio's version catalog update suggestions to confirm whether these are intentionally
-pinned or just stale from the initial scaffold.
+- **`coreKtx`**: 1.10.1 → current AndroidX releases are in the 1.15.x+ range — stale, unchanged.
+- **`activityCompose`**: 1.8.0 → current releases are 1.9.x+ — stale, unchanged.
+- **`espressoCore`**: 3.5.1 → current releases are 3.6.x+ — stale, unchanged.
+
+`agp` (9.3.1), `kotlin` (2.4.0), `compose-bom` (2026.02.01), and `androidxLifecycle` (2.11.0) remain
+current. Worth a pass through Android Studio's version catalog update suggestions to confirm whether
+the three still-stale versions are intentionally pinned or just never revisited.
 
 ## Test Suite
 
 ```
-Test runner: JUnit 4 (local unit tests) + AndroidX Test/Espresso (instrumented tests)
-Tests found: 1 unit test (ExampleUnitTest — stock Android Studio placeholder), 1 instrumented test (ExampleInstrumentedTest — stock placeholder)
-Test execution: passing (testDebugUnitTest re-ran clean: 1 test, 0 failures, 0 errors)
+Test runner: JUnit 4 (local unit tests, some Robolectric-backed for Room/DAO coverage) + AndroidX Test/Espresso (instrumented tests)
+Tests found: 262 unit tests (fresh, non-cached run, this check)
+Test execution: FAILING — 261/262 pass, 1 deterministic failure
 ```
 
 ```
 Configuration: app/build.gradle.kts (testImplementation/androidTestImplementation blocks), no dedicated test config file needed for JUnit4
-Framework: JUnit 4.13.2 (unit), AndroidX Test 1.1.5 + Espresso 3.5.1 (instrumented)
+Framework: JUnit 4.13.2 (unit), Robolectric 4.16.1 (DAO/Room tests), AndroidX Test 1.1.5 + Espresso 3.5.1 (instrumented)
 ```
 
-Instrumented tests still not attempted (require a connected device/emulator, unavailable in this
-environment). Both test files are still the Android Studio template stubs — no project-specific test
-coverage exists yet, expected since no feature code has been written. One change since the original
-check: both stub files' wildcard imports (`import org.junit.Assert.*`) were expanded to explicit
-imports as part of the ktlint setup.
+**New finding this check**: `TodayWasDatabaseTest > should survive recreating the database instance
+from the same file when onboarding was completed` fails consistently (re-ran in isolation twice,
+same result both times — not flaky) with:
+
+```
+android.database.sqlite.SQLiteCantOpenDatabaseException: unable to open database file (code 14 SQLITE_CANTOPEN)
+```
+
+The prior (uncommitted) 2026-08-11 report claimed "258/258 passing" — that was Gradle's UP-TO-DATE
+cache reporting a stale prior result, not a fresh execution; this check forced a `--rerun` to get a
+real signal. The test builds a file-backed Room database via Robolectric, closes it, and reopens it
+from the same file path — the reopen fails to open the SQLite connection. Likely a
+Robolectric/native
+SQLite interaction specific to this machine (Windows, host `LEGION-JANEK`) rather than a logic bug
+in
+the app itself, but it has not been isolated further. This is the single most important finding in
+this check: a red test in the suite undermines the "agent can verify its own changes via the test
+suite" guarantee that everything else in this report depends on.
+
+Test count grew from 258 to 262 (+4) since the last check, consistent with the `arch-cleanup`
+refactor. Instrumented tests remain the stock `ExampleInstrumentedTest` placeholder — not exercised
+in this environment (requires a connected device/emulator), same limitation as before.
+
+ktlint re-checked clean this pass (`./gradlew ktlintCheck`: BUILD SUCCESSFUL, no violations).
 
 ## CI/CD
 
 ```
-Provider: not yet implemented (no .github/workflows/ files exist)
-Configuration: not found
+Provider: not detected
+Configuration: not found — only .github/PULL_REQUEST_TEMPLATE.md exists in .github/
 ```
 
-Unlike the original check, a CI provider **has** since been decided — `tech-stack.md`'s
-`hints.ci_provider: github-actions` / `ci_default_flow: auto-deploy-on-merge` — and
-`context/changes/deployment/deployment-plan.md` Phase 4 plans a path-scoped GitHub Actions job for
-the Supabase Edge Function deploy. No workflow file has actually been created yet for either the
-Android app's own CI or the function deploy — both remain Category B (infrastructure lesson scope),
-now with a concrete plan rather than an open question.
+Unchanged since the last check. `tech-stack.md` already decided `github-actions` as the intended
+provider, and `context/changes/deployment/deployment-plan.md` still specifies a path-scoped GitHub
+Actions job for the Supabase Edge Function deploy — but nothing in that plan has been executed, and
+the Android app's own build/test/lint CI is still unimplemented.
 
-| Stage      | Status | Notes                                                                                 |
-| ---------- | ------ | ------------------------------------------------------------------------------------- |
-| Lint       | ✗      | not configured (ktlint runs locally via `./gradlew ktlintCheck`, not yet wired to CI) |
-| Test       | ✗      | not configured (works locally, not wired to CI)                                       |
-| Build      | ✗      | not configured                                                                        |
-| Type check | n/a    | Kotlin is statically typed; no separate step needed                                   |
-| Security   | ✗      | not configured                                                                        |
+| Stage      | Status | Notes                                                                             |
+|------------|--------|-----------------------------------------------------------------------------------|
+| Lint       | ✗      | not configured (ktlint runs locally via `./gradlew ktlintCheck`, not wired to CI) |
+| Test       | ✗      | not configured — and would currently fail CI given the red test above             |
+| Build      | ✗      | not configured                                                                    |
+| Type check | n/a    | Kotlin is statically typed; no separate step needed                               |
+| Security   | ✗      | not configured                                                                    |
 
 ## Configuration
 
 ### Medium severity
 
 - **`buildTypes.release.optimization.enable = false`** in `app/build.gradle.kts` — release builds
-  ship unminified/unobfuscated (no R8 shrinking). Fine for now with no release build in flight, but
-  worth revisiting before the first real release build given the 2026-08-31 deadline. Fix: flip to
-  `true` once release builds start getting tested, and add ProGuard/R8 keep rules as needed (a
-  `rules.keep` file already exists at `app/src/main/keepRules/`). Unchanged since the original
-  check.
+  still ship unminified/unobfuscated (no R8 shrinking). Unchanged since the last check. Fix: flip to
+  `true` and validate against `app/src/main/keepRules/rules.keep`, then confirm a release build
+  still
+  runs correctly (Compose + Hilt + kotlinx.serialization all have known R8 edge cases worth
+  spot-checking).
 
 ### Low severity
 
-- **`.env.example` / secrets template** — still not yet needed (no Supabase/Gemini keys wired up yet
-  — `supabase/` doesn't exist in the repo, per `context/changes/deployment/deployment-plan.md` Phase
-  0 not having run yet), but worth adding once those integrations start, so secrets never get
-  hardcoded or accidentally committed. `local.properties` remains correctly gitignored.
+- **No `local.properties.example` / secrets template** — `local.properties` itself is present,
+  correctly gitignored, and holds real, actively-used Supabase keys. A fresh clone has no documented
+  list of which keys `local.properties` must contain (`SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+  optionally `GOOGLE_WEB_CLIENT_ID`, per `app/build.gradle.kts`). Fix: add a
+  `local.properties.example` with the key names (no real values) and reference it from the README.
+- **Orphaned `context/changes/deployment/deployment-plan.md`** — still the only file in that folder,
+  with no `change.md`; predates and sits outside this project's `/10x-new` → `/10x-plan` →
+  `/10x-implement` → `/10x-archive` convention. Fix: either formalize it into a real change
+  (`/10x-new deployment` + fold this doc in as context) if the CI/CD work gets picked up, or move it
+  to `context/archive/` if superseded.
 
-Resolved since the original check (no longer findings):
+Resolved / re-confirmed unchanged this pass:
 
-- ~~No Kotlin linter/formatter~~ — ktlint installed (`gradle/libs.versions.toml`,
-  `app/build.gradle.kts`), `ktlintCheck` passes clean, enforced per `AGENTS.md`.
-- ~~`compileOptions` pinned to `JavaVersion.VERSION_11`~~ — bumped to `JavaVersion.VERSION_17`,
-  confirmed via a clean re-build.
-- ~~No `.editorconfig`~~ — added, including a deliberate
-  `ktlint_standard_function-naming = disabled` override for `@Composable` functions (see the file's
-  own inline comment for why).
-
-All other expected configuration remains present: `.gitignore` correctly excludes
-`local.properties`, build output, and IDE caches; no secrets or generated files are tracked in git.
+- ktlint installed and clean (`./gradlew ktlintCheck` re-run this check: passes).
+- `compileOptions` on `JavaVersion.VERSION_17`.
+- `.editorconfig` present, including the documented `ktlint_standard_function-naming = disabled`
+  override for `@Composable` functions.
+- `.gitignore` correctly excludes `local.properties`, build output, and IDE caches; no secrets or
+  generated files are tracked in git.
 
 ## Stack Assessment Cross-Reference
 
-No stack-assessment.md found — that skill (`/10x-stack-assess`) is the brownfield equivalent of the
-greenfield `/10x-tech-stack-selector`, which was already run instead and produced
-`context/foundation/tech-stack.md`. Not applicable here. Unchanged since the original check.
+No `stack-assessment.md` found — `/10x-tech-stack-selector` was run instead for this greenfield
+project, producing `context/foundation/tech-stack.md`. Not applicable here. Unchanged since the last
+check.
 
 ## Recommended Fixes
 
 ### Fix before agent work (Category A)
 
-#### 1. Revisit `release.optimization.enable = false` before first real release build
+#### 1. Fix the failing `TodayWasDatabaseTest`
 
-- **Impact**: not urgent today, but an agent generating release-build tooling later may not think to
-  check this flag, and shipping a real Play Store build with minification off is a real regression
-  when it happens.
-- **Severity**: medium
-- **Effort**: quick (< 5 min) to flip, moderate to verify no ProGuard/R8 rule gaps afterward
-- **Fix**: set to `true` once the app has real release-build coverage; validate with
-  `app/src/main/keepRules/rules.keep`.
+- **Impact**: a red test in the suite is the most damaging finding here — every other Category A
+  item is a "would be nice," but a broken test-as-verification-signal risks an agent either ignoring
+  future real regressions (assuming this failure is "expected") or "fixing" it by weakening the
+  assertion instead of the underlying cause. Highest priority of anything in this report.
+- **Severity**: high
+- **Effort**: moderate (15–30 min) to isolate the Robolectric/SQLite reopen issue; possibly quick if
+  it's a known Robolectric-on-Windows native-SQLite quirk with a documented workaround
+- **Fix**: reproduce with `./gradlew testDebugUnitTest --rerun --tests "*TodayWasDatabaseTest*"`
+  (note: a cached run reports stale green results — always pass `--rerun` when the test suite's
+  actual pass/fail state matters). Investigate whether the Robolectric SQLite native library needs
+  an
+  explicit temp-directory or journal-mode override on Windows, or whether the reopened
+  `Room.databaseBuilder` call needs an explicit `.setJournalMode(...)` for the test environment.
 
 #### 2. Set up dependency vulnerability scanning
 
-- **Impact**: currently zero visibility into whether any pinned dependency (e.g. the notably-older
-  `coreKtx`/`lifecycleRuntimeKtx`/`activityCompose`/`espressoCore` versions flagged above) carries a
-  known CVE.
-- **Severity**: low today (no known findings, but none were checked either)
+- **Impact**: zero visibility into whether any pinned dependency — including the ones handling live
+  Supabase auth/data and OpenRouter LLM calls — carries a known CVE.
+- **Severity**: low-to-moderate (no known findings, but none have ever been checked)
 - **Effort**: moderate (15-30 min)
 - **Fix**: add the `dependency-check-gradle` plugin, or enable GitHub Dependabot alerts on the
   `janekluczka/TodayWas` remote.
+
+#### 3. Revisit `release.optimization.enable = false` before the first real release build
+
+- **Impact**: shipping a real build with minification off is a real regression once it happens; the
+  MVP is feature-complete, so this is now realistically near-term.
+- **Severity**: medium
+- **Effort**: quick (< 5 min) to flip, moderate to verify no ProGuard/R8 rule gaps afterward
+- **Fix**: set to `true`; validate against `app/src/main/keepRules/rules.keep` and smoke-test a
+  release build runs correctly.
+
+#### 4. Add a `local.properties.example` secrets template
+
+- **Impact**: a fresh clone has no documented list of required keys; onboarding (human or agent) has
+  to reverse-engineer `requiredLocalProperty(...)` calls in `app/build.gradle.kts` to find them.
+- **Severity**: low
+- **Effort**: quick (< 5 min)
+- **Fix**: add `local.properties.example` listing `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+  `GOOGLE_WEB_CLIENT_ID` (empty/placeholder values), reference it from the README.
+
+#### 5. Resolve the orphaned `context/changes/deployment/deployment-plan.md`
+
+- **Impact**: the one file in the repo's `context/` tree that doesn't follow the established
+  change-folder convention — easy to overlook or mistakenly treat as authoritative/current.
+- **Severity**: low
+- **Effort**: quick (< 5 min) to decide, moderate if formalized into a full change
+- **Fix**: either fold it into a proper `/10x-new deployment` change if the CI/CD work gets picked
+  up
+  next, or move it into `context/archive/` if it's considered superseded.
 
 ### Addressed in upcoming lessons (Category B)
 
 #### No CI/CD pipeline implemented yet
 
 - **Lesson**: covered by Module 1 Lesson 5 (infra research, done) and its output,
-  `context/changes/deployment/deployment-plan.md` Phase 4.
-- **What you'll do there**: the plan already specifies a path-scoped GitHub Actions job using
-  `supabase/setup-cli`; the Android app's own build/test/lint CI (per `tech-stack.md`'s
-  `ci_provider: github-actions`) is still an open implementation task, not yet a workflow file.
-
-#### No deployment configuration implemented yet
-
-- **Lesson**: covered by Module 1 Lesson 5 (done) — see `context/foundation/infrastructure.md` and
   `context/changes/deployment/deployment-plan.md`.
-- **What you'll do there**: the plan exists in full (prerequisites through verification); Phase 0
-  (real Supabase account/CLI setup) hasn't been executed yet — that's a human-only step.
+- **What you'll do there**: the plan already specifies a path-scoped GitHub Actions job using
+  `supabase/setup-cli` for the Edge Function; the Android app's own build/test/lint CI (per
+  `tech-stack.md`'s `ci_provider: github-actions`) is still an open implementation task — and would
+  currently need Fix #1 above resolved first, or CI would go red on its first run.
 
 ## Summary
 
-Health status: healthy
+Health status: needs-attention
 
-The project's foundation is solid and improved since the original check: Kotlin + Compose from the
-official Android Studio template, a working JUnit test runner (re-verified: 1/1 passing), ktlint
-enforced and clean, a consistent Java 17 compile target, a project `.editorconfig`, and correctly
-gitignored secrets/build output. The three Category A gaps from the original check (linter,
-Java-version mismatch, `.editorconfig`) are resolved. What remains open is lower-stakes: release
-minification is still off (fine until a real release build), and dependency-vulnerability scanning
-still isn't wired up. Neither blocks agent-assisted development today.
+The project's foundation remains strong: the entire MVP roadmap is complete, a substantial
+`arch-cleanup` refactor landed cleanly since the last check, ktlint is enforced and clean, and
+Kotlin/AGP/Compose BOM are current. What changed this pass is the discovery of a genuinely failing
+test (`TodayWasDatabaseTest`, deterministic, not flaky) that a previous cached test run had masked —
+that single red test is why this check is `needs-attention` rather than `healthy`, since a broken
+verification signal undermines every other agent-assisted change from here. The remaining items are
+the same lower-stakes carryovers as before: no dependency vulnerability scanning against the real
+Gradle tree, release minification still off, a missing secrets template, and one orphaned planning
+doc.
 
-Next step: proceed to implementation — the infrastructure decision and deployment plan are both
-recorded (`context/foundation/infrastructure.md`, `context/changes/deployment/deployment-plan.md`);
-Module 2 of the 10xDevs course (roadmap → implementation loop) is the natural next step in the
-course chain.
+Next step: fix the failing test first (Category A #1) — it's the only finding that actively degrades
+agent-assisted development, since agents lean on a green test suite to verify their own changes.
+After that, the remaining Category A items are all quick wins, and CI/CD setup (Category B) becomes
+safe to pick up next.
