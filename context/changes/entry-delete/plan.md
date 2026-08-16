@@ -493,24 +493,24 @@ strings added for habit delete where wording is identical.
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly via `mcp__supabase__apply_migration`
-- [x] 1.2 `pg_policies` query confirms all three `*_delete_own` policies present
+- [x] 1.1 Migration applies cleanly via `mcp__supabase__apply_migration` — 364bae3
+- [x] 1.2 `pg_policies` query confirms all three `*_delete_own` policies present — 364bae3
 
 #### Manual
 
-- [x] 1.3 Explicit user go-ahead obtained before applying (production database change)
-- [x] 1.4 `mcp__supabase__get_advisors` shows no new security warnings
+- [x] 1.3 Explicit user go-ahead obtained before applying (production database change) — 364bae3
+- [x] 1.4 `mcp__supabase__get_advisors` shows no new security warnings — 364bae3
 
 ### Phase 2: Design system — `DsTextButton` color override
 
 #### Automated
 
-- [ ] 2.1 Lint passes (`ktlintCheck`)
-- [ ] 2.2 Build succeeds (`assembleDebug`)
+- [x] 2.1 Lint passes (`ktlintCheck`)
+- [x] 2.2 Build succeeds (`assembleDebug`)
 
 #### Manual
 
-- [ ] 2.3 No standalone check — exercised visually as part of Phase 3's manual verification
+- [x] 2.3 No standalone check — exercised visually as part of Phase 3's manual verification
 
 ### Phase 3: Journal entry delete
 
