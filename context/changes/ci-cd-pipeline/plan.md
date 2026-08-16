@@ -311,10 +311,10 @@ None — no data model or schema changes.
 
 #### Automated
 
-- [x] 1.1 `./gradlew ktlintCheck` passes locally
-- [x] 1.2 `./gradlew testDebugUnitTest` passes locally (262/262)
-- [x] 1.3 `./gradlew assembleDebug` succeeds locally
-- [x] 1.4 `.github/workflows/ci.yml` is valid YAML
+- [x] 1.1 `./gradlew ktlintCheck` passes locally — 2c84d1b
+- [x] 1.2 `./gradlew testDebugUnitTest` passes locally (262/262) — 2c84d1b
+- [x] 1.3 `./gradlew assembleDebug` succeeds locally — 2c84d1b
+- [x] 1.4 `.github/workflows/ci.yml` is valid YAML — 2c84d1b
 
 #### Manual
 
@@ -325,10 +325,10 @@ None — no data model or schema changes.
 
 #### Automated
 
-- [ ] 2.1 `.github/workflows/ci.yml` valid YAML, contains `android` and `deploy-edge-function` job ids
-- [ ] 2.2 `context/changes/deployment/deployment-plan.md` no longer exists
-- [ ] 2.3 `context/archive/2026-08-16-deployment/deployment-plan.md` exists
-- [ ] 2.4 `context/changes/deployment/` directory no longer exists
+- [x] 2.1 `.github/workflows/ci.yml` valid YAML, contains `android` and `deploy-edge-function` job ids
+- [x] 2.2 `context/changes/deployment/deployment-plan.md` no longer exists
+- [x] 2.3 `context/archive/2026-08-16-deployment/deployment-plan.md` exists
+- [x] 2.4 `context/changes/deployment/` directory no longer exists
 
 #### Manual
 

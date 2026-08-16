@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       android: ${{ steps.filter.outputs.android }}
+      edge-function: ${{ steps.filter.outputs.edge-function }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -25,6 +26,8 @@ jobs:
               - 'gradle/**'
               - 'gradlew'
               - 'gradlew.bat'
+            edge-function:
+              - 'supabase/functions/**'
 
   android:
     needs: changes
@@ -52,3 +55,17 @@ jobs:
         run: ./gradlew testDebugUnitTest
       - name: Debug build
         run: ./gradlew assembleDebug
+
+  deploy-edge-function:
+    needs: changes
+    if: github.event_name == 'push' && needs.changes.outputs.edge-function == 'true'
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy ai-proxy
+        run: supabase functions deploy ai-proxy --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
