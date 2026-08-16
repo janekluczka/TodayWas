@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.domain.usecase
 
-import pl.luczka.todaywas.data.repository.HabitRepository
 import pl.luczka.todaywas.domain.model.HabitType
+import pl.luczka.todaywas.domain.repository.HabitRepository
 import javax.inject.Inject
 
 class CreateHabitUseCase @Inject constructor(

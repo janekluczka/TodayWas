@@ -4,9 +4,10 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import pl.luczka.todaywas.data.local.UserPreferencesDao
-import pl.luczka.todaywas.data.local.UserPreferencesEntity
+import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
+import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 import pl.luczka.todaywas.domain.model.OnboardingState
+import pl.luczka.todaywas.domain.repository.OnboardingRepository
 import javax.inject.Inject
 
 class OnboardingRepositoryImpl @Inject constructor(

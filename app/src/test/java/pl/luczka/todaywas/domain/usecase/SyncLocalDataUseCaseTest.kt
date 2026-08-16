@@ -4,8 +4,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.data.repository.FakeHabitRepository
-import pl.luczka.todaywas.data.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 
 class SyncLocalDataUseCaseTest {
 

@@ -2,8 +2,8 @@ package pl.luczka.todaywas.domain.usecase
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import pl.luczka.todaywas.data.repository.HabitRepository
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
+import pl.luczka.todaywas.domain.repository.HabitRepository
 import javax.inject.Inject
 
 class ObserveHabitCheckInBoardUseCase @Inject constructor(

@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.data.repository.OnboardingRepository
 import pl.luczka.todaywas.domain.model.OnboardingState
+import pl.luczka.todaywas.domain.repository.OnboardingRepository
 
 class CompleteOnboardingUseCaseTest {
 

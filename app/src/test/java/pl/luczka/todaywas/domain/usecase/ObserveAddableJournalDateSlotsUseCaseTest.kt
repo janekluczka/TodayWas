@@ -4,9 +4,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.domain.model.JournalDateSlot
 import pl.luczka.todaywas.domain.model.JournalEntry
+import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 import java.time.Instant
 import java.time.LocalDate
 

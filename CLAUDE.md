@@ -24,23 +24,54 @@ Multi-module Gradle project: `:app` (application, package `pl.luczka.todaywas`) 
 `:core:designsystem` (reusable Material3 wrappers, package
 `pl.luczka.todaywas.core.designsystem`; must never depend on `:app`).
 
-- `app/src/main/java/pl/luczka/todaywas/`
-  - `data/local/` — Room entities, DAOs, `TodayWasDatabase`, Hilt `DatabaseModule`.
-  - `data/repository/` — repository interfaces + impls, entity↔domain mappers (`*EntityMapper.kt`).
-  - `domain/model/` — domain models.
-  - `domain/usecase/` — one use case per action, invoked from ViewModels.
-  - `ui/model/` — UI-facing models (`*UiState`) and their domain→UI mappers (`*Mapper.kt`), shared
-    across features.
-  - `ui/<feature>/` — one package per screen/flow: `XxxIntent.kt`, `XxxUiState.kt`,
-    `XxxUiEvent.kt`, `XxxViewModel.kt`, `XxxScreen.kt`.
-- `core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/`
-  - `components/<type>/` — `DsXxx` wrappers over Material3 components (project-agnostic prefix,
-    reusable across projects), grouped into subpackages mirroring Material3's own component
-    groupings (`buttons/`, `cards/`, `chips/`, `navigation/`, etc.).
-  - `theme/` — `DsTheme` (the app's actual Compose theme, incl. dynamic color), `DsColor`
-    (semantic color tokens), `DsTypography`.
-  - `tokens/` — `DsSpacing` and other reusable design tokens.
-  - `preview/` — shared preview providers (e.g. `BooleanPreviewParameterProvider`).
+```
+app/src/main/java/pl/luczka/todaywas/
+  data/
+    local/
+      entity/         — Room entities
+      dao/            — Room DAOs
+      database/       — the Room database class
+    remote/
+      dto/            — remote-service-serializable payload types
+      api/            — remote data source interfaces + impls
+    repository/       — repository implementations only
+    mapper/           — entity/dto↔domain mappers + other data-layer error/state mappers
+    util/             — generic data-layer helpers
+  di/                 — every Hilt @Module in the app
+  domain/
+    model/            — domain models
+    usecase/          — one use case per action, invoked from ViewModels
+    util/             — stateless business-rule/algorithm objects
+    repository/       — repository interfaces
+  ui/
+    model/            — UI-facing models only (*UiState.kt / *Ui.kt)
+    mapper/           — domain→UI mapper functions targeting a shared ui/model/ type
+    <feature>/        — XxxIntent/UiState/UiEvent/ViewModel/Screen per screen or flow
+      <subflow>/      — when a feature bundles more than one independent flow
+
+core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/
+  components/<type>/  — DsXxx Material3 wrappers, grouped like Material3's own groupings
+  theme/              — the app's Compose theme + its semantic color/type tokens
+  tokens/             — reusable design tokens (spacing, etc.) beyond the theme itself
+  preview/            — shared preview providers
+```
+
+Conventions the tree above doesn't spell out:
+
+- A Hilt `@Module` never lives inside a `data/` subpackage — it goes in `di/`, alongside every
+  other module in the app.
+- `data/repository/` holds only implementations; the interfaces they implement live in
+  `domain/repository/`, not alongside their impl.
+- `ui/mapper/` is a flat sibling of `ui/model/`, not nested inside it — same relationship as
+  `data/mapper/` to `data/local/`/`data/remote/`.
+- A flow's own mapper/util file (mapping to a type private to that flow, not a shared `ui/model/`
+  type) sits flat alongside its `Intent`/`UiState`/etc. files — it only earns a nested
+  `mapper/`/`util/` subpackage once there's more than one such file to group.
+- When a feature package bundles more than one independent flow, it splits into
+  `ui/<feature>/<subflow>/` — one subpackage per flow, each with its own full
+  `Intent`/`UiEvent`/`UiState`/`ViewModel`/`Screen` set. A constant or type genuinely shared across
+  two subflows of the same feature is declared in one subflow and imported cross-package by the
+  other, rather than duplicated.
 - Tests: `app/src/test/` (JUnit4 unit), `app/src/androidTest/` (instrumented).
 - `context/foundation/` — PRD, tech-stack, roadmap, lessons.md (see "Working in this repo" below).
 - `context/changes/<change-id>/` — in-flight change docs; archived to `context/archive/` when done.

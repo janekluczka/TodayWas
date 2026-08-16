@@ -9,11 +9,18 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.data.local.HabitCheckInDao
-import pl.luczka.todaywas.data.local.HabitCheckInEntity
-import pl.luczka.todaywas.data.local.HabitDao
-import pl.luczka.todaywas.data.local.HabitEntity
+import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
+import pl.luczka.todaywas.data.local.dao.HabitDao
+import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
+import pl.luczka.todaywas.data.local.entity.HabitEntity
+import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitCheckInDataSource
+import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
+import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
+import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
 import pl.luczka.todaywas.domain.model.HabitType
+import pl.luczka.todaywas.domain.repository.AuthRepository
+import pl.luczka.todaywas.domain.repository.FakeAuthRepository
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)

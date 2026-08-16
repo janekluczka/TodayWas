@@ -3,12 +3,12 @@ package pl.luczka.todaywas.domain.usecase
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.data.repository.FakeHabitRepository
-import pl.luczka.todaywas.data.repository.FakeJournalRepository
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.model.JournalEntry
+import pl.luczka.todaywas.domain.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 import java.time.Instant
 import java.time.LocalDate
 

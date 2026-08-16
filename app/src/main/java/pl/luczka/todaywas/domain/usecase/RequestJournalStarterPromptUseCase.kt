@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.domain.usecase
 
-import pl.luczka.todaywas.data.repository.AiAssistRepository
 import pl.luczka.todaywas.domain.model.JournalPromptTone
+import pl.luczka.todaywas.domain.repository.AiAssistRepository
 import javax.inject.Inject
 
 class RequestJournalStarterPromptUseCase @Inject constructor(
