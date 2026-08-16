@@ -669,6 +669,10 @@ this flow) into its own subpackage.
 by this flow) into its own subpackage.
 
 **Contract**: `package pl.luczka.todaywas.ui.journal` → `pl.luczka.todaywas.ui.journal.detail`.
+`MAX_REGENERATIONS` (a top-level `const val` declared in `create/HelpMeStartUiState.kt`) is shared
+by both flows' regenerate-limit checks — discovered at compile time, not caught by static review.
+`JournalEntryDetailViewModel.kt` and `JournalEntryDetailScreen.kt` get a cross-package import
+(`pl.luczka.todaywas.ui.journal.create.MAX_REGENERATIONS`) rather than a duplicated constant.
 
 #### 3. Callers + test mirrors
 
@@ -861,22 +865,22 @@ annotations and table names are untouched; only the Kotlin file's package/direct
 
 #### Automated
 
-- [x] 7.1 ktlintFormat runs clean, then ktlintCheck passes
-- [x] 7.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1)
-- [x] 7.3 assembleDebug succeeds
+- [x] 7.1 ktlintFormat runs clean, then ktlintCheck passes — 32c3a66
+- [x] 7.2 testDebugUnitTest passes (full suite) (261/262; same pre-existing/flaky `TodayWasDatabaseTest` failure noted in Phase 1) — 32c3a66
+- [x] 7.3 assembleDebug succeeds — 32c3a66
 
 #### Manual
 
-- [ ] 7.4 git status shows all ui/habit/ files moved into create/detail/logcheckin (mapper files flattened directly into detail/logcheckin, no nested mapper/) with no unintended diff
-- [ ] 7.5 `ui/habit/` contains no loose files at its root
+- [x] 7.4 git status shows all ui/habit/ files moved into create/detail/logcheckin (mapper files flattened directly into detail/logcheckin, no nested mapper/) with no unintended diff — 32c3a66
+- [x] 7.5 `ui/habit/` contains no loose files at its root — 32c3a66
 
 ### Phase 8: `ui/journal` split by sub-flow
 
 #### Automated
 
-- [ ] 8.1 ktlintFormat runs clean, then ktlintCheck passes
-- [ ] 8.2 testDebugUnitTest passes (full suite)
-- [ ] 8.3 assembleDebug succeeds
+- [x] 8.1 ktlintFormat runs clean, then ktlintCheck passes
+- [x] 8.2 testDebugUnitTest passes (full suite) (clean pass, no failures)
+- [x] 8.3 assembleDebug succeeds
 
 #### Manual
 

@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.journal
+package pl.luczka.todaywas.ui.journal.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

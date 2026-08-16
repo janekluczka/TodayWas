@@ -13,8 +13,8 @@ import pl.luczka.todaywas.ui.account.AccountScreen
 import pl.luczka.todaywas.ui.habit.create.CreateHabitScreen
 import pl.luczka.todaywas.ui.habit.detail.HabitDetailScreen
 import pl.luczka.todaywas.ui.habit.logcheckin.LogHabitCheckInsScreen
-import pl.luczka.todaywas.ui.journal.AddJournalEntryScreen
-import pl.luczka.todaywas.ui.journal.JournalEntryDetailScreen
+import pl.luczka.todaywas.ui.journal.create.AddJournalEntryScreen
+import pl.luczka.todaywas.ui.journal.detail.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen
 import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
 

@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.journal
+package pl.luczka.todaywas.ui.journal.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +22,7 @@ import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.domain.util.EditWindow
+import pl.luczka.todaywas.ui.journal.create.MAX_REGENERATIONS
 import pl.luczka.todaywas.ui.mapper.toDomain
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState

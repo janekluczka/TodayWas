@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.journal
+package pl.luczka.todaywas.ui.journal.detail
 
 sealed interface JournalEntryDetailUiEvent {
 

@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.journal
+package pl.luczka.todaywas.ui.journal.create
 
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState

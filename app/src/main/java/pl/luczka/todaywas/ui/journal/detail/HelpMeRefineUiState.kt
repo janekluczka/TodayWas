@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.journal
+package pl.luczka.todaywas.ui.journal.detail
 
 import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
