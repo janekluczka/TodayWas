@@ -15,6 +15,7 @@ import pl.luczka.todaywas.data.mapper.toEntity
 import pl.luczka.todaywas.data.mapper.toRemoteDto
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
+import pl.luczka.todaywas.data.util.TransactionRunner
 import pl.luczka.todaywas.data.util.remoteCall
 import pl.luczka.todaywas.data.util.safeDbCall
 import pl.luczka.todaywas.di.ApplicationScope
@@ -29,6 +30,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 class HabitRepositoryImpl @Inject constructor(
+    private val transactionRunner: TransactionRunner,
     private val habitDao: HabitDao,
     private val habitCheckInDao: HabitCheckInDao,
     private val remoteHabitDataSource: RemoteHabitDataSource,
@@ -103,9 +105,15 @@ class HabitRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteHabit(id: String): Result<Unit> {
-        val checkInsResult = safeDbCall { habitCheckInDao.deleteByHabitId(id) }
-        if (checkInsResult.isFailure) return checkInsResult
-        val result = safeDbCall { habitDao.deleteById(id) }
+        // Transactional so a habit is never left with only some of its check-ins deleted (or
+        // vice versa) if the second delete fails - safeDbCall's retry re-runs the whole
+        // transaction, not just the failed half.
+        val result = safeDbCall {
+            transactionRunner.runInTransaction {
+                habitCheckInDao.deleteByHabitId(id)
+                habitDao.deleteById(id)
+            }
+        }
         if (result.isSuccess) pushHabitDeleteInBackground(id)
         return result
     }

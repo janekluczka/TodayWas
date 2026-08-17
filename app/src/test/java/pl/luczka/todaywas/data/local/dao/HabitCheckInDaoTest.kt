@@ -219,4 +219,61 @@ class HabitCheckInDaoTest {
             assertEquals("2026-07-27", updated?.date)
             assertEquals(1_000L, updated?.createdAt)
         }
+
+    @Test
+    fun `should remove only the matching check-in when deleteById is called`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .build()
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L),
+            )
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 2_000L),
+            )
+
+            // Act
+            db.habitCheckInDao().deleteById("check-in-2")
+            val remaining = db.habitCheckInDao().observeAll().first()
+            db.close()
+
+            // Assert
+            assertEquals(listOf("check-in-1"), remaining.map { it.id })
+        }
+
+    @Test
+    fun `should remove every check-in for the habit when deleteByHabitId is called`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .build()
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L),
+            )
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 2_000L),
+            )
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(id = "check-in-3", habitId = "2", date = "2026-07-27", value = 1, createdAt = 3_000L),
+            )
+
+            // Act
+            db.habitCheckInDao().deleteByHabitId("1")
+            val remaining = db.habitCheckInDao().observeAll().first()
+            db.close()
+
+            // Assert
+            assertEquals(listOf("check-in-3"), remaining.map { it.id })
+        }
 }

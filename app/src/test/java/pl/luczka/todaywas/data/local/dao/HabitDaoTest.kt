@@ -109,4 +109,47 @@ class HabitDaoTest {
             // Assert
             assertEquals(listOf("Oldest", "Middle", "Newest"), habits.map { it.name })
         }
+
+    @Test
+    fun `should remove only the matching habit when deleteById is called`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .build()
+            db.habitDao().insert(
+                HabitEntity(
+                    id = "habit-1",
+                    name = "Keep me",
+                    description = null,
+                    type = "BINARY",
+                    scaleMin = null,
+                    scaleMax = null,
+                    createdAt = 1_000L,
+                ),
+            )
+            db.habitDao().insert(
+                HabitEntity(
+                    id = "habit-2",
+                    name = "Delete me",
+                    description = null,
+                    type = "BINARY",
+                    scaleMin = null,
+                    scaleMax = null,
+                    createdAt = 2_000L,
+                ),
+            )
+
+            // Act
+            db.habitDao().deleteById("habit-2")
+            val remaining = db.habitDao().observeAll().first()
+            db.close()
+
+            // Assert
+            assertEquals(listOf("habit-1"), remaining.map { it.id })
+        }
 }

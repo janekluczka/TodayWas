@@ -8,7 +8,9 @@ decisions.
 ## Hard rules
 
 - Journal/habit entries are editable only within 24 hours of creation (FR-006); after that they
-  become read-only. Enforce this at write time, not just in the UI.
+  become read-only for editing. Enforce this at write time, not just in the UI. Deletion is the
+  one exception — a journal entry, habit, or habit check-in can be deleted at any time regardless
+  of age, by design (see `context/changes/entry-delete/`).
 - Core journaling and habit tracking must work with zero account (FR-008) — never gate them behind
   sign-in.
 - AI features never read journal or habit history, with one named exception: "help me refine"

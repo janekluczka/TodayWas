@@ -395,6 +395,27 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             saveError = true,
             saveErrorIsWindowExpired = false,
         ),
+        HabitDetailUiState(
+            isLoading = false,
+            habitName = "Drink water",
+            type = HabitTypeUiState.BINARY,
+            range = 0..1,
+            rows = listOf(
+                HabitDetailRowUiState(date = LocalDate.now(), value = 1, eligibleForEdit = true, alreadyLogged = true),
+                HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 0, eligibleForEdit = false, alreadyLogged = true),
+            ),
+            contributionGrid = ContributionGridUiState(cells = emptyList()),
+            availableWindows = listOf(
+                ContributionWindowUiState.RollingTwelveMonths,
+                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
+            ),
+            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+            isEditSheetOpen = false,
+            isSaving = false,
+            saveError = false,
+            saveErrorIsWindowExpired = false,
+            isDeleteHabitDialogVisible = true,
+        ),
     )
 }
 
@@ -408,5 +429,21 @@ private fun HabitDetailScreenPreview(
             uiState = state,
             onIntent = {},
         )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DeleteHabitDialogPreview() {
+    DsTheme {
+        DeleteHabitDialog(checkInCount = 12, onIntent = {})
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DeleteCheckInDialogPreview() {
+    DsTheme {
+        DeleteCheckInDialog(onIntent = {})
     }
 }

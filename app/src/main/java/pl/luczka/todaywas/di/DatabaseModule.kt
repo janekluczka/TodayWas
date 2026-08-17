@@ -12,6 +12,8 @@ import pl.luczka.todaywas.data.local.dao.HabitDao
 import pl.luczka.todaywas.data.local.dao.JournalEntryDao
 import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
 import pl.luczka.todaywas.data.local.database.TodayWasDatabase
+import pl.luczka.todaywas.data.util.RoomTransactionRunner
+import pl.luczka.todaywas.data.util.TransactionRunner
 import javax.inject.Singleton
 
 @Module
@@ -38,4 +40,7 @@ object DatabaseModule {
 
     @Provides
     fun provideHabitCheckInDao(database: TodayWasDatabase): HabitCheckInDao = database.habitCheckInDao()
+
+    @Provides
+    fun provideTransactionRunner(runner: RoomTransactionRunner): TransactionRunner = runner
 }
