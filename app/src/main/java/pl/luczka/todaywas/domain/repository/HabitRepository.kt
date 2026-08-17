@@ -33,6 +33,13 @@ interface HabitRepository {
         value: Int,
     ): Result<Unit>
 
+    suspend fun deleteHabit(id: String): Result<Unit>
+
+    suspend fun deleteCheckIn(
+        habitId: String,
+        date: LocalDate,
+    ): Result<Unit>
+
     suspend fun syncWithRemote(): Result<Unit>
 
     suspend fun clearLocal(): Result<Unit>

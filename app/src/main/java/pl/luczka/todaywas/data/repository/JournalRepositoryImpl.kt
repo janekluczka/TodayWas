@@ -65,6 +65,12 @@ class JournalRepositoryImpl @Inject constructor(
         return result
     }
 
+    override suspend fun deleteEntry(id: String): Result<Unit> {
+        val result = safeDbCall { dao.deleteById(id) }
+        if (result.isSuccess) pushDeleteInBackground(id)
+        return result
+    }
+
     override suspend fun syncWithRemote(): Result<Unit> {
         val userId = authRepository.currentUserId() ?: return Result.success(Unit)
         return syncMutex.withLock {
@@ -90,6 +96,21 @@ class JournalRepositoryImpl @Inject constructor(
             if (syncMutex.tryLock()) {
                 try {
                     remoteDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId)))
+                } finally {
+                    syncMutex.unlock()
+                }
+            }
+        }
+    }
+
+    // Same best-effort/skip-while-syncing shape as pushInBackground - only the id is needed here,
+    // not a full entity, since deleting doesn't require the row's content.
+    private fun pushDeleteInBackground(id: String) {
+        authRepository.currentUserId() ?: return
+        syncScope.launch {
+            if (syncMutex.tryLock()) {
+                try {
+                    remoteDataSource.delete(id)
                 } finally {
                     syncMutex.unlock()
                 }

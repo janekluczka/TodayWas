@@ -168,4 +168,31 @@ class JournalEntryDaoTest {
             assertEquals("2026-07-27", updated?.date)
             assertEquals(1_000L, updated?.createdAt)
         }
+
+    @Test
+    fun `should remove only the matching entry when deleteById is called`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .build()
+            db.journalEntryDao().insert(
+                JournalEntryEntity(id = "entry-1", date = "2026-07-27", text = "Keep me.", createdAt = 1_000L),
+            )
+            db.journalEntryDao().insert(
+                JournalEntryEntity(id = "entry-2", date = "2026-07-26", text = "Delete me.", createdAt = 2_000L),
+            )
+
+            // Act
+            db.journalEntryDao().deleteById("entry-2")
+            val remaining = db.journalEntryDao().observeAll().first()
+            db.close()
+
+            // Assert
+            assertEquals(listOf("entry-1"), remaining.map { it.id })
+        }
 }

@@ -21,4 +21,18 @@ sealed interface HabitDetailIntent {
     data class WindowSelected(
         val window: ContributionWindowUiState,
     ) : HabitDetailIntent
+
+    data object DeleteHabitClicked : HabitDetailIntent
+
+    data object DeleteHabitConfirmed : HabitDetailIntent
+
+    data object DeleteHabitDismissed : HabitDetailIntent
+
+    data class DeleteCheckInClicked(
+        val date: LocalDate,
+    ) : HabitDetailIntent
+
+    data object DeleteCheckInConfirmed : HabitDetailIntent
+
+    data object DeleteCheckInDismissed : HabitDetailIntent
 }

@@ -29,6 +29,9 @@ interface JournalEntryDao {
     @Update
     suspend fun update(entity: JournalEntryEntity)
 
+    @Query("DELETE FROM journal_entries WHERE id = :id")
+    suspend fun deleteById(id: String)
+
     @Query("DELETE FROM journal_entries")
     suspend fun clearAll()
 }

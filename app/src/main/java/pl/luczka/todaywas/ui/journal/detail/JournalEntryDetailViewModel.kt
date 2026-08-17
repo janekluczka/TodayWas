@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AiAssistException
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
+import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
@@ -35,6 +36,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
     @Assisted private val id: String,
     private val getJournalEntry: GetJournalEntryUseCase,
     private val updateJournalEntry: UpdateJournalEntryUseCase,
+    private val deleteJournalEntry: DeleteJournalEntryUseCase,
     private val observeAuthState: ObserveAuthStateUseCase,
     private val requestJournalRefinementPrompt: RequestJournalRefinementPromptUseCase,
     private val clock: Clock,
@@ -86,6 +88,9 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
             JournalEntryDetailIntent.SaveClicked -> onSaveClicked()
             JournalEntryDetailIntent.CancelEditClicked -> onCancelEditClicked()
             JournalEntryDetailIntent.BackClicked -> onBackClicked()
+            JournalEntryDetailIntent.DeleteClicked -> onDeleteClicked()
+            JournalEntryDetailIntent.DeleteConfirmed -> onDeleteConfirmed()
+            JournalEntryDetailIntent.DeleteDismissed -> onDeleteDismissed()
             JournalEntryDetailIntent.HelpMeRefineClicked -> onHelpMeRefineClicked()
             JournalEntryDetailIntent.HelpMeRefineDismissed -> onHelpMeRefineDismissed()
             is JournalEntryDetailIntent.ToneSelected -> onToneSelected(intent.tone)
@@ -145,6 +150,31 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
 
     private fun onBackClicked() {
         eventChannel.trySend(JournalEntryDetailUiEvent.NavigatedBack)
+    }
+
+    private fun onDeleteClicked() {
+        _uiState.update { it.copy(isDeleteDialogVisible = true) }
+    }
+
+    private fun onDeleteDismissed() {
+        _uiState.update { it.copy(isDeleteDialogVisible = false) }
+    }
+
+    private fun onDeleteConfirmed() {
+        val state = _uiState.value
+        if (state.isDeleting) return
+        val entry = state.entry ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeleting = true, deleteError = false) }
+            val result = deleteJournalEntry(entry.id)
+            if (result.isSuccess) {
+                eventChannel.trySend(JournalEntryDetailUiEvent.NavigatedBack)
+            } else {
+                _uiState.update {
+                    it.copy(isDeleting = false, deleteError = true, isDeleteDialogVisible = false)
+                }
+            }
+        }
     }
 
     private fun onHelpMeRefineClicked() {

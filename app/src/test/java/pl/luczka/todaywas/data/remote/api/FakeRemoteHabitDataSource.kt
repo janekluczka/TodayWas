@@ -9,6 +9,8 @@ class FakeRemoteHabitDataSource(
 
     var upsertCallCount = 0
         private set
+    var deleteCallCount = 0
+        private set
 
     override suspend fun upsert(habits: List<HabitRemoteDto>): Result<Unit> {
         upsertCallCount++
@@ -20,5 +22,12 @@ class FakeRemoteHabitDataSource(
     override suspend fun fetchAll(userId: String): Result<List<HabitRemoteDto>> {
         if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
         return Result.success(habits.values.filter { it.userId == userId })
+    }
+
+    override suspend fun delete(id: String): Result<Unit> {
+        deleteCallCount++
+        if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
+        habits.remove(id)
+        return Result.success(Unit)
     }
 }

@@ -41,6 +41,20 @@ class FakeHabitRepository(
     var lastUpdatedValue: Int? = null
         private set
 
+    var deleteHabitResult: Result<Unit> = Result.success(Unit)
+    var deleteHabitCallCount = 0
+        private set
+    var lastDeletedHabitId: String? = null
+        private set
+
+    var deleteCheckInResult: Result<Unit> = Result.success(Unit)
+    var deleteCheckInCallCount = 0
+        private set
+    var lastDeletedCheckInHabitId: String? = null
+        private set
+    var lastDeletedCheckInDate: LocalDate? = null
+        private set
+
     var syncWithRemoteResult: Result<Unit> = Result.success(Unit)
     var syncWithRemoteCallCount = 0
         private set
@@ -86,6 +100,22 @@ class FakeHabitRepository(
         lastUpdatedDate = date
         lastUpdatedValue = value
         return updateCheckInResult
+    }
+
+    override suspend fun deleteHabit(id: String): Result<Unit> {
+        deleteHabitCallCount++
+        lastDeletedHabitId = id
+        return deleteHabitResult
+    }
+
+    override suspend fun deleteCheckIn(
+        habitId: String,
+        date: LocalDate,
+    ): Result<Unit> {
+        deleteCheckInCallCount++
+        lastDeletedCheckInHabitId = habitId
+        lastDeletedCheckInDate = date
+        return deleteCheckInResult
     }
 
     override suspend fun syncWithRemote(): Result<Unit> {

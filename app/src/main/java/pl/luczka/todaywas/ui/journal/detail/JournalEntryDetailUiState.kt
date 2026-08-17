@@ -13,6 +13,9 @@ data class JournalEntryDetailUiState(
     val isEditing: Boolean,
     val isSaving: Boolean,
     val saveError: Boolean,
+    val isDeleteDialogVisible: Boolean = false,
+    val isDeleting: Boolean = false,
+    val deleteError: Boolean = false,
     val authState: AuthStateUi = AuthStateUi.Loading,
     val helpMeRefine: HelpMeRefineUiState = HelpMeRefineUiState(),
 )

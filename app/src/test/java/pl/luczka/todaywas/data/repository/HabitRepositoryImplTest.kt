@@ -18,6 +18,7 @@ import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
+import pl.luczka.todaywas.data.util.FakeTransactionRunner
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.FakeAuthRepository
@@ -34,6 +35,7 @@ class HabitRepositoryImplTest {
         remoteHabitCheckInDataSource: RemoteHabitCheckInDataSource = FakeRemoteHabitCheckInDataSource(),
         authRepository: AuthRepository = FakeAuthRepository(),
     ) = HabitRepositoryImpl(
+        transactionRunner = FakeTransactionRunner(),
         habitDao = habitDao,
         habitCheckInDao = habitCheckInDao,
         remoteHabitDataSource = remoteHabitDataSource,
@@ -66,6 +68,10 @@ class HabitRepositoryImplTest {
             entities[entity.id] = entity
         }
 
+        override suspend fun deleteById(id: String) {
+            entities.remove(id)
+        }
+
         override suspend fun clearAll() {
             entities.clear()
         }
@@ -79,6 +85,10 @@ class HabitRepositoryImplTest {
         var insertAllCallCount = 0
             private set
         var updateCallCount = 0
+            private set
+        var deleteByIdCallCount = 0
+            private set
+        var deleteByHabitIdCallCount = 0
             private set
 
         override fun observeAll(): Flow<List<HabitCheckInEntity>> = flowOf(entities.values.toList())
@@ -112,6 +122,16 @@ class HabitRepositoryImplTest {
                 throw RuntimeException("simulated write failure")
             }
             entities[entity.habitId to entity.date] = entity
+        }
+
+        override suspend fun deleteById(id: String) {
+            deleteByIdCallCount++
+            entities.entries.find { it.value.id == id }?.let { entities.remove(it.key) }
+        }
+
+        override suspend fun deleteByHabitId(habitId: String) {
+            deleteByHabitIdCallCount++
+            entities.keys.filter { it.first == habitId }.forEach { entities.remove(it) }
         }
 
         override suspend fun clearAll() {
@@ -268,6 +288,190 @@ class HabitRepositoryImplTest {
             // Assert
             assertTrue(result.isFailure)
             assertEquals(0, checkInDao.updateCallCount)
+        }
+
+    @Test
+    fun `should remove the habit and its check-ins from both DAOs when deleteHabit is called`() =
+        runTest {
+            // Arrange
+            val habit = HabitEntity(
+                id = "1",
+                name = "Drink water",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+            )
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
+            val checkIn = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to checkIn))
+            val repository = repository(habitDao = habitDao, habitCheckInDao = checkInDao, scope = backgroundScope)
+
+            // Act
+            val result = repository.deleteHabit("1")
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertTrue(habitDao.getAll().isEmpty())
+            assertTrue(checkInDao.getAll().isEmpty())
+        }
+
+    @Test
+    fun `should push only the habit's remote delete when signed in and deleteHabit succeeds`() =
+        runTest {
+            // Arrange - the check-ins' remote delete is not pushed separately, since the live
+            // ON DELETE CASCADE FK removes them remotely once the habit row is gone.
+            val habit = HabitEntity(
+                id = "1",
+                name = "Drink water",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+            )
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
+            val remoteHabits = FakeRemoteHabitDataSource()
+            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(
+                habitDao = habitDao,
+                habitCheckInDao = FakeHabitCheckInDao(),
+                scope = backgroundScope,
+                remoteHabitDataSource = remoteHabits,
+                remoteHabitCheckInDataSource = remoteCheckIns,
+                authRepository = auth,
+            )
+
+            // Act
+            repository.deleteHabit("1")
+            runCurrent()
+
+            // Assert
+            assertEquals(1, remoteHabits.deleteCallCount)
+            assertEquals(0, remoteCheckIns.deleteCallCount)
+        }
+
+    @Test
+    fun `should delete a habit locally without any remote call when signed out`() =
+        runTest {
+            // Arrange
+            val habit = HabitEntity(
+                id = "1",
+                name = "Drink water",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+            )
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
+            val remoteHabits = FakeRemoteHabitDataSource()
+            val auth = FakeAuthRepository(currentUserId = null)
+            val repository = repository(
+                habitDao = habitDao,
+                habitCheckInDao = FakeHabitCheckInDao(),
+                scope = backgroundScope,
+                remoteHabitDataSource = remoteHabits,
+                authRepository = auth,
+            )
+
+            // Act
+            val result = repository.deleteHabit("1")
+            runCurrent()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertTrue(habitDao.getAll().isEmpty())
+            assertEquals(0, remoteHabits.deleteCallCount)
+        }
+
+    @Test
+    fun `should remove only the matching check-in when deleteCheckIn is called`() =
+        runTest {
+            // Arrange
+            val target = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val other = HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 1_000L)
+            val checkInDao = FakeHabitCheckInDao(
+                entities = mutableMapOf(("1" to "2026-07-27") to target, ("1" to "2026-07-26") to other),
+            )
+            val repository =
+                repository(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao, scope = backgroundScope)
+
+            // Act
+            val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(null, checkInDao.getByHabitAndDate("1", "2026-07-27"))
+            assertEquals(other, checkInDao.getByHabitAndDate("1", "2026-07-26"))
+        }
+
+    @Test
+    fun `should return failure when deleteCheckIn targets a non-existent habitId and date`() =
+        runTest {
+            // Arrange
+            val checkInDao = FakeHabitCheckInDao()
+            val repository =
+                repository(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao, scope = backgroundScope)
+
+            // Act
+            val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
+
+            // Assert
+            assertTrue(result.isFailure)
+            assertEquals(0, checkInDao.deleteByIdCallCount)
+        }
+
+    @Test
+    fun `should push the remote delete when signed in and deleteCheckIn succeeds`() =
+        runTest {
+            // Arrange
+            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to existing))
+            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(
+                habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
+                habitCheckInDao = checkInDao,
+                scope = backgroundScope,
+                remoteHabitCheckInDataSource = remoteCheckIns,
+                authRepository = auth,
+            )
+
+            // Act
+            repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
+            runCurrent()
+
+            // Assert
+            assertEquals(1, remoteCheckIns.deleteCallCount)
+        }
+
+    @Test
+    fun `should delete a check-in locally without any remote call when signed out`() =
+        runTest {
+            // Arrange
+            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to existing))
+            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
+            val auth = FakeAuthRepository(currentUserId = null)
+            val repository = repository(
+                habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
+                habitCheckInDao = checkInDao,
+                scope = backgroundScope,
+                remoteHabitCheckInDataSource = remoteCheckIns,
+                authRepository = auth,
+            )
+
+            // Act
+            val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
+            runCurrent()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(null, checkInDao.getByHabitAndDate("1", "2026-07-27"))
+            assertEquals(0, remoteCheckIns.deleteCallCount)
         }
 
     @Test

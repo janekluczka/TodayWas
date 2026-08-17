@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -84,6 +87,12 @@ private fun JournalEntryDetailScreenContent(
             snackbarHostState.showSnackbar(message)
         }
     }
+    val deleteErrorMessage = stringResource(R.string.journal_detail_delete_error)
+    LaunchedEffect(uiState.deleteError) {
+        if (uiState.deleteError) {
+            snackbarHostState.showSnackbar(deleteErrorMessage)
+        }
+    }
 
     DsScaffold(
         topBar = {
@@ -157,6 +166,10 @@ private fun JournalEntryDetailScreenContent(
             onIntent = onIntent,
         )
     }
+
+    if (uiState.isDeleteDialogVisible) {
+        DeleteEntryDialog(onIntent = onIntent)
+    }
 }
 
 @Composable
@@ -172,6 +185,36 @@ private fun JournalEntryDetailActions(
             )
         }
     }
+    DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.DeleteClicked) }) {
+        DsIcon(
+            imageVector = Icons.Filled.Delete,
+            contentDescription = stringResource(R.string.journal_detail_delete_action),
+        )
+    }
+}
+
+@Composable
+private fun DeleteEntryDialog(
+    onIntent: (JournalEntryDetailIntent) -> Unit,
+) {
+    DsAlertDialog(
+        onDismissRequest = { onIntent(JournalEntryDetailIntent.DeleteDismissed) },
+        title = { DsText(text = stringResource(R.string.journal_detail_delete_dialog_title)) },
+        text = { DsText(text = stringResource(R.string.journal_detail_delete_dialog_text)) },
+        confirmButton = {
+            DsTextButton(
+                text = stringResource(R.string.journal_detail_delete_confirm_cta),
+                onClick = { onIntent(JournalEntryDetailIntent.DeleteConfirmed) },
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            )
+        },
+        dismissButton = {
+            DsTextButton(
+                text = stringResource(R.string.journal_detail_delete_cancel_cta),
+                onClick = { onIntent(JournalEntryDetailIntent.DeleteDismissed) },
+            )
+        },
+    )
 }
 
 @Composable
@@ -348,5 +391,13 @@ private fun HelpMeRefineDialogPreview(
             uiState = state,
             onIntent = {},
         )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DeleteEntryDialogPreview() {
+    DsTheme {
+        DeleteEntryDialog(onIntent = {})
     }
 }

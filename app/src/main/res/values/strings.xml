@@ -67,6 +67,12 @@
     <string name="journal_detail_cancel_edit_action">Cancel</string>
     <string name="journal_detail_error">Something went wrong. Please try again.</string>
     <string name="journal_detail_edit_window_expired_error">This entry can no longer be edited.</string>
+    <string name="journal_detail_delete_action">Delete</string>
+    <string name="journal_detail_delete_dialog_title">Delete entry?</string>
+    <string name="journal_detail_delete_dialog_text">This can\'t be undone.</string>
+    <string name="journal_detail_delete_confirm_cta">Delete</string>
+    <string name="journal_detail_delete_cancel_cta">Cancel</string>
+    <string name="journal_detail_delete_error">Something went wrong. Please try again.</string>
 
     <string name="journal_help_me_refine_cta">Help me refine</string>
     <string name="journal_help_me_refine_dialog_title">Refine this entry</string>
@@ -93,6 +99,15 @@
     <string name="habit_detail_error">Something went wrong. Please try again.</string>
     <string name="habit_detail_edit_window_expired_error">This value can no longer be edited.</string>
     <string name="habit_detail_today_suffix_format">%1$s (today)</string>
+    <string name="habit_detail_delete_action">Delete</string>
+    <string name="habit_detail_delete_dialog_title">Delete habit?</string>
+    <string name="habit_detail_delete_dialog_text_format">Delete this habit and all %1$d of its check-ins? This can\'t be undone.</string>
+    <string name="habit_detail_delete_confirm_cta">Delete</string>
+    <string name="habit_detail_delete_cancel_cta">Cancel</string>
+    <string name="habit_detail_delete_error">Something went wrong. Please try again.</string>
+    <string name="habit_detail_delete_checkin_action">Delete check-in</string>
+    <string name="habit_detail_delete_checkin_dialog_title">Delete check-in?</string>
+    <string name="habit_detail_delete_checkin_dialog_text">This can\'t be undone.</string>
 
     <string name="contribution_window_last_12_months_label">Last 12 months</string>
 

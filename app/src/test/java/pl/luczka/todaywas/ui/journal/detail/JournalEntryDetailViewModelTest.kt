@@ -2,6 +2,7 @@ package pl.luczka.todaywas.ui.journal.detail
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -24,6 +25,7 @@ import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.FakeAiAssistRepository
 import pl.luczka.todaywas.domain.repository.FakeAuthRepository
 import pl.luczka.todaywas.domain.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
@@ -60,6 +62,7 @@ class JournalEntryDetailViewModelTest {
         id = id,
         getJournalEntry = GetJournalEntryUseCase(repository),
         updateJournalEntry = UpdateJournalEntryUseCase(repository, clock),
+        deleteJournalEntry = DeleteJournalEntryUseCase(repository),
         observeAuthState = ObserveAuthStateUseCase(authRepository),
         requestJournalRefinementPrompt = RequestJournalRefinementPromptUseCase(aiAssistRepository),
         clock = clock,
@@ -192,6 +195,99 @@ class JournalEntryDetailViewModelTest {
             assertFalse(viewModel.uiState.value.isEditing)
             assertFalse(viewModel.uiState.value.isEditable)
             assertTrue(viewModel.uiState.value.saveError)
+        }
+
+    @Test
+    fun `should show isDeleteDialogVisible when DeleteClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.isDeleteDialogVisible)
+        }
+
+    @Test
+    fun `should hide isDeleteDialogVisible when DeleteDismissed is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteDismissed)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.isDeleteDialogVisible)
+        }
+
+    @Test
+    fun `should delete and emit NavigatedBack when DeleteConfirmed succeeds`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+            val viewModel = viewModel(repository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
+            val events = mutableListOf<JournalEntryDetailUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(1, repository.deleteEntryCallCount)
+            assertEquals("1", repository.lastDeletedId)
+            assertEquals(listOf(JournalEntryDetailUiEvent.NavigatedBack), events)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should succeed regardless of the entry's age, unlike Save`() =
+        runTest {
+            // Arrange - entry is well past its 24h edit window, unlike Save's expiry tests
+            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneOffset.UTC)
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+            val viewModel = viewModel(repository, clock = expiredClock)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(1, repository.deleteEntryCallCount)
+        }
+
+    @Test
+    fun `should hide the dialog and set deleteError when DeleteConfirmed fails`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+            repository.deleteEntryResult = Result.failure(RuntimeException("delete failed"))
+            val viewModel = viewModel(repository)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
+            val events = mutableListOf<JournalEntryDetailUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteConfirmed)
+            runCurrent()
+
+            // Assert
+            assertFalse(viewModel.uiState.value.isDeleting)
+            assertFalse(viewModel.uiState.value.isDeleteDialogVisible)
+            assertTrue(viewModel.uiState.value.deleteError)
+            assertEquals(emptyList<JournalEntryDetailUiEvent>(), events)
+            collectJob.cancel()
         }
 
     @Test

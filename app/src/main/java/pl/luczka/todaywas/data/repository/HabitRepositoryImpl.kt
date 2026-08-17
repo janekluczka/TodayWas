@@ -15,6 +15,7 @@ import pl.luczka.todaywas.data.mapper.toEntity
 import pl.luczka.todaywas.data.mapper.toRemoteDto
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
+import pl.luczka.todaywas.data.util.TransactionRunner
 import pl.luczka.todaywas.data.util.remoteCall
 import pl.luczka.todaywas.data.util.safeDbCall
 import pl.luczka.todaywas.di.ApplicationScope
@@ -29,6 +30,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 class HabitRepositoryImpl @Inject constructor(
+    private val transactionRunner: TransactionRunner,
     private val habitDao: HabitDao,
     private val habitCheckInDao: HabitCheckInDao,
     private val remoteHabitDataSource: RemoteHabitDataSource,
@@ -102,6 +104,31 @@ class HabitRepositoryImpl @Inject constructor(
         return result
     }
 
+    override suspend fun deleteHabit(id: String): Result<Unit> {
+        // Transactional so a habit is never left with only some of its check-ins deleted (or
+        // vice versa) if the second delete fails - safeDbCall's retry re-runs the whole
+        // transaction, not just the failed half.
+        val result = safeDbCall {
+            transactionRunner.runInTransaction {
+                habitCheckInDao.deleteByHabitId(id)
+                habitDao.deleteById(id)
+            }
+        }
+        if (result.isSuccess) pushHabitDeleteInBackground(id)
+        return result
+    }
+
+    override suspend fun deleteCheckIn(
+        habitId: String,
+        date: LocalDate,
+    ): Result<Unit> {
+        val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
+            ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
+        val result = safeDbCall { habitCheckInDao.deleteById(existing.id) }
+        if (result.isSuccess) pushCheckInDeleteInBackground(existing.id)
+        return result
+    }
+
     override suspend fun syncWithRemote(): Result<Unit> {
         val userId = authRepository.currentUserId() ?: return Result.success(Unit)
         return syncMutex.withLock {
@@ -148,6 +175,34 @@ class HabitRepositoryImpl @Inject constructor(
             if (syncMutex.tryLock()) {
                 try {
                     remoteHabitCheckInDataSource.upsert(entities.map { it.toDomain().toRemoteDto(userId) })
+                } finally {
+                    syncMutex.unlock()
+                }
+            }
+        }
+    }
+
+    // Only the habit itself needs pushing - the live ON DELETE CASCADE FK on habit_check_ins
+    // removes its check-ins remotely, unlike the local side which has no FK and must do it by hand.
+    private fun pushHabitDeleteInBackground(id: String) {
+        authRepository.currentUserId() ?: return
+        syncScope.launch {
+            if (syncMutex.tryLock()) {
+                try {
+                    remoteHabitDataSource.delete(id)
+                } finally {
+                    syncMutex.unlock()
+                }
+            }
+        }
+    }
+
+    private fun pushCheckInDeleteInBackground(id: String) {
+        authRepository.currentUserId() ?: return
+        syncScope.launch {
+            if (syncMutex.tryLock()) {
+                try {
+                    remoteHabitCheckInDataSource.delete(id)
                 } finally {
                     syncMutex.unlock()
                 }

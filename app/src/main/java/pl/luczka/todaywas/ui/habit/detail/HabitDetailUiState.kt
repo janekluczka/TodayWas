@@ -20,6 +20,12 @@ data class HabitDetailUiState(
     val isSaving: Boolean,
     val saveError: Boolean,
     val saveErrorIsWindowExpired: Boolean,
+    val isDeleteHabitDialogVisible: Boolean = false,
+    val isDeletingHabit: Boolean = false,
+    val deleteHabitError: Boolean = false,
+    val checkInPendingDelete: LocalDate? = null,
+    val isDeletingCheckIn: Boolean = false,
+    val deleteCheckInError: Boolean = false,
 )
 
 data class HabitDetailRowUiState(
