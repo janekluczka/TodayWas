@@ -20,6 +20,9 @@ interface HabitDao {
     @Query("SELECT * FROM habits")
     suspend fun getAllIncludingDeleted(): List<HabitEntity>
 
+    @Query("SELECT * FROM habits WHERE id = :id AND deletedAt IS NULL")
+    suspend fun getById(id: String): HabitEntity?
+
     @Insert
     suspend fun insert(entity: HabitEntity)
 

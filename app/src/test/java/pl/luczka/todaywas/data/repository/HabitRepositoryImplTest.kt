@@ -60,6 +60,8 @@ class HabitRepositoryImplTest {
 
         override suspend fun getAllIncludingDeleted(): List<HabitEntity> = entities.values.toList()
 
+        override suspend fun getById(id: String): HabitEntity? = entities[id]?.takeIf { it.deletedAt == null }
+
         override suspend fun insert(entity: HabitEntity) {
             insertCallCount++
             if (insertCallCount <= failuresBeforeSuccess) {
@@ -354,10 +356,9 @@ class HabitRepositoryImplTest {
         }
 
     @Test
-    fun `should push only the habit's remote delete when signed in and deleteHabit succeeds`() =
+    fun `should push only the tombstoned habit when signed in, deleteHabit succeeds, and it has no check-ins`() =
         runTest {
-            // Arrange - the check-ins' remote delete is not pushed separately, since the live
-            // ON DELETE CASCADE FK removes them remotely once the habit row is gone.
+            // Arrange
             val habit = HabitEntity(
                 id = "1",
                 name = "Drink water",
@@ -386,8 +387,8 @@ class HabitRepositoryImplTest {
             runCurrent()
 
             // Assert
-            assertEquals(1, remoteHabits.deleteCallCount)
-            assertEquals(0, remoteCheckIns.deleteCallCount)
+            assertEquals(1, remoteHabits.upsertCallCount)
+            assertEquals(0, remoteCheckIns.upsertCallCount)
         }
 
     @Test
@@ -422,7 +423,7 @@ class HabitRepositoryImplTest {
             // Assert
             assertTrue(result.isSuccess)
             assertTrue(habitDao.getAll().isEmpty())
-            assertEquals(0, remoteHabits.deleteCallCount)
+            assertEquals(0, remoteHabits.upsertCallCount)
         }
 
     @Test
@@ -465,7 +466,7 @@ class HabitRepositoryImplTest {
         }
 
     @Test
-    fun `should push the remote delete when signed in and deleteCheckIn succeeds`() =
+    fun `should push the tombstoned check-in when signed in and deleteCheckIn succeeds`() =
         runTest {
             // Arrange
             val existing =
@@ -486,7 +487,7 @@ class HabitRepositoryImplTest {
             runCurrent()
 
             // Assert
-            assertEquals(1, remoteCheckIns.deleteCallCount)
+            assertEquals(1, remoteCheckIns.upsertCallCount)
         }
 
     @Test
@@ -513,7 +514,7 @@ class HabitRepositoryImplTest {
             // Assert
             assertTrue(result.isSuccess)
             assertEquals(null, checkInDao.getByHabitAndDate("1", "2026-07-27"))
-            assertEquals(0, remoteCheckIns.deleteCallCount)
+            assertEquals(0, remoteCheckIns.upsertCallCount)
         }
 
     @Test

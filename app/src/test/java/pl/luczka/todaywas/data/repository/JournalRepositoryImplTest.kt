@@ -214,7 +214,7 @@ class JournalRepositoryImplTest {
         }
 
     @Test
-    fun `should push the remote delete when signed in and deleteEntry succeeds`() =
+    fun `should push the tombstoned entry when signed in and deleteEntry succeeds`() =
         runTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
@@ -228,7 +228,7 @@ class JournalRepositoryImplTest {
             runCurrent()
 
             // Assert
-            assertEquals(1, remote.deleteCallCount)
+            assertEquals(1, remote.upsertCallCount)
         }
 
     @Test
@@ -248,7 +248,7 @@ class JournalRepositoryImplTest {
             // Assert
             assertTrue(result.isSuccess)
             assertEquals(null, dao.getById("1"))
-            assertEquals(0, remote.deleteCallCount)
+            assertEquals(0, remote.upsertCallCount)
         }
 
     @Test
