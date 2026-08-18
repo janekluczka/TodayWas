@@ -24,9 +24,8 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.availableWindows
 import pl.luczka.todaywas.domain.usecase.DeleteHabitCheckInUseCase
 import pl.luczka.todaywas.domain.usecase.DeleteHabitUseCase
-import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
+import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.ui.mapper.toDomain
 import pl.luczka.todaywas.ui.mapper.toUiState
@@ -91,8 +90,7 @@ private data class ContributionData(
 class HabitDetailViewModel @AssistedInject constructor(
     @Assisted private val habitId: String,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
-    private val logHabitCheckIns: LogHabitCheckInsUseCase,
-    private val updateHabitCheckIn: UpdateHabitCheckInUseCase,
+    private val saveHabitCheckIns: SaveHabitCheckInsUseCase,
     private val deleteHabit: DeleteHabitUseCase,
     private val deleteHabitCheckIn: DeleteHabitCheckInUseCase,
     private val clock: Clock,
@@ -207,7 +205,6 @@ class HabitDetailViewModel @AssistedInject constructor(
             viewModelState.update { it.copy(isEditSheetOpen = false) }
             return
         }
-        val checkInsByDate = state.checkIns.associateBy { it.date }
         viewModelScope.launch {
             viewModelState.update {
                 it.copy(
@@ -216,15 +213,8 @@ class HabitDetailViewModel @AssistedInject constructor(
                     saveErrorIsWindowExpired = false,
                 )
             }
-            val results = pending.map { (date, value) ->
-                val existing = checkInsByDate[date]
-                if (existing != null) {
-                    updateHabitCheckIn(habitId, date, value, existing.createdAt)
-                } else {
-                    logHabitCheckIns(date, mapOf(habitId to value))
-                }
-            }
-            if (results.all { it.isSuccess }) {
+            val result = saveHabitCheckIns(habitId, state.checkIns, pending)
+            if (result.isSuccess) {
                 viewModelState.update {
                     it.copy(
                         isSaving = false,
@@ -233,7 +223,7 @@ class HabitDetailViewModel @AssistedInject constructor(
                     )
                 }
             } else {
-                val windowExpired = results.any { it.exceptionOrNull() is EditWindowExpiredException }
+                val windowExpired = result.exceptionOrNull() is EditWindowExpiredException
                 viewModelState.update {
                     it.copy(
                         isSaving = false,

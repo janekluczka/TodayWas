@@ -693,19 +693,19 @@ deleted before this change existed).
 
 #### Automated
 
-- [x] 5.1 Unit tests pass
-- [x] 5.2 Lint passes
+- [x] 5.1 Unit tests pass — 1b104af
+- [x] 5.2 Lint passes — 1b104af
 
 ### Phase 6: Use-case layer cleanup
 
 #### Automated
 
-- [ ] 6.1 Project builds
-- [ ] 6.2 Lint passes
-- [ ] 6.3 Unit tests pass
+- [x] 6.1 Project builds
+- [x] 6.2 Lint passes
+- [x] 6.3 Unit tests pass
 
 #### Manual
 
-- [ ] 6.4 Habit detail save behavior unchanged (partial-success preserved)
-- [ ] 6.5 Log Habit Check-ins still offers today + yesterday only
-- [ ] 6.6 Data-sync review step still appears/skips correctly in both onboarding and account flows
+- [x] 6.4 Habit detail save behavior unchanged (partial-success preserved)
+- [x] 6.5 Log Habit Check-ins still offers today + yesterday only
+- [x] 6.6 Data-sync review step still appears/skips correctly in both onboarding and account flows — verified via existing AccountViewModelTest/OnboardingViewModelTest coverage of both branches (unchanged, still passing), not a live sign-up

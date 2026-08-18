@@ -22,9 +22,8 @@ import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
 import pl.luczka.todaywas.domain.usecase.DeleteHabitCheckInUseCase
 import pl.luczka.todaywas.domain.usecase.DeleteHabitUseCase
-import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.domain.usecase.UpdateHabitCheckInUseCase
+import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.Clock
 import java.time.Duration
@@ -56,8 +55,7 @@ class HabitDetailViewModelTest {
     ) = HabitDetailViewModel(
         habitId = habitId,
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
-        logHabitCheckIns = LogHabitCheckInsUseCase(repository),
-        updateHabitCheckIn = UpdateHabitCheckInUseCase(repository, clock),
+        saveHabitCheckIns = SaveHabitCheckInsUseCase(repository, clock),
         deleteHabit = DeleteHabitUseCase(repository),
         deleteHabitCheckIn = DeleteHabitCheckInUseCase(repository),
         clock = clock,
