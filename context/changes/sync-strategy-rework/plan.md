@@ -658,22 +658,22 @@ deleted before this change existed).
 
 #### Automated
 
-- [x] 2.1 Project builds
-- [x] 2.2 Lint passes
-- [x] 2.3 Existing unit tests compile and pass
-- [x] 2.4 New HabitCheckInDaoTest partial-index cases pass
+- [x] 2.1 Project builds — 4d3e22a
+- [x] 2.2 Lint passes — 4d3e22a
+- [x] 2.3 Existing unit tests compile and pass — 4d3e22a
+- [x] 2.4 New HabitCheckInDaoTest partial-index cases pass — 4d3e22a
 
 #### Manual
 
-- [x] 2.5 Fresh install works after schema bump
-- [x] 2.6 Re-logging a check-in after deleting it for the same habit+date succeeds in the real app
+- [x] 2.5 Fresh install works after schema bump — 4d3e22a
+- [x] 2.6 Re-logging a check-in after deleting it for the same habit+date succeeds in the real app — 4d3e22a
 
 ### Phase 3: Shared SyncMerge helper
 
 #### Automated
 
-- [ ] 3.1 SyncMergeTest scenarios pass
-- [ ] 3.2 Lint passes
+- [x] 3.1 SyncMergeTest scenarios pass
+- [x] 3.2 Lint passes
 
 ### Phase 4: Repository rewiring
 
