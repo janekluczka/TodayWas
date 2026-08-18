@@ -10,4 +10,6 @@ data class JournalEntryRemoteDto(
     @SerialName("date") val date: String,
     @SerialName("text") val text: String,
     @SerialName("created_at") val createdAt: String,
+    @SerialName("updated_at") val updatedAt: String,
+    @SerialName("deleted_at") val deletedAt: String?,
 )

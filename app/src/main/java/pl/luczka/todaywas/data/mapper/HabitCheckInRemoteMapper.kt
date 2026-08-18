@@ -12,6 +12,8 @@ fun HabitCheckIn.toRemoteDto(userId: String): HabitCheckInRemoteDto = HabitCheck
     date = date.toString(),
     value = value,
     createdAt = createdAt.toString(),
+    updatedAt = createdAt.toString(),
+    deletedAt = null,
 )
 
 fun HabitCheckInRemoteDto.toEntity(): HabitCheckInEntity = HabitCheckInEntity(

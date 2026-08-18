@@ -11,4 +11,6 @@ data class HabitCheckInRemoteDto(
     @SerialName("date") val date: String,
     @SerialName("value") val value: Int,
     @SerialName("created_at") val createdAt: String,
+    @SerialName("updated_at") val updatedAt: String,
+    @SerialName("deleted_at") val deletedAt: String?,
 )

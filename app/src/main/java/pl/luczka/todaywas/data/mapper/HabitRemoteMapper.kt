@@ -14,6 +14,8 @@ fun Habit.toRemoteDto(userId: String): HabitRemoteDto = HabitRemoteDto(
     scaleMin = scaleMin,
     scaleMax = scaleMax,
     createdAt = createdAt.toString(),
+    updatedAt = createdAt.toString(),
+    deletedAt = null,
 )
 
 fun HabitRemoteDto.toEntity(): HabitEntity = HabitEntity(
