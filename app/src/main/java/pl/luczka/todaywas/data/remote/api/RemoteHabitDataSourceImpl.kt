@@ -23,6 +23,8 @@ class RemoteHabitDataSourceImpl @Inject constructor(
             .decodeList<HabitRemoteDto>()
     }
 
+    // lt("deleted_at", cutoff) alone already excludes active rows: Postgres evaluates
+    // `NULL < cutoff` as NULL, which WHERE filters out - no separate "is not null" guard needed.
     override suspend fun purgeDeletedBefore(
         userId: String,
         cutoff: String,

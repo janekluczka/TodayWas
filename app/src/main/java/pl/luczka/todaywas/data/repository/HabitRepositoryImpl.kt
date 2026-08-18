@@ -172,6 +172,14 @@ class HabitRepositoryImpl @Inject constructor(
                 val checkInsToApply = remoteCheckIns.filter { it.id in checkInDecision.applyIds }
                 habitCheckInDao.upsertAll(checkInsToApply.map { it.toEntity() })
 
+                // Known limitation: the remote habit_check_ins.habit_id FK still has a live
+                // ON DELETE CASCADE, so purging a habit here can hard-delete check-in rows that
+                // never went through their own tombstone/GC lifecycle (e.g. one written by another
+                // device that hadn't yet synced the habit's deletion). Currently unreachable through
+                // the app's own UI (a soft-deleted habit is never offered for new check-ins), but
+                // the FK itself isn't - a real fix means dropping the CASCADE and redesigning purge
+                // ordering, deferred to architecture-hardening alongside the related syncMutex/
+                // durability work already scoped there.
                 val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
                 habitDao.purgeDeletedBefore(cutoff.toEpochMilli())
                 habitCheckInDao.purgeDeletedBefore(cutoff.toEpochMilli())
