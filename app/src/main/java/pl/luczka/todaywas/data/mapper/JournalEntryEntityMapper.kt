@@ -10,4 +10,6 @@ fun JournalEntryEntity.toDomain(): JournalEntry = JournalEntry(
     date = LocalDate.parse(date),
     text = text,
     createdAt = Instant.ofEpochMilli(createdAt),
+    updatedAt = Instant.ofEpochMilli(updatedAt),
+    deletedAt = deletedAt?.let { Instant.ofEpochMilli(it) },
 )

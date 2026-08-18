@@ -43,11 +43,13 @@ class JournalRepositoryImpl @Inject constructor(
         date: LocalDate,
         text: String,
     ): Result<Unit> {
+        val now = Instant.now().toEpochMilli()
         val entity = JournalEntryEntity(
             id = UUID.randomUUID().toString(),
             date = date.toString(),
             text = text,
-            createdAt = Instant.now().toEpochMilli(),
+            createdAt = now,
+            updatedAt = now,
         )
         val result = safeDbCall { dao.insert(entity) }
         if (result.isSuccess) pushInBackground(entity)
@@ -66,7 +68,7 @@ class JournalRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteEntry(id: String): Result<Unit> {
-        val result = safeDbCall { dao.deleteById(id) }
+        val result = safeDbCall { dao.softDeleteById(id, Instant.now().toEpochMilli()) }
         if (result.isSuccess) pushDeleteInBackground(id)
         return result
     }

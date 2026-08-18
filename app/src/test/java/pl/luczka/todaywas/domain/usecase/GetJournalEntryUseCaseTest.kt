@@ -20,6 +20,7 @@ class GetJournalEntryUseCaseTest {
                 date = LocalDate.of(2026, 7, 27),
                 text = "Today was good.",
                 createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
             )
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val useCase = GetJournalEntryUseCase(repository)

@@ -13,4 +13,6 @@ fun HabitEntity.toDomain(): Habit = Habit(
     scaleMin = scaleMin,
     scaleMax = scaleMax,
     createdAt = Instant.ofEpochMilli(createdAt),
+    updatedAt = Instant.ofEpochMilli(updatedAt),
+    deletedAt = deletedAt?.let { Instant.ofEpochMilli(it) },
 )

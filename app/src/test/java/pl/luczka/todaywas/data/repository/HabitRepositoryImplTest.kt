@@ -51,10 +51,14 @@ class HabitRepositoryImplTest {
 
         var insertCallCount = 0
             private set
+        var softDeleteByIdCallCount = 0
+            private set
 
-        override fun observeAll(): Flow<List<HabitEntity>> = flowOf(entities.values.toList())
+        override fun observeAll(): Flow<List<HabitEntity>> = flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
-        override suspend fun getAll(): List<HabitEntity> = entities.values.toList()
+        override suspend fun getAll(): List<HabitEntity> = entities.values.filter { it.deletedAt == null }.toList()
+
+        override suspend fun getAllIncludingDeleted(): List<HabitEntity> = entities.values.toList()
 
         override suspend fun insert(entity: HabitEntity) {
             insertCallCount++
@@ -68,8 +72,16 @@ class HabitRepositoryImplTest {
             entities[entity.id] = entity
         }
 
-        override suspend fun deleteById(id: String) {
-            entities.remove(id)
+        override suspend fun softDeleteById(
+            id: String,
+            deletedAt: Long,
+        ) {
+            softDeleteByIdCallCount++
+            entities[id]?.let { entities[id] = it.copy(deletedAt = deletedAt) }
+        }
+
+        override suspend fun purgeDeletedBefore(cutoff: Long) {
+            entities.values.filter { it.deletedAt != null && it.deletedAt < cutoff }.forEach { entities.remove(it.id) }
         }
 
         override suspend fun clearAll() {
@@ -86,19 +98,25 @@ class HabitRepositoryImplTest {
             private set
         var updateCallCount = 0
             private set
-        var deleteByIdCallCount = 0
+        var softDeleteByIdCallCount = 0
             private set
-        var deleteByHabitIdCallCount = 0
+        var softDeleteByHabitIdCallCount = 0
             private set
 
-        override fun observeAll(): Flow<List<HabitCheckInEntity>> = flowOf(entities.values.toList())
+        override fun observeAll(): Flow<List<HabitCheckInEntity>> =
+            flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
-        override suspend fun getAll(): List<HabitCheckInEntity> = entities.values.toList()
+        override suspend fun getAll(): List<HabitCheckInEntity> = entities.values.filter { it.deletedAt == null }.toList()
+
+        override suspend fun getAllIncludingDeleted(): List<HabitCheckInEntity> = entities.values.toList()
+
+        override suspend fun getByHabitId(habitId: String): List<HabitCheckInEntity> =
+            entities.values.filter { it.habitId == habitId && it.deletedAt == null }
 
         override suspend fun getByHabitAndDate(
             habitId: String,
             date: String,
-        ): HabitCheckInEntity? = entities[habitId to date]
+        ): HabitCheckInEntity? = entities[habitId to date]?.takeIf { it.deletedAt == null }
 
         override suspend fun insertOne(entity: HabitCheckInEntity): Unit = throw UnsupportedOperationException("not used by the repository")
 
@@ -124,14 +142,28 @@ class HabitRepositoryImplTest {
             entities[entity.habitId to entity.date] = entity
         }
 
-        override suspend fun deleteById(id: String) {
-            deleteByIdCallCount++
-            entities.entries.find { it.value.id == id }?.let { entities.remove(it.key) }
+        override suspend fun softDeleteById(
+            id: String,
+            deletedAt: Long,
+        ) {
+            softDeleteByIdCallCount++
+            entities.entries.find { it.value.id == id }?.let { entities[it.key] = it.value.copy(deletedAt = deletedAt) }
         }
 
-        override suspend fun deleteByHabitId(habitId: String) {
-            deleteByHabitIdCallCount++
-            entities.keys.filter { it.first == habitId }.forEach { entities.remove(it) }
+        override suspend fun softDeleteByHabitId(
+            habitId: String,
+            deletedAt: Long,
+        ) {
+            softDeleteByHabitIdCallCount++
+            entities.entries
+                .filter { it.key.first == habitId && it.value.deletedAt == null }
+                .forEach { entities[it.key] = it.value.copy(deletedAt = deletedAt) }
+        }
+
+        override suspend fun purgeDeletedBefore(cutoff: Long) {
+            entities.entries
+                .filter { it.value.deletedAt != null && it.value.deletedAt!! < cutoff }
+                .forEach { entities.remove(it.key) }
         }
 
         override suspend fun clearAll() {
@@ -237,7 +269,8 @@ class HabitRepositoryImplTest {
     fun `should succeed after one retry when updateCheckIn's first write fails`() =
         runTest {
             // Arrange
-            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val existing =
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = 1,
                 entities = mutableMapOf(("1" to "2026-07-27") to existing),
@@ -258,7 +291,8 @@ class HabitRepositoryImplTest {
     fun `should return failure when updateCheckIn's retry also fails`() =
         runTest {
             // Arrange
-            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val existing =
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = Int.MAX_VALUE,
                 entities = mutableMapOf(("1" to "2026-07-27") to existing),
@@ -302,9 +336,11 @@ class HabitRepositoryImplTest {
                 scaleMin = null,
                 scaleMax = null,
                 createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
             val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
-            val checkIn = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val checkIn =
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to checkIn))
             val repository = repository(habitDao = habitDao, habitCheckInDao = checkInDao, scope = backgroundScope)
 
@@ -330,6 +366,7 @@ class HabitRepositoryImplTest {
                 scaleMin = null,
                 scaleMax = null,
                 createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
             val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
             val remoteHabits = FakeRemoteHabitDataSource()
@@ -365,6 +402,7 @@ class HabitRepositoryImplTest {
                 scaleMin = null,
                 scaleMax = null,
                 createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
             val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
             val remoteHabits = FakeRemoteHabitDataSource()
@@ -391,8 +429,10 @@ class HabitRepositoryImplTest {
     fun `should remove only the matching check-in when deleteCheckIn is called`() =
         runTest {
             // Arrange
-            val target = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
-            val other = HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 1_000L)
+            val target =
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
+            val other =
+                HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 1_000L, updatedAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(
                 entities = mutableMapOf(("1" to "2026-07-27") to target, ("1" to "2026-07-26") to other),
             )
@@ -421,14 +461,15 @@ class HabitRepositoryImplTest {
 
             // Assert
             assertTrue(result.isFailure)
-            assertEquals(0, checkInDao.deleteByIdCallCount)
+            assertEquals(0, checkInDao.softDeleteByIdCallCount)
         }
 
     @Test
     fun `should push the remote delete when signed in and deleteCheckIn succeeds`() =
         runTest {
             // Arrange
-            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val existing =
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to existing))
             val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
@@ -452,7 +493,8 @@ class HabitRepositoryImplTest {
     fun `should delete a check-in locally without any remote call when signed out`() =
         runTest {
             // Arrange
-            val existing = HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L)
+            val existing =
+                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
             val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to existing))
             val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
             val auth = FakeAuthRepository(currentUserId = null)
@@ -516,6 +558,7 @@ class HabitRepositoryImplTest {
                 scaleMin = null,
                 scaleMax = null,
                 createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
             val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("local-habit" to localHabit))
             val checkInDao = FakeHabitCheckInDao()
@@ -528,6 +571,8 @@ class HabitRepositoryImplTest {
                 scaleMin = null,
                 scaleMax = null,
                 createdAt = "2026-07-20T00:00:00Z",
+                updatedAt = "2026-07-20T00:00:00Z",
+                deletedAt = null,
             )
             val remoteHabits = FakeRemoteHabitDataSource(habits = mutableMapOf("remote-habit" to remoteHabit))
             val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
@@ -565,13 +610,21 @@ class HabitRepositoryImplTest {
                         scaleMin = null,
                         scaleMax = null,
                         createdAt = 1_000L,
+                        updatedAt = 1_000L,
                     ),
                 ),
             )
             val checkInDao = FakeHabitCheckInDao(
                 entities = mutableMapOf(
                     ("1" to "2026-07-27") to
-                        HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L),
+                        HabitCheckInEntity(
+                            id = "check-in-1",
+                            habitId = "1",
+                            date = "2026-07-27",
+                            value = 1,
+                            createdAt = 1_000L,
+                            updatedAt = 1_000L,
+                        ),
                 ),
             )
             val repository = repository(habitDao = habitDao, habitCheckInDao = checkInDao, scope = backgroundScope)

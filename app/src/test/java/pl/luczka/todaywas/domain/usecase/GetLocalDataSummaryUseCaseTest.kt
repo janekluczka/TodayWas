@@ -34,7 +34,13 @@ class GetLocalDataSummaryUseCaseTest {
     fun `should count entries, habits, and check-ins from both repositories`() =
         runTest {
             // Arrange
-            val entry = JournalEntry(id = "1", date = LocalDate.of(2026, 8, 1), text = "text", createdAt = Instant.EPOCH)
+            val entry = JournalEntry(
+                id = "1",
+                date = LocalDate.of(2026, 8, 1),
+                text = "text",
+                createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
+            )
             val habit = Habit(
                 id = "1",
                 name = "Drink water",
@@ -43,8 +49,16 @@ class GetLocalDataSummaryUseCaseTest {
                 scaleMin = null,
                 scaleMax = null,
                 createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
             )
-            val checkIn = HabitCheckIn(id = "1", habitId = "1", date = LocalDate.of(2026, 8, 1), value = 1, createdAt = Instant.EPOCH)
+            val checkIn = HabitCheckIn(
+                id = "1",
+                habitId = "1",
+                date = LocalDate.of(2026, 8, 1),
+                value = 1,
+                createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
+            )
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry))
             val habitRepository = FakeHabitRepository(initialHabits = listOf(habit), initialCheckIns = listOf(checkIn))
             val useCase = GetLocalDataSummaryUseCase(journalRepository, habitRepository)

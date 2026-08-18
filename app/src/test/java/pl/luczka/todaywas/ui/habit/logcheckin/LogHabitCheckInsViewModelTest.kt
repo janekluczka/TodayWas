@@ -41,6 +41,7 @@ class LogHabitCheckInsViewModelTest {
         scaleMin = scaleMin,
         scaleMax = scaleMax,
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 
     private fun checkIn(
@@ -53,6 +54,7 @@ class LogHabitCheckInsViewModelTest {
         date = date,
         value = value,
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 
     private fun viewModel(repository: FakeHabitRepository) = LogHabitCheckInsViewModel(

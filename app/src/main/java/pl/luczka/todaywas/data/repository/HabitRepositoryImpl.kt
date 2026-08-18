@@ -55,6 +55,7 @@ class HabitRepositoryImpl @Inject constructor(
         scaleMin: Int?,
         scaleMax: Int?,
     ): Result<Unit> {
+        val now = Instant.now().toEpochMilli()
         val entity = HabitEntity(
             id = UUID.randomUUID().toString(),
             name = name,
@@ -62,7 +63,8 @@ class HabitRepositoryImpl @Inject constructor(
             type = type.name,
             scaleMin = scaleMin,
             scaleMax = scaleMax,
-            createdAt = Instant.now().toEpochMilli(),
+            createdAt = now,
+            updatedAt = now,
         )
         val result = safeDbCall { habitDao.insert(entity) }
         if (result.isSuccess) pushHabitInBackground(entity)
@@ -84,6 +86,7 @@ class HabitRepositoryImpl @Inject constructor(
                 date = date.toString(),
                 value = value,
                 createdAt = createdAt,
+                updatedAt = createdAt,
             )
         }
         val result = safeDbCall { habitCheckInDao.insertAll(entities) }
@@ -108,10 +111,11 @@ class HabitRepositoryImpl @Inject constructor(
         // Transactional so a habit is never left with only some of its check-ins deleted (or
         // vice versa) if the second delete fails - safeDbCall's retry re-runs the whole
         // transaction, not just the failed half.
+        val deletedAt = Instant.now().toEpochMilli()
         val result = safeDbCall {
             transactionRunner.runInTransaction {
-                habitCheckInDao.deleteByHabitId(id)
-                habitDao.deleteById(id)
+                habitCheckInDao.softDeleteByHabitId(id, deletedAt)
+                habitDao.softDeleteById(id, deletedAt)
             }
         }
         if (result.isSuccess) pushHabitDeleteInBackground(id)
@@ -124,7 +128,7 @@ class HabitRepositoryImpl @Inject constructor(
     ): Result<Unit> {
         val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
             ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
-        val result = safeDbCall { habitCheckInDao.deleteById(existing.id) }
+        val result = safeDbCall { habitCheckInDao.softDeleteById(existing.id, Instant.now().toEpochMilli()) }
         if (result.isSuccess) pushCheckInDeleteInBackground(existing.id)
         return result
     }

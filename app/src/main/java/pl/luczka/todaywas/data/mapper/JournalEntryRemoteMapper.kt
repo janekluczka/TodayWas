@@ -11,8 +11,8 @@ fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEnt
     date = date.toString(),
     text = text,
     createdAt = createdAt.toString(),
-    updatedAt = createdAt.toString(),
-    deletedAt = null,
+    updatedAt = updatedAt.toString(),
+    deletedAt = deletedAt?.toString(),
 )
 
 fun JournalEntryRemoteDto.toEntity(): JournalEntryEntity = JournalEntryEntity(
@@ -20,4 +20,6 @@ fun JournalEntryRemoteDto.toEntity(): JournalEntryEntity = JournalEntryEntity(
     date = date,
     text = text,
     createdAt = Instant.parse(createdAt).toEpochMilli(),
+    updatedAt = Instant.parse(updatedAt).toEpochMilli(),
+    deletedAt = deletedAt?.let { Instant.parse(it).toEpochMilli() },
 )

@@ -40,11 +40,14 @@ class JournalRepositoryImplTest {
         var deleteCallCount = 0
             private set
 
-        override fun observeAll(): Flow<List<JournalEntryEntity>> = flowOf(entities.values.toList())
+        override fun observeAll(): Flow<List<JournalEntryEntity>> =
+            flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
-        override suspend fun getAll(): List<JournalEntryEntity> = entities.values.toList()
+        override suspend fun getAll(): List<JournalEntryEntity> = entities.values.filter { it.deletedAt == null }.toList()
 
-        override suspend fun getById(id: String): JournalEntryEntity? = entities[id]
+        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = entities.values.toList()
+
+        override suspend fun getById(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insert(entity: JournalEntryEntity) {
             insertCallCount++
@@ -66,12 +69,19 @@ class JournalRepositoryImplTest {
             entities[entity.id] = entity
         }
 
-        override suspend fun deleteById(id: String) {
+        override suspend fun softDeleteById(
+            id: String,
+            deletedAt: Long,
+        ) {
             deleteCallCount++
             if (deleteCallCount <= failuresBeforeSuccess) {
                 throw RuntimeException("simulated write failure")
             }
-            entities.remove(id)
+            entities[id]?.let { entities[id] = it.copy(deletedAt = deletedAt) }
+        }
+
+        override suspend fun purgeDeletedBefore(cutoff: Long) {
+            entities.values.filter { it.deletedAt != null && it.deletedAt < cutoff }.forEach { entities.remove(it.id) }
         }
 
         override suspend fun clearAll() {
@@ -113,7 +123,7 @@ class JournalRepositoryImplTest {
     fun `should return the mapped domain entry when getEntry finds it`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val repository = repository(dao, backgroundScope)
 
@@ -143,7 +153,7 @@ class JournalRepositoryImplTest {
     fun `should succeed after one retry when updateEntry's first write fails`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L)
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(failuresBeforeSuccess = 1, entities = mutableMapOf("1" to entity))
             val repository = repository(dao, backgroundScope)
 
@@ -160,7 +170,7 @@ class JournalRepositoryImplTest {
     fun `should return failure when updateEntry's retry also fails`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L)
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Original.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE, entities = mutableMapOf("1" to entity))
             val repository = repository(dao, backgroundScope)
 
@@ -191,7 +201,7 @@ class JournalRepositoryImplTest {
     fun `should remove the entry from the DAO when deleteEntry is called`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val repository = repository(dao, backgroundScope)
 
@@ -207,7 +217,7 @@ class JournalRepositoryImplTest {
     fun `should push the remote delete when signed in and deleteEntry succeeds`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val remote = FakeRemoteJournalDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
@@ -225,7 +235,7 @@ class JournalRepositoryImplTest {
     fun `should delete locally without any remote call when signed out`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val remote = FakeRemoteJournalDataSource()
             val auth = FakeAuthRepository(currentUserId = null)
@@ -280,7 +290,8 @@ class JournalRepositoryImplTest {
     fun `should push all local rows then pull remote-only rows when syncWithRemote is called`() =
         runTest {
             // Arrange
-            val localOnly = JournalEntryEntity(id = "local-1", date = "2026-07-27", text = "Local only.", createdAt = 1_000L)
+            val localOnly =
+                JournalEntryEntity(id = "local-1", date = "2026-07-27", text = "Local only.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(entities = mutableMapOf("local-1" to localOnly))
             val remoteOnly = JournalEntryRemoteDto(
                 id = "remote-1",
@@ -288,6 +299,8 @@ class JournalRepositoryImplTest {
                 date = "2026-07-20",
                 text = "Remote only.",
                 createdAt = "2026-07-20T00:00:00Z",
+                updatedAt = "2026-07-20T00:00:00Z",
+                deletedAt = null,
             )
             val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("remote-1" to remoteOnly))
             val auth = FakeAuthRepository(currentUserId = "user-1")
@@ -306,7 +319,7 @@ class JournalRepositoryImplTest {
     fun `should empty the DAO when clearLocal is called`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L)
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val repository = repository(dao, backgroundScope)
 

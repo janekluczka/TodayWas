@@ -11,4 +11,6 @@ fun HabitCheckInEntity.toDomain(): HabitCheckIn = HabitCheckIn(
     date = LocalDate.parse(date),
     value = value,
     createdAt = Instant.ofEpochMilli(createdAt),
+    updatedAt = Instant.ofEpochMilli(updatedAt),
+    deletedAt = deletedAt?.let { Instant.ofEpochMilli(it) },
 )

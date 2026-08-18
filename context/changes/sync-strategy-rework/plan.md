@@ -644,29 +644,29 @@ deleted before this change existed).
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly
-- [x] 1.2 Security/performance advisors report no new issues
-- [x] 1.3 Project builds
+- [x] 1.1 Migration applies cleanly — 90cc189
+- [x] 1.2 Security/performance advisors report no new issues — 90cc189
+- [x] 1.3 Project builds — 90cc189
 
 #### Manual
 
-- [x] 1.4 Columns and triggers confirmed on all three tables
-- [x] 1.5 Unchanged-content update leaves updated_at unchanged
-- [x] 1.6 Already-tombstoned row's deleted_at can't be cleared by a later update
+- [x] 1.4 Columns and triggers confirmed on all three tables — 90cc189
+- [x] 1.5 Unchanged-content update leaves updated_at unchanged — 90cc189
+- [x] 1.6 Already-tombstoned row's deleted_at can't be cleared by a later update — 90cc189
 
 ### Phase 2: Room schema and DAO updates
 
 #### Automated
 
-- [ ] 2.1 Project builds
-- [ ] 2.2 Lint passes
-- [ ] 2.3 Existing unit tests compile and pass
-- [ ] 2.4 New HabitCheckInDaoTest partial-index cases pass
+- [x] 2.1 Project builds
+- [x] 2.2 Lint passes
+- [x] 2.3 Existing unit tests compile and pass
+- [x] 2.4 New HabitCheckInDaoTest partial-index cases pass
 
 #### Manual
 
-- [ ] 2.5 Fresh install works after schema bump
-- [ ] 2.6 Re-logging a check-in after deleting it for the same habit+date succeeds in the real app
+- [x] 2.5 Fresh install works after schema bump
+- [x] 2.6 Re-logging a check-in after deleting it for the same habit+date succeeds in the real app
 
 ### Phase 3: Shared SyncMerge helper
 

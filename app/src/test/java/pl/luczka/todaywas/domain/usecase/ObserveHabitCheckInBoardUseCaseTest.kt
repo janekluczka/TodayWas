@@ -21,6 +21,7 @@ class ObserveHabitCheckInBoardUseCaseTest {
         scaleMin = null,
         scaleMax = null,
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 
     private val checkIn = HabitCheckIn(
@@ -29,6 +30,7 @@ class ObserveHabitCheckInBoardUseCaseTest {
         date = LocalDate.of(2026, 7, 27),
         value = 1,
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 
     @Test

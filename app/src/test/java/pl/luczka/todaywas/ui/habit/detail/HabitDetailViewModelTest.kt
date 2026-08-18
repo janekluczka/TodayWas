@@ -46,6 +46,7 @@ class HabitDetailViewModelTest {
         scaleMin = null,
         scaleMax = null,
         createdAt = now,
+        updatedAt = now,
     )
 
     private fun viewModel(
@@ -88,7 +89,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = oldDate, value = 1, createdAt = now.minus(Duration.ofDays(10))),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = oldDate,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofDays(10)),
+                        updatedAt = now.minus(Duration.ofDays(10)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -134,7 +142,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(1)),
+                        updatedAt = now.minus(Duration.ofHours(1)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -159,7 +174,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = yesterday, value = 0, createdAt = now.minus(Duration.ofHours(25))),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = yesterday,
+                        value = 0,
+                        createdAt = now.minus(Duration.ofHours(25)),
+                        updatedAt = now.minus(Duration.ofHours(25)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -273,7 +295,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(1)),
+                        updatedAt = now.minus(Duration.ofHours(1)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -302,7 +331,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(1)),
+                        updatedAt = now.minus(Duration.ofHours(1)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -332,7 +368,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(25))),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(25)),
+                        updatedAt = now.minus(Duration.ofHours(25)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -361,7 +404,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -386,8 +429,15 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now),
-                    HabitCheckIn(id = "2", habitId = "1", date = today.minusDays(3), value = 0, createdAt = now.minus(Duration.ofDays(3))),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
+                    HabitCheckIn(
+                        id = "2",
+                        habitId = "1",
+                        date = today.minusDays(3),
+                        value = 0,
+                        createdAt = now.minus(Duration.ofDays(3)),
+                        updatedAt = now.minus(Duration.ofDays(3)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -412,7 +462,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -575,7 +625,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now.minus(Duration.ofHours(1))),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(1)),
+                        updatedAt = now.minus(Duration.ofHours(1)),
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)

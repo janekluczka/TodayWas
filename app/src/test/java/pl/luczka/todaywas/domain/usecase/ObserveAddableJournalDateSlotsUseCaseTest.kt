@@ -17,6 +17,7 @@ class ObserveAddableJournalDateSlotsUseCaseTest {
         date = date,
         text = "text",
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 
     @Test

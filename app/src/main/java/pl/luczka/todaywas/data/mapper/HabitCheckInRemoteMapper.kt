@@ -12,8 +12,8 @@ fun HabitCheckIn.toRemoteDto(userId: String): HabitCheckInRemoteDto = HabitCheck
     date = date.toString(),
     value = value,
     createdAt = createdAt.toString(),
-    updatedAt = createdAt.toString(),
-    deletedAt = null,
+    updatedAt = updatedAt.toString(),
+    deletedAt = deletedAt?.toString(),
 )
 
 fun HabitCheckInRemoteDto.toEntity(): HabitCheckInEntity = HabitCheckInEntity(
@@ -22,4 +22,6 @@ fun HabitCheckInRemoteDto.toEntity(): HabitCheckInEntity = HabitCheckInEntity(
     date = date,
     value = value,
     createdAt = Instant.parse(createdAt).toEpochMilli(),
+    updatedAt = Instant.parse(updatedAt).toEpochMilli(),
+    deletedAt = deletedAt?.let { Instant.parse(it).toEpochMilli() },
 )

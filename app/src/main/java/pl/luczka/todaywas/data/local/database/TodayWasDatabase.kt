@@ -13,7 +13,7 @@ import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 
 @Database(
     entities = [UserPreferencesEntity::class, JournalEntryEntity::class, HabitEntity::class, HabitCheckInEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = false,
 )
 abstract class TodayWasDatabase : RoomDatabase() {
