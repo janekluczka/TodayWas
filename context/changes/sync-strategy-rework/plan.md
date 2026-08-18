@@ -679,22 +679,22 @@ deleted before this change existed).
 
 #### Automated
 
-- [x] 4.1 Project builds
-- [x] 4.2 Lint passes
+- [x] 4.1 Project builds — 4cabeb3
+- [x] 4.2 Lint passes — 4cabeb3
 
 #### Manual
 
-- [x] 4.3 Deleted journal entry stays deleted after manual sync
-- [x] 4.4 Deleted habit removes its check-ins too
-- [x] 4.5 Two-device delete/edit race resolves with delete winning — covered by SyncMergeTest's 7 automated scenarios (Phase 3), not a live two-device run
-- [x] 4.6 Re-logging a previously-deleted habit+date succeeds
+- [x] 4.3 Deleted journal entry stays deleted after manual sync — 4cabeb3
+- [x] 4.4 Deleted habit removes its check-ins too — 4cabeb3
+- [x] 4.5 Two-device delete/edit race resolves with delete winning — covered by SyncMergeTest's 7 automated scenarios (Phase 3), not a live two-device run — 4cabeb3
+- [x] 4.6 Re-logging a previously-deleted habit+date succeeds — 4cabeb3
 
 ### Phase 5: Repository test coverage
 
 #### Automated
 
-- [ ] 5.1 Unit tests pass
-- [ ] 5.2 Lint passes
+- [x] 5.1 Unit tests pass
+- [x] 5.2 Lint passes
 
 ### Phase 6: Use-case layer cleanup
 

@@ -14,8 +14,10 @@ import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.api.FakeRemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.FakeAuthRepository
+import java.time.Instant
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -313,6 +315,86 @@ class JournalRepositoryImplTest {
             assertTrue(result.isSuccess)
             assertEquals(1, remote.upsertCallCount)
             assertTrue(dao.getAll().any { it.id == "remote-1" })
+        }
+
+    @Test
+    fun `should soft-delete locally and push the tombstone when deleteEntry succeeds`() =
+        runTest {
+            // Arrange
+            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
+            val dao = FakeDao(entities = mutableMapOf("1" to entity))
+            val remote = FakeRemoteJournalDataSource()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            repository.deleteEntry("1")
+            runCurrent()
+
+            // Assert
+            val stored = dao.getAllIncludingDeleted().single { it.id == "1" }
+            assertTrue(stored.deletedAt != null)
+            assertEquals(1, remote.upsertCallCount)
+        }
+
+    @Test
+    fun `should not resurrect a remotely-deleted row during syncWithRemote`() =
+        runTest {
+            // Arrange - local has a stale, unsynced, non-deleted edit with a *newer* updatedAt than
+            // the remote tombstone, exercising tombstone supremacy over plain timestamp comparison.
+            val local = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Stale edit.", createdAt = 1_000L, updatedAt = 9_999_999L)
+            val dao = FakeDao(entities = mutableMapOf("1" to local))
+            val remoteTombstone = JournalEntryRemoteDto(
+                id = "1",
+                userId = "user-1",
+                date = "2026-07-27",
+                text = "Deleted elsewhere.",
+                createdAt = "2026-07-01T00:00:00Z",
+                updatedAt = "2026-07-02T00:00:00Z",
+                deletedAt = "2026-07-02T00:00:00Z",
+            )
+            val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("1" to remoteTombstone))
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            val result = repository.syncWithRemote()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(null, dao.getById("1"))
+            assertEquals(0, remote.upsertCallCount)
+        }
+
+    @Test
+    fun `should purge tombstones older than the GC window during syncWithRemote`() =
+        runTest {
+            // Arrange
+            val agedOut = Instant
+                .now()
+                .minus(TOMBSTONE_GC_WINDOW)
+                .minusSeconds(3_600)
+                .toEpochMilli()
+            val tombstoned = JournalEntryEntity(
+                id = "1",
+                date = "2026-01-01",
+                text = "Long gone.",
+                createdAt = 1_000L,
+                updatedAt = agedOut,
+                deletedAt = agedOut,
+            )
+            val dao = FakeDao(entities = mutableMapOf("1" to tombstoned))
+            val remote = FakeRemoteJournalDataSource()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(dao, backgroundScope, remote = remote, auth = auth)
+
+            // Act
+            val result = repository.syncWithRemote()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertTrue(dao.getAllIncludingDeleted().none { it.id == "1" })
+            assertEquals(1, remote.purgeCallCount)
         }
 
     @Test

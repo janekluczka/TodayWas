@@ -19,9 +19,11 @@ import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
 import pl.luczka.todaywas.data.util.FakeTransactionRunner
+import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.FakeAuthRepository
+import java.time.Instant
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -594,6 +596,128 @@ class HabitRepositoryImplTest {
             assertTrue(result.isSuccess)
             assertEquals(1, remoteHabits.upsertCallCount)
             assertTrue(habitDao.getAll().any { it.id == "remote-habit" })
+        }
+
+    @Test
+    fun `should soft-delete the habit locally and push the tombstone when deleteHabit succeeds`() =
+        runTest {
+            // Arrange
+            val habit = HabitEntity(
+                id = "1",
+                name = "Drink water",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
+            val remoteHabits = FakeRemoteHabitDataSource()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(
+                habitDao = habitDao,
+                habitCheckInDao = FakeHabitCheckInDao(),
+                scope = backgroundScope,
+                remoteHabitDataSource = remoteHabits,
+                authRepository = auth,
+            )
+
+            // Act
+            repository.deleteHabit("1")
+            runCurrent()
+
+            // Assert
+            val stored = habitDao.getAllIncludingDeleted().single { it.id == "1" }
+            assertTrue(stored.deletedAt != null)
+            assertEquals(1, remoteHabits.upsertCallCount)
+        }
+
+    @Test
+    fun `should not resurrect a remotely-deleted habit during syncWithRemote`() =
+        runTest {
+            // Arrange - local has a stale, unsynced, non-deleted edit with a *newer* updatedAt than
+            // the remote tombstone, exercising tombstone supremacy over plain timestamp comparison.
+            val local = HabitEntity(
+                id = "1",
+                name = "Stale edit",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+                updatedAt = 9_999_999L,
+            )
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to local))
+            val remoteTombstone = HabitRemoteDto(
+                id = "1",
+                userId = "user-1",
+                name = "Deleted elsewhere",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = "2026-07-01T00:00:00Z",
+                updatedAt = "2026-07-02T00:00:00Z",
+                deletedAt = "2026-07-02T00:00:00Z",
+            )
+            val remoteHabits = FakeRemoteHabitDataSource(habits = mutableMapOf("1" to remoteTombstone))
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(
+                habitDao = habitDao,
+                habitCheckInDao = FakeHabitCheckInDao(),
+                scope = backgroundScope,
+                remoteHabitDataSource = remoteHabits,
+                authRepository = auth,
+            )
+
+            // Act
+            val result = repository.syncWithRemote()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertTrue(habitDao.getAll().none { it.id == "1" })
+            assertEquals(0, remoteHabits.upsertCallCount)
+        }
+
+    @Test
+    fun `should purge tombstoned habits older than the GC window during syncWithRemote`() =
+        runTest {
+            // Arrange
+            val agedOut = Instant
+                .now()
+                .minus(TOMBSTONE_GC_WINDOW)
+                .minusSeconds(3_600)
+                .toEpochMilli()
+            val tombstoned = HabitEntity(
+                id = "1",
+                name = "Long gone",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+                updatedAt = agedOut,
+                deletedAt = agedOut,
+            )
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to tombstoned))
+            val remoteHabits = FakeRemoteHabitDataSource()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(
+                habitDao = habitDao,
+                habitCheckInDao = FakeHabitCheckInDao(),
+                scope = backgroundScope,
+                remoteHabitDataSource = remoteHabits,
+                authRepository = auth,
+            )
+
+            // Act
+            val result = repository.syncWithRemote()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertTrue(habitDao.getAllIncludingDeleted().none { it.id == "1" })
+            assertEquals(1, remoteHabits.purgeCallCount)
         }
 
     @Test
