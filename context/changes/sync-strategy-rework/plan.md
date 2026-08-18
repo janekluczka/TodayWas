@@ -700,12 +700,12 @@ deleted before this change existed).
 
 #### Automated
 
-- [x] 6.1 Project builds
-- [x] 6.2 Lint passes
-- [x] 6.3 Unit tests pass
+- [x] 6.1 Project builds — e3be852
+- [x] 6.2 Lint passes — e3be852
+- [x] 6.3 Unit tests pass — e3be852
 
 #### Manual
 
-- [x] 6.4 Habit detail save behavior unchanged (partial-success preserved)
-- [x] 6.5 Log Habit Check-ins still offers today + yesterday only
-- [x] 6.6 Data-sync review step still appears/skips correctly in both onboarding and account flows — verified via existing AccountViewModelTest/OnboardingViewModelTest coverage of both branches (unchanged, still passing), not a live sign-up
+- [x] 6.4 Habit detail save behavior unchanged (partial-success preserved) — e3be852
+- [x] 6.5 Log Habit Check-ins still offers today + yesterday only — e3be852
+- [x] 6.6 Data-sync review step still appears/skips correctly in both onboarding and account flows — verified via existing AccountViewModelTest/OnboardingViewModelTest coverage of both branches (unchanged, still passing), not a live sign-up — e3be852
