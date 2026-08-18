@@ -12,4 +12,6 @@ data class HabitEntity(
     val scaleMin: Int?,
     val scaleMax: Int?,
     val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long? = null,
 )

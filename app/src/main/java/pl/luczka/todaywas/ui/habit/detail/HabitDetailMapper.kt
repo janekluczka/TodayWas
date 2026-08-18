@@ -6,19 +6,16 @@ import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.util.EditWindow
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 
 fun List<HabitCheckIn>.toHabitDetailRows(
     pendingValues: Map<LocalDate, Int>,
     now: Instant,
 ): List<HabitDetailRowUiState> {
     val existingByDate = associateBy { it.date }
-    val today = LocalDate.ofInstant(now, ZoneId.systemDefault())
-    val yesterday = today.minusDays(1)
     // Today/yesterday always show, even unlogged, so they stay reachable to add a value; every
     // other date only appears once it actually has a check-in — this is the full history, not a
     // fixed backfill window.
-    val dates = (existingByDate.keys + today + yesterday).sortedDescending()
+    val dates = (existingByDate.keys + EditWindow.freshLoggableDates(now)).sortedDescending()
     return dates.map { date ->
         val existing = existingByDate[date]
         HabitDetailRowUiState(

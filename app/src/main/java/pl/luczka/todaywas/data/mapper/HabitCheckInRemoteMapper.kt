@@ -2,6 +2,7 @@ package pl.luczka.todaywas.data.mapper
 
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.remote.dto.HabitCheckInRemoteDto
+import pl.luczka.todaywas.data.util.SyncMeta
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import java.time.Instant
 
@@ -12,6 +13,8 @@ fun HabitCheckIn.toRemoteDto(userId: String): HabitCheckInRemoteDto = HabitCheck
     date = date.toString(),
     value = value,
     createdAt = createdAt.toString(),
+    updatedAt = updatedAt.toString(),
+    deletedAt = deletedAt?.toString(),
 )
 
 fun HabitCheckInRemoteDto.toEntity(): HabitCheckInEntity = HabitCheckInEntity(
@@ -20,4 +23,12 @@ fun HabitCheckInRemoteDto.toEntity(): HabitCheckInEntity = HabitCheckInEntity(
     date = date,
     value = value,
     createdAt = Instant.parse(createdAt).toEpochMilli(),
+    updatedAt = Instant.parse(updatedAt).toEpochMilli(),
+    deletedAt = deletedAt?.let { Instant.parse(it).toEpochMilli() },
+)
+
+fun HabitCheckInRemoteDto.toSyncMeta(): SyncMeta = SyncMeta(
+    id = id,
+    updatedAt = Instant.parse(updatedAt),
+    isDeleted = deletedAt != null,
 )

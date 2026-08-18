@@ -11,7 +11,10 @@ import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.mapper.toDomain
 import pl.luczka.todaywas.data.mapper.toEntity
 import pl.luczka.todaywas.data.mapper.toRemoteDto
+import pl.luczka.todaywas.data.mapper.toSyncMeta
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
+import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
+import pl.luczka.todaywas.data.util.mergeForSync
 import pl.luczka.todaywas.data.util.remoteCall
 import pl.luczka.todaywas.data.util.safeDbCall
 import pl.luczka.todaywas.di.ApplicationScope
@@ -43,11 +46,13 @@ class JournalRepositoryImpl @Inject constructor(
         date: LocalDate,
         text: String,
     ): Result<Unit> {
+        val now = Instant.now().toEpochMilli()
         val entity = JournalEntryEntity(
             id = UUID.randomUUID().toString(),
             date = date.toString(),
             text = text,
-            createdAt = Instant.now().toEpochMilli(),
+            createdAt = now,
+            updatedAt = now,
         )
         val result = safeDbCall { dao.insert(entity) }
         if (result.isSuccess) pushInBackground(entity)
@@ -59,15 +64,19 @@ class JournalRepositoryImpl @Inject constructor(
         text: String,
     ): Result<Unit> {
         val existing = dao.getById(id) ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
-        val entity = existing.copy(text = text)
+        val entity = existing.copy(text = text, updatedAt = Instant.now().toEpochMilli())
         val result = safeDbCall { dao.update(entity) }
         if (result.isSuccess) pushInBackground(entity)
         return result
     }
 
     override suspend fun deleteEntry(id: String): Result<Unit> {
-        val result = safeDbCall { dao.deleteById(id) }
-        if (result.isSuccess) pushDeleteInBackground(id)
+        val deletedAt = Instant.now().toEpochMilli()
+        val existing = dao.getById(id)
+        val result = safeDbCall { dao.softDeleteById(id, deletedAt) }
+        // No dedicated remote delete call - the row's own deletedAt is the tombstone, carried to
+        // remote by the same pushInBackground upsert path used for adds/edits.
+        if (result.isSuccess) existing?.let { pushInBackground(it.copy(deletedAt = deletedAt)) }
         return result
     }
 
@@ -75,10 +84,20 @@ class JournalRepositoryImpl @Inject constructor(
         val userId = authRepository.currentUserId() ?: return Result.success(Unit)
         return syncMutex.withLock {
             remoteCall {
-                val local = dao.getAll()
-                remoteDataSource.upsert(local.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+                val local = dao.getAllIncludingDeleted()
                 val remote = remoteDataSource.fetchAll(userId).getOrThrow()
-                remote.forEach { dao.upsert(it.toEntity()) }
+                val decision = mergeForSync(local.map { it.toSyncMeta() }, remote.map { it.toSyncMeta() })
+
+                val toPush = local.filter { it.id in decision.pushIds }
+                if (toPush.isNotEmpty()) {
+                    remoteDataSource.upsert(toPush.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+                }
+                val toApply = remote.filter { it.id in decision.applyIds }
+                toApply.forEach { dao.upsert(it.toEntity()) }
+
+                val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
+                dao.purgeDeletedBefore(cutoff.toEpochMilli())
+                remoteDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
             }
         }
     }
@@ -96,21 +115,6 @@ class JournalRepositoryImpl @Inject constructor(
             if (syncMutex.tryLock()) {
                 try {
                     remoteDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId)))
-                } finally {
-                    syncMutex.unlock()
-                }
-            }
-        }
-    }
-
-    // Same best-effort/skip-while-syncing shape as pushInBackground - only the id is needed here,
-    // not a full entity, since deleting doesn't require the row's content.
-    private fun pushDeleteInBackground(id: String) {
-        authRepository.currentUserId() ?: return
-        syncScope.launch {
-            if (syncMutex.tryLock()) {
-                try {
-                    remoteDataSource.delete(id)
                 } finally {
                     syncMutex.unlock()
                 }

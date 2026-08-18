@@ -2,6 +2,7 @@ package pl.luczka.todaywas.data.mapper
 
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.util.SyncMeta
 import pl.luczka.todaywas.domain.model.JournalEntry
 import java.time.Instant
 
@@ -11,6 +12,8 @@ fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEnt
     date = date.toString(),
     text = text,
     createdAt = createdAt.toString(),
+    updatedAt = updatedAt.toString(),
+    deletedAt = deletedAt?.toString(),
 )
 
 fun JournalEntryRemoteDto.toEntity(): JournalEntryEntity = JournalEntryEntity(
@@ -18,4 +21,12 @@ fun JournalEntryRemoteDto.toEntity(): JournalEntryEntity = JournalEntryEntity(
     date = date,
     text = text,
     createdAt = Instant.parse(createdAt).toEpochMilli(),
+    updatedAt = Instant.parse(updatedAt).toEpochMilli(),
+    deletedAt = deletedAt?.let { Instant.parse(it).toEpochMilli() },
+)
+
+fun JournalEntryRemoteDto.toSyncMeta(): SyncMeta = SyncMeta(
+    id = id,
+    updatedAt = Instant.parse(updatedAt),
+    isDeleted = deletedAt != null,
 )

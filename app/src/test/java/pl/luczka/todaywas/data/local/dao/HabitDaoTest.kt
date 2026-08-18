@@ -11,6 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import pl.luczka.todaywas.data.local.database.TodayWasDatabase
+import pl.luczka.todaywas.data.local.database.todayWasDatabaseCallbacks
 import pl.luczka.todaywas.data.local.entity.HabitEntity
 
 @RunWith(RobolectricTestRunner::class)
@@ -26,6 +27,7 @@ class HabitDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
 
             // Act
@@ -38,6 +40,7 @@ class HabitDaoTest {
                     scaleMin = 1,
                     scaleMax = 5,
                     createdAt = 1_000L,
+                    updatedAt = 1_000L,
                 ),
             )
             db1.close()
@@ -45,6 +48,7 @@ class HabitDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             val persisted = db2.habitDao().observeAll().first()
             db2.close()
@@ -67,6 +71,7 @@ class HabitDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.habitDao().insert(
                 HabitEntity(
@@ -77,6 +82,7 @@ class HabitDaoTest {
                     scaleMin = null,
                     scaleMax = null,
                     createdAt = 3L,
+                    updatedAt = 3L,
                 ),
             )
             db.habitDao().insert(
@@ -88,6 +94,7 @@ class HabitDaoTest {
                     scaleMin = null,
                     scaleMax = null,
                     createdAt = 1L,
+                    updatedAt = 1L,
                 ),
             )
             db.habitDao().insert(
@@ -99,6 +106,7 @@ class HabitDaoTest {
                     scaleMin = null,
                     scaleMax = null,
                     createdAt = 2L,
+                    updatedAt = 2L,
                 ),
             )
 
@@ -111,7 +119,7 @@ class HabitDaoTest {
         }
 
     @Test
-    fun `should remove only the matching habit when deleteById is called`() =
+    fun `should exclude only the matching habit from active reads when softDeleteById is called`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
@@ -120,6 +128,7 @@ class HabitDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.habitDao().insert(
                 HabitEntity(
@@ -130,6 +139,7 @@ class HabitDaoTest {
                     scaleMin = null,
                     scaleMax = null,
                     createdAt = 1_000L,
+                    updatedAt = 1_000L,
                 ),
             )
             db.habitDao().insert(
@@ -141,15 +151,19 @@ class HabitDaoTest {
                     scaleMin = null,
                     scaleMax = null,
                     createdAt = 2_000L,
+                    updatedAt = 2_000L,
                 ),
             )
 
             // Act
-            db.habitDao().deleteById("habit-2")
-            val remaining = db.habitDao().observeAll().first()
+            db.habitDao().softDeleteById("habit-2", 3_000L)
+            val active = db.habitDao().observeAll().first()
+            val includingDeleted = db.habitDao().getAllIncludingDeleted()
             db.close()
 
             // Assert
-            assertEquals(listOf("habit-1"), remaining.map { it.id })
+            assertEquals(listOf("habit-1"), active.map { it.id })
+            assertEquals(setOf("habit-1", "habit-2"), includingDeleted.map { it.id }.toSet())
+            assertEquals(3_000L, includingDeleted.single { it.id == "habit-2" }.deletedAt)
         }
 }

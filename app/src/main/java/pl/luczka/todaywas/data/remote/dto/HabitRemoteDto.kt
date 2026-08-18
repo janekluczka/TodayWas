@@ -13,4 +13,6 @@ data class HabitRemoteDto(
     @SerialName("scale_min") val scaleMin: Int?,
     @SerialName("scale_max") val scaleMax: Int?,
     @SerialName("created_at") val createdAt: String,
+    @SerialName("updated_at") val updatedAt: String,
+    @SerialName("deleted_at") val deletedAt: String?,
 )

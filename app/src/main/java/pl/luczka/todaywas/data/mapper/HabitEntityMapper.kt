@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.data.mapper
 
 import pl.luczka.todaywas.data.local.entity.HabitEntity
+import pl.luczka.todaywas.data.util.SyncMeta
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitType
 import java.time.Instant
@@ -13,4 +14,12 @@ fun HabitEntity.toDomain(): Habit = Habit(
     scaleMin = scaleMin,
     scaleMax = scaleMax,
     createdAt = Instant.ofEpochMilli(createdAt),
+    updatedAt = Instant.ofEpochMilli(updatedAt),
+    deletedAt = deletedAt?.let { Instant.ofEpochMilli(it) },
+)
+
+fun HabitEntity.toSyncMeta(): SyncMeta = SyncMeta(
+    id = id,
+    updatedAt = Instant.ofEpochMilli(updatedAt),
+    isDeleted = deletedAt != null,
 )

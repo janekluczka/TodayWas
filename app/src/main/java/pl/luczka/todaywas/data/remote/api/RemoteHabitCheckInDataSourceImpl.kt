@@ -23,7 +23,17 @@ class RemoteHabitCheckInDataSourceImpl @Inject constructor(
             .decodeList<HabitCheckInRemoteDto>()
     }
 
-    override suspend fun delete(id: String): Result<Unit> = remoteCall {
-        supabase.postgrest.from(TABLE).delete { filter { eq("id", id) } }
+    // lt("deleted_at", cutoff) alone already excludes active rows: Postgres evaluates
+    // `NULL < cutoff` as NULL, which WHERE filters out - no separate "is not null" guard needed.
+    override suspend fun purgeDeletedBefore(
+        userId: String,
+        cutoff: String,
+    ): Result<Unit> = remoteCall {
+        supabase.postgrest.from(TABLE).delete {
+            filter {
+                eq("user_id", userId)
+                lt("deleted_at", cutoff)
+            }
+        }
     }
 }

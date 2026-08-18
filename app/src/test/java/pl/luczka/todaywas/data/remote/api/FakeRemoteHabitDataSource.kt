@@ -9,7 +9,7 @@ class FakeRemoteHabitDataSource(
 
     var upsertCallCount = 0
         private set
-    var deleteCallCount = 0
+    var purgeCallCount = 0
         private set
 
     override suspend fun upsert(habits: List<HabitRemoteDto>): Result<Unit> {
@@ -24,10 +24,15 @@ class FakeRemoteHabitDataSource(
         return Result.success(habits.values.filter { it.userId == userId })
     }
 
-    override suspend fun delete(id: String): Result<Unit> {
-        deleteCallCount++
+    override suspend fun purgeDeletedBefore(
+        userId: String,
+        cutoff: String,
+    ): Result<Unit> {
+        purgeCallCount++
         if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
-        habits.remove(id)
+        habits.values
+            .filter { it.userId == userId && it.deletedAt != null && it.deletedAt < cutoff }
+            .forEach { habits.remove(it.id) }
         return Result.success(Unit)
     }
 }

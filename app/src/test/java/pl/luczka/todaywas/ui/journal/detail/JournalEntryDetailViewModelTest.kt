@@ -48,6 +48,7 @@ class JournalEntryDetailViewModelTest {
         date = LocalDate.of(2026, 8, 1),
         text = "Original text.",
         createdAt = createdAt,
+        updatedAt = createdAt,
     )
 
     private fun viewModel(

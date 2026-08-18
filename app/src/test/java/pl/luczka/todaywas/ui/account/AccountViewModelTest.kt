@@ -554,5 +554,6 @@ class AccountViewModelTest {
         date = LocalDate.of(2026, 8, 1),
         text = "text",
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 }

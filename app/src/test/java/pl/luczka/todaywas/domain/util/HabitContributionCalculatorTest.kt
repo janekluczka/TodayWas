@@ -23,6 +23,7 @@ class HabitContributionCalculatorTest {
         date = date,
         value = value,
         createdAt = now,
+        updatedAt = now,
     )
 
     @Test

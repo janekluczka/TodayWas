@@ -52,6 +52,7 @@ class MainViewModelTest {
         date = date,
         text = text,
         createdAt = Instant.now(),
+        updatedAt = Instant.now(),
     )
 
     private fun habit(
@@ -68,6 +69,7 @@ class MainViewModelTest {
         scaleMin = scaleMin,
         scaleMax = scaleMax,
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 
     private fun checkIn(
@@ -80,6 +82,7 @@ class MainViewModelTest {
         date = date,
         value = value,
         createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
     )
 
     private fun viewModel(

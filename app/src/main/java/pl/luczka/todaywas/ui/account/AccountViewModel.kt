@@ -22,6 +22,7 @@ import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.domain.util.LocalDataSyncPolicy
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.util.isValidEmail
@@ -213,7 +214,7 @@ class AccountViewModel @Inject constructor(
     // otherwise syncs transparently in the background and proceeds as before.
     private suspend fun proceedAfterAuthSuccess(whenDone: PostSyncAction) {
         val summary = getLocalDataSummary()
-        if (!_uiState.value.hasSyncedLocalData && !summary.isEmpty) {
+        if (LocalDataSyncPolicy.shouldReviewBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
             postSyncAction = whenDone
             _uiState.update {
                 it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState())

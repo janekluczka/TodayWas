@@ -13,6 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import pl.luczka.todaywas.data.local.database.TodayWasDatabase
+import pl.luczka.todaywas.data.local.database.todayWasDatabaseCallbacks
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 
 @RunWith(RobolectricTestRunner::class)
@@ -28,6 +29,7 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
 
             // Act
@@ -38,6 +40,7 @@ class HabitCheckInDaoTest {
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
+                    updatedAt = 1_000L,
                 ),
             )
             db1.close()
@@ -45,6 +48,7 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             val persisted = db2.habitCheckInDao().observeAll().first()
             db2.close()
@@ -66,6 +70,7 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
 
             // Act
@@ -77,6 +82,7 @@ class HabitCheckInDaoTest {
                         date = "2026-07-27",
                         value = 1,
                         createdAt = 1_000L,
+                        updatedAt = 1_000L,
                     ),
                     HabitCheckInEntity(
                         id = "check-in-2",
@@ -84,6 +90,7 @@ class HabitCheckInDaoTest {
                         date = "2026-07-27",
                         value = 3,
                         createdAt = 1_000L,
+                        updatedAt = 1_000L,
                     ),
                 ),
             )
@@ -104,6 +111,7 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             // Pre-existing row that the batch's second entity will conflict with (same habitId+date).
             db.habitCheckInDao().insertOne(
@@ -113,6 +121,7 @@ class HabitCheckInDaoTest {
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
+                    updatedAt = 1_000L,
                 ),
             )
 
@@ -128,14 +137,16 @@ class HabitCheckInDaoTest {
                             date = "2026-07-27",
                             value = 3,
                             createdAt = 2_000L,
+                            updatedAt = 2_000L,
                         ),
-                        // Conflicts with the pre-existing row on the unique (habitId, date) index.
+                        // Conflicts with the pre-existing row on the partial unique (habitId, date) index.
                         HabitCheckInEntity(
                             id = "check-in-3",
                             habitId = "1",
                             date = "2026-07-27",
                             value = 0,
                             createdAt = 2_000L,
+                            updatedAt = 2_000L,
                         ),
                     ),
                 )
@@ -163,6 +174,7 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.habitCheckInDao().insertOne(
                 HabitCheckInEntity(
@@ -171,6 +183,7 @@ class HabitCheckInDaoTest {
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
+                    updatedAt = 1_000L,
                 ),
             )
 
@@ -196,6 +209,7 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.habitCheckInDao().insertOne(
                 HabitCheckInEntity(
@@ -204,6 +218,7 @@ class HabitCheckInDaoTest {
                     date = "2026-07-27",
                     value = 1,
                     createdAt = 1_000L,
+                    updatedAt = 1_000L,
                 ),
             )
             val inserted = checkNotNull(db.habitCheckInDao().getByHabitAndDate("1", "2026-07-27"))
@@ -221,7 +236,7 @@ class HabitCheckInDaoTest {
         }
 
     @Test
-    fun `should remove only the matching check-in when deleteById is called`() =
+    fun `should exclude only the matching check-in from active reads when softDeleteById is called`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
@@ -230,25 +245,43 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.habitCheckInDao().insertOne(
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L),
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
             )
             db.habitCheckInDao().insertOne(
-                HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 2_000L),
+                HabitCheckInEntity(
+                    id = "check-in-2",
+                    habitId = "1",
+                    date = "2026-07-26",
+                    value = 0,
+                    createdAt = 2_000L,
+                    updatedAt = 2_000L,
+                ),
             )
 
             // Act
-            db.habitCheckInDao().deleteById("check-in-2")
-            val remaining = db.habitCheckInDao().observeAll().first()
+            db.habitCheckInDao().softDeleteById("check-in-2", 3_000L)
+            val active = db.habitCheckInDao().observeAll().first()
+            val includingDeleted = db.habitCheckInDao().getAllIncludingDeleted()
             db.close()
 
             // Assert
-            assertEquals(listOf("check-in-1"), remaining.map { it.id })
+            assertEquals(listOf("check-in-1"), active.map { it.id })
+            assertEquals(setOf("check-in-1", "check-in-2"), includingDeleted.map { it.id }.toSet())
+            assertEquals(3_000L, includingDeleted.single { it.id == "check-in-2" }.deletedAt)
         }
 
     @Test
-    fun `should remove every check-in for the habit when deleteByHabitId is called`() =
+    fun `should exclude every check-in for the habit from active reads when softDeleteByHabitId is called`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
@@ -257,23 +290,133 @@ class HabitCheckInDaoTest {
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
                 .allowMainThreadQueries()
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.habitCheckInDao().insertOne(
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L),
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
             )
             db.habitCheckInDao().insertOne(
-                HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 2_000L),
+                HabitCheckInEntity(
+                    id = "check-in-2",
+                    habitId = "1",
+                    date = "2026-07-26",
+                    value = 0,
+                    createdAt = 2_000L,
+                    updatedAt = 2_000L,
+                ),
             )
             db.habitCheckInDao().insertOne(
-                HabitCheckInEntity(id = "check-in-3", habitId = "2", date = "2026-07-27", value = 1, createdAt = 3_000L),
+                HabitCheckInEntity(
+                    id = "check-in-3",
+                    habitId = "2",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 3_000L,
+                    updatedAt = 3_000L,
+                ),
             )
 
             // Act
-            db.habitCheckInDao().deleteByHabitId("1")
-            val remaining = db.habitCheckInDao().observeAll().first()
+            db.habitCheckInDao().softDeleteByHabitId("1", 4_000L)
+            val active = db.habitCheckInDao().observeAll().first()
             db.close()
 
             // Assert
-            assertEquals(listOf("check-in-3"), remaining.map { it.id })
+            assertEquals(listOf("check-in-3"), active.map { it.id })
+        }
+
+    @Test
+    fun `should reject a second active check-in for the same habit and date`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
+                .build()
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
+            )
+
+            // Act
+            var threw = false
+            try {
+                db.habitCheckInDao().insertOne(
+                    HabitCheckInEntity(
+                        id = "check-in-2",
+                        habitId = "1",
+                        date = "2026-07-27",
+                        value = 0,
+                        createdAt = 2_000L,
+                        updatedAt = 2_000L,
+                    ),
+                )
+                fail("expected insertOne to throw on the conflicting active habit+date")
+            } catch (e: Exception) {
+                threw = true
+            }
+            db.close()
+
+            // Assert
+            assertTrue(threw)
+        }
+
+    @Test
+    fun `should allow a fresh active check-in after the previous one for the same habit and date was soft-deleted`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val dbName = "test-todaywas-${System.nanoTime()}.db"
+            val db = Room
+                .databaseBuilder(context, TodayWasDatabase::class.java, dbName)
+                .allowMainThreadQueries()
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                .addCallback(todayWasDatabaseCallbacks())
+                .build()
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
+            )
+            db.habitCheckInDao().softDeleteById("check-in-1", 2_000L)
+
+            // Act
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(
+                    id = "check-in-2",
+                    habitId = "1",
+                    date = "2026-07-27",
+                    value = 0,
+                    createdAt = 3_000L,
+                    updatedAt = 3_000L,
+                ),
+            )
+            val active = db.habitCheckInDao().observeAll().first()
+            db.close()
+
+            // Assert
+            assertEquals(listOf("check-in-2"), active.map { it.id })
         }
 }

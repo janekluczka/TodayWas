@@ -22,6 +22,7 @@ import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.domain.util.LocalDataSyncPolicy
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.util.isValidEmail
@@ -298,7 +299,7 @@ class OnboardingViewModel @Inject constructor(
     // otherwise syncs transparently in the background and proceeds straight to ALL_SET.
     private suspend fun proceedAfterAuthSuccess(reason: AllSetReason) {
         val summary = getLocalDataSummary()
-        if (!_uiState.value.hasSyncedLocalData && !summary.isEmpty) {
+        if (LocalDataSyncPolicy.shouldReviewBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
             pendingAllSetReason = reason
             _uiState.update {
                 it.copy(
