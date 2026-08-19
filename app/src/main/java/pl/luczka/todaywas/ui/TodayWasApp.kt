@@ -33,7 +33,9 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
 
     NavDisplay(
         backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
+        // NavDisplay throws if the backstack is emptied, so only pop when more than the root
+        // entry remains; back from the root falls through to the platform's default behavior.
+        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
