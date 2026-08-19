@@ -6,7 +6,7 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import java.time.LocalDate
 
-interface HabitRepository {
+interface HabitRepository : Syncable {
 
     fun observeHabits(): Flow<List<Habit>>
 
@@ -39,8 +39,4 @@ interface HabitRepository {
         habitId: String,
         date: LocalDate,
     ): Result<Unit>
-
-    suspend fun syncWithRemote(): Result<Unit>
-
-    suspend fun clearLocal(): Result<Unit>
 }

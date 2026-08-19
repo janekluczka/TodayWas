@@ -6,8 +6,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
-import pl.luczka.todaywas.data.local.dao.HabitDao
+import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.data.mapper.toDomain
@@ -17,10 +16,8 @@ import pl.luczka.todaywas.data.mapper.toSyncMeta
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
-import pl.luczka.todaywas.data.util.TransactionRunner
 import pl.luczka.todaywas.data.util.mergeForSync
 import pl.luczka.todaywas.data.util.remoteCall
-import pl.luczka.todaywas.data.util.safeDbCall
 import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
@@ -33,9 +30,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 class HabitRepositoryImpl @Inject constructor(
-    private val transactionRunner: TransactionRunner,
-    private val habitDao: HabitDao,
-    private val habitCheckInDao: HabitCheckInDao,
+    private val local: LocalHabitDataSource,
     private val remoteHabitDataSource: RemoteHabitDataSource,
     private val remoteHabitCheckInDataSource: RemoteHabitCheckInDataSource,
     private val authRepository: AuthRepository,
@@ -47,7 +42,7 @@ class HabitRepositoryImpl @Inject constructor(
     // a row before a concurrent edit can push/pull that stale snapshot back over the edit.
     private val syncMutex = Mutex()
 
-    override fun observeHabits(): Flow<List<Habit>> = habitDao.observeAll().map { entities ->
+    override fun observeHabits(): Flow<List<Habit>> = local.observeHabits().map { entities ->
         entities.map { it.toDomain() }
     }
 
@@ -69,13 +64,13 @@ class HabitRepositoryImpl @Inject constructor(
             createdAt = now,
             updatedAt = now,
         )
-        val result = safeDbCall { habitDao.insert(entity) }
+        val result = local.insertHabit(entity)
         if (result.isSuccess) pushHabitInBackground(entity)
         return result
     }
 
     override fun observeCheckIns(): Flow<List<HabitCheckIn>> =
-        habitCheckInDao.observeAll().map { entities -> entities.map { it.toDomain() } }
+        local.observeCheckIns().map { entities -> entities.map { it.toDomain() } }
 
     override suspend fun addCheckIns(
         date: LocalDate,
@@ -92,7 +87,7 @@ class HabitRepositoryImpl @Inject constructor(
                 updatedAt = createdAt,
             )
         }
-        val result = safeDbCall { habitCheckInDao.insertAll(entities) }
+        val result = local.insertCheckIns(entities)
         if (result.isSuccess) pushCheckInsInBackground(entities)
         return result
     }
@@ -102,57 +97,40 @@ class HabitRepositoryImpl @Inject constructor(
         date: LocalDate,
         value: Int,
     ): Result<Unit> {
-        val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
-            ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
-        val entity = existing.copy(value = value, updatedAt = Instant.now().toEpochMilli())
-        val result = safeDbCall { habitCheckInDao.update(entity) }
-        if (result.isSuccess) pushCheckInsInBackground(listOf(entity))
-        return result
+        val result = local.updateCheckIn(habitId, date, value, Instant.now().toEpochMilli())
+        result.onSuccess { pushCheckInsInBackground(listOf(it)) }
+        return result.map { }
     }
 
     override suspend fun deleteHabit(id: String): Result<Unit> {
         val deletedAt = Instant.now().toEpochMilli()
-        val existingHabit = habitDao.getById(id)
-        val existingCheckIns = habitCheckInDao.getByHabitId(id)
-        // Transactional so a habit is never left with only some of its check-ins deleted (or
-        // vice versa) if the second delete fails - safeDbCall's retry re-runs the whole
-        // transaction, not just the failed half.
-        val result = safeDbCall {
-            transactionRunner.runInTransaction {
-                habitCheckInDao.softDeleteByHabitId(id, deletedAt)
-                habitDao.softDeleteById(id, deletedAt)
-            }
-        }
-        if (result.isSuccess) {
+        val result = local.deleteHabitAndCheckIns(id, deletedAt)
+        result.onSuccess { (habit, checkIns) ->
             // Both the habit and its check-ins need pushing - the live ON DELETE CASCADE FK only
             // fires on a real remote DELETE, not the soft-delete UPDATE this now performs, so the
             // cascade has to happen explicitly from the app on both local and remote sides.
-            existingHabit?.let { pushHabitInBackground(it.copy(deletedAt = deletedAt)) }
-            val tombstonedCheckIns = existingCheckIns.map { it.copy(deletedAt = deletedAt) }
-            if (tombstonedCheckIns.isNotEmpty()) pushCheckInsInBackground(tombstonedCheckIns)
+            habit?.let { pushHabitInBackground(it) }
+            if (checkIns.isNotEmpty()) pushCheckInsInBackground(checkIns)
         }
-        return result
+        return result.map { }
     }
 
     override suspend fun deleteCheckIn(
         habitId: String,
         date: LocalDate,
     ): Result<Unit> {
-        val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
-            ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
-        val deletedAt = Instant.now().toEpochMilli()
-        val result = safeDbCall { habitCheckInDao.softDeleteById(existing.id, deletedAt) }
+        val result = local.deleteCheckIn(habitId, date, Instant.now().toEpochMilli())
         // No dedicated remote delete call - the row's own deletedAt is the tombstone, carried to
         // remote by the same pushCheckInsInBackground upsert path used for adds/edits.
-        if (result.isSuccess) pushCheckInsInBackground(listOf(existing.copy(deletedAt = deletedAt)))
-        return result
+        result.onSuccess { pushCheckInsInBackground(listOf(it)) }
+        return result.map { }
     }
 
     override suspend fun syncWithRemote(): Result<Unit> {
         val userId = authRepository.currentUserId() ?: return Result.success(Unit)
         return syncMutex.withLock {
             remoteCall {
-                val localHabits = habitDao.getAllIncludingDeleted()
+                val localHabits = local.getAllHabitsIncludingDeleted()
                 val remoteHabits = remoteHabitDataSource.fetchAll(userId).getOrThrow()
                 val habitDecision = mergeForSync(localHabits.map { it.toSyncMeta() }, remoteHabits.map { it.toSyncMeta() })
                 val habitsToPush = localHabits.filter { it.id in habitDecision.pushIds }
@@ -160,9 +138,8 @@ class HabitRepositoryImpl @Inject constructor(
                     remoteHabitDataSource.upsert(habitsToPush.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
                 }
                 val habitsToApply = remoteHabits.filter { it.id in habitDecision.applyIds }
-                habitsToApply.forEach { habitDao.upsert(it.toEntity()) }
 
-                val localCheckIns = habitCheckInDao.getAllIncludingDeleted()
+                val localCheckIns = local.getAllCheckInsIncludingDeleted()
                 val remoteCheckIns = remoteHabitCheckInDataSource.fetchAll(userId).getOrThrow()
                 val checkInDecision = mergeForSync(localCheckIns.map { it.toSyncMeta() }, remoteCheckIns.map { it.toSyncMeta() })
                 val checkInsToPush = localCheckIns.filter { it.id in checkInDecision.pushIds }
@@ -170,7 +147,8 @@ class HabitRepositoryImpl @Inject constructor(
                     remoteHabitCheckInDataSource.upsert(checkInsToPush.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
                 }
                 val checkInsToApply = remoteCheckIns.filter { it.id in checkInDecision.applyIds }
-                habitCheckInDao.upsertAll(checkInsToApply.map { it.toEntity() })
+
+                local.applyRemoteSnapshot(habitsToApply.map { it.toEntity() }, checkInsToApply.map { it.toEntity() })
 
                 // Known limitation: the remote habit_check_ins.habit_id FK still has a live
                 // ON DELETE CASCADE, so purging a habit here can hard-delete check-in rows that
@@ -181,18 +159,14 @@ class HabitRepositoryImpl @Inject constructor(
                 // ordering, deferred to architecture-hardening alongside the related syncMutex/
                 // durability work already scoped there.
                 val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
-                habitDao.purgeDeletedBefore(cutoff.toEpochMilli())
-                habitCheckInDao.purgeDeletedBefore(cutoff.toEpochMilli())
+                local.purgeDeletedBefore(cutoff.toEpochMilli())
                 remoteHabitDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
                 remoteHabitCheckInDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
             }
         }
     }
 
-    override suspend fun clearLocal(): Result<Unit> = safeDbCall {
-        habitCheckInDao.clearAll()
-        habitDao.clearAll()
-    }
+    override suspend fun clearLocal(): Result<Unit> = local.clearAll()
 
     // Best-effort - failures are silently swallowed since the local write already succeeded;
     // the next successful write (or the next sync pass) naturally retries via upsert. Skipped

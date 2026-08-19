@@ -4,6 +4,10 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
+import pl.luczka.todaywas.data.local.api.LocalHabitDataSourceImpl
+import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
+import pl.luczka.todaywas.data.local.api.LocalJournalDataSourceImpl
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSourceImpl
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
@@ -48,4 +52,10 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindRemoteHabitCheckInDataSource(impl: RemoteHabitCheckInDataSourceImpl): RemoteHabitCheckInDataSource
+
+    @Binds
+    abstract fun bindLocalHabitDataSource(impl: LocalHabitDataSourceImpl): LocalHabitDataSource
+
+    @Binds
+    abstract fun bindLocalJournalDataSource(impl: LocalJournalDataSourceImpl): LocalJournalDataSource
 }

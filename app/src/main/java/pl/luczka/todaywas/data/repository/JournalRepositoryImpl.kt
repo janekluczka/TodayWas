@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import pl.luczka.todaywas.data.local.dao.JournalEntryDao
+import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.mapper.toDomain
 import pl.luczka.todaywas.data.mapper.toEntity
@@ -16,7 +16,6 @@ import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.data.util.mergeForSync
 import pl.luczka.todaywas.data.util.remoteCall
-import pl.luczka.todaywas.data.util.safeDbCall
 import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.AuthRepository
@@ -27,7 +26,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 class JournalRepositoryImpl @Inject constructor(
-    private val dao: JournalEntryDao,
+    private val local: LocalJournalDataSource,
     private val remoteDataSource: RemoteJournalDataSource,
     private val authRepository: AuthRepository,
     @ApplicationScope private val syncScope: CoroutineScope,
@@ -38,9 +37,9 @@ class JournalRepositoryImpl @Inject constructor(
     // a row before a concurrent edit can push/pull that stale snapshot back over the edit.
     private val syncMutex = Mutex()
 
-    override fun observeEntries(): Flow<List<JournalEntry>> = dao.observeAll().map { entities -> entities.map { it.toDomain() } }
+    override fun observeEntries(): Flow<List<JournalEntry>> = local.observeEntries().map { entities -> entities.map { it.toDomain() } }
 
-    override suspend fun getEntry(id: String): JournalEntry? = dao.getById(id)?.toDomain()
+    override suspend fun getEntry(id: String): JournalEntry? = local.getEntry(id)?.toDomain()
 
     override suspend fun addEntry(
         date: LocalDate,
@@ -54,7 +53,7 @@ class JournalRepositoryImpl @Inject constructor(
             createdAt = now,
             updatedAt = now,
         )
-        val result = safeDbCall { dao.insert(entity) }
+        val result = local.insertEntry(entity)
         if (result.isSuccess) pushInBackground(entity)
         return result
     }
@@ -63,46 +62,42 @@ class JournalRepositoryImpl @Inject constructor(
         id: String,
         text: String,
     ): Result<Unit> {
-        val existing = dao.getById(id) ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
-        val entity = existing.copy(text = text, updatedAt = Instant.now().toEpochMilli())
-        val result = safeDbCall { dao.update(entity) }
-        if (result.isSuccess) pushInBackground(entity)
-        return result
+        val result = local.updateEntry(id, text, Instant.now().toEpochMilli())
+        result.onSuccess { pushInBackground(it) }
+        return result.map { }
     }
 
     override suspend fun deleteEntry(id: String): Result<Unit> {
-        val deletedAt = Instant.now().toEpochMilli()
-        val existing = dao.getById(id)
-        val result = safeDbCall { dao.softDeleteById(id, deletedAt) }
+        val result = local.deleteEntry(id, Instant.now().toEpochMilli())
         // No dedicated remote delete call - the row's own deletedAt is the tombstone, carried to
         // remote by the same pushInBackground upsert path used for adds/edits.
-        if (result.isSuccess) existing?.let { pushInBackground(it.copy(deletedAt = deletedAt)) }
-        return result
+        result.onSuccess { it?.let { entity -> pushInBackground(entity) } }
+        return result.map { }
     }
 
     override suspend fun syncWithRemote(): Result<Unit> {
         val userId = authRepository.currentUserId() ?: return Result.success(Unit)
         return syncMutex.withLock {
             remoteCall {
-                val local = dao.getAllIncludingDeleted()
+                val localEntries = local.getAllIncludingDeleted()
                 val remote = remoteDataSource.fetchAll(userId).getOrThrow()
-                val decision = mergeForSync(local.map { it.toSyncMeta() }, remote.map { it.toSyncMeta() })
+                val decision = mergeForSync(localEntries.map { it.toSyncMeta() }, remote.map { it.toSyncMeta() })
 
-                val toPush = local.filter { it.id in decision.pushIds }
+                val toPush = localEntries.filter { it.id in decision.pushIds }
                 if (toPush.isNotEmpty()) {
                     remoteDataSource.upsert(toPush.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
                 }
                 val toApply = remote.filter { it.id in decision.applyIds }
-                toApply.forEach { dao.upsert(it.toEntity()) }
+                local.applyRemoteSnapshot(toApply.map { it.toEntity() })
 
                 val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
-                dao.purgeDeletedBefore(cutoff.toEpochMilli())
+                local.purgeDeletedBefore(cutoff.toEpochMilli())
                 remoteDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
             }
         }
     }
 
-    override suspend fun clearLocal(): Result<Unit> = safeDbCall { dao.clearAll() }
+    override suspend fun clearLocal(): Result<Unit> = local.clearAll()
 
     // Best-effort - failures are silently swallowed since the local write already succeeded;
     // the next successful write (or the next sync pass) naturally retries via upsert. Skipped

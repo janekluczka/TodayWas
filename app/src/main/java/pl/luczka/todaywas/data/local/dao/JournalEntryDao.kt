@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
@@ -29,6 +30,11 @@ interface JournalEntryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: JournalEntryEntity)
+
+    @Transaction
+    suspend fun upsertAll(entities: List<JournalEntryEntity>) {
+        entities.forEach { upsert(it) }
+    }
 
     @Update
     suspend fun update(entity: JournalEntryEntity)

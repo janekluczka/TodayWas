@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.domain.model.JournalEntry
 import java.time.LocalDate
 
-interface JournalRepository {
+interface JournalRepository : Syncable {
 
     fun observeEntries(): Flow<List<JournalEntry>>
 
@@ -23,8 +23,4 @@ interface JournalRepository {
     ): Result<Unit>
 
     suspend fun deleteEntry(id: String): Result<Unit>
-
-    suspend fun syncWithRemote(): Result<Unit>
-
-    suspend fun clearLocal(): Result<Unit>
 }
