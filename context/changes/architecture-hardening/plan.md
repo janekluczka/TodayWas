@@ -836,32 +836,32 @@ changes occur).
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 Build succeeds: `./gradlew.bat assembleDebug`
-- [x] 4.4 No remaining direct `domain/util` calculator/policy imports outside `domain/usecase/`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — f88dee9
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — f88dee9
+- [x] 4.3 Build succeeds: `./gradlew.bat assembleDebug` — f88dee9
+- [x] 4.4 No remaining direct `domain/util` calculator/policy imports outside `domain/usecase/` — f88dee9
 
 #### Manual
 
 - [x] 4.5 Main screen's journal contribution grid and window selector render correctly, including
-      initial empty state
+      initial empty state — f88dee9
 - [x] 4.6 Habit detail screen's contribution grid, window selector, and edit eligibility behave
-      identically to before
-- [x] 4.7 Logging a habit check-in offers exactly today and yesterday
+      identically to before — f88dee9
+- [x] 4.7 Logging a habit check-in offers exactly today and yesterday — f88dee9
 - [x] 4.8 Journal entry detail's edit and "help me refine" respect the 24h window, including the
-      mid-refine expiry race
+      mid-refine expiry race — f88dee9
 - [x] 4.9 Sign-in shows (or correctly skips) the data-review step in both onboarding and account
-      flows
+      flows — f88dee9
 
 ### Phase 5: Test coverage — `AuthRepositoryImpl`, `AiAssistRepositoryImpl`, `HabitMapper`
 
 #### Automated
 
-- [ ] 5.1 New tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 5.3 Build succeeds: `./gradlew.bat assembleDebug`
+- [x] 5.1 New tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 5.3 Build succeeds: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 5.4 Main screen still correctly shows each habit's today-status after the `today` parameter
+- [x] 5.4 Main screen still correctly shows each habit's today-status after the `today` parameter
       change

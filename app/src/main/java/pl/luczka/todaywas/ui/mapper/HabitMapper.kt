@@ -9,12 +9,9 @@ import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import java.time.LocalDate
 
-fun HabitCheckInBoard.toHabitUiStates(): List<HabitUiState> {
-    val today = LocalDate.now()
-    return habits.map { habit ->
-        val todayCheckIn = checkIns.find { it.habitId == habit.id && it.date == today }
-        habit.toUiState(todayCheckIn)
-    }
+fun HabitCheckInBoard.toHabitUiStates(today: LocalDate): List<HabitUiState> = habits.map { habit ->
+    val todayCheckIn = checkIns.find { it.habitId == habit.id && it.date == today }
+    habit.toUiState(todayCheckIn)
 }
 
 fun Habit.toUiState(todayCheckIn: HabitCheckIn?): HabitUiState = HabitUiState(

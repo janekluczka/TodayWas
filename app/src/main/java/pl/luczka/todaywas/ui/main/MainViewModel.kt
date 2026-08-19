@@ -37,6 +37,7 @@ import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import java.time.Clock
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -93,7 +94,7 @@ class MainViewModel @Inject constructor(
                 RawMainSources(
                     journalEntries = entries.map { it.toUiState() },
                     addableSlots = addableSlots.map { it.toUiState() },
-                    habits = board.toHabitUiStates(),
+                    habits = board.toHabitUiStates(today = LocalDate.now(clock)),
                 )
             }
             combine(rawSources, selectedJournalWindow, journalContributionData) { raw, selectedWindow, contribution ->
