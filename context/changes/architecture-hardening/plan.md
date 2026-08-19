@@ -857,11 +857,11 @@ changes occur).
 
 #### Automated
 
-- [x] 5.1 New tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 5.3 Build succeeds: `./gradlew.bat assembleDebug`
+- [x] 5.1 New tests pass: `./gradlew.bat testDebugUnitTest` — 8341a44
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck` — 8341a44
+- [x] 5.3 Build succeeds: `./gradlew.bat assembleDebug` — 8341a44
 
 #### Manual
 
 - [x] 5.4 Main screen still correctly shows each habit's today-status after the `today` parameter
-      change
+      change — 8341a44
