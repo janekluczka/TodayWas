@@ -792,27 +792,27 @@ changes occur).
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Build succeeds: `./gradlew.bat assembleDebug`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — cb140bd
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — cb140bd
+- [x] 1.3 Build succeeds: `./gradlew.bat assembleDebug` — cb140bd
 
 #### Manual
 
 - [x] 1.4 Creating/editing/deleting a habit, check-in, and journal entry while signed in still
-      reaches remote
-- [x] 1.5 Deleting a habit still soft-deletes its check-ins atomically
-- [x] 1.6 `syncWithRemote()` still correctly merges local and remote state with no data loss
+      reaches remote — cb140bd
+- [x] 1.5 Deleting a habit still soft-deletes its check-ins atomically — cb140bd
+- [x] 1.6 `syncWithRemote()` still correctly merges local and remote state with no data loss — cb140bd
 
 ### Phase 2: Remote FK-cascade fix
 
 #### Automated
 
-- [ ] 2.1 Unit tests still pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.1 Unit tests still pass: `./gradlew.bat testDebugUnitTest`
 
 #### Manual
 
-- [ ] 2.2 `habit_check_ins_habit_id_fkey`'s `confdeltype` is no longer `'c'`
-- [ ] 2.3 Purging an aged-out habit tombstone no longer hard-deletes check-ins with their own
+- [x] 2.2 `habit_check_ins_habit_id_fkey`'s `confdeltype` is no longer `'c'`
+- [x] 2.3 Purging an aged-out habit tombstone no longer hard-deletes check-ins with their own
       independent tombstone lifecycle
 
 ### Phase 3: WorkManager-driven sync outbox

@@ -150,18 +150,14 @@ class HabitRepositoryImpl @Inject constructor(
 
                 local.applyRemoteSnapshot(habitsToApply.map { it.toEntity() }, checkInsToApply.map { it.toEntity() })
 
-                // Known limitation: the remote habit_check_ins.habit_id FK still has a live
-                // ON DELETE CASCADE, so purging a habit here can hard-delete check-in rows that
-                // never went through their own tombstone/GC lifecycle (e.g. one written by another
-                // device that hadn't yet synced the habit's deletion). Currently unreachable through
-                // the app's own UI (a soft-deleted habit is never offered for new check-ins), but
-                // the FK itself isn't - a real fix means dropping the CASCADE and redesigning purge
-                // ordering, deferred to architecture-hardening alongside the related syncMutex/
-                // durability work already scoped there.
                 val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
                 local.purgeDeletedBefore(cutoff.toEpochMilli())
-                remoteHabitDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
+                // Check-ins must purge before habits: habit_check_ins.habit_id is now
+                // ON DELETE NO ACTION (see Phase 2), so deleting a habit row while any check-in
+                // still references it - even one with its own, more-recent tombstone - throws a
+                // foreign key violation rather than silently cascading.
                 remoteHabitCheckInDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
+                remoteHabitDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
             }
         }
     }

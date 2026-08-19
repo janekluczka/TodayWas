@@ -82,8 +82,12 @@ class LocalHabitDataSourceImpl @Inject constructor(
     }
 
     override suspend fun purgeDeletedBefore(cutoff: Long) {
-        habitDao.purgeDeletedBefore(cutoff)
+        // Check-ins purge before habits, mirroring the remote ordering required by
+        // habit_check_ins.habit_id's ON DELETE NO ACTION constraint - local Room entities declare
+        // no @ForeignKey, so this order isn't required locally, but keeping it consistent avoids
+        // this class silently depending on an ordering assumption the remote side enforces.
         habitCheckInDao.purgeDeletedBefore(cutoff)
+        habitDao.purgeDeletedBefore(cutoff)
     }
 
     override suspend fun clearAll(): Result<Unit> = safeDbCall {
