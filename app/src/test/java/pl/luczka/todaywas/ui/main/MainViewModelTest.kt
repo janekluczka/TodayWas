@@ -28,6 +28,7 @@ import pl.luczka.todaywas.domain.repository.FakeOnboardingRepository
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
@@ -99,6 +100,7 @@ class MainViewModelTest {
             observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
             observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+            observeJournalContribution = ObserveJournalContributionUseCase(journalRepository, clock),
             observeAuthState = ObserveAuthStateUseCase(authRepository),
             syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
             signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
@@ -434,6 +436,10 @@ class MainViewModelTest {
                 observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeJournalContribution = ObserveJournalContributionUseCase(
+                    journalRepository,
+                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
@@ -459,6 +465,10 @@ class MainViewModelTest {
                 observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeJournalContribution = ObserveJournalContributionUseCase(
+                    journalRepository,
+                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
@@ -614,6 +624,10 @@ class MainViewModelTest {
                 observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeJournalContribution = ObserveJournalContributionUseCase(
+                    journalRepository,
+                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
@@ -645,6 +659,10 @@ class MainViewModelTest {
                 observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeJournalContribution = ObserveJournalContributionUseCase(
+                    journalRepository,
+                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),

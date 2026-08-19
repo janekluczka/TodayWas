@@ -819,38 +819,38 @@ changes occur).
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 Build succeeds: `./gradlew.bat assembleDebug`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 83aad02
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — 83aad02
+- [x] 3.3 Build succeeds: `./gradlew.bat assembleDebug` — 83aad02
 
 #### Manual
 
-- [x] 3.4 App builds and launches without a WorkManager initialization crash
-- [x] 3.5 A signed-in write while online triggers a sync shortly after
+- [x] 3.4 App builds and launches without a WorkManager initialization crash — 83aad02
+- [x] 3.5 A signed-in write while online triggers a sync shortly after — 83aad02
 - [x] 3.6 A signed-in write made offline reaches remote after reconnecting, without reopening the
-      app
+      app — 83aad02
 - [x] 3.7 A signed-in write followed immediately by a force-stop still reaches remote after
-      relaunch
+      relaunch — 83aad02
 
 ### Phase 4: `domain/util` direct calls → use cases
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 Build succeeds: `./gradlew.bat assembleDebug`
-- [ ] 4.4 No remaining direct `domain/util` calculator/policy imports outside `domain/usecase/`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 Build succeeds: `./gradlew.bat assembleDebug`
+- [x] 4.4 No remaining direct `domain/util` calculator/policy imports outside `domain/usecase/`
 
 #### Manual
 
-- [ ] 4.5 Main screen's journal contribution grid and window selector render correctly, including
+- [x] 4.5 Main screen's journal contribution grid and window selector render correctly, including
       initial empty state
-- [ ] 4.6 Habit detail screen's contribution grid, window selector, and edit eligibility behave
+- [x] 4.6 Habit detail screen's contribution grid, window selector, and edit eligibility behave
       identically to before
-- [ ] 4.7 Logging a habit check-in offers exactly today and yesterday
-- [ ] 4.8 Journal entry detail's edit and "help me refine" respect the 24h window, including the
+- [x] 4.7 Logging a habit check-in offers exactly today and yesterday
+- [x] 4.8 Journal entry detail's edit and "help me refine" respect the 24h window, including the
       mid-refine expiry race
-- [ ] 4.9 Sign-in shows (or correctly skips) the data-review step in both onboarding and account
+- [x] 4.9 Sign-in shows (or correctly skips) the data-review step in both onboarding and account
       flows
 
 ### Phase 5: Test coverage — `AuthRepositoryImpl`, `AiAssistRepositoryImpl`, `HabitMapper`

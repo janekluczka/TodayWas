@@ -18,11 +18,11 @@ import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
-import pl.luczka.todaywas.domain.util.LocalDataSyncPolicy
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.util.isValidEmail
@@ -43,6 +43,7 @@ class OnboardingViewModel @Inject constructor(
     private val getLocalDataSummary: GetLocalDataSummaryUseCase,
     private val syncLocalData: SyncLocalDataUseCase,
     private val markLocalDataSynced: MarkLocalDataSyncedUseCase,
+    private val shouldReviewLocalDataBeforeSync: ShouldReviewLocalDataBeforeSyncUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -299,7 +300,7 @@ class OnboardingViewModel @Inject constructor(
     // otherwise syncs transparently in the background and proceeds straight to ALL_SET.
     private suspend fun proceedAfterAuthSuccess(reason: AllSetReason) {
         val summary = getLocalDataSummary()
-        if (LocalDataSyncPolicy.shouldReviewBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
+        if (shouldReviewLocalDataBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
             pendingAllSetReason = reason
             _uiState.update {
                 it.copy(

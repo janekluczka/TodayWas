@@ -18,11 +18,14 @@ import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LogHabitCheckInsViewModelTest {
@@ -60,6 +63,7 @@ class LogHabitCheckInsViewModelTest {
     private fun viewModel(repository: FakeHabitRepository) = LogHabitCheckInsViewModel(
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
         logHabitCheckIns = LogHabitCheckInsUseCase(repository),
+        getFreshLoggableDates = GetFreshLoggableDatesUseCase(Clock.fixed(Instant.now(), ZoneOffset.UTC)),
     )
 
     @Before

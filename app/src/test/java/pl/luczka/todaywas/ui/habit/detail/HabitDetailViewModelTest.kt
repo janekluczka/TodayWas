@@ -22,7 +22,10 @@ import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
 import pl.luczka.todaywas.domain.usecase.DeleteHabitCheckInUseCase
 import pl.luczka.todaywas.domain.usecase.DeleteHabitUseCase
+import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
+import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.Clock
@@ -55,9 +58,12 @@ class HabitDetailViewModelTest {
     ) = HabitDetailViewModel(
         habitId = habitId,
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
+        observeHabitContribution = ObserveHabitContributionUseCase(clock),
         saveHabitCheckIns = SaveHabitCheckInsUseCase(repository, clock),
         deleteHabit = DeleteHabitUseCase(repository),
         deleteHabitCheckIn = DeleteHabitCheckInUseCase(repository),
+        getFreshLoggableDates = GetFreshLoggableDatesUseCase(clock),
+        isEditable = IsEditableUseCase(clock),
         clock = clock,
     )
 

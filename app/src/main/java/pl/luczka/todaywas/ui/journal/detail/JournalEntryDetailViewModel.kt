@@ -19,17 +19,16 @@ import pl.luczka.todaywas.domain.model.AiAssistException
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
+import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
-import pl.luczka.todaywas.domain.util.EditWindow
 import pl.luczka.todaywas.ui.journal.create.MAX_REGENERATIONS
 import pl.luczka.todaywas.ui.mapper.toDomain
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import java.time.Clock
 
 @HiltViewModel(assistedFactory = JournalEntryDetailViewModel.Factory::class)
 class JournalEntryDetailViewModel @AssistedInject constructor(
@@ -39,7 +38,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
     private val deleteJournalEntry: DeleteJournalEntryUseCase,
     private val observeAuthState: ObserveAuthStateUseCase,
     private val requestJournalRefinementPrompt: RequestJournalRefinementPromptUseCase,
-    private val clock: Clock,
+    private val isEditable: IsEditableUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -70,7 +69,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
                     isLoading = false,
                     entry = entry.toUiState(),
                     editedText = entry.text,
-                    isEditable = EditWindow.isEditable(entry.createdAt, clock.instant()),
+                    isEditable = isEditable(entry.createdAt),
                 )
             }
         }
@@ -207,7 +206,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
             val result = requestJournalRefinementPrompt(state.editedText, tone.toDomain())
             // The 24h window can close mid-request (the call takes 10-20s); a result that lands
             // after expiry must be discarded and treated exactly like a Save that lost the race.
-            if (!EditWindow.isEditable(entry.createdAt, clock.instant())) {
+            if (!isEditable(entry.createdAt)) {
                 _uiState.update {
                     it.copy(
                         isEditing = false,

@@ -29,6 +29,7 @@ import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
@@ -87,6 +88,7 @@ class OnboardingViewModelTest {
         getLocalDataSummary = GetLocalDataSummaryUseCase(journalRepository, habitRepository),
         syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
         markLocalDataSynced = MarkLocalDataSyncedUseCase(repository),
+        shouldReviewLocalDataBeforeSync = ShouldReviewLocalDataBeforeSyncUseCase(),
     )
 
     private fun advanceToAccountInfo(viewModel: OnboardingViewModel) {
