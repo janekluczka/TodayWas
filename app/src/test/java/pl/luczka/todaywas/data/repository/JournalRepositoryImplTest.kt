@@ -1,10 +1,8 @@
 package pl.luczka.todaywas.data.repository
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -14,6 +12,7 @@ import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.api.FakeRemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.FakeAuthRepository
@@ -25,13 +24,23 @@ class JournalRepositoryImplTest {
 
     private fun repository(
         local: LocalJournalDataSource,
-        scope: CoroutineScope,
         remote: RemoteJournalDataSource = FakeRemoteJournalDataSource(),
         auth: AuthRepository = FakeAuthRepository(),
-    ) = JournalRepositoryImpl(local, remote, auth, scope)
+        syncScheduler: SyncScheduler = FakeSyncScheduler(),
+    ) = JournalRepositoryImpl(local, remote, auth, syncScheduler)
+
+    private class FakeSyncScheduler : SyncScheduler {
+        var scheduleSyncCallCount = 0
+            private set
+
+        override fun scheduleSync() {
+            scheduleSyncCallCount++
+        }
+    }
 
     private class FakeLocalJournalDataSource(
         private val entities: MutableMap<String, JournalEntryEntity> = mutableMapOf(),
+        private val shouldFailInsert: Boolean = false,
     ) : LocalJournalDataSource {
 
         var applyRemoteSnapshotCallCount = 0
@@ -46,6 +55,7 @@ class JournalRepositoryImplTest {
         override suspend fun getEntry(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> {
+            if (shouldFailInsert) return Result.failure(RuntimeException("simulated write failure"))
             entities[entity.id] = entity
             return Result.success(Unit)
         }
@@ -95,7 +105,7 @@ class JournalRepositoryImplTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
-            val repository = repository(local, backgroundScope)
+            val repository = repository(local)
 
             // Act
             val entry = repository.getEntry("1")
@@ -110,7 +120,7 @@ class JournalRepositoryImplTest {
         runTest {
             // Arrange
             val local = FakeLocalJournalDataSource()
-            val repository = repository(local, backgroundScope)
+            val repository = repository(local)
 
             // Act
             val entry = repository.getEntry("1")
@@ -124,7 +134,7 @@ class JournalRepositoryImplTest {
         runTest {
             // Arrange
             val local = FakeLocalJournalDataSource()
-            val repository = repository(local, backgroundScope)
+            val repository = repository(local)
 
             // Act
             val result = repository.updateEntry("1", "Edited.")
@@ -134,75 +144,87 @@ class JournalRepositoryImplTest {
         }
 
     @Test
-    fun `should push the tombstoned entry when signed in and deleteEntry succeeds`() =
+    fun `should schedule a sync when signed in and deleteEntry succeeds`() =
         runTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
-            val remote = FakeRemoteJournalDataSource()
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, backgroundScope, remote = remote, auth = auth)
+            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
 
             // Act
             repository.deleteEntry("1")
-            runCurrent()
 
             // Assert
-            assertEquals(1, remote.upsertCallCount)
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should delete locally without any remote call when signed out`() =
+    fun `should not schedule a sync when signed out and deleteEntry succeeds`() =
         runTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
-            val remote = FakeRemoteJournalDataSource()
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local, backgroundScope, remote = remote, auth = auth)
+            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
 
             // Act
             val result = repository.deleteEntry("1")
-            runCurrent()
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals(0, remote.upsertCallCount)
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should still succeed when the background remote push fails`() =
+    fun `should schedule a sync when signed in and addEntry succeeds`() =
         runTest {
             // Arrange
             val local = FakeLocalJournalDataSource()
-            val remote = FakeRemoteJournalDataSource(shouldFail = true)
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, backgroundScope, remote = remote, auth = auth)
-
-            // Act
-            val result = repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
-            runCurrent()
-
-            // Assert
-            assertTrue(result.isSuccess)
-            assertEquals(1, remote.upsertCallCount)
-        }
-
-    @Test
-    fun `should not push when signed out`() =
-        runTest {
-            // Arrange
-            val local = FakeLocalJournalDataSource()
-            val remote = FakeRemoteJournalDataSource()
-            val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local, backgroundScope, remote = remote, auth = auth)
+            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
 
             // Act
             repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
-            runCurrent()
 
             // Assert
-            assertEquals(0, remote.upsertCallCount)
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
+        }
+
+    @Test
+    fun `should not schedule a sync when signed out and addEntry succeeds`() =
+        runTest {
+            // Arrange
+            val local = FakeLocalJournalDataSource()
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = null)
+            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
+
+            // Act
+            repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
+
+            // Assert
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
+        }
+
+    @Test
+    fun `should not schedule a sync when addEntry's local write fails`() =
+        runTest {
+            // Arrange
+            val local = FakeLocalJournalDataSource(shouldFailInsert = true)
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
+
+            // Act
+            val result = repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
+
+            // Assert
+            assertTrue(result.isFailure)
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
@@ -223,7 +245,7 @@ class JournalRepositoryImplTest {
             )
             val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("remote-1" to remoteOnly))
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, backgroundScope, remote = remote, auth = auth)
+            val repository = repository(local, remote = remote, auth = auth)
 
             // Act
             val result = repository.syncWithRemote()
@@ -254,7 +276,7 @@ class JournalRepositoryImplTest {
             )
             val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("1" to remoteTombstone))
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, backgroundScope, remote = remote, auth = auth)
+            val repository = repository(local, remote = remote, auth = auth)
 
             // Act
             val result = repository.syncWithRemote()
@@ -285,7 +307,7 @@ class JournalRepositoryImplTest {
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to tombstoned))
             val remote = FakeRemoteJournalDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, backgroundScope, remote = remote, auth = auth)
+            val repository = repository(local, remote = remote, auth = auth)
 
             // Act
             val result = repository.syncWithRemote()
@@ -303,7 +325,7 @@ class JournalRepositoryImplTest {
             // Arrange
             val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
-            val repository = repository(local, backgroundScope)
+            val repository = repository(local)
 
             // Act
             val result = repository.clearLocal()

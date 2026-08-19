@@ -1,10 +1,8 @@
 package pl.luczka.todaywas.data.repository
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -17,6 +15,7 @@ import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
+import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.AuthRepository
@@ -29,21 +28,31 @@ class HabitRepositoryImplTest {
 
     private fun repository(
         local: LocalHabitDataSource,
-        scope: CoroutineScope,
         remoteHabitDataSource: RemoteHabitDataSource = FakeRemoteHabitDataSource(),
         remoteHabitCheckInDataSource: RemoteHabitCheckInDataSource = FakeRemoteHabitCheckInDataSource(),
         authRepository: AuthRepository = FakeAuthRepository(),
+        syncScheduler: SyncScheduler = FakeSyncScheduler(),
     ) = HabitRepositoryImpl(
         local = local,
         remoteHabitDataSource = remoteHabitDataSource,
         remoteHabitCheckInDataSource = remoteHabitCheckInDataSource,
         authRepository = authRepository,
-        syncScope = scope,
+        syncScheduler = syncScheduler,
     )
+
+    private class FakeSyncScheduler : SyncScheduler {
+        var scheduleSyncCallCount = 0
+            private set
+
+        override fun scheduleSync() {
+            scheduleSyncCallCount++
+        }
+    }
 
     private class FakeLocalHabitDataSource(
         private val habits: MutableMap<String, HabitEntity> = mutableMapOf(),
         private val checkIns: MutableMap<Pair<String, String>, HabitCheckInEntity> = mutableMapOf(),
+        private val shouldFailInsertHabit: Boolean = false,
     ) : LocalHabitDataSource {
 
         var applyRemoteSnapshotCallCount = 0
@@ -60,6 +69,7 @@ class HabitRepositoryImplTest {
         override fun observeCheckIns(): Flow<List<HabitCheckInEntity>> = flowOf(checkIns.values.filter { it.deletedAt == null }.toList())
 
         override suspend fun insertHabit(entity: HabitEntity): Result<Unit> {
+            if (shouldFailInsertHabit) return Result.failure(RuntimeException("simulated write failure"))
             habits[entity.id] = entity
             return Result.success(Unit)
         }
@@ -136,42 +146,57 @@ class HabitRepositoryImplTest {
     }
 
     @Test
-    fun `should push only the tombstoned habit when signed in, deleteHabit succeeds, and it has no check-ins`() =
+    fun `should schedule a sync when signed in and createHabit succeeds`() =
         runTest {
             // Arrange
-            val habit = HabitEntity(
-                id = "1",
-                name = "Drink water",
-                description = null,
-                type = "BINARY",
-                scaleMin = null,
-                scaleMax = null,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
-            )
-            val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
-            val remoteHabits = FakeRemoteHabitDataSource()
-            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
+            val local = FakeLocalHabitDataSource()
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                local = local,
-                scope = backgroundScope,
-                remoteHabitDataSource = remoteHabits,
-                remoteHabitCheckInDataSource = remoteCheckIns,
-                authRepository = auth,
-            )
+            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
-            repository.deleteHabit("1")
-            runCurrent()
+            repository.createHabit(name = "Drink water", description = null, type = HabitType.BINARY, scaleMin = null, scaleMax = null)
 
             // Assert
-            assertEquals(1, remoteHabits.upsertCallCount)
-            assertEquals(0, remoteCheckIns.upsertCallCount)
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should delete a habit locally without any remote call when signed out`() =
+    fun `should not schedule a sync when signed out and createHabit succeeds`() =
+        runTest {
+            // Arrange
+            val local = FakeLocalHabitDataSource()
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = null)
+            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+
+            // Act
+            repository.createHabit(name = "Drink water", description = null, type = HabitType.BINARY, scaleMin = null, scaleMax = null)
+
+            // Assert
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
+        }
+
+    @Test
+    fun `should not schedule a sync when createHabit's local write fails`() =
+        runTest {
+            // Arrange
+            val local = FakeLocalHabitDataSource(shouldFailInsertHabit = true)
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+
+            // Act
+            val result =
+                repository.createHabit(name = "Drink water", description = null, type = HabitType.BINARY, scaleMin = null, scaleMax = null)
+
+            // Assert
+            assertTrue(result.isFailure)
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
+        }
+
+    @Test
+    fun `should schedule a sync when signed in and deleteHabit succeeds`() =
         runTest {
             // Arrange
             val habit = HabitEntity(
@@ -185,91 +210,80 @@ class HabitRepositoryImplTest {
                 updatedAt = 1_000L,
             )
             val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
-            val remoteHabits = FakeRemoteHabitDataSource()
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+
+            // Act
+            repository.deleteHabit("1")
+
+            // Assert
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
+        }
+
+    @Test
+    fun `should not schedule a sync when signed out and deleteHabit succeeds`() =
+        runTest {
+            // Arrange
+            val habit = HabitEntity(
+                id = "1",
+                name = "Drink water",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
+            val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local = local, scope = backgroundScope, remoteHabitDataSource = remoteHabits, authRepository = auth)
+            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
             val result = repository.deleteHabit("1")
-            runCurrent()
 
             // Assert
             assertTrue(result.isSuccess)
             assertTrue(local.getAllHabitsIncludingDeleted().single { it.id == "1" }.deletedAt != null)
-            assertEquals(0, remoteHabits.upsertCallCount)
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should push the tombstoned check-in when signed in and deleteCheckIn succeeds`() =
+    fun `should schedule a sync when signed in and deleteCheckIn succeeds`() =
         runTest {
             // Arrange
             val existing =
                 HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
             val local = FakeLocalHabitDataSource(checkIns = mutableMapOf(("1" to "2026-07-27") to existing))
-            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                local = local,
-                scope = backgroundScope,
-                remoteHabitCheckInDataSource = remoteCheckIns,
-                authRepository = auth,
-            )
+            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
             repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
-            runCurrent()
 
             // Assert
-            assertEquals(1, remoteCheckIns.upsertCallCount)
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should delete a check-in locally without any remote call when signed out`() =
+    fun `should not schedule a sync when signed out and deleteCheckIn succeeds`() =
         runTest {
             // Arrange
             val existing =
                 HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
             val local = FakeLocalHabitDataSource(checkIns = mutableMapOf(("1" to "2026-07-27") to existing))
-            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(
-                local = local,
-                scope = backgroundScope,
-                remoteHabitCheckInDataSource = remoteCheckIns,
-                authRepository = auth,
-            )
+            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
             val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
-            runCurrent()
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals(0, remoteCheckIns.upsertCallCount)
-        }
-
-    @Test
-    fun `should still succeed when the background remote push fails`() =
-        runTest {
-            // Arrange
-            val local = FakeLocalHabitDataSource()
-            val remoteHabits = FakeRemoteHabitDataSource(shouldFail = true)
-            val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local = local, scope = backgroundScope, remoteHabitDataSource = remoteHabits, authRepository = auth)
-
-            // Act
-            val result = repository.createHabit(
-                name = "Drink water",
-                description = null,
-                type = HabitType.BINARY,
-                scaleMin = null,
-                scaleMax = null,
-            )
-            runCurrent()
-
-            // Assert
-            assertTrue(result.isSuccess)
-            assertEquals(1, remoteHabits.upsertCallCount)
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
@@ -304,7 +318,6 @@ class HabitRepositoryImplTest {
             val auth = FakeAuthRepository(currentUserId = "user-1")
             val repository = repository(
                 local = local,
-                scope = backgroundScope,
                 remoteHabitDataSource = remoteHabits,
                 remoteHabitCheckInDataSource = remoteCheckIns,
                 authRepository = auth,
@@ -350,8 +363,7 @@ class HabitRepositoryImplTest {
             )
             val remoteHabits = FakeRemoteHabitDataSource(habits = mutableMapOf("1" to remoteTombstone))
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository =
-                repository(local = localDataSource, scope = backgroundScope, remoteHabitDataSource = remoteHabits, authRepository = auth)
+            val repository = repository(local = localDataSource, remoteHabitDataSource = remoteHabits, authRepository = auth)
 
             // Act
             val result = repository.syncWithRemote()
@@ -385,7 +397,7 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to tombstoned))
             val remoteHabits = FakeRemoteHabitDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local = local, scope = backgroundScope, remoteHabitDataSource = remoteHabits, authRepository = auth)
+            val repository = repository(local = local, remoteHabitDataSource = remoteHabits, authRepository = auth)
 
             // Act
             val result = repository.syncWithRemote()
@@ -412,7 +424,7 @@ class HabitRepositoryImplTest {
                 updatedAt = 1_000L,
             )
             val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
-            val repository = repository(local = local, scope = backgroundScope)
+            val repository = repository(local = local)
 
             // Act
             val result = repository.clearLocal()

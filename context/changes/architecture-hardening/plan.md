@@ -807,29 +807,29 @@ changes occur).
 
 #### Automated
 
-- [x] 2.1 Unit tests still pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.1 Unit tests still pass: `./gradlew.bat testDebugUnitTest` — 259524e
 
 #### Manual
 
-- [x] 2.2 `habit_check_ins_habit_id_fkey`'s `confdeltype` is no longer `'c'`
+- [x] 2.2 `habit_check_ins_habit_id_fkey`'s `confdeltype` is no longer `'c'` — 259524e
 - [x] 2.3 Purging an aged-out habit tombstone no longer hard-deletes check-ins with their own
-      independent tombstone lifecycle
+      independent tombstone lifecycle — 259524e
 
 ### Phase 3: WorkManager-driven sync outbox
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 Build succeeds: `./gradlew.bat assembleDebug`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 Build succeeds: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 3.4 App builds and launches without a WorkManager initialization crash
-- [ ] 3.5 A signed-in write while online triggers a sync shortly after
-- [ ] 3.6 A signed-in write made offline reaches remote after reconnecting, without reopening the
+- [x] 3.4 App builds and launches without a WorkManager initialization crash
+- [x] 3.5 A signed-in write while online triggers a sync shortly after
+- [x] 3.6 A signed-in write made offline reaches remote after reconnecting, without reopening the
       app
-- [ ] 3.7 A signed-in write followed immediately by a force-stop still reaches remote after
+- [x] 3.7 A signed-in write followed immediately by a force-stop still reaches remote after
       relaunch
 
 ### Phase 4: `domain/util` direct calls → use cases

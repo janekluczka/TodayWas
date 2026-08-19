@@ -1,9 +1,7 @@
 package pl.luczka.todaywas.data.repository
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
@@ -13,10 +11,10 @@ import pl.luczka.todaywas.data.mapper.toEntity
 import pl.luczka.todaywas.data.mapper.toRemoteDto
 import pl.luczka.todaywas.data.mapper.toSyncMeta
 import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
+import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.data.util.mergeForSync
 import pl.luczka.todaywas.data.util.remoteCall
-import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
@@ -29,12 +27,11 @@ class JournalRepositoryImpl @Inject constructor(
     private val local: LocalJournalDataSource,
     private val remoteDataSource: RemoteJournalDataSource,
     private val authRepository: AuthRepository,
-    @ApplicationScope private val syncScope: CoroutineScope,
+    private val syncScheduler: SyncScheduler,
 ) : JournalRepository {
 
-    // Guards against a bulk syncWithRemote() push-then-pull racing an individual
-    // pushInBackground() for the same row: without this, a syncWithRemote() call that snapshot
-    // a row before a concurrent edit can push/pull that stale snapshot back over the edit.
+    // Guards against two concurrent syncWithRemote() calls racing each other - writes no longer
+    // push individually in the background, so there's nothing else left for this to race against.
     private val syncMutex = Mutex()
 
     override fun observeEntries(): Flow<List<JournalEntry>> = local.observeEntries().map { entities -> entities.map { it.toDomain() } }
@@ -54,7 +51,7 @@ class JournalRepositoryImpl @Inject constructor(
             updatedAt = now,
         )
         val result = local.insertEntry(entity)
-        if (result.isSuccess) pushInBackground(entity)
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result
     }
 
@@ -63,15 +60,13 @@ class JournalRepositoryImpl @Inject constructor(
         text: String,
     ): Result<Unit> {
         val result = local.updateEntry(id, text, Instant.now().toEpochMilli())
-        result.onSuccess { pushInBackground(it) }
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
 
     override suspend fun deleteEntry(id: String): Result<Unit> {
         val result = local.deleteEntry(id, Instant.now().toEpochMilli())
-        // No dedicated remote delete call - the row's own deletedAt is the tombstone, carried to
-        // remote by the same pushInBackground upsert path used for adds/edits.
-        result.onSuccess { it?.let { entity -> pushInBackground(entity) } }
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
 
@@ -99,21 +94,7 @@ class JournalRepositoryImpl @Inject constructor(
 
     override suspend fun clearLocal(): Result<Unit> = local.clearAll()
 
-    // Best-effort - failures are silently swallowed since the local write already succeeded;
-    // the next successful write (or the next sync pass) naturally retries via upsert. Skipped
-    // entirely (rather than awaiting the lock) while a syncWithRemote() is in flight, since that
-    // sync's own push/pull already covers this row - the edit isn't lost, just picked up on the
-    // next successful push or sync pass instead of duplicating work against a stale snapshot.
-    private fun pushInBackground(entity: JournalEntryEntity) {
-        val userId = authRepository.currentUserId() ?: return
-        syncScope.launch {
-            if (syncMutex.tryLock()) {
-                try {
-                    remoteDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId)))
-                } finally {
-                    syncMutex.unlock()
-                }
-            }
-        }
+    private fun scheduleSyncIfSignedIn() {
+        if (authRepository.currentUserId() != null) syncScheduler.scheduleSync()
     }
 }

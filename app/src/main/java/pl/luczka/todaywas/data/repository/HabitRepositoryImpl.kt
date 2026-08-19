@@ -1,9 +1,7 @@
 package pl.luczka.todaywas.data.repository
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
@@ -15,10 +13,10 @@ import pl.luczka.todaywas.data.mapper.toRemoteDto
 import pl.luczka.todaywas.data.mapper.toSyncMeta
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
+import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.data.util.mergeForSync
 import pl.luczka.todaywas.data.util.remoteCall
-import pl.luczka.todaywas.di.ApplicationScope
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
@@ -34,12 +32,11 @@ class HabitRepositoryImpl @Inject constructor(
     private val remoteHabitDataSource: RemoteHabitDataSource,
     private val remoteHabitCheckInDataSource: RemoteHabitCheckInDataSource,
     private val authRepository: AuthRepository,
-    @ApplicationScope private val syncScope: CoroutineScope,
+    private val syncScheduler: SyncScheduler,
 ) : HabitRepository {
 
-    // Guards against a bulk syncWithRemote() push-then-pull racing an individual
-    // pushInBackground() for the same row: without this, a syncWithRemote() call that snapshot
-    // a row before a concurrent edit can push/pull that stale snapshot back over the edit.
+    // Guards against two concurrent syncWithRemote() calls racing each other - writes no longer
+    // push individually in the background, so there's nothing else left for this to race against.
     private val syncMutex = Mutex()
 
     override fun observeHabits(): Flow<List<Habit>> = local.observeHabits().map { entities ->
@@ -65,7 +62,7 @@ class HabitRepositoryImpl @Inject constructor(
             updatedAt = now,
         )
         val result = local.insertHabit(entity)
-        if (result.isSuccess) pushHabitInBackground(entity)
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result
     }
 
@@ -88,7 +85,7 @@ class HabitRepositoryImpl @Inject constructor(
             )
         }
         val result = local.insertCheckIns(entities)
-        if (result.isSuccess) pushCheckInsInBackground(entities)
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result
     }
 
@@ -98,20 +95,14 @@ class HabitRepositoryImpl @Inject constructor(
         value: Int,
     ): Result<Unit> {
         val result = local.updateCheckIn(habitId, date, value, Instant.now().toEpochMilli())
-        result.onSuccess { pushCheckInsInBackground(listOf(it)) }
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
 
     override suspend fun deleteHabit(id: String): Result<Unit> {
         val deletedAt = Instant.now().toEpochMilli()
         val result = local.deleteHabitAndCheckIns(id, deletedAt)
-        result.onSuccess { (habit, checkIns) ->
-            // Both the habit and its check-ins need pushing - the live ON DELETE CASCADE FK only
-            // fires on a real remote DELETE, not the soft-delete UPDATE this now performs, so the
-            // cascade has to happen explicitly from the app on both local and remote sides.
-            habit?.let { pushHabitInBackground(it) }
-            if (checkIns.isNotEmpty()) pushCheckInsInBackground(checkIns)
-        }
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
 
@@ -120,9 +111,7 @@ class HabitRepositoryImpl @Inject constructor(
         date: LocalDate,
     ): Result<Unit> {
         val result = local.deleteCheckIn(habitId, date, Instant.now().toEpochMilli())
-        // No dedicated remote delete call - the row's own deletedAt is the tombstone, carried to
-        // remote by the same pushCheckInsInBackground upsert path used for adds/edits.
-        result.onSuccess { pushCheckInsInBackground(listOf(it)) }
+        if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
 
@@ -164,34 +153,7 @@ class HabitRepositoryImpl @Inject constructor(
 
     override suspend fun clearLocal(): Result<Unit> = local.clearAll()
 
-    // Best-effort - failures are silently swallowed since the local write already succeeded;
-    // the next successful write (or the next sync pass) naturally retries via upsert. Skipped
-    // entirely (rather than awaiting the lock) while a syncWithRemote() is in flight, since that
-    // sync's own push/pull already covers this row - the edit isn't lost, just picked up on the
-    // next successful push or sync pass instead of duplicating work against a stale snapshot.
-    private fun pushHabitInBackground(entity: HabitEntity) {
-        val userId = authRepository.currentUserId() ?: return
-        syncScope.launch {
-            if (syncMutex.tryLock()) {
-                try {
-                    remoteHabitDataSource.upsert(listOf(entity.toDomain().toRemoteDto(userId)))
-                } finally {
-                    syncMutex.unlock()
-                }
-            }
-        }
-    }
-
-    private fun pushCheckInsInBackground(entities: List<HabitCheckInEntity>) {
-        val userId = authRepository.currentUserId() ?: return
-        syncScope.launch {
-            if (syncMutex.tryLock()) {
-                try {
-                    remoteHabitCheckInDataSource.upsert(entities.map { it.toDomain().toRemoteDto(userId) })
-                } finally {
-                    syncMutex.unlock()
-                }
-            }
-        }
+    private fun scheduleSyncIfSignedIn() {
+        if (authRepository.currentUserId() != null) syncScheduler.scheduleSync()
     }
 }
