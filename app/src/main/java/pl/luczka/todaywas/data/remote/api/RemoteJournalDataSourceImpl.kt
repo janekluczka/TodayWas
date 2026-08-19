@@ -12,8 +12,12 @@ class RemoteJournalDataSourceImpl @Inject constructor(
     private val supabase: SupabaseClient,
 ) : RemoteJournalDataSource {
 
+    // onConflict = "id" is required: journal_entries also has a UNIQUE(user_id, date) constraint
+    // alongside its primary key, so Postgrest can't infer a single conflict target on its own -
+    // without this, upserting an existing row falls back to a plain insert and 409s against that
+    // second constraint instead of updating.
     override suspend fun upsert(entries: List<JournalEntryRemoteDto>): Result<Unit> = remoteCall {
-        supabase.postgrest.from(TABLE).upsert(entries)
+        supabase.postgrest.from(TABLE).upsert(entries) { onConflict = "id" }
     }
 
     override suspend fun fetchAll(userId: String): Result<List<JournalEntryRemoteDto>> = remoteCall {
