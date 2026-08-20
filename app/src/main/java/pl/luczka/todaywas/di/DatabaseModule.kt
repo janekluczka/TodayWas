@@ -32,16 +32,22 @@ object DatabaseModule {
         .build()
 
     @Provides
-    fun provideUserPreferencesDao(database: TodayWasDatabase): UserPreferencesDao = database.userPreferencesDao()
+    fun provideUserPreferencesDao(
+        database: TodayWasDatabase,
+    ): UserPreferencesDao = database.userPreferencesDao()
 
     @Provides
-    fun provideJournalEntryDao(database: TodayWasDatabase): JournalEntryDao = database.journalEntryDao()
+    fun provideJournalEntryDao(
+        database: TodayWasDatabase,
+    ): JournalEntryDao = database.journalEntryDao()
 
     @Provides
     fun provideHabitDao(database: TodayWasDatabase): HabitDao = database.habitDao()
 
     @Provides
-    fun provideHabitCheckInDao(database: TodayWasDatabase): HabitCheckInDao = database.habitCheckInDao()
+    fun provideHabitCheckInDao(
+        database: TodayWasDatabase,
+    ): HabitCheckInDao = database.habitCheckInDao()
 
     @Provides
     fun provideTransactionRunner(runner: RoomTransactionRunner): TransactionRunner = runner

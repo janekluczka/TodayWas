@@ -12,7 +12,11 @@ fun HabitCheckInBoard.toRows(
     pendingValues: Map<String, Int>,
 ): List<HabitCheckInRowUiState> = habits.map { habit ->
     val existing = checkIns.find { it.habitId == habit.id && it.date == selectedDate }
-    if (existing != null) habit.toAlreadyLoggedRow(existing) else habit.toEditableRow(pendingValues[habit.id])
+    if (existing != null) {
+        habit.toAlreadyLoggedRow(existing)
+    } else {
+        habit.toEditableRow(pendingValues[habit.id])
+    }
 }
 
 private fun Habit.toAlreadyLoggedRow(checkIn: HabitCheckIn): HabitCheckInRowUiState.AlreadyLogged =
@@ -24,12 +28,17 @@ private fun Habit.toAlreadyLoggedRow(checkIn: HabitCheckIn): HabitCheckInRowUiSt
         value = checkIn.value,
     )
 
-private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable = HabitCheckInRowUiState.Editable(
-    habitId = id,
-    name = name,
-    range = habitRange(),
-    type = type.toUiState(),
-    value = pendingValue,
-)
+private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable =
+    HabitCheckInRowUiState.Editable(
+        habitId = id,
+        name = name,
+        range = habitRange(),
+        type = type.toUiState(),
+        value = pendingValue,
+    )
 
-private fun Habit.habitRange(): IntRange = if (type == HabitType.BINARY) 0..1 else (scaleMin ?: 0)..(scaleMax ?: 0)
+private fun Habit.habitRange(): IntRange = if (type == HabitType.BINARY) {
+    0..1
+} else {
+    (scaleMin ?: 0)..(scaleMax ?: 0)
+}

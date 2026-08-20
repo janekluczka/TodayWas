@@ -21,7 +21,9 @@ fun DsTooltip(
     content: @Composable () -> Unit,
 ) {
     TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            TooltipAnchorPosition.Above,
+        ),
         tooltip = { PlainTooltip { DsText(text = tooltipText) } },
         state = rememberTooltipState(),
         modifier = modifier,

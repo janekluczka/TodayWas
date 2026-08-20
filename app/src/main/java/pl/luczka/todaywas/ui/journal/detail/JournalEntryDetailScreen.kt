@@ -53,9 +53,10 @@ import java.time.LocalDate
 fun JournalEntryDetailScreen(
     id: String,
     onBack: () -> Unit,
-    viewModel: JournalEntryDetailViewModel = hiltViewModel<JournalEntryDetailViewModel, JournalEntryDetailViewModel.Factory> { factory ->
-        factory.create(id)
-    },
+    viewModel: JournalEntryDetailViewModel =
+        hiltViewModel<JournalEntryDetailViewModel, JournalEntryDetailViewModel.Factory> { factory ->
+            factory.create(id)
+        },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -137,7 +138,9 @@ private fun JournalEntryDetailScreenContent(
             isSaving = uiState.isSaving,
         ) {
             Column {
-                val canRefine = uiState.editedText.isNotBlank() && uiState.editedText.length <= MAX_REFINE_TEXT_LENGTH
+                val canRefine =
+                    uiState.editedText.isNotBlank() &&
+                        uiState.editedText.length <= MAX_REFINE_TEXT_LENGTH
                 if (uiState.authState is AuthStateUi.SignedIn && canRefine) {
                     DsAssistChip(
                         text = stringResource(R.string.journal_help_me_refine_cta),
@@ -205,7 +208,9 @@ private fun DeleteEntryDialog(
             DsTextButton(
                 text = stringResource(R.string.journal_detail_delete_confirm_cta),
                 onClick = { onIntent(JournalEntryDetailIntent.DeleteConfirmed) },
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
             )
         },
         dismissButton = {
@@ -227,11 +232,17 @@ private fun HelpMeRefineDialog(
         title = { DsText(text = stringResource(R.string.journal_help_me_refine_dialog_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400)) {
-                val toneLabels = JournalPromptToneUiState.entries.associateWith { refineToneLabel(it) }
+                val toneLabels = JournalPromptToneUiState.entries.associateWith {
+                    refineToneLabel(
+                        it,
+                    )
+                }
                 DsSegmentedRow(
                     items = JournalPromptToneUiState.entries.toList(),
                     selectedItem = uiState.selectedTone,
-                    onItemSelected = { tone -> tone?.let { onIntent(JournalEntryDetailIntent.ToneSelected(it)) } },
+                    onItemSelected = { tone ->
+                        tone?.let { onIntent(JournalEntryDetailIntent.ToneSelected(it)) }
+                    },
                     enabled = !uiState.isGenerating,
                     allowDeselect = false,
                     label = { toneLabels.getValue(it) },
@@ -241,7 +252,8 @@ private fun HelpMeRefineDialog(
                     DsAssistChip(
                         text = stringResource(R.string.journal_help_me_start_regenerate_cta),
                         onClick = { onIntent(JournalEntryDetailIntent.RegenerateRefineClicked) },
-                        enabled = !uiState.isGenerating && uiState.regenerationsUsed < MAX_REGENERATIONS,
+                        enabled =
+                            !uiState.isGenerating && uiState.regenerationsUsed < MAX_REGENERATIONS,
                     )
                 }
                 uiState.error?.let { error ->
@@ -275,23 +287,36 @@ private fun HelpMeRefineDialog(
 
 @Composable
 private fun refineToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
-    JournalPromptToneUiState.VERY_BAD -> stringResource(R.string.journal_help_me_start_tone_very_bad)
+    JournalPromptToneUiState.VERY_BAD -> stringResource(
+        R.string.journal_help_me_start_tone_very_bad,
+    )
     JournalPromptToneUiState.BAD -> stringResource(R.string.journal_help_me_start_tone_bad)
     JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_help_me_start_tone_neutral)
     JournalPromptToneUiState.GOOD -> stringResource(R.string.journal_help_me_start_tone_good)
-    JournalPromptToneUiState.VERY_GOOD -> stringResource(R.string.journal_help_me_start_tone_very_good)
+    JournalPromptToneUiState.VERY_GOOD -> stringResource(
+        R.string.journal_help_me_start_tone_very_good,
+    )
 }
 
 @Composable
 private fun helpMeRefineErrorMessage(error: AiAssistErrorUiState): String = when (error) {
-    AiAssistErrorUiState.INVALID_REQUEST -> stringResource(R.string.journal_help_me_start_error_invalid_request)
-    AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(R.string.journal_help_me_start_error_upstream_failed)
-    AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(R.string.journal_help_me_start_error_not_signed_in)
-    AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(R.string.journal_help_me_start_error_network_unavailable)
+    AiAssistErrorUiState.INVALID_REQUEST -> stringResource(
+        R.string.journal_help_me_start_error_invalid_request,
+    )
+    AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(
+        R.string.journal_help_me_start_error_upstream_failed,
+    )
+    AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(
+        R.string.journal_help_me_start_error_not_signed_in,
+    )
+    AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(
+        R.string.journal_help_me_start_error_network_unavailable,
+    )
     AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_help_me_start_error_unknown)
 }
 
-private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterProvider<JournalEntryDetailUiState> {
+private class JournalEntryDetailScreenPreviewStateProvider :
+    PreviewParameterProvider<JournalEntryDetailUiState> {
     override val values = sequenceOf(
         JournalEntryDetailUiState(
             isLoading = false,
@@ -345,7 +370,8 @@ private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterPro
 @PreviewLightDark
 @Composable
 private fun JournalEntryDetailScreenPreview(
-    @PreviewParameter(JournalEntryDetailScreenPreviewStateProvider::class) state: JournalEntryDetailUiState,
+    @PreviewParameter(JournalEntryDetailScreenPreviewStateProvider::class) state:
+        JournalEntryDetailUiState,
 ) {
     DsTheme {
         JournalEntryDetailScreenContent(
@@ -355,22 +381,29 @@ private fun JournalEntryDetailScreenPreview(
     }
 }
 
-private class HelpMeRefineDialogPreviewStateProvider : PreviewParameterProvider<HelpMeRefineUiState> {
+private class HelpMeRefineDialogPreviewStateProvider :
+    PreviewParameterProvider<HelpMeRefineUiState> {
     override val values = sequenceOf(
         HelpMeRefineUiState(isVisible = true),
-        HelpMeRefineUiState(isVisible = true, selectedTone = JournalPromptToneUiState.GOOD, isGenerating = true),
+        HelpMeRefineUiState(
+            isVisible = true,
+            selectedTone = JournalPromptToneUiState.GOOD,
+            isGenerating = true,
+        ),
         HelpMeRefineUiState(
             isVisible = true,
             step = HelpMeRefineStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            refinedText = "Today went well overall, and I got a few things done that I'm proud of...",
+            refinedText =
+                "Today went well overall, and I got a few things done that I'm proud of...",
             regenerationsUsed = 1,
         ),
         HelpMeRefineUiState(
             isVisible = true,
             step = HelpMeRefineStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            refinedText = "Today went well overall, and I got a few things done that I'm proud of...",
+            refinedText =
+                "Today went well overall, and I got a few things done that I'm proud of...",
             regenerationsUsed = MAX_REGENERATIONS,
         ),
         HelpMeRefineUiState(

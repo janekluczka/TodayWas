@@ -29,6 +29,7 @@ import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
@@ -87,6 +88,7 @@ class OnboardingViewModelTest {
         getLocalDataSummary = GetLocalDataSummaryUseCase(journalRepository, habitRepository),
         syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
         markLocalDataSynced = MarkLocalDataSyncedUseCase(repository),
+        shouldReviewLocalDataBeforeSync = ShouldReviewLocalDataBeforeSyncUseCase(),
     )
 
     private fun advanceToAccountInfo(viewModel: OnboardingViewModel) {
@@ -553,7 +555,12 @@ class OnboardingViewModelTest {
             // Arrange
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
-            val viewModel = viewModel(FakeOnboardingRepository(), authRepository, journalRepository = journalRepository)
+            val viewModel =
+                viewModel(
+                    FakeOnboardingRepository(),
+                    authRepository,
+                    journalRepository = journalRepository,
+                )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
 
@@ -590,7 +597,12 @@ class OnboardingViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
+            val viewModel =
+                viewModel(
+                    onboardingRepository,
+                    authRepository,
+                    journalRepository = journalRepository,
+                )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
@@ -615,7 +627,12 @@ class OnboardingViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
+            val viewModel =
+                viewModel(
+                    onboardingRepository,
+                    authRepository,
+                    journalRepository = journalRepository,
+                )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)

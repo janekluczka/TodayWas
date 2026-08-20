@@ -12,16 +12,21 @@ class RemoteHabitCheckInDataSourceImpl @Inject constructor(
     private val supabase: SupabaseClient,
 ) : RemoteHabitCheckInDataSource {
 
+    // onConflict = "id" is required: habit_check_ins also has a UNIQUE(user_id, habit_id, date)
+    // constraint alongside its primary key, so Postgrest can't infer a single conflict target on
+    // its own - without this, upserting an existing row falls back to a plain insert and 409s
+    // against that second constraint instead of updating.
     override suspend fun upsert(checkIns: List<HabitCheckInRemoteDto>): Result<Unit> = remoteCall {
-        supabase.postgrest.from(TABLE).upsert(checkIns)
+        supabase.postgrest.from(TABLE).upsert(checkIns) { onConflict = "id" }
     }
 
-    override suspend fun fetchAll(userId: String): Result<List<HabitCheckInRemoteDto>> = remoteCall {
-        supabase.postgrest
-            .from(TABLE)
-            .select { filter { eq("user_id", userId) } }
-            .decodeList<HabitCheckInRemoteDto>()
-    }
+    override suspend fun fetchAll(userId: String): Result<List<HabitCheckInRemoteDto>> =
+        remoteCall {
+            supabase.postgrest
+                .from(TABLE)
+                .select { filter { eq("user_id", userId) } }
+                .decodeList<HabitCheckInRemoteDto>()
+        }
 
     // lt("deleted_at", cutoff) alone already excludes active rows: Postgres evaluates
     // `NULL < cutoff` as NULL, which WHERE filters out - no separate "is not null" guard needed.

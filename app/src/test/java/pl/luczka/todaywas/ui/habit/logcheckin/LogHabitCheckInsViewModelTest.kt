@@ -18,11 +18,14 @@ import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LogHabitCheckInsViewModelTest {
@@ -60,6 +63,9 @@ class LogHabitCheckInsViewModelTest {
     private fun viewModel(repository: FakeHabitRepository) = LogHabitCheckInsViewModel(
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
         logHabitCheckIns = LogHabitCheckInsUseCase(repository),
+        getFreshLoggableDates = GetFreshLoggableDatesUseCase(
+            Clock.fixed(Instant.now(), ZoneOffset.UTC),
+        ),
     )
 
     @Before
@@ -92,7 +98,8 @@ class LogHabitCheckInsViewModelTest {
     fun `should render as an editable row with a 0 to 1 range when a binary habit is unlogged`() =
         runTest {
             // Arrange
-            val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1", name = "Drink water")))
+            val repository =
+                FakeHabitRepository(initialHabits = listOf(habit(id = "1", name = "Drink water")))
             val viewModel = viewModel(repository)
 
             // Act
@@ -117,7 +124,9 @@ class LogHabitCheckInsViewModelTest {
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
-                initialHabits = listOf(habit(id = "1", type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
+                initialHabits = listOf(
+                    habit(id = "1", type = HabitType.SCALE, scaleMin = 1, scaleMax = 5),
+                ),
             )
             val viewModel = viewModel(repository)
 

@@ -37,7 +37,13 @@ fun SignUpFormContent(
             label = stringResource(R.string.auth_form_email_label),
             enabled = !state.isSubmitting,
             isError = state.emailError,
-            supportingText = if (state.emailError) stringResource(R.string.auth_form_email_error) else null,
+            supportingText = if (state.emailError) {
+                stringResource(
+                    R.string.auth_form_email_error,
+                )
+            } else {
+                null
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -47,7 +53,13 @@ fun SignUpFormContent(
             label = stringResource(R.string.auth_form_password_label),
             enabled = !state.isSubmitting,
             isError = state.passwordError,
-            supportingText = if (state.passwordError) stringResource(R.string.auth_form_password_error) else null,
+            supportingText = if (state.passwordError) {
+                stringResource(
+                    R.string.auth_form_password_error,
+                )
+            } else {
+                null
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),

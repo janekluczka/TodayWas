@@ -57,7 +57,9 @@ fun AccountScreen(
         viewModel.events.collect { event ->
             when (event) {
                 AccountUiEvent.NavigatedBack -> onBack()
-                is AccountUiEvent.ShowError -> snackbarHostState.showSnackbar(errorMessages.getValue(event.error))
+                is AccountUiEvent.ShowError -> snackbarHostState.showSnackbar(
+                    errorMessages.getValue(event.error),
+                )
             }
         }
     }
@@ -247,14 +249,22 @@ private class AccountUiStatePreviewProvider : PreviewParameterProvider<AccountUi
             step = AccountStep.DATA_SYNC_REVIEW,
             signInForm = SignInFormUiState(),
             signUpForm = SignUpFormUiState(),
-            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            dataSyncSummary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
         ),
         AccountUiState(
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
             step = AccountStep.DATA_SYNC_REVIEW,
             signInForm = SignInFormUiState(),
             signUpForm = SignUpFormUiState(),
-            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            dataSyncSummary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
             isSyncing = true,
         ),
     )

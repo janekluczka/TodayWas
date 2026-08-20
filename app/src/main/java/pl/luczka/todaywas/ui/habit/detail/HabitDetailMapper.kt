@@ -3,25 +3,25 @@ package pl.luczka.todaywas.ui.habit.detail
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
-import pl.luczka.todaywas.domain.util.EditWindow
 import java.time.Instant
 import java.time.LocalDate
 
 fun List<HabitCheckIn>.toHabitDetailRows(
     pendingValues: Map<LocalDate, Int>,
-    now: Instant,
+    freshLoggableDates: List<LocalDate>,
+    isEditable: (Instant) -> Boolean,
 ): List<HabitDetailRowUiState> {
     val existingByDate = associateBy { it.date }
     // Today/yesterday always show, even unlogged, so they stay reachable to add a value; every
     // other date only appears once it actually has a check-in — this is the full history, not a
     // fixed backfill window.
-    val dates = (existingByDate.keys + EditWindow.freshLoggableDates(now)).sortedDescending()
+    val dates = (existingByDate.keys + freshLoggableDates).sortedDescending()
     return dates.map { date ->
         val existing = existingByDate[date]
         HabitDetailRowUiState(
             date = date,
             value = pendingValues[date] ?: existing?.value,
-            eligibleForEdit = existing == null || EditWindow.isEditable(existing.createdAt, now),
+            eligibleForEdit = existing == null || isEditable(existing.createdAt),
             alreadyLogged = existing != null,
         )
     }

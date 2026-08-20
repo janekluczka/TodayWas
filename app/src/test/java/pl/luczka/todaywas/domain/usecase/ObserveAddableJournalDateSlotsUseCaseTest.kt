@@ -53,7 +53,9 @@ class ObserveAddableJournalDateSlotsUseCaseTest {
         runTest {
             // Arrange
             val useCase = ObserveAddableJournalDateSlotsUseCase(
-                FakeJournalRepository(listOf(entryFor(LocalDate.now()), entryFor(LocalDate.now().minusDays(1)))),
+                FakeJournalRepository(
+                    listOf(entryFor(LocalDate.now()), entryFor(LocalDate.now().minusDays(1))),
+                ),
             )
 
             // Act

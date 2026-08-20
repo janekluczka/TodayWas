@@ -1,6 +1,8 @@
 root = true
 
 [*.{kt,kts}]
+# Matches Android Studio/IntelliJ's default Kotlin line-length setting.
+max_line_length = 100
 # Composable functions are PascalCase by official Jetpack Compose convention;
 # ktlint's default rule doesn't know about @Composable and flags them.
 ktlint_standard_function-naming = disabled
@@ -16,3 +18,10 @@ ktlint_standard_multiline-expression-wrapping = disabled
 # Project style: a function with a multi-line parameter list can still start
 # its expression body on the same line as the closing `) : Type =`.
 ktlint_standard_function-signature = disabled
+
+[**/src/test/**/*.kt]
+# Descriptive `should [outcome] when [scenario]` backtick test names (see lessons.md) routinely
+# push the bare `fun \`...\`() =` declaration line past 100 chars on its own, with no way to wrap
+# it shorter without truncating the name. Relaxed here rather than compromising on test-name
+# clarity; production code still holds the line at 100 above.
+max_line_length = 140

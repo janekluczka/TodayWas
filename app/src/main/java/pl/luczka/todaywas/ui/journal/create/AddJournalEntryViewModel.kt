@@ -131,12 +131,20 @@ class AddJournalEntryViewModel @Inject constructor(
     private fun onHelpMeStartClicked() {
         if (_uiState.value.authState !is AuthStateUi.SignedIn) return
         generateJob?.cancel()
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true)) }
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true),
+            )
+        }
     }
 
     private fun onHelpMeStartDismissed() {
         generateJob?.cancel()
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false)) }
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
+            )
+        }
     }
 
     private fun onToneSelected(tone: JournalPromptToneUiState) {
@@ -152,9 +160,14 @@ class AddJournalEntryViewModel @Inject constructor(
         val tone = helpMeStart.selectedTone ?: return
         if (helpMeStart.isGenerating) return
         if (isRegenerate && helpMeStart.regenerationsUsed >= MAX_REGENERATIONS) return
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null)) }
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null),
+            )
+        }
         generateJob = viewModelScope.launch {
-            val result = requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
+            val result =
+                requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
             _uiState.update { current ->
                 current.copy(helpMeStart = current.helpMeStart.applyResult(result, isRegenerate))
             }
@@ -174,7 +187,9 @@ class AddJournalEntryViewModel @Inject constructor(
 
     // Preserves regenerationsUsed — the cap persists across dialog close/reopen for this screen
     // visit and only resets when a new AddJournalEntryViewModel instance is created.
-    private fun HelpMeStartUiState.resetForNewSession(isVisible: Boolean): HelpMeStartUiState = copy(
+    private fun HelpMeStartUiState.resetForNewSession(
+        isVisible: Boolean,
+    ): HelpMeStartUiState = copy(
         isVisible = isVisible,
         step = HelpMeStartStep.INPUT,
         selectedTone = null,
@@ -198,7 +213,9 @@ class AddJournalEntryViewModel @Inject constructor(
             )
         },
         onFailure = { throwable ->
-            val error = (throwable as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
+            val error =
+                (throwable as? AiAssistException)?.error?.toUiState()
+                    ?: AiAssistErrorUiState.UNKNOWN
             copy(isGenerating = false, error = error)
         },
     )

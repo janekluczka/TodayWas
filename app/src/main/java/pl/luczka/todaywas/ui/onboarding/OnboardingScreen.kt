@@ -57,7 +57,9 @@ fun OnboardingScreen(
             when (event) {
                 OnboardingUiEvent.ExitApp -> activity?.finish()
                 OnboardingUiEvent.Finished -> onFinished()
-                is OnboardingUiEvent.ShowError -> snackbarHostState.showSnackbar(errorMessages.getValue(event.error))
+                is OnboardingUiEvent.ShowError -> snackbarHostState.showSnackbar(
+                    errorMessages.getValue(event.error),
+                )
             }
         }
     }
@@ -77,7 +79,8 @@ private fun OnboardingScreenContent(
 ) {
     BackHandler(enabled = true) { onIntent(OnboardingIntent.StepBack) }
 
-    val pagerState = rememberPagerState(initialPage = uiState.step.ordinal) { OnboardingStep.entries.size }
+    val pagerState =
+        rememberPagerState(initialPage = uiState.step.ordinal) { OnboardingStep.entries.size }
     LaunchedEffect(uiState.step) {
         pagerState.animateScrollToPage(uiState.step.ordinal)
     }
@@ -181,7 +184,8 @@ private fun AccountInfoStepBody(
     val authState = uiState.authState
     Column(modifier = Modifier.fillMaxWidth()) {
         when {
-            uiState.accountSubStep == AccountSubStep.DATA_SYNC_REVIEW && uiState.dataSyncSummary != null ->
+            uiState.accountSubStep == AccountSubStep.DATA_SYNC_REVIEW &&
+                uiState.dataSyncSummary != null ->
                 DataSyncReviewContent(
                     summary = uiState.dataSyncSummary,
                     isSyncing = uiState.isSyncing,
@@ -190,7 +194,10 @@ private fun AccountInfoStepBody(
                 )
             authState is AuthStateUi.SignedIn -> AccountSignedInBody(email = authState.email)
             uiState.accountSubStep == AccountSubStep.CHOICE -> AccountChoiceBody(onIntent)
-            uiState.accountSubStep == AccountSubStep.SIGN_IN -> AccountSignInBody(uiState.signInForm, onIntent)
+            uiState.accountSubStep == AccountSubStep.SIGN_IN -> AccountSignInBody(
+                uiState.signInForm,
+                onIntent,
+            )
             else -> AccountSignUpBody(uiState.signUpForm, onIntent)
         }
         if (uiState.saveError) {
@@ -273,7 +280,9 @@ private fun allSetMessage(
         R.string.onboarding_all_set_signed_in_format,
         email ?: stringResource(R.string.preferences_signed_in_no_email),
     )
-    AllSetReason.ACCOUNT_CREATED -> stringResource(R.string.onboarding_all_set_account_created_message)
+    AllSetReason.ACCOUNT_CREATED -> stringResource(
+        R.string.onboarding_all_set_account_created_message,
+    )
 }
 
 private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<OnboardingUiState> {
@@ -311,7 +320,11 @@ private class OnboardingScreenPreviewStateProvider : PreviewParameterProvider<On
             step = OnboardingStep.ACCOUNT_INFO,
             accountSubStep = AccountSubStep.DATA_SYNC_REVIEW,
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
-            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            dataSyncSummary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
         ),
         previewState(
             step = OnboardingStep.ALL_SET,

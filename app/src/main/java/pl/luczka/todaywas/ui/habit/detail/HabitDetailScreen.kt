@@ -56,9 +56,10 @@ import java.time.format.FormatStyle
 fun HabitDetailScreen(
     habitId: String,
     onBack: () -> Unit,
-    viewModel: HabitDetailViewModel = hiltViewModel<HabitDetailViewModel, HabitDetailViewModel.Factory> { factory ->
-        factory.create(habitId)
-    },
+    viewModel: HabitDetailViewModel =
+        hiltViewModel<HabitDetailViewModel, HabitDetailViewModel.Factory> { factory ->
+            factory.create(habitId)
+        },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -86,7 +87,8 @@ private fun HabitDetailScreenContent(
     val expiredErrorMessage = stringResource(R.string.habit_detail_edit_window_expired_error)
     LaunchedEffect(uiState.saveError) {
         if (uiState.saveError) {
-            val message = if (uiState.saveErrorIsWindowExpired) expiredErrorMessage else genericErrorMessage
+            val message =
+                if (uiState.saveErrorIsWindowExpired) expiredErrorMessage else genericErrorMessage
             snackbarHostState.showSnackbar(message)
         }
     }
@@ -129,13 +131,19 @@ private fun HabitDetailScreenContent(
         ) {
             DsText(
                 text = uiState.habitName,
-                modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space600),
+                modifier = Modifier.padding(
+                    horizontal = DsSpacing.space600,
+                    vertical = DsSpacing.space600,
+                ),
             )
             ContributionWindowChipRow(
                 availableWindows = uiState.availableWindows,
                 selectedWindow = uiState.selectedWindow,
                 onWindowSelected = { onIntent(HabitDetailIntent.WindowSelected(it)) },
-                modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+                modifier = Modifier.padding(
+                    horizontal = DsSpacing.space600,
+                    vertical = DsSpacing.space200,
+                ),
             )
             // Full-bleed (no horizontal inset), unlike the name/chips above: the timeline's rows
             // are centered within the available width, and centering against a narrower,
@@ -204,12 +212,21 @@ private fun DeleteHabitDialog(
     DsAlertDialog(
         onDismissRequest = { onIntent(HabitDetailIntent.DeleteHabitDismissed) },
         title = { DsText(text = stringResource(R.string.habit_detail_delete_dialog_title)) },
-        text = { DsText(text = stringResource(R.string.habit_detail_delete_dialog_text_format, checkInCount)) },
+        text = {
+            DsText(
+                text = stringResource(
+                    R.string.habit_detail_delete_dialog_text_format,
+                    checkInCount,
+                ),
+            )
+        },
         confirmButton = {
             DsTextButton(
                 text = stringResource(R.string.habit_detail_delete_confirm_cta),
                 onClick = { onIntent(HabitDetailIntent.DeleteHabitConfirmed) },
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
             )
         },
         dismissButton = {
@@ -227,13 +244,19 @@ private fun DeleteCheckInDialog(
 ) {
     DsAlertDialog(
         onDismissRequest = { onIntent(HabitDetailIntent.DeleteCheckInDismissed) },
-        title = { DsText(text = stringResource(R.string.habit_detail_delete_checkin_dialog_title)) },
+        title = {
+            DsText(
+                text = stringResource(R.string.habit_detail_delete_checkin_dialog_title),
+            )
+        },
         text = { DsText(text = stringResource(R.string.habit_detail_delete_checkin_dialog_text)) },
         confirmButton = {
             DsTextButton(
                 text = stringResource(R.string.habit_detail_delete_confirm_cta),
                 onClick = { onIntent(HabitDetailIntent.DeleteCheckInConfirmed) },
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
             )
         },
         dismissButton = {
@@ -266,7 +289,9 @@ private fun ContributionWindowChipRow(
 
 @Composable
 private fun ContributionWindowUiState.label(): String = when (this) {
-    ContributionWindowUiState.RollingTwelveMonths -> stringResource(R.string.contribution_window_last_12_months_label)
+    ContributionWindowUiState.RollingTwelveMonths -> stringResource(
+        R.string.contribution_window_last_12_months_label,
+    )
     is ContributionWindowUiState.CalendarYear -> year.toString()
 }
 
@@ -331,10 +356,14 @@ private fun HabitDetailRow(
         ) {
             DsText(text = dateLabel)
             if (row.alreadyLogged) {
-                DsIconButton(onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(row.date)) }) {
+                DsIconButton(
+                    onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(row.date)) },
+                ) {
                     DsIcon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = stringResource(R.string.habit_detail_delete_checkin_action),
+                        contentDescription = stringResource(
+                            R.string.habit_detail_delete_checkin_action,
+                        ),
                     )
                 }
             }
@@ -360,9 +389,24 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             type = HabitTypeUiState.BINARY,
             range = 0..1,
             rows = listOf(
-                HabitDetailRowUiState(date = LocalDate.now(), value = null, eligibleForEdit = true, alreadyLogged = false),
-                HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 1, eligibleForEdit = false, alreadyLogged = true),
-                HabitDetailRowUiState(date = LocalDate.now().minusDays(5), value = 0, eligibleForEdit = false, alreadyLogged = true),
+                HabitDetailRowUiState(
+                    date = LocalDate.now(),
+                    value = null,
+                    eligibleForEdit = true,
+                    alreadyLogged = false,
+                ),
+                HabitDetailRowUiState(
+                    date = LocalDate.now().minusDays(1),
+                    value = 1,
+                    eligibleForEdit = false,
+                    alreadyLogged = true,
+                ),
+                HabitDetailRowUiState(
+                    date = LocalDate.now().minusDays(5),
+                    value = 0,
+                    eligibleForEdit = false,
+                    alreadyLogged = true,
+                ),
             ),
             contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(
@@ -381,8 +425,18 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             type = HabitTypeUiState.SCALE,
             range = 1..5,
             rows = listOf(
-                HabitDetailRowUiState(date = LocalDate.now(), value = 4, eligibleForEdit = true, alreadyLogged = true),
-                HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 3, eligibleForEdit = true, alreadyLogged = true),
+                HabitDetailRowUiState(
+                    date = LocalDate.now(),
+                    value = 4,
+                    eligibleForEdit = true,
+                    alreadyLogged = true,
+                ),
+                HabitDetailRowUiState(
+                    date = LocalDate.now().minusDays(1),
+                    value = 3,
+                    eligibleForEdit = true,
+                    alreadyLogged = true,
+                ),
             ),
             contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(
@@ -401,8 +455,18 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             type = HabitTypeUiState.BINARY,
             range = 0..1,
             rows = listOf(
-                HabitDetailRowUiState(date = LocalDate.now(), value = 1, eligibleForEdit = true, alreadyLogged = true),
-                HabitDetailRowUiState(date = LocalDate.now().minusDays(1), value = 0, eligibleForEdit = false, alreadyLogged = true),
+                HabitDetailRowUiState(
+                    date = LocalDate.now(),
+                    value = 1,
+                    eligibleForEdit = true,
+                    alreadyLogged = true,
+                ),
+                HabitDetailRowUiState(
+                    date = LocalDate.now().minusDays(1),
+                    value = 0,
+                    eligibleForEdit = false,
+                    alreadyLogged = true,
+                ),
             ),
             contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(

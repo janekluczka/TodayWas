@@ -16,6 +16,16 @@ fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEnt
     deletedAt = deletedAt?.toString(),
 )
 
+// Collapses the toDomain().toRemoteDto(userId) hop callers would otherwise need when pushing
+// local entities straight to remote.
+fun JournalEntryEntity.toRemoteDto(
+    userId: String,
+): JournalEntryRemoteDto = toDomain().toRemoteDto(userId)
+
+fun List<JournalEntryEntity>.toRemoteDto(userId: String): List<JournalEntryRemoteDto> = map {
+    it.toRemoteDto(userId)
+}
+
 fun JournalEntryRemoteDto.toEntity(): JournalEntryEntity = JournalEntryEntity(
     id = id,
     date = date,
@@ -25,8 +35,12 @@ fun JournalEntryRemoteDto.toEntity(): JournalEntryEntity = JournalEntryEntity(
     deletedAt = deletedAt?.let { Instant.parse(it).toEpochMilli() },
 )
 
+fun List<JournalEntryRemoteDto>.toEntity(): List<JournalEntryEntity> = map { it.toEntity() }
+
 fun JournalEntryRemoteDto.toSyncMeta(): SyncMeta = SyncMeta(
     id = id,
     updatedAt = Instant.parse(updatedAt),
     isDeleted = deletedAt != null,
 )
+
+fun List<JournalEntryRemoteDto>.toSyncMeta(): List<SyncMeta> = map { it.toSyncMeta() }

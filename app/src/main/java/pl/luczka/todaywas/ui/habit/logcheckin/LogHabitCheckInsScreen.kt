@@ -120,7 +120,10 @@ private fun LogHabitCheckInsScreenContent(
                         onIntent = onIntent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+                            .padding(
+                                horizontal = DsSpacing.space600,
+                                vertical = DsSpacing.space200,
+                            ),
                     )
                 }
             }
@@ -142,8 +145,10 @@ private fun HabitCheckInRow(
         { value -> value.toString() }
     }
     val isDarkTheme = isSystemInDarkTheme()
-    val doneChipContainerColor = if (isDarkTheme) DsColor.successContainerDark else DsColor.successContainerLight
-    val doneChipLabelColor = if (isDarkTheme) DsColor.successLabelDark else DsColor.successLabelLight
+    val doneChipContainerColor =
+        if (isDarkTheme) DsColor.successContainerDark else DsColor.successContainerLight
+    val doneChipLabelColor =
+        if (isDarkTheme) DsColor.successLabelDark else DsColor.successLabelLight
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -163,7 +168,11 @@ private fun HabitCheckInRow(
                 DsSegmentedRow(
                     items = row.range.toList(),
                     selectedItem = row.value,
-                    onItemSelected = { onIntent(LogHabitCheckInsIntent.ValueChanged(row.habitId, it)) },
+                    onItemSelected = {
+                        onIntent(
+                            LogHabitCheckInsIntent.ValueChanged(row.habitId, it),
+                        )
+                    },
                     label = label,
                     modifier = Modifier
                         .fillMaxWidth()

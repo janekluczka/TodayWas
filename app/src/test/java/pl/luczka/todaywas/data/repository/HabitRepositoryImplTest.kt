@@ -1,16 +1,13 @@
 package pl.luczka.todaywas.data.repository
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
-import pl.luczka.todaywas.data.local.dao.HabitDao
+import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitCheckInDataSource
@@ -18,7 +15,7 @@ import pl.luczka.todaywas.data.remote.api.FakeRemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.data.remote.api.RemoteHabitDataSource
 import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
-import pl.luczka.todaywas.data.util.FakeTransactionRunner
+import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.AuthRepository
@@ -30,189 +27,166 @@ import java.time.LocalDate
 class HabitRepositoryImplTest {
 
     private fun repository(
-        habitDao: HabitDao,
-        habitCheckInDao: HabitCheckInDao,
-        scope: CoroutineScope,
+        local: LocalHabitDataSource,
         remoteHabitDataSource: RemoteHabitDataSource = FakeRemoteHabitDataSource(),
-        remoteHabitCheckInDataSource: RemoteHabitCheckInDataSource = FakeRemoteHabitCheckInDataSource(),
+        remoteHabitCheckInDataSource: RemoteHabitCheckInDataSource =
+            FakeRemoteHabitCheckInDataSource(),
         authRepository: AuthRepository = FakeAuthRepository(),
+        syncScheduler: SyncScheduler = FakeSyncScheduler(),
     ) = HabitRepositoryImpl(
-        transactionRunner = FakeTransactionRunner(),
-        habitDao = habitDao,
-        habitCheckInDao = habitCheckInDao,
+        local = local,
         remoteHabitDataSource = remoteHabitDataSource,
         remoteHabitCheckInDataSource = remoteHabitCheckInDataSource,
         authRepository = authRepository,
-        syncScope = scope,
+        syncScheduler = syncScheduler,
     )
 
-    private class FakeHabitDao(
-        private val failuresBeforeSuccess: Int,
-        private val entities: MutableMap<String, HabitEntity> = mutableMapOf(),
-    ) : HabitDao {
-
-        var insertCallCount = 0
-            private set
-        var softDeleteByIdCallCount = 0
+    private class FakeSyncScheduler : SyncScheduler {
+        var scheduleSyncCallCount = 0
             private set
 
-        override fun observeAll(): Flow<List<HabitEntity>> = flowOf(entities.values.filter { it.deletedAt == null }.toList())
-
-        override suspend fun getAll(): List<HabitEntity> = entities.values.filter { it.deletedAt == null }.toList()
-
-        override suspend fun getAllIncludingDeleted(): List<HabitEntity> = entities.values.toList()
-
-        override suspend fun getById(id: String): HabitEntity? = entities[id]?.takeIf { it.deletedAt == null }
-
-        override suspend fun insert(entity: HabitEntity) {
-            insertCallCount++
-            if (insertCallCount <= failuresBeforeSuccess) {
-                throw RuntimeException("simulated write failure")
-            }
-            entities[entity.id] = entity
-        }
-
-        override suspend fun upsert(entity: HabitEntity) {
-            entities[entity.id] = entity
-        }
-
-        override suspend fun softDeleteById(
-            id: String,
-            deletedAt: Long,
-        ) {
-            softDeleteByIdCallCount++
-            entities[id]?.let { entities[id] = it.copy(deletedAt = deletedAt) }
-        }
-
-        override suspend fun purgeDeletedBefore(cutoff: Long) {
-            entities.values.filter { it.deletedAt != null && it.deletedAt < cutoff }.forEach { entities.remove(it.id) }
-        }
-
-        override suspend fun clearAll() {
-            entities.clear()
+        override fun scheduleSync() {
+            scheduleSyncCallCount++
         }
     }
 
-    private class FakeHabitCheckInDao(
-        private val failuresBeforeSuccess: Int = 0,
-        private val entities: MutableMap<Pair<String, String>, HabitCheckInEntity> = mutableMapOf(),
-    ) : HabitCheckInDao {
+    private class FakeLocalHabitDataSource(
+        private val habits: MutableMap<String, HabitEntity> = mutableMapOf(),
+        private val checkIns: MutableMap<Pair<String, String>, HabitCheckInEntity> = mutableMapOf(),
+        private val shouldFailInsertHabit: Boolean = false,
+    ) : LocalHabitDataSource {
 
-        var insertAllCallCount = 0
+        var applyRemoteSnapshotCallCount = 0
             private set
-        var updateCallCount = 0
+        var lastAppliedHabits: List<HabitEntity> = emptyList()
             private set
-        var softDeleteByIdCallCount = 0
+        var lastAppliedCheckIns: List<HabitCheckInEntity> = emptyList()
             private set
-        var softDeleteByHabitIdCallCount = 0
+        var purgeDeletedBeforeCallCount = 0
             private set
 
-        override fun observeAll(): Flow<List<HabitCheckInEntity>> =
-            flowOf(entities.values.filter { it.deletedAt == null }.toList())
+        override fun observeHabits(): Flow<List<HabitEntity>> = flowOf(
+            habits.values
+                .filter {
+                    it.deletedAt ==
+                        null
+                }.toList(),
+        )
 
-        override suspend fun getAll(): List<HabitCheckInEntity> = entities.values.filter { it.deletedAt == null }.toList()
+        override fun observeCheckIns(): Flow<List<HabitCheckInEntity>> = flowOf(
+            checkIns.values
+                .filter {
+                    it.deletedAt ==
+                        null
+                }.toList(),
+        )
 
-        override suspend fun getAllIncludingDeleted(): List<HabitCheckInEntity> = entities.values.toList()
-
-        override suspend fun getByHabitId(habitId: String): List<HabitCheckInEntity> =
-            entities.values.filter { it.habitId == habitId && it.deletedAt == null }
-
-        override suspend fun getByHabitAndDate(
-            habitId: String,
-            date: String,
-        ): HabitCheckInEntity? = entities[habitId to date]?.takeIf { it.deletedAt == null }
-
-        override suspend fun insertOne(entity: HabitCheckInEntity): Unit = throw UnsupportedOperationException("not used by the repository")
-
-        override suspend fun insertAll(entities: List<HabitCheckInEntity>) {
-            insertAllCallCount++
-            if (insertAllCallCount <= failuresBeforeSuccess) {
-                throw RuntimeException("simulated write failure")
+        override suspend fun insertHabit(entity: HabitEntity): Result<Unit> {
+            if (shouldFailInsertHabit) {
+                return Result.failure(
+                    RuntimeException("simulated write failure"),
+                )
             }
-            entities.forEach { this.entities[it.habitId to it.date] = it }
+            habits[entity.id] = entity
+            return Result.success(Unit)
         }
 
-        override suspend fun upsertOne(entity: HabitCheckInEntity): Unit = throw UnsupportedOperationException("not used by the repository")
-
-        override suspend fun upsertAll(entities: List<HabitCheckInEntity>) {
-            entities.forEach { this.entities[it.habitId to it.date] = it }
+        override suspend fun insertCheckIns(entities: List<HabitCheckInEntity>): Result<Unit> {
+            entities.forEach { checkIns[it.habitId to it.date] = it }
+            return Result.success(Unit)
         }
 
-        override suspend fun update(entity: HabitCheckInEntity) {
-            updateCallCount++
-            if (updateCallCount <= failuresBeforeSuccess) {
-                throw RuntimeException("simulated write failure")
-            }
-            entities[entity.habitId to entity.date] = entity
+        override suspend fun updateCheckIn(
+            habitId: String,
+            date: LocalDate,
+            value: Int,
+            updatedAt: Long,
+        ): Result<HabitCheckInEntity> {
+            val existing = checkIns[habitId to date.toString()]
+                ?: return Result.failure(
+                    NoSuchElementException("Check-in for habit $habitId on $date not found"),
+                )
+            val updated = existing.copy(value = value, updatedAt = updatedAt)
+            checkIns[habitId to date.toString()] = updated
+            return Result.success(updated)
         }
 
-        override suspend fun softDeleteById(
-            id: String,
-            deletedAt: Long,
-        ) {
-            softDeleteByIdCallCount++
-            entities.entries.find { it.value.id == id }?.let { entities[it.key] = it.value.copy(deletedAt = deletedAt) }
-        }
-
-        override suspend fun softDeleteByHabitId(
+        override suspend fun deleteHabitAndCheckIns(
             habitId: String,
             deletedAt: Long,
+        ): Result<Pair<HabitEntity?, List<HabitCheckInEntity>>> {
+            val habit = habits[habitId]?.copy(deletedAt = deletedAt)
+            habit?.let { habits[habitId] = it }
+            val tombstonedCheckIns = checkIns.values
+                .filter { it.habitId == habitId && it.deletedAt == null }
+                .map { it.copy(deletedAt = deletedAt) }
+            tombstonedCheckIns.forEach { checkIns[it.habitId to it.date] = it }
+            return Result.success(habit to tombstonedCheckIns)
+        }
+
+        override suspend fun deleteCheckIn(
+            habitId: String,
+            date: LocalDate,
+            deletedAt: Long,
+        ): Result<HabitCheckInEntity> {
+            val existing = checkIns[habitId to date.toString()]
+                ?: return Result.failure(
+                    NoSuchElementException("Check-in for habit $habitId on $date not found"),
+                )
+            val tombstoned = existing.copy(deletedAt = deletedAt)
+            checkIns[habitId to date.toString()] = tombstoned
+            return Result.success(tombstoned)
+        }
+
+        override suspend fun getAllHabitsIncludingDeleted(): List<HabitEntity> = habits.values
+            .toList()
+
+        override suspend fun getAllCheckInsIncludingDeleted(): List<HabitCheckInEntity> = checkIns.values
+            .toList()
+
+        override suspend fun applyRemoteSnapshot(
+            habitsToApply: List<HabitEntity>,
+            checkInsToApply: List<HabitCheckInEntity>,
         ) {
-            softDeleteByHabitIdCallCount++
-            entities.entries
-                .filter { it.key.first == habitId && it.value.deletedAt == null }
-                .forEach { entities[it.key] = it.value.copy(deletedAt = deletedAt) }
+            applyRemoteSnapshotCallCount++
+            lastAppliedHabits = habitsToApply
+            lastAppliedCheckIns = checkInsToApply
+            habitsToApply.forEach { habits[it.id] = it }
+            checkInsToApply.forEach { checkIns[it.habitId to it.date] = it }
         }
 
         override suspend fun purgeDeletedBefore(cutoff: Long) {
-            entities.entries
-                .filter { it.value.deletedAt != null && it.value.deletedAt!! < cutoff }
-                .forEach { entities.remove(it.key) }
+            purgeDeletedBeforeCallCount++
+            habits.values
+                .filter {
+                    it.deletedAt != null && it.deletedAt < cutoff
+                }.forEach { habits.remove(it.id) }
+            checkIns.values.filter { it.deletedAt != null && it.deletedAt < cutoff }.forEach {
+                checkIns.remove(
+                    it.habitId to it.date,
+                )
+            }
         }
 
-        override suspend fun clearAll() {
-            entities.clear()
+        override suspend fun clearAll(): Result<Unit> {
+            habits.clear()
+            checkIns.clear()
+            return Result.success(Unit)
         }
     }
 
     @Test
-    fun `should succeed after one retry when createHabit's first write fails`() =
+    fun `should schedule a sync when signed in and createHabit succeeds`() =
         runTest {
             // Arrange
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 1)
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(failuresBeforeSuccess = 0),
-                scope = backgroundScope,
-            )
+            val local = FakeLocalHabitDataSource()
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository =
+                repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
-            val result = repository.createHabit(
-                name = "Drink water",
-                description = null,
-                type = HabitType.SCALE,
-                scaleMin = 1,
-                scaleMax = 5,
-            )
-
-            // Assert
-            assertTrue(result.isSuccess)
-            assertEquals(2, habitDao.insertCallCount)
-        }
-
-    @Test
-    fun `should return failure when createHabit's retry also fails`() =
-        runTest {
-            // Arrange
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = Int.MAX_VALUE)
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(failuresBeforeSuccess = 0),
-                scope = backgroundScope,
-            )
-
-            // Act
-            val result = repository.createHabit(
+            repository.createHabit(
                 name = "Drink water",
                 description = null,
                 type = HabitType.BINARY,
@@ -221,180 +195,86 @@ class HabitRepositoryImplTest {
             )
 
             // Assert
-            assertTrue(result.isFailure)
-            assertEquals(2, habitDao.insertCallCount)
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should succeed after one retry when addCheckIns's first write fails`() =
+    fun `should not schedule a sync when signed out and createHabit succeeds`() =
         runTest {
             // Arrange
-            val checkInDao = FakeHabitCheckInDao(failuresBeforeSuccess = 1)
-            val repository = repository(
-                habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
-                habitCheckInDao = checkInDao,
-                scope = backgroundScope,
-            )
-
-            // Act
-            val result = repository.addCheckIns(
-                date = LocalDate.of(2026, 7, 27),
-                values = mapOf("1" to 1, "2" to 3),
-            )
-
-            // Assert
-            assertTrue(result.isSuccess)
-            assertEquals(2, checkInDao.insertAllCallCount)
-        }
-
-    @Test
-    fun `should return failure when addCheckIns's retry also fails`() =
-        runTest {
-            // Arrange
-            val checkInDao = FakeHabitCheckInDao(failuresBeforeSuccess = Int.MAX_VALUE)
-            val repository = repository(
-                habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
-                habitCheckInDao = checkInDao,
-                scope = backgroundScope,
-            )
-
-            // Act
-            val result = repository.addCheckIns(
-                date = LocalDate.of(2026, 7, 27),
-                values = mapOf("1" to 1),
-            )
-
-            // Assert
-            assertTrue(result.isFailure)
-            assertEquals(2, checkInDao.insertAllCallCount)
-        }
-
-    @Test
-    fun `should succeed after one retry when updateCheckIn's first write fails`() =
-        runTest {
-            // Arrange
-            val existing =
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
-            val checkInDao = FakeHabitCheckInDao(
-                failuresBeforeSuccess = 1,
-                entities = mutableMapOf(("1" to "2026-07-27") to existing),
-            )
+            val local = FakeLocalHabitDataSource()
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = null)
             val repository =
-                repository(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao, scope = backgroundScope)
+                repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
-            val result = repository.updateCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), value = 0)
-
-            // Assert
-            assertTrue(result.isSuccess)
-            assertEquals(2, checkInDao.updateCallCount)
-            assertEquals(0, checkInDao.getByHabitAndDate("1", "2026-07-27")?.value)
-        }
-
-    @Test
-    fun `should return failure when updateCheckIn's retry also fails`() =
-        runTest {
-            // Arrange
-            val existing =
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
-            val checkInDao = FakeHabitCheckInDao(
-                failuresBeforeSuccess = Int.MAX_VALUE,
-                entities = mutableMapOf(("1" to "2026-07-27") to existing),
-            )
-            val repository =
-                repository(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao, scope = backgroundScope)
-
-            // Act
-            val result = repository.updateCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), value = 0)
-
-            // Assert
-            assertTrue(result.isFailure)
-            assertEquals(2, checkInDao.updateCallCount)
-        }
-
-    @Test
-    fun `should return failure when updateCheckIn targets a non-existent habitId and date`() =
-        runTest {
-            // Arrange
-            val checkInDao = FakeHabitCheckInDao()
-            val repository =
-                repository(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao, scope = backgroundScope)
-
-            // Act
-            val result = repository.updateCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), value = 0)
-
-            // Assert
-            assertTrue(result.isFailure)
-            assertEquals(0, checkInDao.updateCallCount)
-        }
-
-    @Test
-    fun `should remove the habit and its check-ins from both DAOs when deleteHabit is called`() =
-        runTest {
-            // Arrange
-            val habit = HabitEntity(
-                id = "1",
+            repository.createHabit(
                 name = "Drink water",
                 description = null,
-                type = "BINARY",
+                type = HabitType.BINARY,
                 scaleMin = null,
                 scaleMax = null,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
             )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
-            val checkIn =
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
-            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to checkIn))
-            val repository = repository(habitDao = habitDao, habitCheckInDao = checkInDao, scope = backgroundScope)
-
-            // Act
-            val result = repository.deleteHabit("1")
 
             // Assert
-            assertTrue(result.isSuccess)
-            assertTrue(habitDao.getAll().isEmpty())
-            assertTrue(checkInDao.getAll().isEmpty())
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should push only the tombstoned habit when signed in, deleteHabit succeeds, and it has no check-ins`() =
+    fun `should not schedule a sync when createHabit's local write fails`() =
         runTest {
             // Arrange
-            val habit = HabitEntity(
-                id = "1",
-                name = "Drink water",
-                description = null,
-                type = "BINARY",
-                scaleMin = null,
-                scaleMax = null,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
-            )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
-            val remoteHabits = FakeRemoteHabitDataSource()
-            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
+            val local = FakeLocalHabitDataSource(shouldFailInsertHabit = true)
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(),
-                scope = backgroundScope,
-                remoteHabitDataSource = remoteHabits,
-                remoteHabitCheckInDataSource = remoteCheckIns,
-                authRepository = auth,
+            val repository =
+                repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+
+            // Act
+            val result =
+                repository.createHabit(
+                    name = "Drink water",
+                    description = null,
+                    type = HabitType.BINARY,
+                    scaleMin = null,
+                    scaleMax = null,
+                )
+
+            // Assert
+            assertTrue(result.isFailure)
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
+        }
+
+    @Test
+    fun `should schedule a sync when signed in and deleteHabit succeeds`() =
+        runTest {
+            // Arrange
+            val habit = HabitEntity(
+                id = "1",
+                name = "Drink water",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
+            val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository =
+                repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
             repository.deleteHabit("1")
-            runCurrent()
 
             // Assert
-            assertEquals(1, remoteHabits.upsertCallCount)
-            assertEquals(0, remoteCheckIns.upsertCallCount)
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should delete a habit locally without any remote call when signed out`() =
+    fun `should not schedule a sync when signed out and deleteHabit succeeds`() =
         runTest {
             // Arrange
             val habit = HabitEntity(
@@ -407,150 +287,86 @@ class HabitRepositoryImplTest {
                 createdAt = 1_000L,
                 updatedAt = 1_000L,
             )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
-            val remoteHabits = FakeRemoteHabitDataSource()
+            val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
+            val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(),
-                scope = backgroundScope,
-                remoteHabitDataSource = remoteHabits,
-                authRepository = auth,
-            )
+            val repository =
+                repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
             val result = repository.deleteHabit("1")
-            runCurrent()
 
             // Assert
             assertTrue(result.isSuccess)
-            assertTrue(habitDao.getAll().isEmpty())
-            assertEquals(0, remoteHabits.upsertCallCount)
-        }
-
-    @Test
-    fun `should remove only the matching check-in when deleteCheckIn is called`() =
-        runTest {
-            // Arrange
-            val target =
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
-            val other =
-                HabitCheckInEntity(id = "check-in-2", habitId = "1", date = "2026-07-26", value = 0, createdAt = 1_000L, updatedAt = 1_000L)
-            val checkInDao = FakeHabitCheckInDao(
-                entities = mutableMapOf(("1" to "2026-07-27") to target, ("1" to "2026-07-26") to other),
+            assertTrue(
+                local.getAllHabitsIncludingDeleted().single { it.id == "1" }.deletedAt != null,
             )
-            val repository =
-                repository(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao, scope = backgroundScope)
-
-            // Act
-            val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
-
-            // Assert
-            assertTrue(result.isSuccess)
-            assertEquals(null, checkInDao.getByHabitAndDate("1", "2026-07-27"))
-            assertEquals(other, checkInDao.getByHabitAndDate("1", "2026-07-26"))
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should return failure when deleteCheckIn targets a non-existent habitId and date`() =
-        runTest {
-            // Arrange
-            val checkInDao = FakeHabitCheckInDao()
-            val repository =
-                repository(habitDao = FakeHabitDao(failuresBeforeSuccess = 0), habitCheckInDao = checkInDao, scope = backgroundScope)
-
-            // Act
-            val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
-
-            // Assert
-            assertTrue(result.isFailure)
-            assertEquals(0, checkInDao.softDeleteByIdCallCount)
-        }
-
-    @Test
-    fun `should push the tombstoned check-in when signed in and deleteCheckIn succeeds`() =
+    fun `should schedule a sync when signed in and deleteCheckIn succeeds`() =
         runTest {
             // Arrange
             val existing =
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
-            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to existing))
-            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
-            val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
-                habitCheckInDao = checkInDao,
-                scope = backgroundScope,
-                remoteHabitCheckInDataSource = remoteCheckIns,
-                authRepository = auth,
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                )
+            val local = FakeLocalHabitDataSource(
+                checkIns = mutableMapOf(
+                    ("1" to "2026-07-27") to existing,
+                ),
             )
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository =
+                repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
             repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
-            runCurrent()
 
             // Assert
-            assertEquals(1, remoteCheckIns.upsertCallCount)
+            assertEquals(1, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should delete a check-in locally without any remote call when signed out`() =
+    fun `should not schedule a sync when signed out and deleteCheckIn succeeds`() =
         runTest {
             // Arrange
             val existing =
-                HabitCheckInEntity(id = "check-in-1", habitId = "1", date = "2026-07-27", value = 1, createdAt = 1_000L, updatedAt = 1_000L)
-            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to existing))
-            val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
-            val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(
-                habitDao = FakeHabitDao(failuresBeforeSuccess = 0),
-                habitCheckInDao = checkInDao,
-                scope = backgroundScope,
-                remoteHabitCheckInDataSource = remoteCheckIns,
-                authRepository = auth,
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                )
+            val local = FakeLocalHabitDataSource(
+                checkIns = mutableMapOf(
+                    ("1" to "2026-07-27") to existing,
+                ),
             )
+            val syncScheduler = FakeSyncScheduler()
+            val auth = FakeAuthRepository(currentUserId = null)
+            val repository =
+                repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
 
             // Act
             val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
-            runCurrent()
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals(null, checkInDao.getByHabitAndDate("1", "2026-07-27"))
-            assertEquals(0, remoteCheckIns.upsertCallCount)
+            assertEquals(0, syncScheduler.scheduleSyncCallCount)
         }
 
     @Test
-    fun `should still succeed when the background remote push fails`() =
-        runTest {
-            // Arrange
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0)
-            val remoteHabits = FakeRemoteHabitDataSource(shouldFail = true)
-            val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(),
-                scope = backgroundScope,
-                remoteHabitDataSource = remoteHabits,
-                authRepository = auth,
-            )
-
-            // Act
-            val result = repository.createHabit(
-                name = "Drink water",
-                description = null,
-                type = HabitType.BINARY,
-                scaleMin = null,
-                scaleMax = null,
-            )
-            runCurrent()
-
-            // Assert
-            assertTrue(result.isSuccess)
-            assertEquals(1, remoteHabits.upsertCallCount)
-        }
-
-    @Test
-    fun `should push all local habits and check-ins then pull remote-only rows when syncWithRemote is called`() =
+    fun `should push all local habits and check-ins then apply the remote-only snapshot when syncWithRemote is called`() =
         runTest {
             // Arrange
             val localHabit = HabitEntity(
@@ -563,8 +379,7 @@ class HabitRepositoryImplTest {
                 createdAt = 1_000L,
                 updatedAt = 1_000L,
             )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("local-habit" to localHabit))
-            val checkInDao = FakeHabitCheckInDao()
+            val local = FakeLocalHabitDataSource(habits = mutableMapOf("local-habit" to localHabit))
             val remoteHabit = HabitRemoteDto(
                 id = "remote-habit",
                 userId = "user-1",
@@ -577,13 +392,15 @@ class HabitRepositoryImplTest {
                 updatedAt = "2026-07-20T00:00:00Z",
                 deletedAt = null,
             )
-            val remoteHabits = FakeRemoteHabitDataSource(habits = mutableMapOf("remote-habit" to remoteHabit))
+            val remoteHabits = FakeRemoteHabitDataSource(
+                habits = mutableMapOf(
+                    "remote-habit" to remoteHabit,
+                ),
+            )
             val remoteCheckIns = FakeRemoteHabitCheckInDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
             val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = checkInDao,
-                scope = backgroundScope,
+                local = local,
                 remoteHabitDataSource = remoteHabits,
                 remoteHabitCheckInDataSource = remoteCheckIns,
                 authRepository = auth,
@@ -595,42 +412,8 @@ class HabitRepositoryImplTest {
             // Assert
             assertTrue(result.isSuccess)
             assertEquals(1, remoteHabits.upsertCallCount)
-            assertTrue(habitDao.getAll().any { it.id == "remote-habit" })
-        }
-
-    @Test
-    fun `should soft-delete the habit locally and push the tombstone when deleteHabit succeeds`() =
-        runTest {
-            // Arrange
-            val habit = HabitEntity(
-                id = "1",
-                name = "Drink water",
-                description = null,
-                type = "BINARY",
-                scaleMin = null,
-                scaleMax = null,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
-            )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
-            val remoteHabits = FakeRemoteHabitDataSource()
-            val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(),
-                scope = backgroundScope,
-                remoteHabitDataSource = remoteHabits,
-                authRepository = auth,
-            )
-
-            // Act
-            repository.deleteHabit("1")
-            runCurrent()
-
-            // Assert
-            val stored = habitDao.getAllIncludingDeleted().single { it.id == "1" }
-            assertTrue(stored.deletedAt != null)
-            assertEquals(1, remoteHabits.upsertCallCount)
+            assertEquals(1, local.applyRemoteSnapshotCallCount)
+            assertTrue(local.lastAppliedHabits.any { it.id == "remote-habit" })
         }
 
     @Test
@@ -648,7 +431,7 @@ class HabitRepositoryImplTest {
                 createdAt = 1_000L,
                 updatedAt = 9_999_999L,
             )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to local))
+            val localDataSource = FakeLocalHabitDataSource(habits = mutableMapOf("1" to local))
             val remoteTombstone = HabitRemoteDto(
                 id = "1",
                 userId = "user-1",
@@ -661,22 +444,30 @@ class HabitRepositoryImplTest {
                 updatedAt = "2026-07-02T00:00:00Z",
                 deletedAt = "2026-07-02T00:00:00Z",
             )
-            val remoteHabits = FakeRemoteHabitDataSource(habits = mutableMapOf("1" to remoteTombstone))
-            val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(),
-                scope = backgroundScope,
-                remoteHabitDataSource = remoteHabits,
-                authRepository = auth,
+            val remoteHabits = FakeRemoteHabitDataSource(
+                habits = mutableMapOf(
+                    "1" to remoteTombstone,
+                ),
             )
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository =
+                repository(
+                    local = localDataSource,
+                    remoteHabitDataSource = remoteHabits,
+                    authRepository = auth,
+                )
 
             // Act
             val result = repository.syncWithRemote()
 
             // Assert
             assertTrue(result.isSuccess)
-            assertTrue(habitDao.getAll().none { it.id == "1" })
+            assertTrue(
+                localDataSource.getAllHabitsIncludingDeleted().none {
+                    it.id == "1" &&
+                        it.deletedAt == null
+                },
+            )
             assertEquals(0, remoteHabits.upsertCallCount)
         }
 
@@ -700,66 +491,48 @@ class HabitRepositoryImplTest {
                 updatedAt = agedOut,
                 deletedAt = agedOut,
             )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to tombstoned))
+            val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to tombstoned))
             val remoteHabits = FakeRemoteHabitDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(
-                habitDao = habitDao,
-                habitCheckInDao = FakeHabitCheckInDao(),
-                scope = backgroundScope,
-                remoteHabitDataSource = remoteHabits,
-                authRepository = auth,
-            )
+            val repository =
+                repository(
+                    local = local,
+                    remoteHabitDataSource = remoteHabits,
+                    authRepository = auth,
+                )
 
             // Act
             val result = repository.syncWithRemote()
 
             // Assert
             assertTrue(result.isSuccess)
-            assertTrue(habitDao.getAllIncludingDeleted().none { it.id == "1" })
+            assertEquals(1, local.purgeDeletedBeforeCallCount)
+            assertTrue(local.getAllHabitsIncludingDeleted().none { it.id == "1" })
             assertEquals(1, remoteHabits.purgeCallCount)
         }
 
     @Test
-    fun `should empty both DAOs when clearLocal is called`() =
+    fun `should delegate to the local data source when clearLocal is called`() =
         runTest {
             // Arrange
-            val habitDao = FakeHabitDao(
-                failuresBeforeSuccess = 0,
-                entities = mutableMapOf(
-                    "1" to HabitEntity(
-                        id = "1",
-                        name = "Drink water",
-                        description = null,
-                        type = "BINARY",
-                        scaleMin = null,
-                        scaleMax = null,
-                        createdAt = 1_000L,
-                        updatedAt = 1_000L,
-                    ),
-                ),
+            val habit = HabitEntity(
+                id = "1",
+                name = "Drink water",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
-            val checkInDao = FakeHabitCheckInDao(
-                entities = mutableMapOf(
-                    ("1" to "2026-07-27") to
-                        HabitCheckInEntity(
-                            id = "check-in-1",
-                            habitId = "1",
-                            date = "2026-07-27",
-                            value = 1,
-                            createdAt = 1_000L,
-                            updatedAt = 1_000L,
-                        ),
-                ),
-            )
-            val repository = repository(habitDao = habitDao, habitCheckInDao = checkInDao, scope = backgroundScope)
+            val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
+            val repository = repository(local = local)
 
             // Act
             val result = repository.clearLocal()
 
             // Assert
             assertTrue(result.isSuccess)
-            assertTrue(habitDao.getAll().isEmpty())
-            assertTrue(checkInDao.getAll().isEmpty())
+            assertTrue(local.getAllHabitsIncludingDeleted().isEmpty())
         }
 }

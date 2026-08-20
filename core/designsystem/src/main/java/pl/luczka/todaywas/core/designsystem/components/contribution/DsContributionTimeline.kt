@@ -45,14 +45,19 @@ fun DsContributionTimeline(
                 // cosmetically irrelevant in the horizontal grid (never directly scanned), but
                 // here each row IS directly scanned, so ascending order reads naturally.
                 week.reversed().forEach { cell ->
-                    ContributionCell(cell = cell, levelColors = levelColors, cellSize = TIMELINE_CELL_SIZE)
+                    ContributionCell(
+                        cell = cell,
+                        levelColors = levelColors,
+                        cellSize = TIMELINE_CELL_SIZE,
+                    )
                 }
             }
         }
     }
 }
 
-private class DsContributionTimelinePreviewProvider : PreviewParameterProvider<List<DsContributionCellUiState>> {
+private class DsContributionTimelinePreviewProvider :
+    PreviewParameterProvider<List<DsContributionCellUiState>> {
     private val today = LocalDate.now()
 
     override val values = sequenceOf(
@@ -64,14 +69,20 @@ private class DsContributionTimelinePreviewProvider : PreviewParameterProvider<L
             )
         },
         // A single week.
-        List(7) { DsContributionCellUiState.Level(today.minusDays(it.toLong()), DsContributionLevel.LEVEL_3) },
+        List(7) {
+            DsContributionCellUiState.Level(
+                today.minusDays(it.toLong()),
+                DsContributionLevel.LEVEL_3,
+            )
+        },
     )
 }
 
 @PreviewLightDark
 @Composable
 private fun DsContributionTimelinePreview(
-    @PreviewParameter(DsContributionTimelinePreviewProvider::class) cells: List<DsContributionCellUiState>,
+    @PreviewParameter(DsContributionTimelinePreviewProvider::class) cells:
+        List<DsContributionCellUiState>,
 ) {
     DsTheme {
         DsContributionTimeline(cells = cells)

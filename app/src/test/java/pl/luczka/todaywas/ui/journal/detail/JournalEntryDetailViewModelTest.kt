@@ -27,6 +27,7 @@ import pl.luczka.todaywas.domain.repository.FakeAuthRepository
 import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
+import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
@@ -66,7 +67,7 @@ class JournalEntryDetailViewModelTest {
         deleteJournalEntry = DeleteJournalEntryUseCase(repository),
         observeAuthState = ObserveAuthStateUseCase(authRepository),
         requestJournalRefinementPrompt = RequestJournalRefinementPromptUseCase(aiAssistRepository),
-        clock = clock,
+        isEditable = IsEditableUseCase(clock),
     )
 
     private class MutableClock(
@@ -295,7 +296,8 @@ class JournalEntryDetailViewModelTest {
     fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while signed out`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel =
+                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
 
@@ -402,7 +404,8 @@ class JournalEntryDetailViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult = Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
+            aiAssistRepository.refineResult =
+                Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)

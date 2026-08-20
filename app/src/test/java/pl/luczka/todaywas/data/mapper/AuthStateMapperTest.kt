@@ -38,7 +38,9 @@ class AuthStateMapperTest {
     @Test
     fun `should map to SignedOut when status is RefreshFailure`() {
         // Arrange
-        val status = SessionStatus.RefreshFailure(RefreshFailureCause.NetworkError(IOException("no connection")))
+        val status = SessionStatus.RefreshFailure(
+            RefreshFailureCause.NetworkError(IOException("no connection")),
+        )
 
         // Act
         val result = status.toAuthState()

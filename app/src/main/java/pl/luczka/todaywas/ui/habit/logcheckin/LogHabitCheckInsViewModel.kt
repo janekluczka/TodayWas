@@ -12,10 +12,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.domain.util.EditWindow
-import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -23,11 +22,12 @@ import javax.inject.Inject
 class LogHabitCheckInsViewModel @Inject constructor(
     private val observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val logHabitCheckIns: LogHabitCheckInsUseCase,
+    getFreshLoggableDates: GetFreshLoggableDatesUseCase,
 ) : ViewModel() {
 
     // Ascending (yesterday, then today) to match the existing chip display order; today stays the
     // default selection via .last().
-    private val selectableDates = EditWindow.freshLoggableDates(Instant.now()).sorted()
+    private val selectableDates = getFreshLoggableDates().sorted()
 
     private val selectedDateFlow = MutableStateFlow(selectableDates.last())
     private val pendingValuesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())

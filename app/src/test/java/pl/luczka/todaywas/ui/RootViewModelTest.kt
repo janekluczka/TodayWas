@@ -91,7 +91,8 @@ class RootViewModelTest {
 
             // Act
             // Mirrors reaching ALL_SET (or Skip) mid-flow: Room flips `completed` before Main shows.
-            repository.stateFlow.value = OnboardingState(completed = true, hasSyncedLocalData = false)
+            repository.stateFlow.value =
+                OnboardingState(completed = true, hasSyncedLocalData = false)
 
             // Assert
             assertEquals(OnboardingKey, viewModel.initialDestination.value)

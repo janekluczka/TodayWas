@@ -59,7 +59,13 @@ fun SignInFormContent(
             label = stringResource(R.string.auth_form_email_label),
             enabled = !state.isSubmitting,
             isError = state.emailError,
-            supportingText = if (state.emailError) stringResource(R.string.auth_form_email_error) else null,
+            supportingText = if (state.emailError) {
+                stringResource(
+                    R.string.auth_form_email_error,
+                )
+            } else {
+                null
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -69,7 +75,13 @@ fun SignInFormContent(
             label = stringResource(R.string.auth_form_password_label),
             enabled = !state.isSubmitting,
             isError = state.passwordError,
-            supportingText = if (state.passwordError) stringResource(R.string.auth_form_password_error) else null,
+            supportingText = if (state.passwordError) {
+                stringResource(
+                    R.string.auth_form_password_error,
+                )
+            } else {
+                null
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
@@ -101,8 +113,13 @@ fun SignInFormContent(
                                 .Builder()
                                 .addCredentialOption(googleIdOption)
                                 .build()
-                            val result = CredentialManager.create(context).getCredential(context, request)
-                            val credential = GoogleIdTokenCredential.createFrom(result.credential.data)
+                            val result = CredentialManager
+                                .create(
+                                    context,
+                                ).getCredential(context, request)
+                            val credential = GoogleIdTokenCredential.createFrom(
+                                result.credential.data,
+                            )
                             onGoogleIdTokenReceived(credential.idToken)
                         } catch (e: GetCredentialCancellationException) {
                             // User dismissed the system account picker — not a failure, no error to show.

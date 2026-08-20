@@ -22,7 +22,10 @@ import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
 import pl.luczka.todaywas.domain.usecase.DeleteHabitCheckInUseCase
 import pl.luczka.todaywas.domain.usecase.DeleteHabitUseCase
+import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
+import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.Clock
@@ -55,9 +58,12 @@ class HabitDetailViewModelTest {
     ) = HabitDetailViewModel(
         habitId = habitId,
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
+        observeHabitContribution = ObserveHabitContributionUseCase(repository, clock),
         saveHabitCheckIns = SaveHabitCheckInsUseCase(repository, clock),
         deleteHabit = DeleteHabitUseCase(repository),
         deleteHabitCheckIn = DeleteHabitCheckInUseCase(repository),
+        getFreshLoggableDates = GetFreshLoggableDatesUseCase(clock),
+        isEditable = IsEditableUseCase(clock),
         clock = clock,
     )
 
@@ -402,7 +408,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now,
+                        updatedAt = now,
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -414,8 +427,12 @@ class HabitDetailViewModelTest {
 
             // Assert
             assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.selectedWindow)
-            assertTrue(state.availableWindows.contains(ContributionWindowUiState.RollingTwelveMonths))
-            assertTrue(state.availableWindows.contains(ContributionWindowUiState.CalendarYear(today.year)))
+            assertTrue(
+                state.availableWindows.contains(ContributionWindowUiState.RollingTwelveMonths),
+            )
+            assertTrue(
+                state.availableWindows.contains(ContributionWindowUiState.CalendarYear(today.year)),
+            )
             assertEquals(DsContributionLevel.LEVEL_5, levelFor(state.contributionGrid.cells, today))
             collectJob.cancel()
         }
@@ -427,7 +444,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now,
+                        updatedAt = now,
+                    ),
                     HabitCheckIn(
                         id = "2",
                         habitId = "1",
@@ -444,12 +468,22 @@ class HabitDetailViewModelTest {
             val levelBefore = levelFor(viewModel.uiState.value.contributionGrid.cells, today)
 
             // Act
-            viewModel.onIntent(HabitDetailIntent.WindowSelected(ContributionWindowUiState.CalendarYear(today.year)))
+            viewModel.onIntent(
+                HabitDetailIntent.WindowSelected(
+                    ContributionWindowUiState.CalendarYear(today.year),
+                ),
+            )
             runCurrent()
 
             // Assert
-            assertEquals(ContributionWindowUiState.CalendarYear(today.year), viewModel.uiState.value.selectedWindow)
-            assertEquals(levelBefore, levelFor(viewModel.uiState.value.contributionGrid.cells, today))
+            assertEquals(
+                ContributionWindowUiState.CalendarYear(today.year),
+                viewModel.uiState.value.selectedWindow,
+            )
+            assertEquals(
+                levelBefore,
+                levelFor(viewModel.uiState.value.contributionGrid.cells, today),
+            )
             collectJob.cancel()
         }
 
@@ -460,7 +494,14 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now,
+                        updatedAt = now,
+                    ),
                 ),
             )
             val viewModel = viewModel(repository)

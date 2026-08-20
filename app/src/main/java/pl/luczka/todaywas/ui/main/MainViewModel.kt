@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -18,15 +17,15 @@ import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
+import pl.luczka.todaywas.domain.model.ContributionGrid
 import pl.luczka.todaywas.domain.model.ContributionWindow
-import pl.luczka.todaywas.domain.model.availableWindows
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
+import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
-import pl.luczka.todaywas.domain.util.JournalContributionCalculator
 import pl.luczka.todaywas.ui.mapper.toDomain
 import pl.luczka.todaywas.ui.mapper.toHabitUiStates
 import pl.luczka.todaywas.ui.mapper.toUiState
@@ -38,6 +37,7 @@ import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import java.time.Clock
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,24 +45,24 @@ class MainViewModel @Inject constructor(
     observeJournalEntries: ObserveJournalEntriesUseCase,
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
+    observeJournalContribution: ObserveJournalContributionUseCase,
     private val observeAuthState: ObserveAuthStateUseCase,
     private val syncLocalData: SyncLocalDataUseCase,
     private val signOut: SignOutUseCase,
     private val clock: Clock,
 ) : ViewModel() {
 
-    private val selectedJournalWindow = MutableStateFlow<ContributionWindow>(ContributionWindow.RollingTwelveMonths)
+    private val selectedJournalWindow =
+        MutableStateFlow<ContributionWindow>(ContributionWindow.RollingTwelveMonths)
 
     private val _uiState = MutableStateFlow(
         MainUiState(
             journalEntries = emptyList(),
             habits = emptyList(),
-            journalContributionGrid = JournalContributionCalculator
-                .compute(
-                    emptyList(),
-                    ContributionWindow.RollingTwelveMonths,
-                    clock.instant(),
-                ).toUiState(clock.instant()),
+            journalContributionGrid = ContributionGrid(
+                window = ContributionWindow.RollingTwelveMonths,
+                days = emptyMap(),
+            ).toUiState(clock.instant()),
             journalAvailableWindows = listOf(ContributionWindowUiState.RollingTwelveMonths),
             journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = emptyList(),
@@ -78,21 +78,15 @@ class MainViewModel @Inject constructor(
     private val eventChannel = Channel<MainUiEvent>(Channel.BUFFERED)
     val events: Flow<MainUiEvent> = eventChannel.receiveAsFlow()
 
-    // Only recomputes when journal entries/selectedJournalWindow actually change — not on every
-    // unrelated emission (onboarding, habit board) from the wider combine below, which computing
-    // this inline in that single combine's lambda would otherwise trigger on every tick.
-    private val journalContributionData: Flow<JournalContributionData> = combine(
-        observeJournalEntries(),
+    private val journalContributionData: Flow<JournalContributionData> = observeJournalContribution(
         selectedJournalWindow,
-    ) { entries, window -> entries to window }
-        .distinctUntilChanged()
-        .map { (entries, window) ->
-            val now = clock.instant()
-            JournalContributionData(
-                grid = JournalContributionCalculator.compute(entries, window, now).toUiState(now),
-                availableWindows = availableWindows(entries.minOfOrNull { it.date }, now).map { it.toUiState() },
-            )
-        }
+    ).map { summary ->
+        val now = clock.instant()
+        JournalContributionData(
+            grid = summary.grid.toUiState(now),
+            availableWindows = summary.availableWindows.map { it.toUiState() },
+        )
+    }
 
     init {
         viewModelScope.launch {
@@ -104,10 +98,14 @@ class MainViewModel @Inject constructor(
                 RawMainSources(
                     journalEntries = entries.map { it.toUiState() },
                     addableSlots = addableSlots.map { it.toUiState() },
-                    habits = board.toHabitUiStates(),
+                    habits = board.toHabitUiStates(today = LocalDate.now(clock)),
                 )
             }
-            combine(rawSources, selectedJournalWindow, journalContributionData) { raw, selectedWindow, contribution ->
+            combine(
+                rawSources,
+                selectedJournalWindow,
+                journalContributionData,
+            ) { raw, selectedWindow, contribution ->
                 CombinedMainState(
                     journalEntries = raw.journalEntries,
                     addableSlots = raw.addableSlots,
@@ -154,12 +152,24 @@ class MainViewModel @Inject constructor(
             is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
             is MainIntent.HabitClicked -> onHabitClicked(intent.habit)
             is MainIntent.JournalWindowSelected -> onJournalWindowSelected(intent.window)
-            MainIntent.AccountIconClicked -> _uiState.update { it.copy(isAccountSheetVisible = true) }
-            MainIntent.AccountSheetDismissed -> _uiState.update { it.copy(isAccountSheetVisible = false) }
+            MainIntent.AccountIconClicked -> _uiState.update {
+                it.copy(
+                    isAccountSheetVisible = true,
+                )
+            }
+            MainIntent.AccountSheetDismissed -> _uiState.update {
+                it.copy(
+                    isAccountSheetVisible = false,
+                )
+            }
             MainIntent.SignInSignUpPromptClicked -> onSignInSignUpPromptClicked()
             MainIntent.SignOutClicked -> _uiState.update { it.copy(isSignOutConfirmVisible = true) }
             MainIntent.SignOutConfirmed -> onSignOutConfirmed()
-            MainIntent.SignOutCancelled -> _uiState.update { it.copy(isSignOutConfirmVisible = false) }
+            MainIntent.SignOutCancelled -> _uiState.update {
+                it.copy(
+                    isSignOutConfirmVisible = false,
+                )
+            }
         }
     }
 
@@ -176,8 +186,10 @@ class MainViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isSigningOut = false,
-                    isSignOutConfirmVisible = if (result.isSuccess) false else it.isSignOutConfirmVisible,
-                    isAccountSheetVisible = if (result.isSuccess) false else it.isAccountSheetVisible,
+                    isSignOutConfirmVisible =
+                        if (result.isSuccess) false else it.isSignOutConfirmVisible,
+                    isAccountSheetVisible =
+                        if (result.isSuccess) false else it.isAccountSheetVisible,
                 )
             }
             if (result.isFailure) {
@@ -194,9 +206,13 @@ class MainViewModel @Inject constructor(
     private fun onFabActionClicked(action: FabActionUiState) {
         _uiState.update { it.copy(fabExpanded = false) }
         when (action) {
-            FabActionUiState.ADD_JOURNAL_ENTRY -> eventChannel.trySend(MainUiEvent.NavigateToAddEntry)
+            FabActionUiState.ADD_JOURNAL_ENTRY -> eventChannel.trySend(
+                MainUiEvent.NavigateToAddEntry,
+            )
             FabActionUiState.CREATE_HABIT -> eventChannel.trySend(MainUiEvent.NavigateToCreateHabit)
-            FabActionUiState.LOG_HABIT_CHECK_INS -> eventChannel.trySend(MainUiEvent.NavigateToLogHabitCheckIns)
+            FabActionUiState.LOG_HABIT_CHECK_INS -> eventChannel.trySend(
+                MainUiEvent.NavigateToLogHabitCheckIns,
+            )
         }
     }
 

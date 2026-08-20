@@ -19,6 +19,11 @@ fun Habit.toRemoteDto(userId: String): HabitRemoteDto = HabitRemoteDto(
     deletedAt = deletedAt?.toString(),
 )
 
+fun HabitEntity.toRemoteDto(userId: String): HabitRemoteDto = toDomain().toRemoteDto(userId)
+
+fun List<HabitEntity>.toRemoteDto(userId: String): List<HabitRemoteDto> =
+    map { it.toRemoteDto(userId) }
+
 fun HabitRemoteDto.toEntity(): HabitEntity = HabitEntity(
     id = id,
     name = name,
@@ -31,8 +36,12 @@ fun HabitRemoteDto.toEntity(): HabitEntity = HabitEntity(
     deletedAt = deletedAt?.let { Instant.parse(it).toEpochMilli() },
 )
 
+fun List<HabitRemoteDto>.toEntity(): List<HabitEntity> = map { it.toEntity() }
+
 fun HabitRemoteDto.toSyncMeta(): SyncMeta = SyncMeta(
     id = id,
     updatedAt = Instant.parse(updatedAt),
     isDeleted = deletedAt != null,
 )
+
+fun List<HabitRemoteDto>.toSyncMeta(): List<SyncMeta> = map { it.toSyncMeta() }

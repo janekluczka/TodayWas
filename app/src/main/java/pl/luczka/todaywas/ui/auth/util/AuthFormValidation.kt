@@ -18,7 +18,9 @@ fun isValidRepeatPassword(
 // AuthErrorUiState -> copy mapping isn't duplicated per screen.
 @Composable
 fun AuthErrorUiState.message(): String = when (this) {
-    AuthErrorUiState.EMAIL_ALREADY_REGISTERED -> stringResource(R.string.auth_error_email_already_registered)
+    AuthErrorUiState.EMAIL_ALREADY_REGISTERED -> stringResource(
+        R.string.auth_error_email_already_registered,
+    )
     AuthErrorUiState.INVALID_CREDENTIALS -> stringResource(R.string.auth_error_invalid_credentials)
     AuthErrorUiState.WEAK_PASSWORD -> stringResource(R.string.auth_error_weak_password)
     AuthErrorUiState.NETWORK_UNAVAILABLE -> stringResource(R.string.auth_error_network_unavailable)

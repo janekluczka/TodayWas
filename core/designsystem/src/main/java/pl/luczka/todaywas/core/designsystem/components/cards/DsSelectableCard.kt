@@ -47,7 +47,14 @@ fun DsSelectableCard(
     when {
         !enabled -> {
             val isSelectedVariant = variant != DsCardVariant.NEUTRAL
-            containerColor = if (isSelectedVariant) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent
+            containerColor =
+                if (isSelectedVariant) {
+                    MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.12f,
+                    )
+                } else {
+                    Color.Transparent
+                }
             contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         }
         variant == DsCardVariant.PRIMARY -> {

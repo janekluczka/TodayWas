@@ -17,12 +17,12 @@ import pl.luczka.todaywas.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.domain.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
-import pl.luczka.todaywas.domain.util.LocalDataSyncPolicy
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.ui.auth.util.isValidEmail
@@ -43,6 +43,7 @@ class AccountViewModel @Inject constructor(
     private val getLocalDataSummary: GetLocalDataSummaryUseCase,
     private val syncLocalData: SyncLocalDataUseCase,
     private val markLocalDataSynced: MarkLocalDataSyncedUseCase,
+    private val shouldReviewLocalDataBeforeSync: ShouldReviewLocalDataBeforeSyncUseCase,
 ) : ViewModel() {
 
     private enum class PostSyncAction { NAVIGATE_BACK, SHOW_SUCCESS, RETURN_HOME }
@@ -81,12 +82,20 @@ class AccountViewModel @Inject constructor(
             is AccountIntent.SignInEmailChanged -> onSignInEmailChanged(intent.value)
             is AccountIntent.SignInPasswordChanged -> onSignInPasswordChanged(intent.value)
             AccountIntent.SignInSubmitClicked -> onSignInSubmitClicked()
-            is AccountIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(intent.idToken)
+            is AccountIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(
+                intent.idToken,
+            )
             AccountIntent.GoogleSignInFailed -> onGoogleSignInFailed()
-            AccountIntent.SignUpLinkClicked -> _uiState.update { it.copy(step = AccountStep.SIGN_UP) }
+            AccountIntent.SignUpLinkClicked -> _uiState.update {
+                it.copy(
+                    step = AccountStep.SIGN_UP,
+                )
+            }
             is AccountIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
             is AccountIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
-            is AccountIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(intent.value)
+            is AccountIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(
+                intent.value,
+            )
             AccountIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
             AccountIntent.ContinueClicked -> eventChannel.trySend(AccountUiEvent.NavigatedBack)
             AccountIntent.SignOutClicked -> onSignOutClicked()
@@ -105,11 +114,17 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignInEmailChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(email = value, emailError = false),
+            )
+        }
     }
 
     private fun onSignInPasswordChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false))
+        }
     }
 
     private fun onSignInSubmitClicked() {
@@ -159,16 +174,27 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignUpEmailChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(email = value, emailError = false),
+            )
+        }
     }
 
     private fun onSignUpPasswordChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false))
+        }
     }
 
     private fun onSignUpRepeatPasswordChanged(value: String) {
         _uiState.update {
-            it.copy(signUpForm = it.signUpForm.copy(repeatPassword = value, repeatPasswordError = false))
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    repeatPassword = value,
+                    repeatPasswordError = false,
+                ),
+            )
         }
     }
 
@@ -214,7 +240,7 @@ class AccountViewModel @Inject constructor(
     // otherwise syncs transparently in the background and proceeds as before.
     private suspend fun proceedAfterAuthSuccess(whenDone: PostSyncAction) {
         val summary = getLocalDataSummary()
-        if (LocalDataSyncPolicy.shouldReviewBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
+        if (shouldReviewLocalDataBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
             postSyncAction = whenDone
             _uiState.update {
                 it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState())
@@ -247,7 +273,10 @@ class AccountViewModel @Inject constructor(
             if (!summary.isEmpty) {
                 postSyncAction = PostSyncAction.RETURN_HOME
                 _uiState.update {
-                    it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState())
+                    it.copy(
+                        step = AccountStep.DATA_SYNC_REVIEW,
+                        dataSyncSummary = summary.toUiState(),
+                    )
                 }
             }
         }
