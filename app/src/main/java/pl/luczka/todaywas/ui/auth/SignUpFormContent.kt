@@ -3,9 +3,15 @@ package pl.luczka.todaywas.ui.auth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -14,6 +20,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
@@ -25,11 +32,25 @@ fun SignUpFormContent(
     onPasswordChanged: (String) -> Unit,
     onRepeatPasswordChanged: (String) -> Unit,
     onSubmitClicked: () -> Unit,
+    onGoogleIdTokenReceived: (String) -> Unit,
+    onGoogleSignInFailed: () -> Unit,
+    onSignInLinkClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val scrollState = rememberScrollState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            keyboardController?.hide()
+        }
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(scrollState),
     ) {
         DsTextField(
             value = state.email,
@@ -37,12 +58,12 @@ fun SignUpFormContent(
             label = stringResource(R.string.auth_form_email_label),
             enabled = !state.isSubmitting,
             isError = state.emailError,
+            // Always non-null so the supporting-text row is reserved up front — see
+            // SignInFormContent for why (Material3 omits the row entirely when null).
             supportingText = if (state.emailError) {
-                stringResource(
-                    R.string.auth_form_email_error,
-                )
+                stringResource(R.string.auth_form_email_error)
             } else {
-                null
+                ""
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
@@ -54,11 +75,9 @@ fun SignUpFormContent(
             enabled = !state.isSubmitting,
             isError = state.passwordError,
             supportingText = if (state.passwordError) {
-                stringResource(
-                    R.string.auth_form_password_error,
-                )
+                stringResource(R.string.auth_form_password_error)
             } else {
-                null
+                ""
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
@@ -73,7 +92,7 @@ fun SignUpFormContent(
             supportingText = if (state.repeatPasswordError) {
                 stringResource(R.string.auth_form_repeat_password_error)
             } else {
-                null
+                ""
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
@@ -83,7 +102,21 @@ fun SignUpFormContent(
             text = stringResource(R.string.auth_form_sign_up_cta),
             onClick = onSubmitClicked,
             loading = state.isSubmitting,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space200),
+        )
+        GoogleSignInLaunchButton(
+            enabled = !state.isSubmitting,
+            onIdTokenReceived = onGoogleIdTokenReceived,
+            onFailed = onGoogleSignInFailed,
+            text = stringResource(R.string.auth_form_google_sign_up_cta),
             modifier = Modifier.fillMaxWidth(),
+        )
+        DsTextButton(
+            text = stringResource(R.string.auth_form_sign_in_link_cta),
+            onClick = onSignInLinkClicked,
+            enabled = !state.isSubmitting,
         )
     }
 }
@@ -113,6 +146,9 @@ private fun SignUpFormContentPreview(
             onPasswordChanged = {},
             onRepeatPasswordChanged = {},
             onSubmitClicked = {},
+            onGoogleIdTokenReceived = {},
+            onGoogleSignInFailed = {},
+            onSignInLinkClicked = {},
         )
     }
 }

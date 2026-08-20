@@ -91,12 +91,20 @@ class AccountViewModel @Inject constructor(
                     step = AccountStep.SIGN_UP,
                 )
             }
+            AccountIntent.SignInLinkClicked -> _uiState.update {
+                it.copy(
+                    step = AccountStep.SIGN_IN,
+                )
+            }
             is AccountIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
             is AccountIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
             is AccountIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(
                 intent.value,
             )
             AccountIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
+            is AccountIntent.SignUpGoogleIdTokenReceived -> onSignUpGoogleIdTokenReceived(
+                intent.idToken,
+            )
             AccountIntent.ContinueClicked -> eventChannel.trySend(AccountUiEvent.NavigatedBack)
             AccountIntent.SignOutClicked -> onSignOutClicked()
             AccountIntent.SyncConfirmClicked -> onSyncConfirmClicked()
@@ -222,6 +230,13 @@ class AccountViewModel @Inject constructor(
             _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = true)) }
             val result = signUpWithEmail(form.email, form.password)
             applySignUpResult(result)
+        }
+    }
+
+    private fun onSignUpGoogleIdTokenReceived(idToken: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = true)) }
+            applySignUpResult(signInWithGoogle(idToken))
         }
     }
 

@@ -3,30 +3,21 @@ package pl.luczka.todaywas.ui.auth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialCancellationException
-import androidx.credentials.exceptions.GetCredentialException
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import kotlinx.coroutines.launch
-import pl.luczka.todaywas.BuildConfig
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
@@ -45,13 +36,20 @@ fun SignInFormContent(
     onSignUpLinkClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    var isGoogleSignInLaunching by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            keyboardController?.hide()
+        }
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(scrollState),
     ) {
         DsTextField(
             value = state.email,
@@ -59,12 +57,13 @@ fun SignInFormContent(
             label = stringResource(R.string.auth_form_email_label),
             enabled = !state.isSubmitting,
             isError = state.emailError,
+            // Always non-null so the supporting-text row is reserved up front — toggling it
+            // between null and a string (Material3's OutlinedTextField omits the row entirely
+            // when null) shifted every field below it as soon as validation kicked in.
             supportingText = if (state.emailError) {
-                stringResource(
-                    R.string.auth_form_email_error,
-                )
+                stringResource(R.string.auth_form_email_error)
             } else {
-                null
+                ""
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
@@ -76,11 +75,9 @@ fun SignInFormContent(
             enabled = !state.isSubmitting,
             isError = state.passwordError,
             supportingText = if (state.passwordError) {
-                stringResource(
-                    R.string.auth_form_password_error,
-                )
+                stringResource(R.string.auth_form_password_error)
             } else {
-                null
+                ""
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
@@ -90,49 +87,14 @@ fun SignInFormContent(
             text = stringResource(R.string.auth_form_sign_in_cta),
             onClick = onSubmitClicked,
             loading = state.isSubmitting,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space200),
         )
-        GoogleSignInButton(
-            enabled = !state.isSubmitting && !isGoogleSignInLaunching,
-            onClick = {
-                // Google sign-in isn't configured until GOOGLE_WEB_CLIENT_ID is set in
-                // local.properties (external Google Cloud prerequisite) — fail gracefully
-                // rather than letting GetGoogleIdOption throw IllegalArgumentException.
-                if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
-                    onGoogleSignInFailed()
-                } else {
-                    isGoogleSignInLaunching = true
-                    coroutineScope.launch {
-                        try {
-                            val googleIdOption = GetGoogleIdOption
-                                .Builder()
-                                .setFilterByAuthorizedAccounts(false)
-                                .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
-                                .build()
-                            val request = GetCredentialRequest
-                                .Builder()
-                                .addCredentialOption(googleIdOption)
-                                .build()
-                            val result = CredentialManager
-                                .create(
-                                    context,
-                                ).getCredential(context, request)
-                            val credential = GoogleIdTokenCredential.createFrom(
-                                result.credential.data,
-                            )
-                            onGoogleIdTokenReceived(credential.idToken)
-                        } catch (e: GetCredentialCancellationException) {
-                            // User dismissed the system account picker — not a failure, no error to show.
-                        } catch (e: GetCredentialException) {
-                            onGoogleSignInFailed()
-                        } catch (e: GoogleIdTokenParsingException) {
-                            onGoogleSignInFailed()
-                        } finally {
-                            isGoogleSignInLaunching = false
-                        }
-                    }
-                }
-            },
+        GoogleSignInLaunchButton(
+            enabled = !state.isSubmitting,
+            onIdTokenReceived = onGoogleIdTokenReceived,
+            onFailed = onGoogleSignInFailed,
             modifier = Modifier.fillMaxWidth(),
         )
         DsTextButton(

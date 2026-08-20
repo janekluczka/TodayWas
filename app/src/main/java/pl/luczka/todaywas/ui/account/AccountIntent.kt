@@ -22,6 +22,8 @@ sealed interface AccountIntent {
 
     data object SignUpLinkClicked : AccountIntent
 
+    data object SignInLinkClicked : AccountIntent
+
     data class SignUpEmailChanged(
         val value: String,
     ) : AccountIntent
@@ -35,6 +37,10 @@ sealed interface AccountIntent {
     ) : AccountIntent
 
     data object SignUpSubmitClicked : AccountIntent
+
+    data class SignUpGoogleIdTokenReceived(
+        val idToken: String,
+    ) : AccountIntent
 
     data object ContinueClicked : AccountIntent
 
