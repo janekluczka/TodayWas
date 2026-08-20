@@ -2,6 +2,7 @@ package pl.luczka.todaywas.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
@@ -80,6 +81,10 @@ class FakeHabitRepository(
     }
 
     override fun observeCheckIns(): Flow<List<HabitCheckIn>> = checkInsFlow
+
+    override fun observeCheckIns(habitId: String): Flow<List<HabitCheckIn>> = checkInsFlow.map { list ->
+        list.filter { it.habitId == habitId }
+    }
 
     override suspend fun addCheckIns(
         date: LocalDate,

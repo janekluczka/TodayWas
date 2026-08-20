@@ -58,7 +58,7 @@ class HabitDetailViewModelTest {
     ) = HabitDetailViewModel(
         habitId = habitId,
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
-        observeHabitContribution = ObserveHabitContributionUseCase(clock),
+        observeHabitContribution = ObserveHabitContributionUseCase(repository, clock),
         saveHabitCheckIns = SaveHabitCheckInsUseCase(repository, clock),
         deleteHabit = DeleteHabitUseCase(repository),
         deleteHabitCheckIn = DeleteHabitCheckInUseCase(repository),

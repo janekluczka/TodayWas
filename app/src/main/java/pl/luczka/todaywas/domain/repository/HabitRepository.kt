@@ -20,6 +20,8 @@ interface HabitRepository : Syncable {
 
     fun observeCheckIns(): Flow<List<HabitCheckIn>>
 
+    fun observeCheckIns(habitId: String): Flow<List<HabitCheckIn>>
+
     suspend fun addCheckIns(
         date: LocalDate,
         values: Map<String, Int>,

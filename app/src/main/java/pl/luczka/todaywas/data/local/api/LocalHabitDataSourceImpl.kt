@@ -91,7 +91,9 @@ class LocalHabitDataSourceImpl @Inject constructor(
     }
 
     override suspend fun clearAll(): Result<Unit> = safeDbCall {
-        habitCheckInDao.clearAll()
-        habitDao.clearAll()
+        transactionRunner.runInTransaction {
+            habitCheckInDao.clearAll()
+            habitDao.clearAll()
+        }
     }
 }

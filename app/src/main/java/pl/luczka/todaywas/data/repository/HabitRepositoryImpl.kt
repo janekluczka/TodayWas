@@ -69,6 +69,10 @@ class HabitRepositoryImpl @Inject constructor(
     override fun observeCheckIns(): Flow<List<HabitCheckIn>> =
         local.observeCheckIns().map { entities -> entities.map { it.toDomain() } }
 
+    override fun observeCheckIns(habitId: String): Flow<List<HabitCheckIn>> = local.observeCheckIns().map { entities ->
+        entities.filter { it.habitId == habitId }.map { it.toDomain() }
+    }
+
     override suspend fun addCheckIns(
         date: LocalDate,
         values: Map<String, Int>,

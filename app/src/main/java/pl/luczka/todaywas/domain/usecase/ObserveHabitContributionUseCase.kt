@@ -6,19 +6,20 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.domain.model.ContributionSummary
 import pl.luczka.todaywas.domain.model.ContributionWindow
-import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.availableWindows
+import pl.luczka.todaywas.domain.repository.HabitRepository
 import pl.luczka.todaywas.domain.util.HabitContributionCalculator
 import java.time.Clock
 import javax.inject.Inject
 
 class ObserveHabitContributionUseCase @Inject constructor(
+    private val repository: HabitRepository,
     private val clock: Clock,
 ) {
     operator fun invoke(
-        checkIns: Flow<List<HabitCheckIn>>,
+        habitId: String,
         window: Flow<ContributionWindow>,
-    ): Flow<ContributionSummary> = combine(checkIns, window) { c, w -> c to w }
+    ): Flow<ContributionSummary> = combine(repository.observeCheckIns(habitId), window) { c, w -> c to w }
         .distinctUntilChanged()
         .map { (c, w) ->
             val now = clock.instant()

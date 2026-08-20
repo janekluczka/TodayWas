@@ -105,7 +105,7 @@ class HabitDetailViewModel @AssistedInject constructor(
     private val viewModelState = MutableStateFlow(HabitDetailViewModelState())
 
     private val contributionData: Flow<ContributionData> = observeHabitContribution(
-        viewModelState.map { it.checkIns }.distinctUntilChanged(),
+        habitId,
         viewModelState.map { it.selectedWindow }.distinctUntilChanged(),
     ).map { summary ->
         val now = clock.instant()

@@ -1,9 +1,9 @@
 ---
 change_id: architecture-hardening
 title: Architecture hardening
-status: implemented
+status: impl_reviewed
 created: 2026-08-18
-updated: 2026-08-19
+updated: 2026-08-20
 archived_at: null
 ---
 
