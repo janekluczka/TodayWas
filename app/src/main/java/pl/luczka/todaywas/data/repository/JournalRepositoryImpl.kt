@@ -1,7 +1,6 @@
 package pl.luczka.todaywas.data.repository
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
@@ -34,7 +33,7 @@ class JournalRepositoryImpl @Inject constructor(
     // push individually in the background, so there's nothing else left for this to race against.
     private val syncMutex = Mutex()
 
-    override fun observeEntries(): Flow<List<JournalEntry>> = local.observeEntries().map { entities -> entities.map { it.toDomain() } }
+    override fun observeEntries(): Flow<List<JournalEntry>> = local.observeEntries().toDomain()
 
     override suspend fun getEntry(id: String): JournalEntry? = local.getEntry(id)?.toDomain()
 
@@ -76,14 +75,14 @@ class JournalRepositoryImpl @Inject constructor(
             remoteCall {
                 val localEntries = local.getAllIncludingDeleted()
                 val remote = remoteDataSource.fetchAll(userId).getOrThrow()
-                val decision = mergeForSync(localEntries.map { it.toSyncMeta() }, remote.map { it.toSyncMeta() })
+                val decision = mergeForSync(localEntries.toSyncMeta(), remote.toSyncMeta())
 
                 val toPush = localEntries.filter { it.id in decision.pushIds }
                 if (toPush.isNotEmpty()) {
-                    remoteDataSource.upsert(toPush.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+                    remoteDataSource.upsert(toPush.toRemoteDto(userId)).getOrThrow()
                 }
                 val toApply = remote.filter { it.id in decision.applyIds }
-                local.applyRemoteSnapshot(toApply.map { it.toEntity() })
+                local.applyRemoteSnapshot(toApply.toEntity())
 
                 val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
                 local.purgeDeletedBefore(cutoff.toEpochMilli())

@@ -39,9 +39,7 @@ class HabitRepositoryImpl @Inject constructor(
     // push individually in the background, so there's nothing else left for this to race against.
     private val syncMutex = Mutex()
 
-    override fun observeHabits(): Flow<List<Habit>> = local.observeHabits().map { entities ->
-        entities.map { it.toDomain() }
-    }
+    override fun observeHabits(): Flow<List<Habit>> = local.observeHabits().toDomain()
 
     override suspend fun createHabit(
         name: String,
@@ -66,11 +64,10 @@ class HabitRepositoryImpl @Inject constructor(
         return result
     }
 
-    override fun observeCheckIns(): Flow<List<HabitCheckIn>> =
-        local.observeCheckIns().map { entities -> entities.map { it.toDomain() } }
+    override fun observeCheckIns(): Flow<List<HabitCheckIn>> = local.observeCheckIns().toDomain()
 
     override fun observeCheckIns(habitId: String): Flow<List<HabitCheckIn>> = local.observeCheckIns().map { entities ->
-        entities.filter { it.habitId == habitId }.map { it.toDomain() }
+        entities.filter { it.habitId == habitId }.toDomain()
     }
 
     override suspend fun addCheckIns(
@@ -125,23 +122,23 @@ class HabitRepositoryImpl @Inject constructor(
             remoteCall {
                 val localHabits = local.getAllHabitsIncludingDeleted()
                 val remoteHabits = remoteHabitDataSource.fetchAll(userId).getOrThrow()
-                val habitDecision = mergeForSync(localHabits.map { it.toSyncMeta() }, remoteHabits.map { it.toSyncMeta() })
+                val habitDecision = mergeForSync(localHabits.toSyncMeta(), remoteHabits.toSyncMeta())
                 val habitsToPush = localHabits.filter { it.id in habitDecision.pushIds }
                 if (habitsToPush.isNotEmpty()) {
-                    remoteHabitDataSource.upsert(habitsToPush.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+                    remoteHabitDataSource.upsert(habitsToPush.toRemoteDto(userId)).getOrThrow()
                 }
                 val habitsToApply = remoteHabits.filter { it.id in habitDecision.applyIds }
 
                 val localCheckIns = local.getAllCheckInsIncludingDeleted()
                 val remoteCheckIns = remoteHabitCheckInDataSource.fetchAll(userId).getOrThrow()
-                val checkInDecision = mergeForSync(localCheckIns.map { it.toSyncMeta() }, remoteCheckIns.map { it.toSyncMeta() })
+                val checkInDecision = mergeForSync(localCheckIns.toSyncMeta(), remoteCheckIns.toSyncMeta())
                 val checkInsToPush = localCheckIns.filter { it.id in checkInDecision.pushIds }
                 if (checkInsToPush.isNotEmpty()) {
-                    remoteHabitCheckInDataSource.upsert(checkInsToPush.map { it.toDomain().toRemoteDto(userId) }).getOrThrow()
+                    remoteHabitCheckInDataSource.upsert(checkInsToPush.toRemoteDto(userId)).getOrThrow()
                 }
                 val checkInsToApply = remoteCheckIns.filter { it.id in checkInDecision.applyIds }
 
-                local.applyRemoteSnapshot(habitsToApply.map { it.toEntity() }, checkInsToApply.map { it.toEntity() })
+                local.applyRemoteSnapshot(habitsToApply.toEntity(), checkInsToApply.toEntity())
 
                 val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
                 local.purgeDeletedBefore(cutoff.toEpochMilli())
