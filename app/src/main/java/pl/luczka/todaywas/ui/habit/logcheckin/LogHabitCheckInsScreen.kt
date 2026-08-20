@@ -146,9 +146,9 @@ private fun HabitCheckInRow(
     }
     val isDarkTheme = isSystemInDarkTheme()
     val doneChipContainerColor =
-        if (isDarkTheme) DsColor.successContainerDark else DsColor.successContainerLight
+        if (isDarkTheme) DsColor.green20 else DsColor.green90
     val doneChipLabelColor =
-        if (isDarkTheme) DsColor.successLabelDark else DsColor.successLabelLight
+        if (isDarkTheme) DsColor.green80 else DsColor.green40
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
