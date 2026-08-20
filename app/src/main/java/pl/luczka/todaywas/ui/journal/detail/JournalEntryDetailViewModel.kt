@@ -182,12 +182,20 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
         if (!state.isEditing || !state.isEditable || state.editedText.isBlank()) return
         if (state.editedText.length > MAX_REFINE_TEXT_LENGTH) return
         refineJob?.cancel()
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = true)) }
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = true),
+            )
+        }
     }
 
     private fun onHelpMeRefineDismissed() {
         refineJob?.cancel()
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false)) }
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false),
+            )
+        }
     }
 
     private fun onToneSelected(tone: JournalPromptToneUiState) {
@@ -201,7 +209,11 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
         val entry = state.entry ?: return
         if (helpMeRefine.isGenerating || !state.isEditable) return
         if (isRegenerate && helpMeRefine.regenerationsUsed >= MAX_REGENERATIONS) return
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(isGenerating = true, error = null)) }
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.copy(isGenerating = true, error = null),
+            )
+        }
         refineJob = viewModelScope.launch {
             val result = requestJournalRefinementPrompt(state.editedText, tone.toDomain())
             // The 24h window can close mid-request (the call takes 10-20s); a result that lands
@@ -236,7 +248,9 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
 
     // Preserves regenerationsUsed — the cap persists across dialog close/reopen for this screen
     // visit and only resets when a new JournalEntryDetailViewModel instance is created.
-    private fun HelpMeRefineUiState.resetForNewSession(isVisible: Boolean): HelpMeRefineUiState = copy(
+    private fun HelpMeRefineUiState.resetForNewSession(
+        isVisible: Boolean,
+    ): HelpMeRefineUiState = copy(
         isVisible = isVisible,
         step = HelpMeRefineStep.INPUT,
         selectedTone = null,
@@ -259,7 +273,9 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
             )
         },
         onFailure = { throwable ->
-            val error = (throwable as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
+            val error =
+                (throwable as? AiAssistException)?.error?.toUiState()
+                    ?: AiAssistErrorUiState.UNKNOWN
             copy(isGenerating = false, error = error)
         },
     )

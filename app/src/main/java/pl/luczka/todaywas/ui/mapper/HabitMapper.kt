@@ -20,7 +20,10 @@ fun Habit.toUiState(todayCheckIn: HabitCheckIn?): HabitUiState = HabitUiState(
     type = type.toUiState(),
     todayStatus = when {
         todayCheckIn == null -> HabitCheckInStatusUiState.NotLogged
-        type == HabitType.BINARY -> HabitCheckInStatusUiState.LoggedBinary(done = todayCheckIn.value == 1)
+        type == HabitType.BINARY -> HabitCheckInStatusUiState.LoggedBinary(
+            done =
+                todayCheckIn.value == 1,
+        )
         else -> HabitCheckInStatusUiState.LoggedScale(value = todayCheckIn.value)
     },
 )

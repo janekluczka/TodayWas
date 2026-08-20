@@ -50,9 +50,18 @@ class JournalRepositoryImplTest {
         var purgeDeletedBeforeCallCount = 0
             private set
 
-        override fun observeEntries(): Flow<List<JournalEntryEntity>> = flowOf(entities.values.filter { it.deletedAt == null }.toList())
+        override fun observeEntries(): Flow<List<JournalEntryEntity>> = flowOf(
+            entities.values
+                .filter {
+                    it.deletedAt ==
+                        null
+                }.toList(),
+        )
 
-        override suspend fun getEntry(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
+        override suspend fun getEntry(id: String): JournalEntryEntity? = entities[id]?.takeIf {
+            it.deletedAt ==
+                null
+        }
 
         override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> {
             if (shouldFailInsert) return Result.failure(RuntimeException("simulated write failure"))
@@ -65,7 +74,9 @@ class JournalRepositoryImplTest {
             text: String,
             updatedAt: Long,
         ): Result<JournalEntryEntity> {
-            val existing = entities[id] ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
+            val existing =
+                entities[id]
+                    ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
             val updated = existing.copy(text = text, updatedAt = updatedAt)
             entities[id] = updated
             return Result.success(updated)
@@ -80,7 +91,8 @@ class JournalRepositoryImplTest {
             return Result.success(existing?.copy(deletedAt = deletedAt))
         }
 
-        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = entities.values.toList()
+        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = entities.values
+            .toList()
 
         override suspend fun applyRemoteSnapshot(toApply: List<JournalEntryEntity>) {
             applyRemoteSnapshotCallCount++
@@ -90,7 +102,10 @@ class JournalRepositoryImplTest {
 
         override suspend fun purgeDeletedBefore(cutoff: Long) {
             purgeDeletedBeforeCallCount++
-            entities.values.filter { it.deletedAt != null && it.deletedAt < cutoff }.forEach { entities.remove(it.id) }
+            entities.values
+                .filter {
+                    it.deletedAt != null && it.deletedAt < cutoff
+                }.forEach { entities.remove(it.id) }
         }
 
         override suspend fun clearAll(): Result<Unit> {
@@ -103,7 +118,14 @@ class JournalRepositoryImplTest {
     fun `should return the mapped domain entry when getEntry finds it`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
+            val entity =
+                JournalEntryEntity(
+                    id = "1",
+                    date = "2026-07-27",
+                    text = "Today was good.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                )
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
             val repository = repository(local)
 
@@ -147,7 +169,14 @@ class JournalRepositoryImplTest {
     fun `should schedule a sync when signed in and deleteEntry succeeds`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
+            val entity =
+                JournalEntryEntity(
+                    id = "1",
+                    date = "2026-07-27",
+                    text = "Today was good.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                )
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
@@ -164,7 +193,14 @@ class JournalRepositoryImplTest {
     fun `should not schedule a sync when signed out and deleteEntry succeeds`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
+            val entity =
+                JournalEntryEntity(
+                    id = "1",
+                    date = "2026-07-27",
+                    text = "Today was good.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                )
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
@@ -232,7 +268,13 @@ class JournalRepositoryImplTest {
         runTest {
             // Arrange
             val localOnly =
-                JournalEntryEntity(id = "local-1", date = "2026-07-27", text = "Local only.", createdAt = 1_000L, updatedAt = 1_000L)
+                JournalEntryEntity(
+                    id = "local-1",
+                    date = "2026-07-27",
+                    text = "Local only.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                )
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("local-1" to localOnly))
             val remoteOnly = JournalEntryRemoteDto(
                 id = "remote-1",
@@ -243,7 +285,8 @@ class JournalRepositoryImplTest {
                 updatedAt = "2026-07-20T00:00:00Z",
                 deletedAt = null,
             )
-            val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("remote-1" to remoteOnly))
+            val remote =
+                FakeRemoteJournalDataSource(entries = mutableMapOf("remote-1" to remoteOnly))
             val auth = FakeAuthRepository(currentUserId = "user-1")
             val repository = repository(local, remote = remote, auth = auth)
 
@@ -263,7 +306,13 @@ class JournalRepositoryImplTest {
             // Arrange - local has a stale, unsynced, non-deleted edit with a *newer* updatedAt than
             // the remote tombstone, exercising tombstone supremacy over plain timestamp comparison.
             val staleEdit =
-                JournalEntryEntity(id = "1", date = "2026-07-27", text = "Stale edit.", createdAt = 1_000L, updatedAt = 9_999_999L)
+                JournalEntryEntity(
+                    id = "1",
+                    date = "2026-07-27",
+                    text = "Stale edit.",
+                    createdAt = 1_000L,
+                    updatedAt = 9_999_999L,
+                )
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to staleEdit))
             val remoteTombstone = JournalEntryRemoteDto(
                 id = "1",
@@ -323,7 +372,14 @@ class JournalRepositoryImplTest {
     fun `should delegate to the local data source when clearLocal is called`() =
         runTest {
             // Arrange
-            val entity = JournalEntryEntity(id = "1", date = "2026-07-27", text = "Today was good.", createdAt = 1_000L, updatedAt = 1_000L)
+            val entity =
+                JournalEntryEntity(
+                    id = "1",
+                    date = "2026-07-27",
+                    text = "Today was good.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                )
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
             val repository = repository(local)
 

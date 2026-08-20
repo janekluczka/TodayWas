@@ -555,7 +555,12 @@ class OnboardingViewModelTest {
             // Arrange
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
-            val viewModel = viewModel(FakeOnboardingRepository(), authRepository, journalRepository = journalRepository)
+            val viewModel =
+                viewModel(
+                    FakeOnboardingRepository(),
+                    authRepository,
+                    journalRepository = journalRepository,
+                )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
 
@@ -592,7 +597,12 @@ class OnboardingViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
+            val viewModel =
+                viewModel(
+                    onboardingRepository,
+                    authRepository,
+                    journalRepository = journalRepository,
+                )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)
@@ -617,7 +627,12 @@ class OnboardingViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
+            val viewModel =
+                viewModel(
+                    onboardingRepository,
+                    authRepository,
+                    journalRepository = journalRepository,
+                )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingIntent.SignUpSubmitClicked)

@@ -27,8 +27,10 @@ class WorkManagerSyncScheduler @Inject constructor(
                     .Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build(),
-            ).setBackoffCriteria(BackoffPolicy.EXPONENTIAL, Duration.ofMillis(WorkRequest.MIN_BACKOFF_MILLIS))
-            .build()
+            ).setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL,
+                Duration.ofMillis(WorkRequest.MIN_BACKOFF_MILLIS),
+            ).build()
         workManager.enqueueUniqueWork(SYNC_WORK_NAME, ExistingWorkPolicy.KEEP, request)
     }
 }

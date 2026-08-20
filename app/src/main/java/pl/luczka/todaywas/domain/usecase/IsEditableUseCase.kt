@@ -8,5 +8,7 @@ import javax.inject.Inject
 class IsEditableUseCase @Inject constructor(
     private val clock: Clock,
 ) {
-    operator fun invoke(createdAt: Instant): Boolean = EditWindow.isEditable(createdAt, clock.instant())
+    operator fun invoke(
+        createdAt: Instant,
+    ): Boolean = EditWindow.isEditable(createdAt, clock.instant())
 }

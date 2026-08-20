@@ -19,7 +19,9 @@ class AuthRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,
 ) : AuthRepository {
 
-    override fun observeAuthState(): Flow<AuthState> = supabase.auth.sessionStatus.map { it.toAuthState() }
+    override fun observeAuthState(): Flow<AuthState> = supabase.auth.sessionStatus.map {
+        it.toAuthState()
+    }
 
     override fun currentUserId(): String? = supabase.auth.currentUserOrNull()?.id
 

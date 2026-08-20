@@ -56,7 +56,10 @@ class UpdateHabitCheckInUseCaseTest {
     fun `should return failure and never call the repository when past the 24h boundary`() =
         runTest {
             // Arrange
-            val clock = Clock.fixed(createdAt.plus(Duration.ofHours(24).plusSeconds(1)), ZoneOffset.UTC)
+            val clock = Clock.fixed(
+                createdAt.plus(Duration.ofHours(24).plusSeconds(1)),
+                ZoneOffset.UTC,
+            )
             val repository = FakeHabitRepository()
             val useCase = UpdateHabitCheckInUseCase(repository, clock)
 

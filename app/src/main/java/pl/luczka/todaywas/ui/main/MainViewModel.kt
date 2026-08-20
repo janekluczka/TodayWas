@@ -52,14 +52,17 @@ class MainViewModel @Inject constructor(
     private val clock: Clock,
 ) : ViewModel() {
 
-    private val selectedJournalWindow = MutableStateFlow<ContributionWindow>(ContributionWindow.RollingTwelveMonths)
+    private val selectedJournalWindow =
+        MutableStateFlow<ContributionWindow>(ContributionWindow.RollingTwelveMonths)
 
     private val _uiState = MutableStateFlow(
         MainUiState(
             journalEntries = emptyList(),
             habits = emptyList(),
-            journalContributionGrid = ContributionGrid(window = ContributionWindow.RollingTwelveMonths, days = emptyMap())
-                .toUiState(clock.instant()),
+            journalContributionGrid = ContributionGrid(
+                window = ContributionWindow.RollingTwelveMonths,
+                days = emptyMap(),
+            ).toUiState(clock.instant()),
             journalAvailableWindows = listOf(ContributionWindowUiState.RollingTwelveMonths),
             journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             fabActions = emptyList(),
@@ -75,14 +78,15 @@ class MainViewModel @Inject constructor(
     private val eventChannel = Channel<MainUiEvent>(Channel.BUFFERED)
     val events: Flow<MainUiEvent> = eventChannel.receiveAsFlow()
 
-    private val journalContributionData: Flow<JournalContributionData> = observeJournalContribution(selectedJournalWindow)
-        .map { summary ->
-            val now = clock.instant()
-            JournalContributionData(
-                grid = summary.grid.toUiState(now),
-                availableWindows = summary.availableWindows.map { it.toUiState() },
-            )
-        }
+    private val journalContributionData: Flow<JournalContributionData> = observeJournalContribution(
+        selectedJournalWindow,
+    ).map { summary ->
+        val now = clock.instant()
+        JournalContributionData(
+            grid = summary.grid.toUiState(now),
+            availableWindows = summary.availableWindows.map { it.toUiState() },
+        )
+    }
 
     init {
         viewModelScope.launch {
@@ -97,7 +101,11 @@ class MainViewModel @Inject constructor(
                     habits = board.toHabitUiStates(today = LocalDate.now(clock)),
                 )
             }
-            combine(rawSources, selectedJournalWindow, journalContributionData) { raw, selectedWindow, contribution ->
+            combine(
+                rawSources,
+                selectedJournalWindow,
+                journalContributionData,
+            ) { raw, selectedWindow, contribution ->
                 CombinedMainState(
                     journalEntries = raw.journalEntries,
                     addableSlots = raw.addableSlots,
@@ -144,12 +152,24 @@ class MainViewModel @Inject constructor(
             is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
             is MainIntent.HabitClicked -> onHabitClicked(intent.habit)
             is MainIntent.JournalWindowSelected -> onJournalWindowSelected(intent.window)
-            MainIntent.AccountIconClicked -> _uiState.update { it.copy(isAccountSheetVisible = true) }
-            MainIntent.AccountSheetDismissed -> _uiState.update { it.copy(isAccountSheetVisible = false) }
+            MainIntent.AccountIconClicked -> _uiState.update {
+                it.copy(
+                    isAccountSheetVisible = true,
+                )
+            }
+            MainIntent.AccountSheetDismissed -> _uiState.update {
+                it.copy(
+                    isAccountSheetVisible = false,
+                )
+            }
             MainIntent.SignInSignUpPromptClicked -> onSignInSignUpPromptClicked()
             MainIntent.SignOutClicked -> _uiState.update { it.copy(isSignOutConfirmVisible = true) }
             MainIntent.SignOutConfirmed -> onSignOutConfirmed()
-            MainIntent.SignOutCancelled -> _uiState.update { it.copy(isSignOutConfirmVisible = false) }
+            MainIntent.SignOutCancelled -> _uiState.update {
+                it.copy(
+                    isSignOutConfirmVisible = false,
+                )
+            }
         }
     }
 
@@ -166,8 +186,10 @@ class MainViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isSigningOut = false,
-                    isSignOutConfirmVisible = if (result.isSuccess) false else it.isSignOutConfirmVisible,
-                    isAccountSheetVisible = if (result.isSuccess) false else it.isAccountSheetVisible,
+                    isSignOutConfirmVisible =
+                        if (result.isSuccess) false else it.isSignOutConfirmVisible,
+                    isAccountSheetVisible =
+                        if (result.isSuccess) false else it.isAccountSheetVisible,
                 )
             }
             if (result.isFailure) {
@@ -184,9 +206,13 @@ class MainViewModel @Inject constructor(
     private fun onFabActionClicked(action: FabActionUiState) {
         _uiState.update { it.copy(fabExpanded = false) }
         when (action) {
-            FabActionUiState.ADD_JOURNAL_ENTRY -> eventChannel.trySend(MainUiEvent.NavigateToAddEntry)
+            FabActionUiState.ADD_JOURNAL_ENTRY -> eventChannel.trySend(
+                MainUiEvent.NavigateToAddEntry,
+            )
             FabActionUiState.CREATE_HABIT -> eventChannel.trySend(MainUiEvent.NavigateToCreateHabit)
-            FabActionUiState.LOG_HABIT_CHECK_INS -> eventChannel.trySend(MainUiEvent.NavigateToLogHabitCheckIns)
+            FabActionUiState.LOG_HABIT_CHECK_INS -> eventChannel.trySend(
+                MainUiEvent.NavigateToLogHabitCheckIns,
+            )
         }
     }
 

@@ -41,7 +41,9 @@ class SaveHabitCheckInsUseCase @Inject constructor(
 
         return when {
             results.all { it.isSuccess } -> Result.success(Unit)
-            results.any { it.exceptionOrNull() is EditWindowExpiredException } -> Result.failure(EditWindowExpiredException())
+            results.any {
+                it.exceptionOrNull() is EditWindowExpiredException
+            } -> Result.failure(EditWindowExpiredException())
             else -> results.first { it.isFailure }
         }
     }

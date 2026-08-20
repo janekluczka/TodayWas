@@ -20,12 +20,13 @@ class RemoteHabitCheckInDataSourceImpl @Inject constructor(
         supabase.postgrest.from(TABLE).upsert(checkIns) { onConflict = "id" }
     }
 
-    override suspend fun fetchAll(userId: String): Result<List<HabitCheckInRemoteDto>> = remoteCall {
-        supabase.postgrest
-            .from(TABLE)
-            .select { filter { eq("user_id", userId) } }
-            .decodeList<HabitCheckInRemoteDto>()
-    }
+    override suspend fun fetchAll(userId: String): Result<List<HabitCheckInRemoteDto>> =
+        remoteCall {
+            supabase.postgrest
+                .from(TABLE)
+                .select { filter { eq("user_id", userId) } }
+                .decodeList<HabitCheckInRemoteDto>()
+        }
 
     // lt("deleted_at", cutoff) alone already excludes active rows: Postgres evaluates
     // `NULL < cutoff` as NULL, which WHERE filters out - no separate "is not null" guard needed.

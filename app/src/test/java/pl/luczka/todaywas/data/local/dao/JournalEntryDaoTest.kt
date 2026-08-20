@@ -196,10 +196,22 @@ class JournalEntryDaoTest {
                 .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.journalEntryDao().insert(
-                JournalEntryEntity(id = "entry-1", date = "2026-07-27", text = "Keep me.", createdAt = 1_000L, updatedAt = 1_000L),
+                JournalEntryEntity(
+                    id = "entry-1",
+                    date = "2026-07-27",
+                    text = "Keep me.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
             )
             db.journalEntryDao().insert(
-                JournalEntryEntity(id = "entry-2", date = "2026-07-26", text = "Delete me.", createdAt = 2_000L, updatedAt = 2_000L),
+                JournalEntryEntity(
+                    id = "entry-2",
+                    date = "2026-07-26",
+                    text = "Delete me.",
+                    createdAt = 2_000L,
+                    updatedAt = 2_000L,
+                ),
             )
 
             // Act
@@ -227,14 +239,26 @@ class JournalEntryDaoTest {
                 .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.journalEntryDao().insert(
-                JournalEntryEntity(id = "entry-1", date = "2026-07-27", text = "First.", createdAt = 1_000L, updatedAt = 1_000L),
+                JournalEntryEntity(
+                    id = "entry-1",
+                    date = "2026-07-27",
+                    text = "First.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
             )
 
             // Act
             var threw = false
             try {
                 db.journalEntryDao().insert(
-                    JournalEntryEntity(id = "entry-2", date = "2026-07-27", text = "Second.", createdAt = 2_000L, updatedAt = 2_000L),
+                    JournalEntryEntity(
+                        id = "entry-2",
+                        date = "2026-07-27",
+                        text = "Second.",
+                        createdAt = 2_000L,
+                        updatedAt = 2_000L,
+                    ),
                 )
                 fail("expected insert to throw on the conflicting active date")
             } catch (e: Exception) {
@@ -259,13 +283,25 @@ class JournalEntryDaoTest {
                 .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.journalEntryDao().insert(
-                JournalEntryEntity(id = "entry-1", date = "2026-07-27", text = "First.", createdAt = 1_000L, updatedAt = 1_000L),
+                JournalEntryEntity(
+                    id = "entry-1",
+                    date = "2026-07-27",
+                    text = "First.",
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
             )
             db.journalEntryDao().softDeleteById("entry-1", 2_000L)
 
             // Act
             db.journalEntryDao().insert(
-                JournalEntryEntity(id = "entry-2", date = "2026-07-27", text = "Second.", createdAt = 3_000L, updatedAt = 3_000L),
+                JournalEntryEntity(
+                    id = "entry-2",
+                    date = "2026-07-27",
+                    text = "Second.",
+                    createdAt = 3_000L,
+                    updatedAt = 3_000L,
+                ),
             )
             val active = db.journalEntryDao().observeAll().first()
             db.close()

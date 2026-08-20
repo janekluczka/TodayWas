@@ -43,7 +43,9 @@ class FakeJournalRepository(
 
     override fun observeEntries(): Flow<List<JournalEntry>> = entriesFlow
 
-    override suspend fun getEntry(id: String): JournalEntry? = entriesFlow.value.find { it.id == id }
+    override suspend fun getEntry(id: String): JournalEntry? = entriesFlow.value.find {
+        it.id == id
+    }
 
     override suspend fun addEntry(
         date: LocalDate,

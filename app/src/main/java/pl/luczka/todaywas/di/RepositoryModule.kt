@@ -45,17 +45,23 @@ abstract class RepositoryModule {
     abstract fun bindAiAssistRepository(impl: AiAssistRepositoryImpl): AiAssistRepository
 
     @Binds
-    abstract fun bindRemoteJournalDataSource(impl: RemoteJournalDataSourceImpl): RemoteJournalDataSource
+    abstract fun bindRemoteJournalDataSource(
+        impl: RemoteJournalDataSourceImpl,
+    ): RemoteJournalDataSource
 
     @Binds
     abstract fun bindRemoteHabitDataSource(impl: RemoteHabitDataSourceImpl): RemoteHabitDataSource
 
     @Binds
-    abstract fun bindRemoteHabitCheckInDataSource(impl: RemoteHabitCheckInDataSourceImpl): RemoteHabitCheckInDataSource
+    abstract fun bindRemoteHabitCheckInDataSource(
+        impl: RemoteHabitCheckInDataSourceImpl,
+    ): RemoteHabitCheckInDataSource
 
     @Binds
     abstract fun bindLocalHabitDataSource(impl: LocalHabitDataSourceImpl): LocalHabitDataSource
 
     @Binds
-    abstract fun bindLocalJournalDataSource(impl: LocalJournalDataSourceImpl): LocalJournalDataSource
+    abstract fun bindLocalJournalDataSource(
+        impl: LocalJournalDataSourceImpl,
+    ): LocalJournalDataSource
 }

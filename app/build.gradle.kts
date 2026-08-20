@@ -41,8 +41,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "SUPABASE_URL", "\"${requiredLocalProperty("SUPABASE_URL")}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${requiredLocalProperty("SUPABASE_ANON_KEY")}\"")
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${optionalLocalProperty("GOOGLE_WEB_CLIENT_ID")}\"")
+        buildConfigField(
+            "String",
+            "SUPABASE_ANON_KEY",
+            "\"${requiredLocalProperty("SUPABASE_ANON_KEY")}\"",
+        )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${optionalLocalProperty("GOOGLE_WEB_CLIENT_ID")}\"",
+        )
     }
 
     buildTypes {

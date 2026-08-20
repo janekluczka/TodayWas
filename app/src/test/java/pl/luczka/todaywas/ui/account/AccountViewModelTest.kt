@@ -52,7 +52,12 @@ class AccountViewModelTest {
         signUpWithEmail = SignUpWithEmailUseCase(repository),
         signInWithEmail = SignInWithEmailUseCase(repository),
         signInWithGoogle = SignInWithGoogleUseCase(repository),
-        signOut = SignOutUseCase(repository, journalRepository, habitRepository, onboardingRepository),
+        signOut = SignOutUseCase(
+            repository,
+            journalRepository,
+            habitRepository,
+            onboardingRepository,
+        ),
         getLocalDataSummary = GetLocalDataSummaryUseCase(journalRepository, habitRepository),
         syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
         markLocalDataSynced = MarkLocalDataSyncedUseCase(onboardingRepository),
@@ -312,7 +317,8 @@ class AccountViewModelTest {
     @Test
     fun `should call signOut when SignOutClicked is dispatched`() = runTest {
         // Arrange
-        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val repository =
+            FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         val viewModel = viewModel(repository)
 
         // Act
@@ -325,11 +331,13 @@ class AccountViewModelTest {
     @Test
     fun `should clear synced local data when SignOutClicked succeeds`() = runTest {
         // Arrange
-        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val repository =
+            FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         val journalRepository = FakeJournalRepository()
         val habitRepository = FakeHabitRepository()
         val onboardingRepository = FakeOnboardingRepository()
-        val viewModel = viewModel(repository, journalRepository, habitRepository, onboardingRepository)
+        val viewModel =
+            viewModel(repository, journalRepository, habitRepository, onboardingRepository)
 
         // Act
         viewModel.onIntent(AccountIntent.SignOutClicked)
@@ -344,12 +352,14 @@ class AccountViewModelTest {
     @Test
     fun `should not clear local data when SignOutClicked fails`() = runTest {
         // Arrange
-        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val repository =
+            FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         repository.signOutError = AuthError.NetworkUnavailable
         val journalRepository = FakeJournalRepository()
         val habitRepository = FakeHabitRepository()
         val onboardingRepository = FakeOnboardingRepository()
-        val viewModel = viewModel(repository, journalRepository, habitRepository, onboardingRepository)
+        val viewModel =
+            viewModel(repository, journalRepository, habitRepository, onboardingRepository)
 
         // Act
         viewModel.onIntent(AccountIntent.SignOutClicked)
@@ -364,7 +374,8 @@ class AccountViewModelTest {
     @Test
     fun `should emit a ShowError event and clear isSigningOut when SignOutClicked fails`() = runTest {
         // Arrange
-        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val repository =
+            FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         repository.signOutError = AuthError.NetworkUnavailable
         val viewModel = viewModel(repository)
         val events = mutableListOf<AccountUiEvent>()
@@ -386,7 +397,8 @@ class AccountViewModelTest {
     @Test
     fun `should reset a stale SUCCESS step back to SIGN_IN when SignOutClicked is dispatched`() = runTest {
         // Arrange
-        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val repository =
+            FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         val viewModel = viewModel(repository)
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
         fillSignUpForm(viewModel)
@@ -406,7 +418,12 @@ class AccountViewModelTest {
         val repository = FakeAuthRepository()
         val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
         val onboardingRepository = FakeOnboardingRepository()
-        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        val viewModel =
+            viewModel(
+                repository,
+                journalRepository = journalRepository,
+                onboardingRepository = onboardingRepository,
+            )
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
         fillSignUpForm(viewModel)
 
@@ -448,7 +465,12 @@ class AccountViewModelTest {
                 hasSyncedLocalData = true,
             ),
         )
-        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        val viewModel =
+            viewModel(
+                repository,
+                journalRepository = journalRepository,
+                onboardingRepository = onboardingRepository,
+            )
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
         fillSignUpForm(viewModel)
 
@@ -465,7 +487,12 @@ class AccountViewModelTest {
         val repository = FakeAuthRepository()
         val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
         val onboardingRepository = FakeOnboardingRepository()
-        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        val viewModel =
+            viewModel(
+                repository,
+                journalRepository = journalRepository,
+                onboardingRepository = onboardingRepository,
+            )
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
         fillSignUpForm(viewModel)
         viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
@@ -487,7 +514,12 @@ class AccountViewModelTest {
         val repository = FakeAuthRepository()
         val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
         val onboardingRepository = FakeOnboardingRepository()
-        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        val viewModel =
+            viewModel(
+                repository,
+                journalRepository = journalRepository,
+                onboardingRepository = onboardingRepository,
+            )
         viewModel.onIntent(AccountIntent.SignUpLinkClicked)
         fillSignUpForm(viewModel)
         viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
@@ -507,7 +539,12 @@ class AccountViewModelTest {
         val repository = FakeAuthRepository()
         val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
         val onboardingRepository = FakeOnboardingRepository()
-        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        val viewModel =
+            viewModel(
+                repository,
+                journalRepository = journalRepository,
+                onboardingRepository = onboardingRepository,
+            )
         val events = mutableListOf<AccountUiEvent>()
         val collectJob = launch { viewModel.events.collect { events.add(it) } }
         viewModel.onIntent(AccountIntent.SignInEmailChanged("person@example.com"))
@@ -533,10 +570,16 @@ class AccountViewModelTest {
     @Test
     fun `should show DATA_SYNC_REVIEW when SyncLocalDataClicked is dispatched with unsynced local data`() = runTest {
         // Arrange
-        val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+        val repository =
+            FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
         val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
         val onboardingRepository = FakeOnboardingRepository()
-        val viewModel = viewModel(repository, journalRepository = journalRepository, onboardingRepository = onboardingRepository)
+        val viewModel =
+            viewModel(
+                repository,
+                journalRepository = journalRepository,
+                onboardingRepository = onboardingRepository,
+            )
 
         // Act
         viewModel.onIntent(AccountIntent.SyncLocalDataClicked)

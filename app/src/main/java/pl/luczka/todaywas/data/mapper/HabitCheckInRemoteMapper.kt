@@ -17,11 +17,11 @@ fun HabitCheckIn.toRemoteDto(userId: String): HabitCheckInRemoteDto = HabitCheck
     deletedAt = deletedAt?.toString(),
 )
 
-// Collapses the toDomain().toRemoteDto(userId) hop callers would otherwise need when pushing
-// local entities straight to remote.
-fun HabitCheckInEntity.toRemoteDto(userId: String): HabitCheckInRemoteDto = toDomain().toRemoteDto(userId)
+fun HabitCheckInEntity.toRemoteDto(userId: String): HabitCheckInRemoteDto =
+    toDomain().toRemoteDto(userId)
 
-fun List<HabitCheckInEntity>.toRemoteDto(userId: String): List<HabitCheckInRemoteDto> = map { it.toRemoteDto(userId) }
+fun List<HabitCheckInEntity>.toRemoteDto(userId: String): List<HabitCheckInRemoteDto> =
+    map { it.toRemoteDto(userId) }
 
 fun HabitCheckInRemoteDto.toEntity(): HabitCheckInEntity = HabitCheckInEntity(
     id = id,

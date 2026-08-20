@@ -151,12 +151,23 @@ private fun JournalDateStrip(
 ) {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
-    val selectedDate = if (uiState.selectedSlot == JournalDateSlotUiState.TODAY) today else yesterday
+    val selectedDate = if (uiState.selectedSlot ==
+        JournalDateSlotUiState.TODAY
+    ) {
+        today
+    } else {
+        yesterday
+    }
 
     DsDateStrip(
         selectedDate = selectedDate,
-        isSelectable = { date -> date.toSlot(today, yesterday)?.let { it in uiState.availableSlots } ?: false },
-        onDateSelected = { date -> date.toSlot(today, yesterday)?.let { onIntent(AddJournalEntryIntent.SlotSelected(it)) } },
+        isSelectable = { date ->
+            date.toSlot(today, yesterday)?.let { it in uiState.availableSlots }
+                ?: false
+        },
+        onDateSelected = { date ->
+            date.toSlot(today, yesterday)?.let { onIntent(AddJournalEntryIntent.SlotSelected(it)) }
+        },
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -184,7 +195,9 @@ private fun HelpMeStartDialog(
                 DsSegmentedRow(
                     items = JournalPromptToneUiState.entries.toList(),
                     selectedItem = uiState.selectedTone,
-                    onItemSelected = { tone -> tone?.let { onIntent(AddJournalEntryIntent.ToneSelected(it)) } },
+                    onItemSelected = { tone ->
+                        tone?.let { onIntent(AddJournalEntryIntent.ToneSelected(it)) }
+                    },
                     enabled = !uiState.isGenerating,
                     allowDeselect = false,
                     label = { toneLabels.getValue(it) },
@@ -201,7 +214,8 @@ private fun HelpMeStartDialog(
                     DsAssistChip(
                         text = stringResource(R.string.journal_help_me_start_regenerate_cta),
                         onClick = { onIntent(AddJournalEntryIntent.RegenerateClicked) },
-                        enabled = !uiState.isGenerating && uiState.regenerationsUsed < MAX_REGENERATIONS,
+                        enabled =
+                            !uiState.isGenerating && uiState.regenerationsUsed < MAX_REGENERATIONS,
                     )
                 }
                 uiState.error?.let { error ->
@@ -235,23 +249,36 @@ private fun HelpMeStartDialog(
 
 @Composable
 private fun toneLabel(tone: JournalPromptToneUiState): String = when (tone) {
-    JournalPromptToneUiState.VERY_BAD -> stringResource(R.string.journal_help_me_start_tone_very_bad)
+    JournalPromptToneUiState.VERY_BAD -> stringResource(
+        R.string.journal_help_me_start_tone_very_bad,
+    )
     JournalPromptToneUiState.BAD -> stringResource(R.string.journal_help_me_start_tone_bad)
     JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_help_me_start_tone_neutral)
     JournalPromptToneUiState.GOOD -> stringResource(R.string.journal_help_me_start_tone_good)
-    JournalPromptToneUiState.VERY_GOOD -> stringResource(R.string.journal_help_me_start_tone_very_good)
+    JournalPromptToneUiState.VERY_GOOD -> stringResource(
+        R.string.journal_help_me_start_tone_very_good,
+    )
 }
 
 @Composable
 private fun helpMeStartErrorMessage(error: AiAssistErrorUiState): String = when (error) {
-    AiAssistErrorUiState.INVALID_REQUEST -> stringResource(R.string.journal_help_me_start_error_invalid_request)
-    AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(R.string.journal_help_me_start_error_upstream_failed)
-    AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(R.string.journal_help_me_start_error_not_signed_in)
-    AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(R.string.journal_help_me_start_error_network_unavailable)
+    AiAssistErrorUiState.INVALID_REQUEST -> stringResource(
+        R.string.journal_help_me_start_error_invalid_request,
+    )
+    AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(
+        R.string.journal_help_me_start_error_upstream_failed,
+    )
+    AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(
+        R.string.journal_help_me_start_error_not_signed_in,
+    )
+    AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(
+        R.string.journal_help_me_start_error_network_unavailable,
+    )
     AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_help_me_start_error_unknown)
 }
 
-private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<AddJournalEntryUiState> {
+private class AddJournalEntryScreenPreviewStateProvider :
+    PreviewParameterProvider<AddJournalEntryUiState> {
     override val values = sequenceOf(
         AddJournalEntryUiState(
             availableSlots = listOf(JournalDateSlotUiState.TODAY),
@@ -289,7 +316,8 @@ private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvid
 @PreviewLightDark
 @Composable
 private fun AddJournalEntryScreenPreview(
-    @PreviewParameter(AddJournalEntryScreenPreviewStateProvider::class) state: AddJournalEntryUiState,
+    @PreviewParameter(AddJournalEntryScreenPreviewStateProvider::class) state:
+        AddJournalEntryUiState,
 ) {
     DsTheme {
         AddJournalEntryScreenContent(
@@ -302,19 +330,25 @@ private fun AddJournalEntryScreenPreview(
 private class HelpMeStartDialogPreviewStateProvider : PreviewParameterProvider<HelpMeStartUiState> {
     override val values = sequenceOf(
         HelpMeStartUiState(isVisible = true),
-        HelpMeStartUiState(isVisible = true, selectedTone = JournalPromptToneUiState.GOOD, isGenerating = true),
+        HelpMeStartUiState(
+            isVisible = true,
+            selectedTone = JournalPromptToneUiState.GOOD,
+            isGenerating = true,
+        ),
         HelpMeStartUiState(
             isVisible = true,
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            generatedText = "I made real progress today, and it feels good to see it come together...",
+            generatedText =
+                "I made real progress today, and it feels good to see it come together...",
             regenerationsUsed = 1,
         ),
         HelpMeStartUiState(
             isVisible = true,
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            generatedText = "I made real progress today, and it feels good to see it come together...",
+            generatedText =
+                "I made real progress today, and it feels good to see it come together...",
             regenerationsUsed = MAX_REGENERATIONS,
         ),
         HelpMeStartUiState(

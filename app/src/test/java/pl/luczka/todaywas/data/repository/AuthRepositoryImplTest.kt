@@ -35,7 +35,10 @@ private fun errorBody(errorCode: String) = """{"error_code":"$errorCode","error_
 class AuthRepositoryImplTest {
 
     private fun repository(engine: MockEngine) = AuthRepositoryImpl(
-        createSupabaseClient(supabaseUrl = "https://example.supabase.co", supabaseKey = "test-key") {
+        createSupabaseClient(
+            supabaseUrl = "https://example.supabase.co",
+            supabaseKey = "test-key",
+        ) {
             httpEngine = engine
             install(Auth) { minimalConfig() }
         },
@@ -46,7 +49,13 @@ class AuthRepositoryImplTest {
         runTest {
             // Arrange
             val engine =
-                MockEngine { respond(SUCCESS_SESSION_BODY, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json")) }
+                MockEngine {
+                    respond(
+                        SUCCESS_SESSION_BODY,
+                        HttpStatusCode.OK,
+                        headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
             val repository = repository(engine)
 
             // Act
@@ -61,7 +70,11 @@ class AuthRepositoryImplTest {
         runTest {
             // Arrange
             val engine = MockEngine {
-                respond(errorBody("invalid_credentials"), HttpStatusCode.BadRequest, headersOf(HttpHeaders.ContentType, "application/json"))
+                respond(
+                    errorBody("invalid_credentials"),
+                    HttpStatusCode.BadRequest,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
             val repository = repository(engine)
 
@@ -79,7 +92,13 @@ class AuthRepositoryImplTest {
         runTest {
             // Arrange
             val engine =
-                MockEngine { respond(SUCCESS_SESSION_BODY, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json")) }
+                MockEngine {
+                    respond(
+                        SUCCESS_SESSION_BODY,
+                        HttpStatusCode.OK,
+                        headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
             val repository = repository(engine)
 
             // Act
@@ -94,7 +113,11 @@ class AuthRepositoryImplTest {
         runTest {
             // Arrange
             val engine = MockEngine {
-                respond(errorBody("email_exists"), HttpStatusCode.BadRequest, headersOf(HttpHeaders.ContentType, "application/json"))
+                respond(
+                    errorBody("email_exists"),
+                    HttpStatusCode.BadRequest,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
             val repository = repository(engine)
 
@@ -141,7 +164,11 @@ class AuthRepositoryImplTest {
             // authCall's try block, not before the coroutine even starts.
             val engine = MockEngine {
                 delay(50)
-                respond(SUCCESS_SESSION_BODY, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                respond(
+                    SUCCESS_SESSION_BODY,
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
             val repository = repository(engine)
             var caught: Throwable? = null

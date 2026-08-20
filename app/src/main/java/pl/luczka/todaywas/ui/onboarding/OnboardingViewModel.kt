@@ -89,13 +89,17 @@ class OnboardingViewModel @Inject constructor(
             is OnboardingIntent.SignInEmailChanged -> onSignInEmailChanged(intent.value)
             is OnboardingIntent.SignInPasswordChanged -> onSignInPasswordChanged(intent.value)
             OnboardingIntent.SignInSubmitClicked -> onSignInSubmitClicked()
-            is OnboardingIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(intent.idToken)
+            is OnboardingIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(
+                intent.idToken,
+            )
             OnboardingIntent.GoogleSignInFailed -> onGoogleSignInFailed()
             OnboardingIntent.SignUpLinkClicked ->
                 _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_UP) }
             is OnboardingIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
             is OnboardingIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
-            is OnboardingIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(intent.value)
+            is OnboardingIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(
+                intent.value,
+            )
             OnboardingIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
             OnboardingIntent.SyncConfirmClicked -> onSyncConfirmClicked()
             OnboardingIntent.SyncSkipClicked -> onSyncSkipClicked()
@@ -104,7 +108,11 @@ class OnboardingViewModel @Inject constructor(
 
     private fun onNextClicked() {
         when (_uiState.value.step) {
-            OnboardingStep.WELCOME -> _uiState.update { it.copy(step = OnboardingStep.ACCOUNT_INFO) }
+            OnboardingStep.WELCOME -> _uiState.update {
+                it.copy(
+                    step = OnboardingStep.ACCOUNT_INFO,
+                )
+            }
             OnboardingStep.ACCOUNT_INFO -> onCompleteAccountStep()
             OnboardingStep.ALL_SET -> eventChannel.trySend(OnboardingUiEvent.Finished)
         }
@@ -150,15 +158,27 @@ class OnboardingViewModel @Inject constructor(
     private fun onStepBack() {
         when (_uiState.value.step) {
             OnboardingStep.ACCOUNT_INFO -> onAccountInfoStepBack()
-            OnboardingStep.ALL_SET -> _uiState.update { it.copy(step = OnboardingStep.ACCOUNT_INFO) }
+            OnboardingStep.ALL_SET -> _uiState.update {
+                it.copy(
+                    step = OnboardingStep.ACCOUNT_INFO,
+                )
+            }
             OnboardingStep.WELCOME -> eventChannel.trySend(OnboardingUiEvent.ExitApp)
         }
     }
 
     private fun onAccountInfoStepBack() {
         when (_uiState.value.accountSubStep) {
-            AccountSubStep.SIGN_UP -> _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_IN) }
-            AccountSubStep.SIGN_IN -> _uiState.update { it.copy(accountSubStep = AccountSubStep.CHOICE) }
+            AccountSubStep.SIGN_UP -> _uiState.update {
+                it.copy(
+                    accountSubStep = AccountSubStep.SIGN_IN,
+                )
+            }
+            AccountSubStep.SIGN_IN -> _uiState.update {
+                it.copy(
+                    accountSubStep = AccountSubStep.CHOICE,
+                )
+            }
             AccountSubStep.DATA_SYNC_REVIEW -> Unit
             AccountSubStep.CHOICE -> _uiState.update { it.copy(step = OnboardingStep.WELCOME) }
         }
@@ -191,11 +211,17 @@ class OnboardingViewModel @Inject constructor(
     }
 
     private fun onSignInEmailChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(email = value, emailError = false),
+            )
+        }
     }
 
     private fun onSignInPasswordChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false))
+        }
     }
 
     private fun onSignInSubmitClicked() {
@@ -245,16 +271,27 @@ class OnboardingViewModel @Inject constructor(
     }
 
     private fun onSignUpEmailChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(email = value, emailError = false),
+            )
+        }
     }
 
     private fun onSignUpPasswordChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false))
+        }
     }
 
     private fun onSignUpRepeatPasswordChanged(value: String) {
         _uiState.update {
-            it.copy(signUpForm = it.signUpForm.copy(repeatPassword = value, repeatPasswordError = false))
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    repeatPassword = value,
+                    repeatPasswordError = false,
+                ),
+            )
         }
     }
 

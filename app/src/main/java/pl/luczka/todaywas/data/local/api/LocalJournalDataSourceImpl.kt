@@ -14,14 +14,18 @@ class LocalJournalDataSourceImpl @Inject constructor(
 
     override suspend fun getEntry(id: String): JournalEntryEntity? = dao.getById(id)
 
-    override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> = safeDbCall { dao.insert(entity) }
+    override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> = safeDbCall {
+        dao.insert(entity)
+    }
 
     override suspend fun updateEntry(
         id: String,
         text: String,
         updatedAt: Long,
     ): Result<JournalEntryEntity> {
-        val existing = dao.getById(id) ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
+        val existing =
+            dao.getById(id)
+                ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
         val entity = existing.copy(text = text, updatedAt = updatedAt)
         return safeDbCall { dao.update(entity) }.map { entity }
     }
@@ -31,10 +35,13 @@ class LocalJournalDataSourceImpl @Inject constructor(
         deletedAt: Long,
     ): Result<JournalEntryEntity?> {
         val existing = dao.getById(id)
-        return safeDbCall { dao.softDeleteById(id, deletedAt) }.map { existing?.copy(deletedAt = deletedAt) }
+        return safeDbCall {
+            dao.softDeleteById(id, deletedAt)
+        }.map { existing?.copy(deletedAt = deletedAt) }
     }
 
-    override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = dao.getAllIncludingDeleted()
+    override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = dao
+        .getAllIncludingDeleted()
 
     override suspend fun applyRemoteSnapshot(toApply: List<JournalEntryEntity>) {
         dao.upsertAll(toApply)

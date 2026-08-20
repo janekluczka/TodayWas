@@ -85,10 +85,11 @@ internal fun contributionLevelColors(): Map<DsContributionLevel, Color> =
 
 // All 7 cells in one week share the same hasGapBefore value (set uniformly by the mapper), so
 // callers only need to check the first cell to decide whether the whole week needs a margin.
-internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean = when (val cell = first()) {
-    is DsContributionCellUiState.Level -> cell.hasGapBefore
-    is DsContributionCellUiState.Blank -> cell.hasGapBefore
-}
+internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean =
+    when (val cell = first()) {
+        is DsContributionCellUiState.Level -> cell.hasGapBefore
+        is DsContributionCellUiState.Blank -> cell.hasGapBefore
+    }
 
 // Shared by both DsContributionGrid (horizontal) and DsContributionTimeline (vertical) so the two
 // stay visually consistent without duplicating the palette/size logic. Pure rendering only —
@@ -132,7 +133,9 @@ fun DsContributionGrid(
     ) {
         items(cells.chunked(7)) { week ->
             Column(
-                modifier = Modifier.padding(start = if (week.weekHasGapBefore()) MONTH_GAP else 0.dp),
+                modifier = Modifier.padding(
+                    start = if (week.weekHasGapBefore()) MONTH_GAP else 0.dp,
+                ),
             ) {
                 week.forEach { cell -> ContributionCell(cell = cell, levelColors = levelColors) }
             }
@@ -140,7 +143,8 @@ fun DsContributionGrid(
     }
 }
 
-private class DsContributionGridPreviewProvider : PreviewParameterProvider<List<DsContributionCellUiState>> {
+private class DsContributionGridPreviewProvider :
+    PreviewParameterProvider<List<DsContributionCellUiState>> {
     private val today = LocalDate.now()
 
     override val values = sequenceOf(
@@ -148,7 +152,16 @@ private class DsContributionGridPreviewProvider : PreviewParameterProvider<List<
         // filled (Mon-Fri), the new month's first column (gap before it) has only the last 2
         // rows filled (Sat-Sun) — matching a month that starts on a Saturday.
         buildList<DsContributionCellUiState> {
-            repeat(5) { add(DsContributionCellUiState.Level(today.minusDays(10), DsContributionLevel.LEVEL_3)) }
+            repeat(
+                5,
+            ) {
+                add(
+                    DsContributionCellUiState.Level(
+                        today.minusDays(10),
+                        DsContributionLevel.LEVEL_3,
+                    ),
+                )
+            }
             add(DsContributionCellUiState.Blank())
             add(DsContributionCellUiState.Blank())
             add(DsContributionCellUiState.Blank(hasGapBefore = true))
@@ -156,19 +169,37 @@ private class DsContributionGridPreviewProvider : PreviewParameterProvider<List<
             add(DsContributionCellUiState.Blank(hasGapBefore = true))
             add(DsContributionCellUiState.Blank(hasGapBefore = true))
             add(DsContributionCellUiState.Blank(hasGapBefore = true))
-            add(DsContributionCellUiState.Level(today.minusDays(2), DsContributionLevel.LEVEL_1, hasGapBefore = true))
-            add(DsContributionCellUiState.Level(today.minusDays(1), DsContributionLevel.LEVEL_5, hasGapBefore = true))
+            add(
+                DsContributionCellUiState.Level(
+                    today.minusDays(2),
+                    DsContributionLevel.LEVEL_1,
+                    hasGapBefore = true,
+                ),
+            )
+            add(
+                DsContributionCellUiState.Level(
+                    today.minusDays(1),
+                    DsContributionLevel.LEVEL_5,
+                    hasGapBefore = true,
+                ),
+            )
             repeat(7) { add(DsContributionCellUiState.Level(today, DsContributionLevel.LEVEL_2)) }
         },
         // A single full column, no gaps.
-        List(7) { DsContributionCellUiState.Level(today.minusDays(it.toLong()), DsContributionLevel.LEVEL_3) },
+        List(7) {
+            DsContributionCellUiState.Level(
+                today.minusDays(it.toLong()),
+                DsContributionLevel.LEVEL_3,
+            )
+        },
     )
 }
 
 @PreviewLightDark
 @Composable
 private fun DsContributionGridPreview(
-    @PreviewParameter(DsContributionGridPreviewProvider::class) cells: List<DsContributionCellUiState>,
+    @PreviewParameter(DsContributionGridPreviewProvider::class) cells:
+        List<DsContributionCellUiState>,
 ) {
     DsTheme {
         DsContributionGrid(cells = cells)

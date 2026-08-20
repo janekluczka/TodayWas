@@ -17,11 +17,20 @@ class SignOutUseCaseTest {
     fun `should clear local data and reset the sync flag when signed out successfully from a signed-in state`() =
         runTest {
             // Arrange
-            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val authRepository =
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
             val onboardingRepository = FakeOnboardingRepository()
-            val useCase = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository)
+            val useCase =
+                SignOutUseCase(
+                    authRepository,
+                    journalRepository,
+                    habitRepository,
+                    onboardingRepository,
+                )
 
             // Act
             val result = useCase()
@@ -37,12 +46,21 @@ class SignOutUseCaseTest {
     fun `should not clear local data when signOut fails and the local session stays signed in`() =
         runTest {
             // Arrange
-            val authRepository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val authRepository =
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             authRepository.signOutError = AuthError.NetworkUnavailable
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
             val onboardingRepository = FakeOnboardingRepository()
-            val useCase = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository)
+            val useCase =
+                SignOutUseCase(
+                    authRepository,
+                    journalRepository,
+                    habitRepository,
+                    onboardingRepository,
+                )
 
             // Act
             val result = useCase()
@@ -62,7 +80,13 @@ class SignOutUseCaseTest {
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
             val onboardingRepository = FakeOnboardingRepository()
-            val useCase = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository)
+            val useCase =
+                SignOutUseCase(
+                    authRepository,
+                    journalRepository,
+                    habitRepository,
+                    onboardingRepository,
+                )
 
             // Act
             val result = useCase()

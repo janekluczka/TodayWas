@@ -168,7 +168,8 @@ class AddJournalEntryViewModelTest {
     fun `should not make helpMeStart visible when HelpMeStartClicked is dispatched while signed out`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel =
+                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
@@ -188,7 +189,10 @@ class AddJournalEntryViewModelTest {
             viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
 
             // Assert
-            assertEquals(JournalPromptToneUiState.GOOD, viewModel.uiState.value.helpMeStart.selectedTone)
+            assertEquals(
+                JournalPromptToneUiState.GOOD,
+                viewModel.uiState.value.helpMeStart.selectedTone,
+            )
         }
 
     @Test
@@ -202,7 +206,10 @@ class AddJournalEntryViewModelTest {
             viewModel.onIntent(AddJournalEntryIntent.ThoughtsChanged("made progress on a hard bug"))
 
             // Assert
-            assertEquals("made progress on a hard bug", viewModel.uiState.value.helpMeStart.thoughts)
+            assertEquals(
+                "made progress on a hard bug",
+                viewModel.uiState.value.helpMeStart.thoughts,
+            )
         }
 
     @Test
@@ -252,7 +259,8 @@ class AddJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.generateResult = Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
+            aiAssistRepository.generateResult =
+                Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
             viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
@@ -303,7 +311,8 @@ class AddJournalEntryViewModelTest {
             viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
-            aiAssistRepository.generateResult = Result.failure(AiAssistException(AiAssistError.UpstreamFailed))
+            aiAssistRepository.generateResult =
+                Result.failure(AiAssistException(AiAssistError.UpstreamFailed))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)

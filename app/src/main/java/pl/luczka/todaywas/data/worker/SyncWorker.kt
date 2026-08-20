@@ -15,5 +15,10 @@ class SyncWorker @AssistedInject constructor(
     private val syncLocalData: SyncLocalDataUseCase,
 ) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result = if (syncLocalData().isSuccess) Result.success() else Result.retry()
+    override suspend fun doWork(): Result = if (syncLocalData().isSuccess) {
+        Result.success()
+    } else {
+        Result
+            .retry()
+    }
 }

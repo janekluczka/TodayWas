@@ -52,7 +52,9 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
             entry<MainKey> {
                 MainScreen(
                     onAddEntryClicked = { backStack.add(AddJournalEntryKey) },
-                    onJournalEntryClicked = { entry -> backStack.add(JournalEntryDetailKey(id = entry.id)) },
+                    onJournalEntryClicked = { entry ->
+                        backStack.add(JournalEntryDetailKey(id = entry.id))
+                    },
                     onCreateHabitClicked = { backStack.add(CreateHabitKey) },
                     onLogCheckInsClicked = { backStack.add(LogHabitCheckInsKey) },
                     onHabitClicked = { habitId -> backStack.add(HabitDetailKey(habitId)) },

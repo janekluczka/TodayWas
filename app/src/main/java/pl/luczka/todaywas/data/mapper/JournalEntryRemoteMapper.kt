@@ -18,9 +18,13 @@ fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEnt
 
 // Collapses the toDomain().toRemoteDto(userId) hop callers would otherwise need when pushing
 // local entities straight to remote.
-fun JournalEntryEntity.toRemoteDto(userId: String): JournalEntryRemoteDto = toDomain().toRemoteDto(userId)
+fun JournalEntryEntity.toRemoteDto(
+    userId: String,
+): JournalEntryRemoteDto = toDomain().toRemoteDto(userId)
 
-fun List<JournalEntryEntity>.toRemoteDto(userId: String): List<JournalEntryRemoteDto> = map { it.toRemoteDto(userId) }
+fun List<JournalEntryEntity>.toRemoteDto(userId: String): List<JournalEntryRemoteDto> = map {
+    it.toRemoteDto(userId)
+}
 
 fun JournalEntryRemoteDto.toEntity(): JournalEntryEntity = JournalEntryEntity(
     id = id,

@@ -25,7 +25,9 @@ interface HabitCheckInDao {
     @Query("SELECT * FROM habit_check_ins WHERE habitId = :habitId AND deletedAt IS NULL")
     suspend fun getByHabitId(habitId: String): List<HabitCheckInEntity>
 
-    @Query("SELECT * FROM habit_check_ins WHERE habitId = :habitId AND date = :date AND deletedAt IS NULL")
+    @Query(
+        "SELECT * FROM habit_check_ins WHERE habitId = :habitId AND date = :date AND deletedAt IS NULL",
+    )
     suspend fun getByHabitAndDate(
         habitId: String,
         date: String,
@@ -56,7 +58,9 @@ interface HabitCheckInDao {
         deletedAt: Long,
     )
 
-    @Query("UPDATE habit_check_ins SET deletedAt = :deletedAt WHERE habitId = :habitId AND deletedAt IS NULL")
+    @Query(
+        "UPDATE habit_check_ins SET deletedAt = :deletedAt WHERE habitId = :habitId AND deletedAt IS NULL",
+    )
     suspend fun softDeleteByHabitId(
         habitId: String,
         deletedAt: Long,

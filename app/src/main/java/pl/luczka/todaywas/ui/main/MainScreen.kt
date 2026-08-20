@@ -83,7 +83,9 @@ fun MainScreen(
                 MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
                 is MainUiEvent.NavigateToHabitDetail -> onHabitClicked(event.habitId)
                 MainUiEvent.NavigateToAccount -> onAccountClicked()
-                is MainUiEvent.ShowError -> snackbarHostState.showSnackbar(errorMessages.getValue(event.error))
+                is MainUiEvent.ShowError -> snackbarHostState.showSnackbar(
+                    errorMessages.getValue(event.error),
+                )
             }
         }
     }
@@ -109,7 +111,9 @@ private fun MainScreenContent(
                     DsIconButton(onClick = { onIntent(MainIntent.AccountIconClicked) }) {
                         DsIcon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = stringResource(R.string.content_description_account),
+                            contentDescription = stringResource(
+                                R.string.content_description_account,
+                            ),
                         )
                     }
                 },
@@ -154,7 +158,11 @@ private fun AccountBottomSheet(
             when (val authState = uiState.authState) {
                 AuthStateUi.Loading -> DsLoadingIndicator()
                 is AuthStateUi.SignedIn -> {
-                    DsText(text = authState.email ?: stringResource(R.string.preferences_signed_in_no_email))
+                    DsText(
+                        text =
+                            authState.email
+                                ?: stringResource(R.string.preferences_signed_in_no_email),
+                    )
                     DsButtonWithLoading(
                         text = stringResource(R.string.preferences_sign_out_cta),
                         onClick = { onIntent(MainIntent.SignOutClicked) },
@@ -252,7 +260,10 @@ private fun JournalSection(
             availableWindows = uiState.journalAvailableWindows,
             selectedWindow = uiState.journalSelectedWindow,
             onWindowSelected = { onIntent(MainIntent.JournalWindowSelected(it)) },
-            modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+            modifier = Modifier.padding(
+                horizontal = DsSpacing.space600,
+                vertical = DsSpacing.space200,
+            ),
         )
         if (uiState.journalEntries.isEmpty()) {
             DsText(
@@ -297,7 +308,9 @@ private fun ContributionWindowChipRow(
 
 @Composable
 private fun ContributionWindowUiState.label(): String = when (this) {
-    ContributionWindowUiState.RollingTwelveMonths -> stringResource(R.string.contribution_window_last_12_months_label)
+    ContributionWindowUiState.RollingTwelveMonths -> stringResource(
+        R.string.contribution_window_last_12_months_label,
+    )
     is ContributionWindowUiState.CalendarYear -> year.toString()
 }
 
@@ -367,7 +380,9 @@ private fun HabitListItem(
 private fun HabitCheckInStatusUiState.displayText(): String = when (this) {
     HabitCheckInStatusUiState.NotLogged -> ""
     is HabitCheckInStatusUiState.LoggedBinary ->
-        stringResource(if (done) R.string.habit_checkin_done_label else R.string.habit_checkin_not_done_label)
+        stringResource(
+            if (done) R.string.habit_checkin_done_label else R.string.habit_checkin_not_done_label,
+        )
     is HabitCheckInStatusUiState.LoggedScale -> value.toString()
 }
 
@@ -389,7 +404,9 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     id = "2",
                     date = LocalDate.now().minusDays(1),
                     formattedDate = "Jul 26, 2026",
-                    text = "A long entry that should get truncated in the list preview once it wraps past two lines of text.",
+                    text =
+                        "A long entry that should get truncated in the list preview once it " +
+                            "wraps past two lines of text.",
                     createdAt = Instant.now(),
                 ),
             ),
@@ -407,7 +424,10 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 4),
                 ),
             ),
-            fabActions = listOf(FabActionUiState.CREATE_HABIT, FabActionUiState.LOG_HABIT_CHECK_INS),
+            fabActions = listOf(
+                FabActionUiState.CREATE_HABIT,
+                FabActionUiState.LOG_HABIT_CHECK_INS,
+            ),
         ),
         previewMainUiState(
             authState = AuthStateUi.Loading,

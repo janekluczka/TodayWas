@@ -25,7 +25,8 @@ class AiAssistErrorMapperTest {
     @Test
     fun `should map to NotSignedIn when throwable is UnauthorizedRestException`() {
         // Arrange
-        val throwable = UnauthorizedRestException("unauthorized", fakeResponse(HttpStatusCode.Unauthorized))
+        val throwable =
+            UnauthorizedRestException("unauthorized", fakeResponse(HttpStatusCode.Unauthorized))
 
         // Act
         val result = throwable.toAiAssistError()
@@ -37,7 +38,8 @@ class AiAssistErrorMapperTest {
     @Test
     fun `should map to InvalidRequest when throwable is BadRequestRestException`() {
         // Arrange
-        val throwable = BadRequestRestException("invalid_request", fakeResponse(HttpStatusCode.BadRequest))
+        val throwable =
+            BadRequestRestException("invalid_request", fakeResponse(HttpStatusCode.BadRequest))
 
         // Act
         val result = throwable.toAiAssistError()
@@ -49,7 +51,8 @@ class AiAssistErrorMapperTest {
     @Test
     fun `should map to UpstreamFailed when throwable is a RestException that is not Unauthorized or BadRequest`() {
         // Arrange
-        val throwable = UnknownRestException("upstream_failed", fakeResponse(HttpStatusCode.BadGateway))
+        val throwable =
+            UnknownRestException("upstream_failed", fakeResponse(HttpStatusCode.BadGateway))
 
         // Act
         val result = throwable.toAiAssistError()

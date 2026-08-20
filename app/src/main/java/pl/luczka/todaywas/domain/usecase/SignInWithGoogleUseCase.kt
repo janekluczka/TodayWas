@@ -7,5 +7,7 @@ class SignInWithGoogleUseCase @Inject constructor(
     private val repository: AuthRepository,
 ) {
 
-    suspend operator fun invoke(idToken: String): Result<Unit> = repository.signInWithGoogleIdToken(idToken)
+    suspend operator fun invoke(idToken: String): Result<Unit> = repository.signInWithGoogleIdToken(
+        idToken,
+    )
 }

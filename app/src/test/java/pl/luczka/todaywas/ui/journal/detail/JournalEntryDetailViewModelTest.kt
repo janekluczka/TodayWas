@@ -296,7 +296,8 @@ class JournalEntryDetailViewModelTest {
     fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while signed out`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel =
+                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
 
@@ -403,7 +404,8 @@ class JournalEntryDetailViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult = Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
+            aiAssistRepository.refineResult =
+                Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)

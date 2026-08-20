@@ -26,7 +26,10 @@ import pl.luczka.todaywas.domain.model.JournalPromptTone
 class AiAssistRepositoryImplTest {
 
     private fun repository(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) = AiAssistRepositoryImpl(
-        createSupabaseClient(supabaseUrl = "https://example.supabase.co", supabaseKey = "test-key") {
+        createSupabaseClient(
+            supabaseUrl = "https://example.supabase.co",
+            supabaseKey = "test-key",
+        ) {
             httpEngine = MockEngine(handler)
             install(Functions)
         },
@@ -37,11 +40,18 @@ class AiAssistRepositoryImplTest {
         runTest {
             // Arrange
             val repository = repository {
-                respond("""{"text":"Generated prompt"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                respond(
+                    """{"text":"Generated prompt"}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
 
             // Act
-            val result = repository.generateJournalStarterPrompt(JournalPromptTone.GOOD, thoughts = null)
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -55,7 +65,10 @@ class AiAssistRepositoryImplTest {
             val repository = repository { respond("upstream failed", HttpStatusCode.BadGateway) }
 
             // Act
-            val result = repository.generateJournalStarterPrompt(JournalPromptTone.GOOD, thoughts = null)
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isFailure)
@@ -68,7 +81,11 @@ class AiAssistRepositoryImplTest {
         runTest {
             // Arrange
             val repository = repository {
-                respond("""{"text":"Refined text"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                respond(
+                    """{"text":"Refined text"}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
 
             // Act
@@ -89,7 +106,11 @@ class AiAssistRepositoryImplTest {
                 val timeoutConfig = request.getCapabilityOrNull(HttpTimeoutCapability)
                 capturedRequestTimeoutMillis = timeoutConfig?.requestTimeoutMillis
                 capturedSocketTimeoutMillis = timeoutConfig?.socketTimeoutMillis
-                respond("""{"text":"ok"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                respond(
+                    """{"text":"ok"}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
 
             // Act
@@ -107,7 +128,11 @@ class AiAssistRepositoryImplTest {
             // invokeAiProxy's try block, not before the coroutine even starts.
             val repository = repository {
                 delay(50)
-                respond("""{"text":"ok"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                respond(
+                    """{"text":"ok"}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
             var caught: Throwable? = null
 

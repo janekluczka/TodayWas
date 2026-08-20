@@ -115,8 +115,16 @@ class HabitDetailViewModel @AssistedInject constructor(
         )
     }
 
-    val uiState: StateFlow<HabitDetailUiState> = combine(viewModelState, contributionData) { state, contribution ->
-        state.toUiState(getFreshLoggableDates(), isEditable::invoke, contribution.grid, contribution.availableWindows)
+    val uiState: StateFlow<HabitDetailUiState> = combine(
+        viewModelState,
+        contributionData,
+    ) { state, contribution ->
+        state.toUiState(
+            getFreshLoggableDates(),
+            isEditable::invoke,
+            contribution.grid,
+            contribution.availableWindows,
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -125,8 +133,10 @@ class HabitDetailViewModel @AssistedInject constructor(
             initialState.toUiState(
                 freshLoggableDates = getFreshLoggableDates(),
                 isEditable = isEditable::invoke,
-                contributionGrid = ContributionGrid(window = initialState.selectedWindow, days = emptyMap())
-                    .toUiState(clock.instant()),
+                contributionGrid = ContributionGrid(
+                    window = initialState.selectedWindow,
+                    days = emptyMap(),
+                ).toUiState(clock.instant()),
                 availableWindows = listOf(ContributionWindowUiState.RollingTwelveMonths),
             )
         },
@@ -256,7 +266,11 @@ class HabitDetailViewModel @AssistedInject constructor(
                 eventChannel.trySend(HabitDetailUiEvent.NavigatedBack)
             } else {
                 viewModelState.update {
-                    it.copy(isDeletingHabit = false, deleteHabitError = true, isDeleteHabitDialogVisible = false)
+                    it.copy(
+                        isDeletingHabit = false,
+                        deleteHabitError = true,
+                        isDeleteHabitDialogVisible = false,
+                    )
                 }
             }
         }
