@@ -16,7 +16,10 @@ import pl.luczka.todaywas.ui.habit.logcheckin.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.create.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.detail.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.main.MainScreen
-import pl.luczka.todaywas.ui.onboarding.OnboardingScreen
+import pl.luczka.todaywas.ui.onboarding.accountsetup.OnboardingAccountSetupScreen
+import pl.luczka.todaywas.ui.onboarding.allset.OnboardingAllSetScreen
+import pl.luczka.todaywas.ui.onboarding.choice.OnboardingChoiceScreen
+import pl.luczka.todaywas.ui.onboarding.welcome.OnboardingWelcomeScreen
 
 @Composable
 fun TodayWasApp(viewModel: RootViewModel = hiltViewModel()) {
@@ -41,8 +44,37 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            entry<OnboardingKey> {
-                OnboardingScreen(
+            entry<OnboardingWelcomeKey> {
+                OnboardingWelcomeScreen(
+                    onGetStartedClicked = {
+                        // Welcome is a one-way intro — replace it so back from Choice exits the
+                        // app instead of returning here.
+                        backStack.clear()
+                        backStack.add(OnboardingChoiceKey)
+                    },
+                )
+            }
+            entry<OnboardingChoiceKey> {
+                OnboardingChoiceScreen(
+                    onNavigateToAccountSetup = { backStack.add(OnboardingAccountSetupKey) },
+                    onFinished = { reason ->
+                        backStack.clear()
+                        backStack.add(OnboardingAllSetKey(reason))
+                    },
+                )
+            }
+            entry<OnboardingAccountSetupKey> {
+                OnboardingAccountSetupScreen(
+                    onBack = { backStack.removeLastOrNull() },
+                    onFinished = { reason ->
+                        backStack.clear()
+                        backStack.add(OnboardingAllSetKey(reason))
+                    },
+                )
+            }
+            entry<OnboardingAllSetKey> { key ->
+                OnboardingAllSetScreen(
+                    reason = key.reason,
                     onFinished = {
                         backStack.clear()
                         backStack.add(MainKey)

@@ -18,18 +18,15 @@
     <string name="content_description_decrease">Decrease</string>
     <string name="content_description_increase">Increase</string>
 
-    <string name="onboarding_skip">Skip</string>
-
-    <string name="onboarding_welcome_title">Welcome to TodayWas</string>
-    <string name="onboarding_welcome_description">Track your journal entries and habits, all in one place.</string>
+    <string name="onboarding_welcome_title">Welcome to Today Was</string>
+    <string name="onboarding_welcome_description">Track your journal and habits effortlessly in one place</string>
     <string name="onboarding_welcome_cta">Get started</string>
 
-    <string name="onboarding_account_description">Create an account to sync your data across devices.</string>
+    <string name="onboarding_account_title">Your data, your choice</string>
+    <string name="onboarding_account_description">All your data is stored locally, but you can enable remote sync and AI assist features by creating a free account.</string>
     <string name="onboarding_account_continue_without_account_cta">Continue without account</string>
-    <string name="onboarding_account_signin_signup_cta">Sign in or sign up</string>
+    <string name="onboarding_account_signin_signup_cta">Sign in or create account</string>
     <string name="onboarding_account_signed_in_format">Signed in as %1$s</string>
-    <string name="onboarding_account_continue_cta">Continue</string>
-    <string name="onboarding_account_retry">Try again</string>
     <string name="onboarding_account_error">Something went wrong. Please try again.</string>
 
     <string name="onboarding_all_set_title">All set!</string>
@@ -120,7 +117,9 @@
     <string name="auth_form_sign_up_cta">Create account</string>
     <string name="auth_form_sign_in_cta">Sign in</string>
     <string name="auth_form_sign_up_link_cta">New here? Create an account</string>
+    <string name="auth_form_sign_in_link_cta">Already have an account? Sign in</string>
     <string name="auth_form_google_cta">Sign in with Google</string>
+    <string name="auth_form_google_sign_up_cta">Sign up with Google</string>
     <string name="auth_error_email_already_registered">An account with this email already exists</string>
     <string name="auth_error_invalid_credentials">Incorrect email or password</string>
     <string name="auth_error_weak_password">Password is too weak</string>

@@ -48,7 +48,7 @@ class RootViewModelTest {
     }
 
     @Test
-    fun `should resolve to OnboardingKey when initial state is incomplete`() =
+    fun `should resolve to OnboardingWelcomeKey when initial state is incomplete`() =
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository(
@@ -60,7 +60,7 @@ class RootViewModelTest {
             val destination = viewModel.initialDestination.value
 
             // Assert
-            assertEquals(OnboardingKey, destination)
+            assertEquals(OnboardingWelcomeKey, destination)
         }
 
     @Test
@@ -87,7 +87,7 @@ class RootViewModelTest {
                 OnboardingState(completed = false, hasSyncedLocalData = false),
             )
             val viewModel = viewModel(repository)
-            assertEquals(OnboardingKey, viewModel.initialDestination.value)
+            assertEquals(OnboardingWelcomeKey, viewModel.initialDestination.value)
 
             // Act
             // Mirrors reaching ALL_SET (or Skip) mid-flow: Room flips `completed` before Main shows.
@@ -95,6 +95,6 @@ class RootViewModelTest {
                 OnboardingState(completed = true, hasSyncedLocalData = false)
 
             // Assert
-            assertEquals(OnboardingKey, viewModel.initialDestination.value)
+            assertEquals(OnboardingWelcomeKey, viewModel.initialDestination.value)
         }
 }
