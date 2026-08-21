@@ -15,13 +15,19 @@ import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.JournalSortUiState
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalListViewModelTest {
+
+    private val clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
 
     private fun entry(
         id: String,
@@ -34,10 +40,14 @@ class JournalListViewModelTest {
         updatedAt = Instant.now(),
     )
 
-    private fun viewModel(entries: List<JournalEntry> = emptyList()) =
-        JournalListViewModel(
-            observeJournalEntries = ObserveJournalEntriesUseCase(FakeJournalRepository(entries)),
+    private fun viewModel(entries: List<JournalEntry> = emptyList()): JournalListViewModel {
+        val repository = FakeJournalRepository(entries)
+        return JournalListViewModel(
+            observeJournalEntries = ObserveJournalEntriesUseCase(repository),
+            observeJournalContribution = ObserveJournalContributionUseCase(repository, clock),
+            clock = clock,
         )
+    }
 
     @Before
     fun setUp() {
@@ -105,6 +115,38 @@ class JournalListViewModelTest {
                 viewModel.uiState.value.entries
                     .map { it.id },
             )
+        }
+
+    @Test
+    fun `should default to RollingTwelveMonths window with a 7-cell grid`() =
+        runTest {
+            // Arrange & Act
+            val viewModel = viewModel(listOf(entry("1", LocalDate.now())))
+
+            // Assert
+            assertEquals(
+                ContributionWindowUiState.RollingTwelveMonths,
+                viewModel.uiState.value.selectedWindow,
+            )
+            assertTrue(
+                viewModel.uiState.value.contributionGrid.cells
+                    .isNotEmpty(),
+            )
+        }
+
+    @Test
+    fun `should update selectedWindow when WindowSelected is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(listOf(entry("1", LocalDate.now())))
+            val newWindow = ContributionWindowUiState.CalendarYear(LocalDate.now().year)
+
+            // Act
+            viewModel.onIntent(JournalListIntent.WindowSelected(newWindow))
+            runCurrent()
+
+            // Assert
+            assertEquals(newWindow, viewModel.uiState.value.selectedWindow)
         }
 
     @Test

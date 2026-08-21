@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -33,8 +31,9 @@ import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
-import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
-import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionRow
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsModalBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingActionButton
@@ -52,8 +51,6 @@ import pl.luczka.todaywas.ui.habit.HabitRow
 import pl.luczka.todaywas.ui.journal.JournalEntryRow
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
@@ -112,6 +109,10 @@ private fun MainScreenContent(
     onIntent: (MainIntent) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
+    val bothEmpty = !uiState.isLoading &&
+        uiState.journalEntries.isEmpty() &&
+        uiState.habits.isEmpty()
+
     DsScaffold(
         topBar = {
             DsTopBar(
@@ -128,13 +129,12 @@ private fun MainScreenContent(
                 },
             )
         },
-        floatingActionButton = { MainFab(uiState, onIntent) },
+        // The empty state already surfaces its own "add journal"/"create habit" CTAs inline, so
+        // the FAB would be a redundant, floating duplicate of the same actions.
+        floatingActionButton = { if (!bothEmpty) MainFab(uiState, onIntent) },
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        val bothEmpty = !uiState.isLoading &&
-            uiState.journalEntries.isEmpty() &&
-            uiState.habits.isEmpty()
         if (bothEmpty) {
             MainEmptyState(
                 onIntent = onIntent,
@@ -316,22 +316,14 @@ private fun JournalSection(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = DsSpacing.space600),
         )
-        // Full-bleed (no horizontal inset), same as Habit Detail's grid: it needs all available
-        // width so more weeks are visible at once.
-        DsContributionGrid(
-            cells = uiState.journalContributionGrid.cells,
+        // A quick-glance, single-row strip of the full history — same data and scroll behavior as
+        // the grid on the Journal list screen (opened via "View all" below), just flattened into
+        // one row of double-size cells instead of stacked weekly columns.
+        DsContributionRow(
+            cells = uiState.journalContributionCells,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = DsSpacing.space200),
-        )
-        ContributionWindowChipRow(
-            availableWindows = uiState.journalAvailableWindows,
-            selectedWindow = uiState.journalSelectedWindow,
-            onWindowSelected = { onIntent(MainIntent.JournalWindowSelected(it)) },
-            modifier = Modifier.padding(
-                horizontal = DsSpacing.space600,
-                vertical = DsSpacing.space200,
-            ),
+                .padding(top = DsSpacing.space200, bottom = DsSpacing.space400),
         )
         val hasMore = uiState.journalEntries.size > MAIN_SECTION_CAP
         when {
@@ -379,33 +371,6 @@ private fun JournalEmptyContent(onIntent: (MainIntent) -> Unit) {
             modifier = Modifier.padding(top = DsSpacing.space200),
         )
     }
-}
-
-@Composable
-private fun ContributionWindowChipRow(
-    availableWindows: List<ContributionWindowUiState>,
-    selectedWindow: ContributionWindowUiState,
-    onWindowSelected: (ContributionWindowUiState) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    LazyRow(modifier = modifier) {
-        items(availableWindows) { window ->
-            DsChip(
-                text = window.label(),
-                selected = window == selectedWindow,
-                onClick = { onWindowSelected(window) },
-                modifier = Modifier.padding(end = DsSpacing.space200),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ContributionWindowUiState.label(): String = when (this) {
-    ContributionWindowUiState.RollingTwelveMonths -> stringResource(
-        R.string.contribution_window_last_12_months_label,
-    )
-    is ContributionWindowUiState.CalendarYear -> year.toString()
 }
 
 @Composable
@@ -567,9 +532,7 @@ private fun previewMainUiState(
     isLoading = isLoading,
     journalEntries = journalEntries,
     habits = habits,
-    journalContributionGrid = previewJournalContributionGrid,
-    journalAvailableWindows = previewJournalAvailableWindows,
-    journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+    journalContributionCells = previewJournalContributionCells,
     fabActions = fabActions,
     fabExpanded = false,
     authState = authState,
@@ -578,12 +541,12 @@ private fun previewMainUiState(
     isSigningOut = false,
 )
 
-private val previewJournalContributionGrid = ContributionGridUiState(cells = emptyList())
-
-private val previewJournalAvailableWindows = listOf(
-    ContributionWindowUiState.RollingTwelveMonths,
-    ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-)
+private val previewJournalContributionCells = (0..29).map { offset ->
+    DsContributionCellUiState.Level(
+        LocalDate.now().minusDays(offset.toLong()),
+        DsContributionLevel.entries[offset % DsContributionLevel.entries.size],
+    )
+}
 
 @PreviewLightDark
 @Composable

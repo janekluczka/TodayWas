@@ -34,7 +34,6 @@ import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import java.time.Clock
@@ -474,7 +473,7 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should reflect loaded entries in journalContributionGrid and window state`() =
+    fun `should expose the full RollingTwelveMonths grid in journalContributionCells including today's level`() =
         runTest {
             // Arrange
             val today = entry(LocalDate.now())
@@ -484,63 +483,24 @@ class MainViewModelTest {
             val state = viewModel.uiState.value
 
             // Assert
-            assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.journalSelectedWindow)
-            assertTrue(
-                state.journalAvailableWindows.contains(
-                    ContributionWindowUiState.RollingTwelveMonths,
-                ),
-            )
-            assertTrue(
-                state.journalAvailableWindows.contains(
-                    ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-                ),
-            )
-            assertTrue(levelFor(state.journalContributionGrid.cells, LocalDate.now()) != null)
+            assertTrue(state.journalContributionCells.size > 7)
+            assertTrue(levelFor(state.journalContributionCells, LocalDate.now()) != null)
         }
 
     @Test
-    fun `should update journalSelectedWindow without changing an already-visible day's level when JournalWindowSelected is dispatched`() =
-        runTest {
-            // Arrange
-            val today = entry(LocalDate.now())
-            val older = entry(LocalDate.now().minusDays(3))
-            val viewModel = viewModel(entries = listOf(today, older))
-            val levelBefore =
-                levelFor(viewModel.uiState.value.journalContributionGrid.cells, LocalDate.now())
-
-            // Act
-            viewModel.onIntent(
-                MainIntent.JournalWindowSelected(
-                    ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-                ),
-            )
-            runCurrent()
-
-            // Assert
-            assertEquals(
-                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-                viewModel.uiState.value.journalSelectedWindow,
-            )
-            assertEquals(
-                levelBefore,
-                levelFor(viewModel.uiState.value.journalContributionGrid.cells, LocalDate.now()),
-            )
-        }
-
-    @Test
-    fun `should reuse the journalContributionGrid instance across an unrelated state change`() =
+    fun `should reuse the journalContributionCells instance across an unrelated state change`() =
         runTest {
             // Arrange
             val today = entry(LocalDate.now())
             val viewModel = viewModel(entries = listOf(today))
-            val gridBefore = viewModel.uiState.value.journalContributionGrid
+            val cellsBefore = viewModel.uiState.value.journalContributionCells
 
             // Act
             viewModel.onIntent(MainIntent.FabToggled)
             runCurrent()
 
             // Assert
-            assertTrue(gridBefore === viewModel.uiState.value.journalContributionGrid)
+            assertTrue(cellsBefore === viewModel.uiState.value.journalContributionCells)
         }
 
     @Test
