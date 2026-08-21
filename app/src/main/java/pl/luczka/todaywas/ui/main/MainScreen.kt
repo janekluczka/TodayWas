@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
@@ -61,8 +63,6 @@ import java.time.Instant
 import java.time.LocalDate
 
 // Each section shows at most this many items on Main before falling back to a "View all" row.
-// Also drives the content-aware section-height weighting below (weight = 1f + min(count, cap)),
-// so a full section can get up to 6x an empty section's height instead of a fixed 50/50 split.
 private const val MAIN_SECTION_CAP = 5
 
 @Composable
@@ -143,21 +143,19 @@ private fun MainScreenContent(
                     .padding(innerPadding),
             )
         } else {
+            // Each section is capped (DsSectionedList never shows more than MAIN_SECTION_CAP
+            // rows) and doesn't stretch to fill extra space, so sections are stacked at their
+            // natural content height rather than weighted — a weighted split left dead space
+            // between a short section and the next one instead of making it look "bigger".
+            // Scrollable as a safety net in case combined content ever exceeds screen height.
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                JournalSection(
-                    uiState = uiState,
-                    onIntent = onIntent,
-                    modifier = Modifier.weight(sectionWeight(uiState.journalEntries.size)),
-                )
-                HabitSection(
-                    uiState = uiState,
-                    onIntent = onIntent,
-                    modifier = Modifier.weight(sectionWeight(uiState.habits.size)),
-                )
+                JournalSection(uiState = uiState, onIntent = onIntent)
+                HabitSection(uiState = uiState, onIntent = onIntent)
             }
         }
     }
@@ -170,8 +168,6 @@ private fun MainScreenContent(
         SignOutConfirmDialog(onIntent)
     }
 }
-
-private fun sectionWeight(itemCount: Int): Float = 1f + itemCount.coerceAtMost(MAIN_SECTION_CAP)
 
 @Composable
 private fun MainEmptyState(
@@ -343,9 +339,7 @@ private fun JournalSection(
                 items = emptyList<JournalEntryUiState>(),
                 isLoading = true,
                 itemContent = {},
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = DsSpacing.space600),
+                modifier = Modifier.padding(horizontal = DsSpacing.space600),
             )
             uiState.journalEntries.isEmpty() -> JournalEmptyContent(onIntent)
             else -> DsSectionedList(
@@ -367,9 +361,7 @@ private fun JournalSection(
                 } else {
                     null
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = DsSpacing.space600),
+                modifier = Modifier.padding(horizontal = DsSpacing.space600),
             )
         }
     }
@@ -434,9 +426,10 @@ private fun HabitSection(
                 items = emptyList<HabitUiState>(),
                 isLoading = true,
                 itemContent = {},
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+                modifier = Modifier.padding(
+                    horizontal = DsSpacing.space600,
+                    vertical = DsSpacing.space200,
+                ),
             )
             uiState.habits.isEmpty() -> HabitEmptyContent(onIntent)
             else -> DsSectionedList(
@@ -458,9 +451,10 @@ private fun HabitSection(
                 } else {
                     null
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+                modifier = Modifier.padding(
+                    horizontal = DsSpacing.space600,
+                    vertical = DsSpacing.space200,
+                ),
             )
         }
     }

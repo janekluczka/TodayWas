@@ -90,12 +90,14 @@ private fun SkeletonRow() {
 
 @Composable
 private fun SkeletonBar(widthFraction: Float) {
+    // A tinted overlay on top of onSurfaceVariant rather than a flat color: the card itself
+    // already sits on surfaceVariant (see DsCard), so a same-toned placeholder would be invisible.
     Box(
         modifier = Modifier
             .fillMaxWidth(widthFraction)
             .height(DsSpacing.space400)
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.24f),
                 shape = RoundedCornerShape(DsSpacing.space100),
             ),
     )
