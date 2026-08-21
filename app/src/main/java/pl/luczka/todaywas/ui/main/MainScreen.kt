@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,12 +25,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
-import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
@@ -40,6 +43,7 @@ import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingAct
 import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.lists.DsListItem
 import pl.luczka.todaywas.core.designsystem.components.lists.DsSectionedList
 import pl.luczka.todaywas.core.designsystem.components.progress.DsLoadingIndicator
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
@@ -214,36 +218,73 @@ private fun AccountBottomSheet(
     onIntent: (MainIntent) -> Unit,
 ) {
     DsModalBottomSheet(onDismissRequest = { onIntent(MainIntent.AccountSheetDismissed) }) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(DsSpacing.space600),
-        ) {
-            when (val authState = uiState.authState) {
-                AuthStateUi.Loading -> DsLoadingIndicator()
-                is AuthStateUi.SignedIn -> {
-                    DsText(
-                        text =
-                            authState.email
-                                ?: stringResource(R.string.preferences_signed_in_no_email),
-                    )
-                    DsButtonWithLoading(
-                        text = stringResource(R.string.preferences_sign_out_cta),
-                        onClick = { onIntent(MainIntent.SignOutClicked) },
-                        loading = uiState.isSigningOut,
+        when (val authState = uiState.authState) {
+            AuthStateUi.Loading -> DsLoadingIndicator(
+                modifier = Modifier.padding(DsSpacing.space600),
+            )
+            is AuthStateUi.SignedIn -> {
+                AccountSectionList(title = stringResource(R.string.account_section_title)) {
+                    DsListItem(
+                        text = authState.email
+                            ?: stringResource(R.string.preferences_signed_in_no_email),
+                        leadingIcon = Icons.Default.Person,
                     )
                 }
-                AuthStateUi.SignedOut -> {
-                    DsText(text = stringResource(R.string.account_sheet_signed_out_description))
-                    DsButton(
+                AccountSectionList {
+                    DsListItem(
+                        text = stringResource(R.string.preferences_sign_out_cta),
+                        leadingIcon = Icons.AutoMirrored.Filled.Logout,
+                        contentColor = MaterialTheme.colorScheme.error,
+                        trailingContent = if (uiState.isSigningOut) {
+                            { DsLoadingIndicator(modifier = Modifier.size(20.dp)) }
+                        } else {
+                            null
+                        },
+                        onClick = if (uiState.isSigningOut) {
+                            null
+                        } else {
+                            { onIntent(MainIntent.SignOutClicked) }
+                        },
+                    )
+                }
+            }
+            AuthStateUi.SignedOut -> {
+                AccountSectionList(
+                    title = stringResource(R.string.account_section_title),
+                    bottomPadding = DsSpacing.space600,
+                ) {
+                    DsListItem(
                         text = stringResource(R.string.onboarding_account_signin_signup_cta),
+                        leadingIcon = Icons.Default.Person,
                         onClick = { onIntent(MainIntent.SignInSignUpPromptClicked) },
                     )
                 }
             }
         }
     }
+}
+
+// A single-row DsSectionedList — every account-sheet section today (identity/CTA, sign out) is
+// exactly one row, but wrapping in DsSectionedList keeps the card/divider treatment identical to
+// a future section that grows past one row (e.g. Settings, once there's a real item for it).
+@Composable
+private fun AccountSectionList(
+    title: String? = null,
+    bottomPadding: Dp = DsSpacing.space200,
+    row: @Composable () -> Unit,
+) {
+    DsSectionedList(
+        items = listOf(Unit),
+        isLoading = false,
+        itemContent = { row() },
+        title = title,
+        modifier = Modifier.padding(
+            start = DsSpacing.space600,
+            top = DsSpacing.space200,
+            end = DsSpacing.space600,
+            bottom = bottomPadding,
+        ),
+    )
 }
 
 @Composable
