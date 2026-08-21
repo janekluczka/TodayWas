@@ -28,6 +28,12 @@ data class OnboardingAllSetKey(
 data object MainKey : TodayWasKey
 
 @Serializable
+data object JournalListKey : TodayWasKey
+
+@Serializable
+data object HabitListKey : TodayWasKey
+
+@Serializable
 data object AddJournalEntryKey : TodayWasKey
 
 @Serializable

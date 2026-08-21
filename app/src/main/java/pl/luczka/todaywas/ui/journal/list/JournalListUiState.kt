@@ -1,0 +1,12 @@
+package pl.luczka.todaywas.ui.journal.list
+
+import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.ui.model.JournalSortUiState
+
+@Immutable
+data class JournalListUiState(
+    val isLoading: Boolean = true,
+    val entries: List<JournalEntryUiState> = emptyList(),
+    val selectedSort: JournalSortUiState = JournalSortUiState.NEWEST_FIRST,
+)

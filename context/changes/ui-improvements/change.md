@@ -1,9 +1,9 @@
 ---
 change_id: ui-improvements
 title: UI improvements across every screen, following the user flow
-status: preparing
+status: planned
 created: 2026-08-20
-updated: 2026-08-20
+updated: 2026-08-21
 archived_at: null
 ---
 

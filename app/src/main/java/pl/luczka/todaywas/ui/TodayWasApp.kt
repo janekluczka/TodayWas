@@ -12,9 +12,11 @@ import androidx.navigation3.ui.NavDisplay
 import pl.luczka.todaywas.ui.account.AccountScreen
 import pl.luczka.todaywas.ui.habit.create.CreateHabitScreen
 import pl.luczka.todaywas.ui.habit.detail.HabitDetailScreen
+import pl.luczka.todaywas.ui.habit.list.HabitListScreen
 import pl.luczka.todaywas.ui.habit.logcheckin.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.create.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.detail.JournalEntryDetailScreen
+import pl.luczka.todaywas.ui.journal.list.JournalListScreen
 import pl.luczka.todaywas.ui.main.MainScreen
 import pl.luczka.todaywas.ui.onboarding.accountsetup.OnboardingAccountSetupScreen
 import pl.luczka.todaywas.ui.onboarding.allset.OnboardingAllSetScreen
@@ -87,15 +89,29 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                     onJournalEntryClicked = { entry ->
                         backStack.add(JournalEntryDetailKey(id = entry.id))
                     },
+                    onJournalListClicked = { backStack.add(JournalListKey) },
                     onCreateHabitClicked = { backStack.add(CreateHabitKey) },
                     onLogCheckInsClicked = { backStack.add(LogHabitCheckInsKey) },
                     onHabitClicked = { habitId -> backStack.add(HabitDetailKey(habitId)) },
+                    onHabitListClicked = { backStack.add(HabitListKey) },
                     onAccountClicked = { backStack.add(AccountKey) },
                 )
             }
             entry<AccountKey> {
                 AccountScreen(
                     onBack = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<JournalListKey> {
+                JournalListScreen(
+                    onBack = { backStack.removeLastOrNull() },
+                    onEntryClicked = { id -> backStack.add(JournalEntryDetailKey(id = id)) },
+                )
+            }
+            entry<HabitListKey> {
+                HabitListScreen(
+                    onBack = { backStack.removeLastOrNull() },
+                    onHabitClicked = { habitId -> backStack.add(HabitDetailKey(habitId)) },
                 )
             }
             entry<AddJournalEntryKey> {

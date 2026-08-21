@@ -25,6 +25,10 @@ sealed interface MainIntent {
         val window: ContributionWindowUiState,
     ) : MainIntent
 
+    data object JournalViewAllClicked : MainIntent
+
+    data object HabitViewAllClicked : MainIntent
+
     data object AccountIconClicked : MainIntent
 
     data object AccountSheetDismissed : MainIntent

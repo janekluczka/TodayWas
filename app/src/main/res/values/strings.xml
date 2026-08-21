@@ -5,8 +5,22 @@
 
     <string name="main_journal_section_title">Journal</string>
     <string name="main_journal_empty_state">No entries yet — add one to get started.</string>
+    <string name="main_journal_view_all_cta">View all entries</string>
     <string name="main_habit_section_title">Habits</string>
     <string name="main_habit_empty_state">No habits yet — create one to get started.</string>
+    <string name="main_habit_view_all_cta">View all habits</string>
+
+    <string name="main_empty_state_title">Nothing here yet</string>
+    <string name="main_empty_state_description">Start journaling or create a habit to see it here.</string>
+
+    <string name="journal_list_title">All entries</string>
+    <string name="journal_sort_newest_first">Newest first</string>
+    <string name="journal_sort_oldest_first">Oldest first</string>
+
+    <string name="habit_list_title">All habits</string>
+    <string name="habit_sort_recently_checked_in">Recently checked-in</string>
+    <string name="habit_sort_alphabetical">Alphabetical</string>
+    <string name="habit_sort_date_created">Date created</string>
 
     <string name="main_fab_add_journal">Add journal</string>
     <string name="main_fab_create_habit">Create habit</string>
@@ -88,6 +102,7 @@
     <string name="habit_checkin_error">Something went wrong. Please try again.</string>
     <string name="habit_checkin_done_label">Done</string>
     <string name="habit_checkin_not_done_label">Not done</string>
+    <string name="habit_checkin_not_logged_label">Not logged</string>
 
     <string name="habit_detail_title">Habit</string>
     <string name="habit_detail_edit_action">Edit</string>

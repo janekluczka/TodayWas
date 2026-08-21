@@ -137,6 +137,59 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `should start with isLoading true then flip false once data has loaded`() =
+        runTest {
+            // Arrange & Act
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository()
+            val viewModel = MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(
+                    journalRepository,
+                ),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeJournalContribution = ObserveJournalContributionUseCase(
+                    journalRepository,
+                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                ),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(
+                    authRepository,
+                    journalRepository,
+                    habitRepository,
+                    onboardingRepository,
+                ),
+                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+            )
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isLoading)
+        }
+
+    @Test
+    fun `should order habits by most recently checked-in first`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(
+                habits = listOf(habit(id = "1"), habit(id = "2"), habit(id = "3")),
+                checkIns = listOf(
+                    checkIn(habitId = "1", date = LocalDate.now().minusDays(5), value = 1),
+                    checkIn(habitId = "2", date = LocalDate.now(), value = 1),
+                ),
+            )
+
+            // Act
+            val ids = viewModel.uiState.value.habits
+                .map { it.id }
+
+            // Assert
+            assertEquals(listOf("2", "1", "3"), ids)
+        }
+
+    @Test
     fun `should reflect entries from both sources in uiState`() =
         runTest {
             // Arrange
@@ -383,6 +436,40 @@ class MainViewModelTest {
 
             // Assert
             assertEquals(listOf(MainUiEvent.NavigateToHabitDetail("1")), events)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should emit NavigateToJournalList when JournalViewAllClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            val events = mutableListOf<MainUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(MainIntent.JournalViewAllClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(listOf(MainUiEvent.NavigateToJournalList), events)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should emit NavigateToHabitList when HabitViewAllClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            val events = mutableListOf<MainUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(MainIntent.HabitViewAllClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(listOf(MainUiEvent.NavigateToHabitList), events)
             collectJob.cancel()
         }
 

@@ -1,19 +1,17 @@
 package pl.luczka.todaywas.ui.main
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -42,12 +39,15 @@ import pl.luczka.todaywas.core.designsystem.components.fab.DsExtendedFloatingAct
 import pl.luczka.todaywas.core.designsystem.components.fab.DsFloatingActionButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.lists.DsSectionedList
 import pl.luczka.todaywas.core.designsystem.components.progress.DsLoadingIndicator
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.auth.util.message
+import pl.luczka.todaywas.ui.habit.HabitRow
+import pl.luczka.todaywas.ui.journal.JournalEntryRow
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
@@ -60,13 +60,20 @@ import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import java.time.Instant
 import java.time.LocalDate
 
+// Each section shows at most this many items on Main before falling back to a "View all" row.
+// Also drives the content-aware section-height weighting below (weight = 1f + min(count, cap)),
+// so a full section can get up to 6x an empty section's height instead of a fixed 50/50 split.
+private const val MAIN_SECTION_CAP = 5
+
 @Composable
 fun MainScreen(
     onAddEntryClicked: () -> Unit,
     onJournalEntryClicked: (JournalEntryUiState) -> Unit,
+    onJournalListClicked: () -> Unit,
     onCreateHabitClicked: () -> Unit,
     onLogCheckInsClicked: () -> Unit,
     onHabitClicked: (String) -> Unit,
+    onHabitListClicked: () -> Unit,
     onAccountClicked: () -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
@@ -79,9 +86,11 @@ fun MainScreen(
             when (event) {
                 MainUiEvent.NavigateToAddEntry -> onAddEntryClicked()
                 is MainUiEvent.NavigateToJournalDetail -> onJournalEntryClicked(event.entry)
+                MainUiEvent.NavigateToJournalList -> onJournalListClicked()
                 MainUiEvent.NavigateToCreateHabit -> onCreateHabitClicked()
                 MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
                 is MainUiEvent.NavigateToHabitDetail -> onHabitClicked(event.habitId)
+                MainUiEvent.NavigateToHabitList -> onHabitListClicked()
                 MainUiEvent.NavigateToAccount -> onAccountClicked()
                 is MainUiEvent.ShowError -> snackbarHostState.showSnackbar(
                     errorMessages.getValue(event.error),
@@ -123,13 +132,33 @@ private fun MainScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            JournalSection(uiState, onIntent, modifier = Modifier.weight(1f))
-            HabitSection(uiState, onIntent, modifier = Modifier.weight(1f))
+        val bothEmpty = !uiState.isLoading &&
+            uiState.journalEntries.isEmpty() &&
+            uiState.habits.isEmpty()
+        if (bothEmpty) {
+            MainEmptyState(
+                onIntent = onIntent,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                JournalSection(
+                    uiState = uiState,
+                    onIntent = onIntent,
+                    modifier = Modifier.weight(sectionWeight(uiState.journalEntries.size)),
+                )
+                HabitSection(
+                    uiState = uiState,
+                    onIntent = onIntent,
+                    modifier = Modifier.weight(sectionWeight(uiState.habits.size)),
+                )
+            }
         }
     }
 
@@ -139,6 +168,46 @@ private fun MainScreenContent(
 
     if (uiState.isSignOutConfirmVisible) {
         SignOutConfirmDialog(onIntent)
+    }
+}
+
+private fun sectionWeight(itemCount: Int): Float = 1f + itemCount.coerceAtMost(MAIN_SECTION_CAP)
+
+@Composable
+private fun MainEmptyState(
+    onIntent: (MainIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.padding(DsSpacing.space600),
+    ) {
+        DsText(
+            text = stringResource(R.string.main_empty_state_title),
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        DsText(
+            text = stringResource(R.string.main_empty_state_description),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = DsSpacing.space400),
+        )
+        DsButton(
+            text = stringResource(R.string.main_fab_add_journal),
+            onClick = {
+                onIntent(MainIntent.FabActionClicked(FabActionUiState.ADD_JOURNAL_ENTRY))
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space600),
+        )
+        DsButton(
+            text = stringResource(R.string.main_fab_create_habit),
+            onClick = { onIntent(MainIntent.FabActionClicked(FabActionUiState.CREATE_HABIT)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space200),
+        )
     }
 }
 
@@ -245,16 +314,19 @@ private fun JournalSection(
     onIntent: (MainIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.padding(top = DsSpacing.space600)) {
         DsText(
             text = stringResource(R.string.main_journal_section_title),
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = DsSpacing.space600),
         )
         // Full-bleed (no horizontal inset), same as Habit Detail's grid: it needs all available
         // width so more weeks are visible at once.
         DsContributionGrid(
             cells = uiState.journalContributionGrid.cells,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space200),
         )
         ContributionWindowChipRow(
             availableWindows = uiState.journalAvailableWindows,
@@ -265,25 +337,55 @@ private fun JournalSection(
                 vertical = DsSpacing.space200,
             ),
         )
-        if (uiState.journalEntries.isEmpty()) {
-            DsText(
-                text = stringResource(R.string.main_journal_empty_state),
-                modifier = Modifier.padding(horizontal = DsSpacing.space600),
-            )
-        } else {
-            LazyColumn(
+        val hasMore = uiState.journalEntries.size > MAIN_SECTION_CAP
+        when {
+            uiState.isLoading -> DsSectionedList(
+                items = emptyList<JournalEntryUiState>(),
+                isLoading = true,
+                itemContent = {},
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = DsSpacing.space600),
-            ) {
-                items(uiState.journalEntries) { entry ->
-                    JournalEntryListItem(
+            )
+            uiState.journalEntries.isEmpty() -> JournalEmptyContent(onIntent)
+            else -> DsSectionedList(
+                items = uiState.journalEntries.take(MAIN_SECTION_CAP),
+                isLoading = false,
+                itemContent = { entry ->
+                    JournalEntryRow(
                         entry = entry,
                         onClick = { onIntent(MainIntent.JournalEntryClicked(entry)) },
                     )
-                }
-            }
+                },
+                onViewAllClicked = if (hasMore) {
+                    { onIntent(MainIntent.JournalViewAllClicked) }
+                } else {
+                    null
+                },
+                viewAllLabel = if (hasMore) {
+                    stringResource(R.string.main_journal_view_all_cta)
+                } else {
+                    null
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = DsSpacing.space600),
+            )
         }
+    }
+}
+
+@Composable
+private fun JournalEmptyContent(onIntent: (MainIntent) -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = DsSpacing.space600)) {
+        DsText(text = stringResource(R.string.main_journal_empty_state))
+        DsButton(
+            text = stringResource(R.string.main_fab_add_journal),
+            onClick = {
+                onIntent(MainIntent.FabActionClicked(FabActionUiState.ADD_JOURNAL_ENTRY))
+            },
+            modifier = Modifier.padding(top = DsSpacing.space200),
+        )
     }
 }
 
@@ -315,79 +417,70 @@ private fun ContributionWindowUiState.label(): String = when (this) {
 }
 
 @Composable
-private fun JournalEntryListItem(
-    entry: JournalEntryUiState,
-    onClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = DsSpacing.space200),
-    ) {
-        DsText(text = entry.formattedDate)
-        DsText(
-            text = entry.text,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-@Composable
 private fun HabitSection(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.padding(DsSpacing.space600),
-    ) {
-        DsText(text = stringResource(R.string.main_habit_section_title))
-        if (uiState.habits.isEmpty()) {
-            DsText(text = stringResource(R.string.main_habit_empty_state))
-        } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(uiState.habits) { habit ->
-                    HabitListItem(
+    Column(modifier = modifier.padding(top = DsSpacing.space600)) {
+        DsText(
+            text = stringResource(R.string.main_habit_section_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = DsSpacing.space600),
+        )
+        val hasMore = uiState.habits.size > MAIN_SECTION_CAP
+        when {
+            uiState.isLoading -> DsSectionedList(
+                items = emptyList<HabitUiState>(),
+                isLoading = true,
+                itemContent = {},
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+            )
+            uiState.habits.isEmpty() -> HabitEmptyContent(onIntent)
+            else -> DsSectionedList(
+                items = uiState.habits.take(MAIN_SECTION_CAP),
+                isLoading = false,
+                itemContent = { habit ->
+                    HabitRow(
                         habit = habit,
                         onClick = { onIntent(MainIntent.HabitClicked(habit)) },
                     )
-                }
-            }
+                },
+                onViewAllClicked = if (hasMore) {
+                    { onIntent(MainIntent.HabitViewAllClicked) }
+                } else {
+                    null
+                },
+                viewAllLabel = if (hasMore) {
+                    stringResource(R.string.main_habit_view_all_cta)
+                } else {
+                    null
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+            )
         }
     }
 }
 
 @Composable
-private fun HabitListItem(
-    habit: HabitUiState,
-    onClick: () -> Unit,
-) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = DsSpacing.space200),
-    ) {
-        DsText(text = habit.name)
-        DsText(text = habit.todayStatus.displayText())
-    }
-}
-
-@Composable
-private fun HabitCheckInStatusUiState.displayText(): String = when (this) {
-    HabitCheckInStatusUiState.NotLogged -> ""
-    is HabitCheckInStatusUiState.LoggedBinary ->
-        stringResource(
-            if (done) R.string.habit_checkin_done_label else R.string.habit_checkin_not_done_label,
+private fun HabitEmptyContent(onIntent: (MainIntent) -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = DsSpacing.space600)) {
+        DsText(text = stringResource(R.string.main_habit_empty_state))
+        DsButton(
+            text = stringResource(R.string.main_fab_create_habit),
+            onClick = { onIntent(MainIntent.FabActionClicked(FabActionUiState.CREATE_HABIT)) },
+            modifier = Modifier.padding(top = DsSpacing.space200),
         )
-    is HabitCheckInStatusUiState.LoggedScale -> value.toString()
+    }
 }
 
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
     override val values = sequenceOf(
+        previewMainUiState(isLoading = true),
         previewMainUiState(
             fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY, FabActionUiState.CREATE_HABIT),
         ),
@@ -430,6 +523,25 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
             ),
         ),
         previewMainUiState(
+            journalEntries = (1..7).map {
+                JournalEntryUiState(
+                    id = it.toString(),
+                    date = LocalDate.now().minusDays(it.toLong()),
+                    formattedDate = "Entry $it",
+                    text = "Entry number $it",
+                    createdAt = Instant.now(),
+                )
+            },
+            habits = (1..7).map {
+                HabitUiState(
+                    id = it.toString(),
+                    name = "Habit $it",
+                    type = HabitTypeUiState.BINARY,
+                    todayStatus = HabitCheckInStatusUiState.NotLogged,
+                )
+            },
+        ),
+        previewMainUiState(
             authState = AuthStateUi.Loading,
             isAccountSheetVisible = true,
         ),
@@ -456,7 +568,9 @@ private fun previewMainUiState(
     authState: AuthStateUi = AuthStateUi.SignedOut,
     isAccountSheetVisible: Boolean = false,
     isSignOutConfirmVisible: Boolean = false,
+    isLoading: Boolean = false,
 ) = MainUiState(
+    isLoading = isLoading,
     journalEntries = journalEntries,
     habits = habits,
     journalContributionGrid = previewJournalContributionGrid,

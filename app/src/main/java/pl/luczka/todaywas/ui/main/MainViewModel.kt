@@ -27,12 +27,13 @@ import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.mapper.toDomain
-import pl.luczka.todaywas.ui.mapper.toHabitUiStates
+import pl.luczka.todaywas.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
+import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
@@ -57,6 +58,7 @@ class MainViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         MainUiState(
+            isLoading = true,
             journalEntries = emptyList(),
             habits = emptyList(),
             journalContributionGrid = ContributionGrid(
@@ -98,7 +100,10 @@ class MainViewModel @Inject constructor(
                 RawMainSources(
                     journalEntries = entries.map { it.toUiState() },
                     addableSlots = addableSlots.map { it.toUiState() },
-                    habits = board.toHabitUiStates(today = LocalDate.now(clock)),
+                    habits = board.toSortedHabitUiStates(
+                        today = LocalDate.now(clock),
+                        sort = HabitSortUiState.RECENTLY_CHECKED_IN,
+                    ),
                 )
             }
             combine(
@@ -117,6 +122,7 @@ class MainViewModel @Inject constructor(
             }.collect { combined ->
                 _uiState.update {
                     it.copy(
+                        isLoading = false,
                         journalEntries = combined.journalEntries,
                         habits = combined.habits,
                         journalContributionGrid = combined.journalContributionGrid,
@@ -152,6 +158,10 @@ class MainViewModel @Inject constructor(
             is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
             is MainIntent.HabitClicked -> onHabitClicked(intent.habit)
             is MainIntent.JournalWindowSelected -> onJournalWindowSelected(intent.window)
+            MainIntent.JournalViewAllClicked -> eventChannel.trySend(
+                MainUiEvent.NavigateToJournalList,
+            )
+            MainIntent.HabitViewAllClicked -> eventChannel.trySend(MainUiEvent.NavigateToHabitList)
             MainIntent.AccountIconClicked -> _uiState.update {
                 it.copy(
                     isAccountSheetVisible = true,
