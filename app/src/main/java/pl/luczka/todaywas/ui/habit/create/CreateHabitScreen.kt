@@ -115,7 +115,9 @@ private fun CreateHabitScreenContent(
                 value = uiState.scaleSteps,
                 range = HabitScaleStepsRange,
                 onValueChange = { onIntent(CreateHabitIntent.ScaleStepsChanged(it)) },
-                modifier = Modifier.padding(top = DsSpacing.space100),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space100),
                 decreaseContentDescription = stringResource(R.string.content_description_decrease),
                 increaseContentDescription = stringResource(R.string.content_description_increase),
             )
@@ -152,7 +154,6 @@ private fun CheckInInputPreview(
             items = listOf(0, 1),
             selectedItem = null,
             onItemSelected = {},
-            enabled = false,
             label = { if (it == 1) doneLabel else notDoneLabel },
             modifier = modifier.fillMaxWidth(),
         )
@@ -161,7 +162,6 @@ private fun CheckInInputPreview(
             items = (1..uiState.scaleSteps).toList(),
             selectedItem = null,
             onItemSelected = {},
-            enabled = false,
             modifier = modifier.fillMaxWidth(),
         )
     }
