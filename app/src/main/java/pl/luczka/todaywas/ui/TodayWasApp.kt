@@ -118,6 +118,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                 AddJournalEntryScreen(
                     onSaved = { backStack.removeLastOrNull() },
                     onCancelled = { backStack.removeLastOrNull() },
+                    onNavigateToSignIn = { backStack.add(AccountKey) },
                 )
             }
             entry<JournalEntryDetailKey> { key ->

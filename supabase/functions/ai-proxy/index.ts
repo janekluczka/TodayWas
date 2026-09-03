@@ -1,7 +1,15 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const OPENROUTER_MODEL = "openai/gpt-oss-20b:free";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+// Shared by "help me start" and "help me refine" -- one counter per user per day, regardless of
+// which feature is calling. Enforced by the increment_ai_assist_usage() Postgres function, not
+// just here: the client-side "N regenerations" cap this replaces was purely in-memory and reset
+// the moment a screen was left and reentered, so the real limit has to live where a client can't
+// reset it.
+const DAILY_AI_ASSIST_LIMIT = 10;
 
 const TONE_LABELS: Record<number, string> = {
   1: "very bad",
@@ -122,6 +130,30 @@ Deno.serve(async (req: Request) => {
     return jsonResponse(400, { error: "invalid_request" });
   }
 
+  // verify_jwt is enabled on this function, so the gateway has already rejected any request
+  // without a valid session before this code runs -- the Authorization header is guaranteed here.
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: req.headers.get("Authorization")! } } },
+  );
+
+  // increment_ai_assist_usage atomically checks-and-increments a per-user-per-day counter in
+  // Postgres, returning -1 if the caller was already at DAILY_AI_ASSIST_LIMIT before this call.
+  // RLS on ai_assist_usage denies direct table access entirely -- this RPC is the only way in.
+  const { data: usageResult, error: usageError } = await supabase.rpc(
+    "increment_ai_assist_usage",
+    { p_max_count: DAILY_AI_ASSIST_LIMIT },
+  );
+  if (usageError) {
+    console.error(`ai_assist_usage RPC failed: ${usageError.message}`);
+    return jsonResponse(502, { error: "upstream_failed" });
+  }
+  if (usageResult === -1) {
+    return jsonResponse(429, { error: "daily_limit_reached", remaining: 0 });
+  }
+  const remaining = DAILY_AI_ASSIST_LIMIT - (usageResult as number);
+
   const apiKey = Deno.env.get("OPENROUTER_API_KEY");
   if (!apiKey) {
     console.error("OPENROUTER_API_KEY secret is not set");
@@ -130,7 +162,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     const text = await callOpenRouter(buildPrompt(parsed), apiKey);
-    return jsonResponse(200, { text });
+    return jsonResponse(200, { text, remaining });
   } catch (e) {
     console.error(`ai-proxy upstream error: ${e}`);
     return jsonResponse(502, { error: "upstream_failed" });

@@ -14,6 +14,7 @@ import pl.luczka.todaywas.data.mapper.toAiAssistError
 import pl.luczka.todaywas.data.remote.dto.AiPromptRequestDto
 import pl.luczka.todaywas.data.remote.dto.AiPromptResponseDto
 import pl.luczka.todaywas.domain.model.AiAssistException
+import pl.luczka.todaywas.domain.model.AiPromptResult
 import pl.luczka.todaywas.domain.model.JournalPromptTone
 import pl.luczka.todaywas.domain.repository.AiAssistRepository
 import javax.inject.Inject
@@ -37,14 +38,16 @@ class AiAssistRepositoryImpl @Inject constructor(
     override suspend fun generateJournalStarterPrompt(
         tone: JournalPromptTone,
         thoughts: String?,
-    ): Result<String> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, thoughts = thoughts))
+    ): Result<AiPromptResult> = invokeAiProxy(
+        AiPromptRequestDto(tone = tone.level, thoughts = thoughts),
+    )
 
     override suspend fun refineJournalEntry(
         text: String,
         tone: JournalPromptTone,
-    ): Result<String> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, text = text))
+    ): Result<AiPromptResult> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, text = text))
 
-    private suspend fun invokeAiProxy(request: AiPromptRequestDto): Result<String> = try {
+    private suspend fun invokeAiProxy(request: AiPromptRequestDto): Result<AiPromptResult> = try {
         val response = supabase.functions.invoke(function = FUNCTION_NAME) {
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(supabase.functions.serializer.encode(request))
@@ -53,7 +56,8 @@ class AiAssistRepositoryImpl @Inject constructor(
                 socketTimeoutMillis = FUNCTION_TIMEOUT_MS
             }
         }
-        Result.success(response.body<AiPromptResponseDto>().text)
+        val body = response.body<AiPromptResponseDto>()
+        Result.success(AiPromptResult(text = body.text, remainingToday = body.remaining))
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {

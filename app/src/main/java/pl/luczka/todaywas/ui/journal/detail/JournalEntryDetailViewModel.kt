@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AiAssistException
+import pl.luczka.todaywas.domain.model.AiPromptResult
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
@@ -260,13 +261,13 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
     )
 
     private fun HelpMeRefineUiState.applyResult(
-        result: Result<String>,
+        result: Result<AiPromptResult>,
         isRegenerate: Boolean,
     ): HelpMeRefineUiState = result.fold(
-        onSuccess = { text ->
+        onSuccess = { prompt ->
             copy(
                 step = HelpMeRefineStep.PREVIEW,
-                refinedText = text,
+                refinedText = prompt.text,
                 isGenerating = false,
                 error = null,
                 regenerationsUsed = if (isRegenerate) regenerationsUsed + 1 else regenerationsUsed,

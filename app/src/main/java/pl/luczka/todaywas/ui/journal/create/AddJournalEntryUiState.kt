@@ -13,4 +13,8 @@ data class AddJournalEntryUiState(
     val saveError: Boolean,
     val authState: AuthStateUi = AuthStateUi.Loading,
     val helpMeStart: HelpMeStartUiState = HelpMeStartUiState(),
+    // One entry per JournalStarterPromptTone, each with a randomly picked variant — set once when
+    // the ViewModel is created (see AddJournalEntryViewModel), not re-rolled while the screen is
+    // open.
+    val starterPrompts: List<JournalStarterPromptUiState> = emptyList(),
 )

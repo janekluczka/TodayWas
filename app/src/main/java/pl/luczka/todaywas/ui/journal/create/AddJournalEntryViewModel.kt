@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AiAssistException
+import pl.luczka.todaywas.domain.model.AiPromptResult
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
@@ -24,6 +25,7 @@ import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class AddJournalEntryViewModel @Inject constructor(
@@ -31,6 +33,7 @@ class AddJournalEntryViewModel @Inject constructor(
     observeAuthState: ObserveAuthStateUseCase,
     private val addJournalEntry: AddJournalEntryUseCase,
     private val requestJournalStarterPrompt: RequestJournalStarterPromptUseCase,
+    random: Random,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -40,6 +43,12 @@ class AddJournalEntryViewModel @Inject constructor(
             text = "",
             isSaving = false,
             saveError = false,
+            starterPrompts = JournalStarterPromptTone.entries.map { tone ->
+                JournalStarterPromptUiState(
+                    tone = tone,
+                    variant = random.nextInt(STARTER_PROMPT_VARIANT_COUNT),
+                )
+            },
         ),
     )
     val uiState: StateFlow<AddJournalEntryUiState> = _uiState.asStateFlow()
@@ -83,10 +92,11 @@ class AddJournalEntryViewModel @Inject constructor(
             AddJournalEntryIntent.CancelClicked -> onCancelClicked()
             AddJournalEntryIntent.HelpMeStartClicked -> onHelpMeStartClicked()
             AddJournalEntryIntent.HelpMeStartDismissed -> onHelpMeStartDismissed()
+            AddJournalEntryIntent.SignInClicked -> onSignInClicked()
             is AddJournalEntryIntent.ToneSelected -> onToneSelected(intent.tone)
             is AddJournalEntryIntent.ThoughtsChanged -> onThoughtsChanged(intent.thoughts)
-            AddJournalEntryIntent.GenerateClicked -> onGenerate(isRegenerate = false)
-            AddJournalEntryIntent.RegenerateClicked -> onGenerate(isRegenerate = true)
+            AddJournalEntryIntent.GenerateClicked -> onGenerate()
+            AddJournalEntryIntent.RegenerateClicked -> onGenerate()
             AddJournalEntryIntent.UseGeneratedTextClicked -> onUseGeneratedTextClicked()
         }
     }
@@ -129,11 +139,15 @@ class AddJournalEntryViewModel @Inject constructor(
     }
 
     private fun onHelpMeStartClicked() {
-        if (_uiState.value.authState !is AuthStateUi.SignedIn) return
         generateJob?.cancel()
+        val step = if (_uiState.value.authState is AuthStateUi.SignedIn) {
+            HelpMeStartStep.INPUT
+        } else {
+            HelpMeStartStep.SIGNED_OUT
+        }
         _uiState.update {
             it.copy(
-                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true),
+                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true, step = step),
             )
         }
     }
@@ -147,6 +161,16 @@ class AddJournalEntryViewModel @Inject constructor(
         }
     }
 
+    private fun onSignInClicked() {
+        generateJob?.cancel()
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
+            )
+        }
+        eventChannel.trySend(AddJournalEntryUiEvent.NavigateToSignIn)
+    }
+
     private fun onToneSelected(tone: JournalPromptToneUiState) {
         _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(selectedTone = tone)) }
     }
@@ -155,11 +179,14 @@ class AddJournalEntryViewModel @Inject constructor(
         _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(thoughts = thoughts)) }
     }
 
-    private fun onGenerate(isRegenerate: Boolean) {
+    private fun onGenerate() {
         val helpMeStart = _uiState.value.helpMeStart
         val tone = helpMeStart.selectedTone ?: return
         if (helpMeStart.isGenerating) return
-        if (isRegenerate && helpMeStart.regenerationsUsed >= MAX_REGENERATIONS) return
+        // remainingToday is only known once a call has actually returned this session (see its
+        // doc comment) -- null means "don't know yet", so the first call of a session is never
+        // preemptively blocked here; the server is the real source of truth either way.
+        if ((helpMeStart.remainingToday ?: 1) <= 0) return
         _uiState.update {
             it.copy(
                 helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null),
@@ -169,7 +196,7 @@ class AddJournalEntryViewModel @Inject constructor(
             val result =
                 requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
             _uiState.update { current ->
-                current.copy(helpMeStart = current.helpMeStart.applyResult(result, isRegenerate))
+                current.copy(helpMeStart = current.helpMeStart.applyResult(result))
             }
         }
     }
@@ -185,13 +212,14 @@ class AddJournalEntryViewModel @Inject constructor(
         }
     }
 
-    // Preserves regenerationsUsed — the cap persists across dialog close/reopen for this screen
-    // visit and only resets when a new AddJournalEntryViewModel instance is created.
+    // Preserves remainingToday — see its doc comment on HelpMeStartUiState — and only resets when
+    // a new AddJournalEntryViewModel instance is created.
     private fun HelpMeStartUiState.resetForNewSession(
         isVisible: Boolean,
+        step: HelpMeStartStep = HelpMeStartStep.INPUT,
     ): HelpMeStartUiState = copy(
         isVisible = isVisible,
-        step = HelpMeStartStep.INPUT,
+        step = step,
         selectedTone = null,
         thoughts = "",
         generatedText = null,
@@ -200,23 +228,30 @@ class AddJournalEntryViewModel @Inject constructor(
     )
 
     private fun HelpMeStartUiState.applyResult(
-        result: Result<String>,
-        isRegenerate: Boolean,
+        result: Result<AiPromptResult>,
     ): HelpMeStartUiState = result.fold(
-        onSuccess = { text ->
+        onSuccess = { prompt ->
             copy(
                 step = HelpMeStartStep.PREVIEW,
-                generatedText = text,
+                generatedText = prompt.text,
                 isGenerating = false,
                 error = null,
-                regenerationsUsed = if (isRegenerate) regenerationsUsed + 1 else regenerationsUsed,
+                remainingToday = prompt.remainingToday,
             )
         },
         onFailure = { throwable ->
             val error =
                 (throwable as? AiAssistException)?.error?.toUiState()
                     ?: AiAssistErrorUiState.UNKNOWN
-            copy(isGenerating = false, error = error)
+            copy(
+                isGenerating = false,
+                error = error,
+                remainingToday = if (error == AiAssistErrorUiState.DAILY_LIMIT_REACHED) {
+                    0
+                } else {
+                    remainingToday
+                },
+            )
         },
     )
 }
