@@ -44,16 +44,15 @@ private data class HabitDetailViewModelState(
     val type: HabitTypeUiState = HabitTypeUiState.BINARY,
     val range: IntRange = 0..0,
     val checkIns: List<HabitCheckIn> = emptyList(),
-    val pendingValues: Map<LocalDate, Int> = emptyMap(),
     val selectedWindow: ContributionWindow = ContributionWindow.RollingTwelveMonths,
-    val isEditSheetOpen: Boolean = false,
+    val editingDate: LocalDate? = null,
+    val editingValue: Int? = null,
     val isSaving: Boolean = false,
     val saveError: Boolean = false,
     val saveErrorIsWindowExpired: Boolean = false,
     val isDeleteHabitDialogVisible: Boolean = false,
     val isDeletingHabit: Boolean = false,
     val deleteHabitError: Boolean = false,
-    val checkInPendingDelete: LocalDate? = null,
     val isDeletingCheckIn: Boolean = false,
     val deleteCheckInError: Boolean = false,
 ) {
@@ -67,18 +66,18 @@ private data class HabitDetailViewModelState(
         habitName = habitName,
         type = type,
         range = range,
-        rows = checkIns.toHabitDetailRows(pendingValues, freshLoggableDates, isEditable),
+        rows = checkIns.toHabitDetailRows(freshLoggableDates, isEditable),
         contributionGrid = contributionGrid,
         availableWindows = availableWindows,
         selectedWindow = selectedWindow.toUiState(),
-        isEditSheetOpen = isEditSheetOpen,
+        editingDate = editingDate,
+        editingValue = editingValue,
         isSaving = isSaving,
         saveError = saveError,
         saveErrorIsWindowExpired = saveErrorIsWindowExpired,
         isDeleteHabitDialogVisible = isDeleteHabitDialogVisible,
         isDeletingHabit = isDeletingHabit,
         deleteHabitError = deleteHabitError,
-        checkInPendingDelete = checkInPendingDelete,
         isDeletingCheckIn = isDeletingCheckIn,
         deleteCheckInError = deleteCheckInError,
     )
@@ -165,8 +164,8 @@ class HabitDetailViewModel @AssistedInject constructor(
 
     fun onIntent(intent: HabitDetailIntent) {
         when (intent) {
-            HabitDetailIntent.EditClicked -> onEditClicked()
-            is HabitDetailIntent.ValueChanged -> onValueChanged(intent.date, intent.value)
+            is HabitDetailIntent.EditRowClicked -> onEditRowClicked(intent.date)
+            is HabitDetailIntent.ValueChanged -> onValueChanged(intent.value)
             HabitDetailIntent.SaveClicked -> onSaveClicked()
             HabitDetailIntent.CancelEditClicked -> onCancelEditClicked()
             HabitDetailIntent.BackClicked -> onBackClicked()
@@ -175,36 +174,33 @@ class HabitDetailViewModel @AssistedInject constructor(
             HabitDetailIntent.DeleteHabitConfirmed -> onDeleteHabitConfirmed()
             HabitDetailIntent.DeleteHabitDismissed -> onDeleteHabitDismissed()
             is HabitDetailIntent.DeleteCheckInClicked -> onDeleteCheckInClicked(intent.date)
-            HabitDetailIntent.DeleteCheckInConfirmed -> onDeleteCheckInConfirmed()
-            HabitDetailIntent.DeleteCheckInDismissed -> onDeleteCheckInDismissed()
         }
     }
 
-    private fun onEditClicked() {
-        viewModelState.update { it.copy(isEditSheetOpen = true) }
+    private fun onEditRowClicked(date: LocalDate) {
+        val existingValue = viewModelState.value.checkIns
+            .find { it.date == date }
+            ?.value
+        viewModelState.update { it.copy(editingDate = date, editingValue = existingValue) }
     }
 
     private fun onWindowSelected(window: ContributionWindowUiState) {
         viewModelState.update { it.copy(selectedWindow = window.toDomain()) }
     }
 
-    private fun onValueChanged(
-        date: LocalDate,
-        value: Int?,
-    ) {
-        viewModelState.update { state ->
-            state.copy(
-                pendingValues = if (value == null) {
-                    state.pendingValues - date
-                } else {
-                    state.pendingValues + (date to value)
-                },
-            )
+    private fun onValueChanged(value: Int?) {
+        val state = viewModelState.value
+        val date = state.editingDate ?: return
+        val isAlreadyLogged = state.checkIns.any { it.date == date }
+        if (value == null && isAlreadyLogged) {
+            deleteCheckIn(date)
+        } else {
+            viewModelState.update { it.copy(editingValue = value) }
         }
     }
 
     private fun onCancelEditClicked() {
-        viewModelState.update { it.copy(isEditSheetOpen = false, pendingValues = emptyMap()) }
+        viewModelState.update { it.copy(editingDate = null, editingValue = null) }
     }
 
     private fun onBackClicked() {
@@ -214,9 +210,10 @@ class HabitDetailViewModel @AssistedInject constructor(
     private fun onSaveClicked() {
         val state = viewModelState.value
         if (state.isSaving) return
-        val pending = state.pendingValues
-        if (pending.isEmpty()) {
-            viewModelState.update { it.copy(isEditSheetOpen = false) }
+        val date = state.editingDate
+        val value = state.editingValue
+        if (date == null || value == null) {
+            viewModelState.update { it.copy(editingDate = null, editingValue = null) }
             return
         }
         viewModelScope.launch {
@@ -227,13 +224,13 @@ class HabitDetailViewModel @AssistedInject constructor(
                     saveErrorIsWindowExpired = false,
                 )
             }
-            val result = saveHabitCheckIns(habitId, state.checkIns, pending)
+            val result = saveHabitCheckIns(habitId, state.checkIns, mapOf(date to value))
             if (result.isSuccess) {
                 viewModelState.update {
                     it.copy(
                         isSaving = false,
-                        isEditSheetOpen = false,
-                        pendingValues = emptyMap(),
+                        editingDate = null,
+                        editingValue = null,
                     )
                 }
             } else {
@@ -277,25 +274,23 @@ class HabitDetailViewModel @AssistedInject constructor(
     }
 
     private fun onDeleteCheckInClicked(date: LocalDate) {
-        viewModelState.update { it.copy(checkInPendingDelete = date) }
+        deleteCheckIn(date)
     }
 
-    private fun onDeleteCheckInDismissed() {
-        viewModelState.update { it.copy(checkInPendingDelete = null) }
-    }
-
-    private fun onDeleteCheckInConfirmed() {
-        val state = viewModelState.value
-        val date = state.checkInPendingDelete ?: return
-        if (state.isDeletingCheckIn) return
+    // Deletes immediately, no confirmation step — called both from the row's standalone delete
+    // button and from ValueChanged's deselect-to-delete shortcut.
+    private fun deleteCheckIn(date: LocalDate) {
+        if (viewModelState.value.isDeletingCheckIn) return
         viewModelScope.launch {
             viewModelState.update { it.copy(isDeletingCheckIn = true, deleteCheckInError = false) }
             val result = deleteHabitCheckIn(habitId, date)
             viewModelState.update {
+                val closeSheet = result.isSuccess && it.editingDate == date
                 it.copy(
                     isDeletingCheckIn = false,
                     deleteCheckInError = result.isFailure,
-                    checkInPendingDelete = null,
+                    editingDate = if (closeSheet) null else it.editingDate,
+                    editingValue = if (closeSheet) null else it.editingValue,
                 )
             }
         }

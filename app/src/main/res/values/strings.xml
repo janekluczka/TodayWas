@@ -124,7 +124,6 @@
     <string name="habit_checkin_not_done_label">Not done</string>
     <string name="habit_checkin_not_logged_label">Not logged</string>
 
-    <string name="habit_detail_title">Habit</string>
     <string name="habit_detail_edit_action">Edit</string>
     <string name="habit_detail_save_cta">Save</string>
     <string name="habit_detail_cancel_edit_action">Cancel</string>
@@ -138,8 +137,6 @@
     <string name="habit_detail_delete_cancel_cta">Cancel</string>
     <string name="habit_detail_delete_error">Something went wrong. Please try again.</string>
     <string name="habit_detail_delete_checkin_action">Delete check-in</string>
-    <string name="habit_detail_delete_checkin_dialog_title">Delete check-in?</string>
-    <string name="habit_detail_delete_checkin_dialog_text">This can\'t be undone.</string>
 
     <string name="contribution_window_last_12_months_label">Last 12 months</string>
 

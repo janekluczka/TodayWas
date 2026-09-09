@@ -95,19 +95,18 @@ internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean =
         is DsContributionCellUiState.Blank -> cell.hasGapBefore
     }
 
-// Shared by both DsContributionGrid (horizontal) and DsContributionTimeline (vertical) so the two
-// stay visually consistent without duplicating the palette/size logic. Pure rendering only —
-// month-gap spacing is the week container's job (see weekHasGapBefore), not a per-cell concern,
-// since "before" means a different axis in each component.
+// Pure rendering only — month-gap spacing is the week container's job (see weekHasGapBefore), not
+// a per-cell concern, since "before" means a different axis in each caller.
 @Composable
 internal fun ContributionCell(
     cell: DsContributionCellUiState,
     levelColors: Map<DsContributionLevel, Color>,
     modifier: Modifier = Modifier,
     cellSize: Dp = CELL_SIZE,
+    cellSpacing: Dp = CELL_SPACING,
 ) {
     val cellModifier = modifier
-        .padding(CELL_SPACING / 2)
+        .padding(cellSpacing / 2)
         .size(cellSize)
     when (cell) {
         is DsContributionCellUiState.Level -> Box(
@@ -120,10 +119,16 @@ internal fun ContributionCell(
     }
 }
 
+// cellSize/cellSpacing/monthGap default to the compact sizing this ships with today (Main's
+// overview-scale usage) — a caller that needs a bigger read (e.g. a single-habit drill-down) can
+// override them without affecting every other caller.
 @Composable
 fun DsContributionGrid(
     cells: List<DsContributionCellUiState>,
     modifier: Modifier = Modifier,
+    cellSize: Dp = CELL_SIZE,
+    cellSpacing: Dp = CELL_SPACING,
+    monthGap: Dp = MONTH_GAP,
 ) {
     val levelColors = contributionLevelColors()
 
@@ -138,10 +143,17 @@ fun DsContributionGrid(
         items(cells.chunked(7)) { week ->
             Column(
                 modifier = Modifier.padding(
-                    start = if (week.weekHasGapBefore()) MONTH_GAP else 0.dp,
+                    start = if (week.weekHasGapBefore()) monthGap else 0.dp,
                 ),
             ) {
-                week.forEach { cell -> ContributionCell(cell = cell, levelColors = levelColors) }
+                week.forEach { cell ->
+                    ContributionCell(
+                        cell = cell,
+                        levelColors = levelColors,
+                        cellSize = cellSize,
+                        cellSpacing = cellSpacing,
+                    )
+                }
             }
         }
     }
