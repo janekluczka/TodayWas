@@ -21,6 +21,8 @@ sealed interface AddJournalEntryIntent {
 
     data object HelpMeStartDismissed : AddJournalEntryIntent
 
+    data object SignInClicked : AddJournalEntryIntent
+
     data class ToneSelected(
         val tone: JournalPromptToneUiState,
     ) : AddJournalEntryIntent

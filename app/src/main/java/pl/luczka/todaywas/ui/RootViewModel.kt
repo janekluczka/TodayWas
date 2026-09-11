@@ -28,7 +28,8 @@ class RootViewModel @Inject constructor(
             observeOnboardingState().collect { state ->
                 if (!initialized) {
                     initialized = true
-                    _initialDestination.value = if (state.completed) MainKey else OnboardingKey
+                    _initialDestination.value =
+                        if (state.completed) MainKey else OnboardingWelcomeKey
                 }
             }
         }

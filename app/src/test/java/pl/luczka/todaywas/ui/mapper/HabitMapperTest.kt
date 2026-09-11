@@ -7,6 +7,7 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.ui.model.HabitSortUiState
 import java.time.Instant
 import java.time.LocalDate
 
@@ -17,14 +18,16 @@ class HabitMapperTest {
     private fun habit(
         id: String = "1",
         type: HabitType = HabitType.BINARY,
+        name: String = "habit-$id",
+        createdAt: Instant = Instant.EPOCH,
     ) = Habit(
         id = id,
-        name = "habit-$id",
+        name = name,
         description = null,
         type = type,
         scaleMin = if (type == HabitType.SCALE) 1 else null,
         scaleMax = if (type == HabitType.SCALE) 5 else null,
-        createdAt = Instant.EPOCH,
+        createdAt = createdAt,
         updatedAt = Instant.EPOCH,
     )
 
@@ -41,13 +44,16 @@ class HabitMapperTest {
         updatedAt = Instant.EPOCH,
     )
 
+    private fun HabitCheckInBoard.sorted(sort: HabitSortUiState) =
+        toSortedHabitUiStates(today, sort)
+
     @Test
     fun `should return NotLogged when no check-in exists for today`() {
         // Arrange
         val board = HabitCheckInBoard(habits = listOf(habit()), checkIns = emptyList())
 
         // Act
-        val status = board.toHabitUiStates(today).single().todayStatus
+        val status = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayStatus
 
         // Assert
         assertEquals(HabitCheckInStatusUiState.NotLogged, status)
@@ -62,7 +68,7 @@ class HabitMapperTest {
         )
 
         // Act
-        val status = board.toHabitUiStates(today).single().todayStatus
+        val status = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayStatus
 
         // Assert
         assertEquals(HabitCheckInStatusUiState.LoggedBinary(done = true), status)
@@ -77,7 +83,7 @@ class HabitMapperTest {
         )
 
         // Act
-        val status = board.toHabitUiStates(today).single().todayStatus
+        val status = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayStatus
 
         // Assert
         assertEquals(HabitCheckInStatusUiState.LoggedScale(value = 3), status)
@@ -92,9 +98,85 @@ class HabitMapperTest {
         )
 
         // Act
-        val status = board.toHabitUiStates(today).single().todayStatus
+        val status = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayStatus
 
         // Assert
         assertEquals(HabitCheckInStatusUiState.NotLogged, status)
+    }
+
+    @Test
+    fun `should sort RECENTLY_CHECKED_IN by most recent check-in date descending`() {
+        // Arrange
+        val board = HabitCheckInBoard(
+            habits = listOf(habit(id = "1"), habit(id = "2"), habit(id = "3")),
+            checkIns = listOf(
+                checkIn(habitId = "1", date = today.minusDays(5), value = 1),
+                checkIn(habitId = "2", date = today.minusDays(1), value = 1),
+                checkIn(habitId = "3", date = today.minusDays(10), value = 1),
+            ),
+        )
+
+        // Act
+        val ids = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).map { it.id }
+
+        // Assert
+        assertEquals(listOf("2", "1", "3"), ids)
+    }
+
+    @Test
+    fun `should sort habits with zero check-ins ever last, tiebroken by createdAt ascending`() {
+        // Arrange
+        val board = HabitCheckInBoard(
+            habits = listOf(
+                habit(id = "1", createdAt = Instant.ofEpochSecond(200)),
+                habit(id = "2", createdAt = Instant.ofEpochSecond(100)),
+                habit(id = "3"),
+            ),
+            checkIns = listOf(checkIn(habitId = "3", date = today, value = 1)),
+        )
+
+        // Act
+        val ids = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).map { it.id }
+
+        // Assert
+        assertEquals(listOf("3", "2", "1"), ids)
+    }
+
+    @Test
+    fun `should sort ALPHABETICAL by name ascending`() {
+        // Arrange
+        val board = HabitCheckInBoard(
+            habits = listOf(
+                habit(id = "1", name = "Run"),
+                habit(id = "2", name = "Drink water"),
+                habit(id = "3", name = "Meditate"),
+            ),
+            checkIns = emptyList(),
+        )
+
+        // Act
+        val names = board.sorted(HabitSortUiState.ALPHABETICAL).map { it.name }
+
+        // Assert
+        assertEquals(listOf("Drink water", "Meditate", "Run"), names)
+    }
+
+    @Test
+    fun `should sort DATE_CREATED by createdAt ascending`() {
+        // Arrange
+        val board = HabitCheckInBoard(
+            habits = listOf(
+                habit(id = "1", createdAt = Instant.ofEpochSecond(300)),
+                habit(id = "2", createdAt = Instant.ofEpochSecond(100)),
+                habit(id = "3", createdAt = Instant.ofEpochSecond(200)),
+            ),
+            checkIns = emptyList(),
+        )
+
+        // Act
+        val ids = board.sorted(HabitSortUiState.DATE_CREATED).map { it.id }
+
+        // Assert
+        assertEquals(listOf("2", "3", "1"), ids)
     }
 }

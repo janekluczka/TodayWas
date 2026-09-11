@@ -309,6 +309,9 @@ private fun helpMeRefineErrorMessage(error: AiAssistErrorUiState): String = when
     AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(
         R.string.journal_help_me_start_error_not_signed_in,
     )
+    AiAssistErrorUiState.DAILY_LIMIT_REACHED -> stringResource(
+        R.string.journal_help_me_start_error_daily_limit_reached,
+    )
     AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(
         R.string.journal_help_me_start_error_network_unavailable,
     )

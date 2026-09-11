@@ -7,7 +7,6 @@ import java.time.Instant
 import java.time.LocalDate
 
 fun List<HabitCheckIn>.toHabitDetailRows(
-    pendingValues: Map<LocalDate, Int>,
     freshLoggableDates: List<LocalDate>,
     isEditable: (Instant) -> Boolean,
 ): List<HabitDetailRowUiState> {
@@ -20,7 +19,7 @@ fun List<HabitCheckIn>.toHabitDetailRows(
         val existing = existingByDate[date]
         HabitDetailRowUiState(
             date = date,
-            value = pendingValues[date] ?: existing?.value,
+            value = existing?.value,
             eligibleForEdit = existing == null || isEditable(existing.createdAt),
             alreadyLogged = existing != null,
         )

@@ -17,6 +17,7 @@ import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.domain.model.AiAssistError
 import pl.luczka.todaywas.domain.model.AiAssistException
+import pl.luczka.todaywas.domain.model.AiPromptResult
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.model.JournalEntry
@@ -379,7 +380,7 @@ class JournalEntryDetailViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult = Result.success("Refined text.")
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
@@ -429,7 +430,7 @@ class JournalEntryDetailViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult = Result.success("First refinement.")
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "First refinement.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
@@ -437,7 +438,7 @@ class JournalEntryDetailViewModelTest {
             viewModel.onIntent(JournalEntryDetailIntent.ToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(JournalEntryDetailIntent.RefineClicked)
             runCurrent()
-            aiAssistRepository.refineResult = Result.success("Second refinement.")
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Second refinement.", remainingToday = 9))
 
             // Act
             viewModel.onIntent(JournalEntryDetailIntent.RegenerateRefineClicked)
@@ -481,7 +482,7 @@ class JournalEntryDetailViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult = Result.success("Refined text.")
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
@@ -507,7 +508,7 @@ class JournalEntryDetailViewModelTest {
             // Arrange
             val clock = MutableClock(createdAt.plus(Duration.ofHours(1)))
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult = Result.success("Refined text.")
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(clock = clock, aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.EditClicked)

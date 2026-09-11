@@ -1,6 +1,5 @@
 package pl.luczka.todaywas.ui.main
 
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
@@ -21,9 +20,9 @@ sealed interface MainIntent {
         val habit: HabitUiState,
     ) : MainIntent
 
-    data class JournalWindowSelected(
-        val window: ContributionWindowUiState,
-    ) : MainIntent
+    data object JournalViewAllClicked : MainIntent
+
+    data object HabitViewAllClicked : MainIntent
 
     data object AccountIconClicked : MainIntent
 

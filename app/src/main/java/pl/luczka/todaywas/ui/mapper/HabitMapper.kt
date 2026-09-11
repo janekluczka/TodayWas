@@ -5,13 +5,34 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import java.time.LocalDate
 
-fun HabitCheckInBoard.toHabitUiStates(today: LocalDate): List<HabitUiState> = habits.map { habit ->
-    val todayCheckIn = checkIns.find { it.habitId == habit.id && it.date == today }
-    habit.toUiState(todayCheckIn)
+// Sorts on domain data (Habit + HabitCheckIn) before mapping to HabitUiState, so the UI model
+// never needs to carry createdAt/lastCheckInDate purely for ordering purposes.
+fun HabitCheckInBoard.toSortedHabitUiStates(
+    today: LocalDate,
+    sort: HabitSortUiState,
+): List<HabitUiState> {
+    val sortedHabits = when (sort) {
+        HabitSortUiState.RECENTLY_CHECKED_IN -> {
+            val lastCheckInDateByHabitId = checkIns
+                .groupBy { it.habitId }
+                .mapValues { (_, habitCheckIns) -> habitCheckIns.maxOf { it.date } }
+            habits.sortedWith(
+                compareByDescending<Habit> { lastCheckInDateByHabitId[it.id] ?: LocalDate.MIN }
+                    .thenBy { it.createdAt },
+            )
+        }
+        HabitSortUiState.ALPHABETICAL -> habits.sortedBy { it.name }
+        HabitSortUiState.DATE_CREATED -> habits.sortedBy { it.createdAt }
+    }
+    return sortedHabits.map { habit ->
+        val todayCheckIn = checkIns.find { it.habitId == habit.id && it.date == today }
+        habit.toUiState(todayCheckIn)
+    }
 }
 
 fun Habit.toUiState(todayCheckIn: HabitCheckIn?): HabitUiState = HabitUiState(

@@ -149,6 +149,11 @@ private fun SignedOutContent(
             onPasswordChanged = { onIntent(AccountIntent.SignUpPasswordChanged(it)) },
             onRepeatPasswordChanged = { onIntent(AccountIntent.SignUpRepeatPasswordChanged(it)) },
             onSubmitClicked = { onIntent(AccountIntent.SignUpSubmitClicked) },
+            onGoogleIdTokenReceived = {
+                onIntent(AccountIntent.SignUpGoogleIdTokenReceived(it))
+            },
+            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed) },
+            onSignInLinkClicked = { onIntent(AccountIntent.SignInLinkClicked) },
         )
         AccountStep.SUCCESS -> AccountSuccessContent(onIntent)
         // Unreachable in practice: DATA_SYNC_REVIEW is only entered right after a successful

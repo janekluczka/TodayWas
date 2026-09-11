@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -34,10 +34,12 @@ import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
+import pl.luczka.todaywas.core.designsystem.components.cards.DsCard
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
-import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionTimeline
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsBottomSheet
+import pl.luczka.todaywas.core.designsystem.components.dividers.DsHorizontalDivider
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
@@ -51,6 +53,13 @@ import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+
+// Bigger than the compact 12dp/2dp/6dp used elsewhere (Main, journal view-all) — this is the one
+// place a single habit's grid is the main content rather than one of several overview items, so
+// there's room to make it easier to read.
+private val DETAIL_GRID_CELL_SIZE = 28.dp
+private val DETAIL_GRID_CELL_SPACING = 4.dp
+private val DETAIL_GRID_MONTH_GAP = 8.dp
 
 @Composable
 fun HabitDetailScreen(
@@ -107,7 +116,7 @@ private fun HabitDetailScreenContent(
     DsScaffold(
         topBar = {
             DsTopBar(
-                title = stringResource(R.string.habit_detail_title),
+                title = uiState.habitName,
                 navigationIcon = {
                     DsIconButton(onClick = { onIntent(HabitDetailIntent.BackClicked) }) {
                         DsIcon(
@@ -117,7 +126,14 @@ private fun HabitDetailScreenContent(
                     }
                 },
                 actions = {
-                    HabitDetailActions(uiState, onIntent)
+                    DsIconButton(onClick = { onIntent(HabitDetailIntent.DeleteHabitClicked) }) {
+                        DsIcon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = stringResource(
+                                R.string.habit_detail_delete_action,
+                            ),
+                        )
+                    }
                 },
             )
         },
@@ -129,13 +145,6 @@ private fun HabitDetailScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            DsText(
-                text = uiState.habitName,
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space600,
-                ),
-            )
             ContributionWindowChipRow(
                 availableWindows = uiState.availableWindows,
                 selectedWindow = uiState.selectedWindow,
@@ -145,15 +154,25 @@ private fun HabitDetailScreenContent(
                     vertical = DsSpacing.space200,
                 ),
             )
-            // Full-bleed (no horizontal inset), unlike the name/chips above: the timeline's rows
-            // are centered within the available width, and centering against a narrower,
-            // 24dp-inset width would look off-center relative to the full-width chip row above it.
-            // `weight(1f)` lets it fill remaining vertical space and scroll internally.
-            DsContributionTimeline(
+            // Full-bleed (no horizontal inset), same reasoning as the journal view-all screen's
+            // grid: it needs all available width so more weeks are visible at once.
+            DsContributionGrid(
                 cells = uiState.contributionGrid.cells,
+                cellSize = DETAIL_GRID_CELL_SIZE,
+                cellSpacing = DETAIL_GRID_CELL_SPACING,
+                monthGap = DETAIL_GRID_MONTH_GAP,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = DsSpacing.space400),
+            )
+            HabitDetailRowsList(
+                rows = uiState.rows,
+                type = uiState.type,
+                onIntent = onIntent,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(horizontal = DsSpacing.space600),
             )
         }
     }
@@ -166,8 +185,9 @@ private fun HabitDetailScreenContent(
             saveText = stringResource(R.string.habit_detail_save_cta),
             onSaveClicked = { onIntent(HabitDetailIntent.SaveClicked) },
             isSaving = uiState.isSaving,
+            saveEnabled = uiState.editingValue != null,
         ) {
-            HabitDetailEditSheetContent(uiState, onIntent)
+            EditRowSheetContent(uiState, onIntent)
         }
     }
 
@@ -177,29 +197,120 @@ private fun HabitDetailScreenContent(
             onIntent = onIntent,
         )
     }
+}
 
-    if (uiState.checkInPendingDelete != null) {
-        DeleteCheckInDialog(onIntent = onIntent)
+// The rows list is the habit's full check-in history (unbounded, grows over the habit's
+// lifetime) — a LazyColumn keeps it virtualized. The DsCard + DsHorizontalDivider pairing gives it
+// the same bordered/divided look as DsSectionedList without reusing that component directly:
+// DsSectionedList is explicitly built for small, non-lazy lists (e.g. Main's capped 5-item
+// sections) and would eagerly compose every row here as a habit's history grows.
+@Composable
+private fun HabitDetailRowsList(
+    rows: List<HabitDetailRowUiState>,
+    type: HabitTypeUiState,
+    onIntent: (HabitDetailIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    DsCard(modifier = modifier) {
+        LazyColumn {
+            itemsIndexed(rows, key = { _, row -> row.date.toEpochDay() }) { index, row ->
+                HabitDetailRow(
+                    row = row,
+                    type = type,
+                    onIntent = onIntent,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(DsSpacing.space400),
+                )
+                if (index < rows.lastIndex) DsHorizontalDivider()
+            }
+        }
     }
 }
 
 @Composable
-private fun HabitDetailActions(
+private fun valueLabel(
+    value: Int?,
+    type: HabitTypeUiState,
+): String = when {
+    value == null -> ""
+    type == HabitTypeUiState.BINARY && value == 1 -> stringResource(
+        R.string.habit_checkin_done_label,
+    )
+    type == HabitTypeUiState.BINARY -> stringResource(R.string.habit_checkin_not_done_label)
+    else -> value.toString()
+}
+
+@Composable
+private fun HabitDetailRow(
+    row: HabitDetailRowUiState,
+    type: HabitTypeUiState,
+    onIntent: (HabitDetailIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val formattedDate = row.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+    val dateLabel = if (row.date == LocalDate.now()) {
+        stringResource(R.string.habit_detail_today_suffix_format, formattedDate)
+    } else {
+        formattedDate
+    }
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier,
+    ) {
+        DsText(text = dateLabel, modifier = Modifier.weight(1f))
+        DsText(text = valueLabel(row.value, type))
+        if (row.eligibleForEdit) {
+            DsIconButton(onClick = { onIntent(HabitDetailIntent.EditRowClicked(row.date)) }) {
+                DsIcon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = stringResource(R.string.habit_detail_edit_action),
+                )
+            }
+        }
+        if (row.alreadyLogged) {
+            DsIconButton(
+                onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(row.date)) },
+            ) {
+                DsIcon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = stringResource(
+                        R.string.habit_detail_delete_checkin_action,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditRowSheetContent(
     uiState: HabitDetailUiState,
     onIntent: (HabitDetailIntent) -> Unit,
 ) {
-    if (uiState.rows.any { it.eligibleForEdit }) {
-        DsIconButton(onClick = { onIntent(HabitDetailIntent.EditClicked) }) {
-            DsIcon(
-                imageVector = Icons.Filled.Edit,
-                contentDescription = stringResource(R.string.habit_detail_edit_action),
-            )
-        }
+    val date = uiState.editingDate ?: return
+    val formattedDate = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+    val doneLabel = stringResource(R.string.habit_checkin_done_label)
+    val notDoneLabel = stringResource(R.string.habit_checkin_not_done_label)
+    val label: (Int) -> String = if (uiState.type == HabitTypeUiState.BINARY) {
+        { value -> if (value == 1) doneLabel else notDoneLabel }
+    } else {
+        { value -> value.toString() }
     }
-    DsIconButton(onClick = { onIntent(HabitDetailIntent.DeleteHabitClicked) }) {
-        DsIcon(
-            imageVector = Icons.Filled.Delete,
-            contentDescription = stringResource(R.string.habit_detail_delete_action),
+    Column(modifier = Modifier.padding(horizontal = DsSpacing.space600)) {
+        DsText(
+            text = formattedDate,
+            modifier = Modifier.padding(bottom = DsSpacing.space400),
+        )
+        DsSegmentedRow(
+            items = uiState.range.toList(),
+            selectedItem = uiState.editingValue,
+            onItemSelected = { onIntent(HabitDetailIntent.ValueChanged(it)) },
+            label = label,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = DsSpacing.space600),
         )
     }
 }
@@ -239,36 +350,6 @@ private fun DeleteHabitDialog(
 }
 
 @Composable
-private fun DeleteCheckInDialog(
-    onIntent: (HabitDetailIntent) -> Unit,
-) {
-    DsAlertDialog(
-        onDismissRequest = { onIntent(HabitDetailIntent.DeleteCheckInDismissed) },
-        title = {
-            DsText(
-                text = stringResource(R.string.habit_detail_delete_checkin_dialog_title),
-            )
-        },
-        text = { DsText(text = stringResource(R.string.habit_detail_delete_checkin_dialog_text)) },
-        confirmButton = {
-            DsTextButton(
-                text = stringResource(R.string.habit_detail_delete_confirm_cta),
-                onClick = { onIntent(HabitDetailIntent.DeleteCheckInConfirmed) },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
-            )
-        },
-        dismissButton = {
-            DsTextButton(
-                text = stringResource(R.string.habit_detail_delete_cancel_cta),
-                onClick = { onIntent(HabitDetailIntent.DeleteCheckInDismissed) },
-            )
-        },
-    )
-}
-
-@Composable
 private fun ContributionWindowChipRow(
     availableWindows: List<ContributionWindowUiState>,
     selectedWindow: ContributionWindowUiState,
@@ -293,92 +374,6 @@ private fun ContributionWindowUiState.label(): String = when (this) {
         R.string.contribution_window_last_12_months_label,
     )
     is ContributionWindowUiState.CalendarYear -> year.toString()
-}
-
-@Composable
-private fun HabitDetailEditSheetContent(
-    uiState: HabitDetailUiState,
-    onIntent: (HabitDetailIntent) -> Unit,
-) {
-    // Includes rows outside the 24h edit window too, unlike a plain eligibleForEdit filter -
-    // check-in delete has no such window, so a previously-logged-but-no-longer-editable row must
-    // still appear here to stay reachable for deletion (its value editor stays disabled below).
-    val visibleRows = uiState.rows.filter { it.eligibleForEdit || it.alreadyLogged }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 400.dp)
-            .padding(horizontal = DsSpacing.space600),
-    ) {
-        items(visibleRows) { row ->
-            HabitDetailRow(
-                row = row,
-                type = uiState.type,
-                range = uiState.range,
-                enabled = row.eligibleForEdit,
-                onIntent = onIntent,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = DsSpacing.space400, bottom = DsSpacing.space400),
-            )
-        }
-    }
-}
-
-@Composable
-private fun HabitDetailRow(
-    row: HabitDetailRowUiState,
-    type: HabitTypeUiState,
-    range: IntRange,
-    enabled: Boolean,
-    onIntent: (HabitDetailIntent) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val formattedDate = row.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-    val dateLabel = if (row.date == LocalDate.now()) {
-        stringResource(R.string.habit_detail_today_suffix_format, formattedDate)
-    } else {
-        formattedDate
-    }
-    val doneLabel = stringResource(R.string.habit_checkin_done_label)
-    val notDoneLabel = stringResource(R.string.habit_checkin_not_done_label)
-    val label: (Int) -> String = if (type == HabitTypeUiState.BINARY) {
-        { value -> if (value == 1) doneLabel else notDoneLabel }
-    } else {
-        { value -> value.toString() }
-    }
-
-    Column(modifier = modifier) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            DsText(text = dateLabel)
-            if (row.alreadyLogged) {
-                DsIconButton(
-                    onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(row.date)) },
-                ) {
-                    DsIcon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = stringResource(
-                            R.string.habit_detail_delete_checkin_action,
-                        ),
-                    )
-                }
-            }
-        }
-        DsSegmentedRow(
-            items = range.toList(),
-            selectedItem = row.value,
-            onItemSelected = { onIntent(HabitDetailIntent.ValueChanged(row.date, it)) },
-            enabled = enabled,
-            label = label,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = DsSpacing.space200),
-        )
-    }
 }
 
 private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<HabitDetailUiState> {
@@ -414,7 +409,6 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
                 ContributionWindowUiState.CalendarYear(LocalDate.now().year),
             ),
             selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            isEditSheetOpen = false,
             isSaving = false,
             saveError = false,
             saveErrorIsWindowExpired = false,
@@ -444,7 +438,8 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
                 ContributionWindowUiState.CalendarYear(LocalDate.now().year),
             ),
             selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            isEditSheetOpen = true,
+            editingDate = LocalDate.now(),
+            editingValue = 4,
             isSaving = false,
             saveError = true,
             saveErrorIsWindowExpired = false,
@@ -474,7 +469,6 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
                 ContributionWindowUiState.CalendarYear(LocalDate.now().year),
             ),
             selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
-            isEditSheetOpen = false,
             isSaving = false,
             saveError = false,
             saveErrorIsWindowExpired = false,
@@ -501,13 +495,5 @@ private fun HabitDetailScreenPreview(
 private fun DeleteHabitDialogPreview() {
     DsTheme {
         DeleteHabitDialog(checkInCount = 12, onIntent = {})
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun DeleteCheckInDialogPreview() {
-    DsTheme {
-        DeleteCheckInDialog(onIntent = {})
     }
 }

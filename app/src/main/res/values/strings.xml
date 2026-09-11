@@ -5,12 +5,26 @@
 
     <string name="main_journal_section_title">Journal</string>
     <string name="main_journal_empty_state">No entries yet — add one to get started.</string>
+    <string name="main_journal_view_all_cta">View all entries</string>
     <string name="main_habit_section_title">Habits</string>
     <string name="main_habit_empty_state">No habits yet — create one to get started.</string>
+    <string name="main_habit_view_all_cta">View all habits</string>
+
+    <string name="main_empty_state_title">Nothing here yet</string>
+    <string name="main_empty_state_description">Start journaling or create a habit to see it here.</string>
+
+    <string name="journal_list_title">All entries</string>
+    <string name="journal_sort_newest_first">Newest first</string>
+    <string name="journal_sort_oldest_first">Oldest first</string>
+
+    <string name="habit_list_title">All habits</string>
+    <string name="habit_sort_recently_checked_in">Recently checked-in</string>
+    <string name="habit_sort_alphabetical">Alphabetical</string>
+    <string name="habit_sort_date_created">Date created</string>
 
     <string name="main_fab_add_journal">Add journal</string>
     <string name="main_fab_create_habit">Create habit</string>
-    <string name="main_fab_log_check_ins">Log check-ins</string>
+    <string name="main_fab_log_check_ins">Log habits</string>
     <string name="content_description_add">Add</string>
     <string name="content_description_back">Back</string>
     <string name="content_description_account">Account</string>
@@ -18,18 +32,15 @@
     <string name="content_description_decrease">Decrease</string>
     <string name="content_description_increase">Increase</string>
 
-    <string name="onboarding_skip">Skip</string>
-
-    <string name="onboarding_welcome_title">Welcome to TodayWas</string>
-    <string name="onboarding_welcome_description">Track your journal entries and habits, all in one place.</string>
+    <string name="onboarding_welcome_title">Welcome to Today Was</string>
+    <string name="onboarding_welcome_description">Track your journal and habits effortlessly in one place</string>
     <string name="onboarding_welcome_cta">Get started</string>
 
-    <string name="onboarding_account_description">Create an account to sync your data across devices.</string>
+    <string name="onboarding_account_title">Your data, your choice</string>
+    <string name="onboarding_account_description">All your data is stored locally, but you can enable remote sync and AI assist features by creating a free account.</string>
     <string name="onboarding_account_continue_without_account_cta">Continue without account</string>
-    <string name="onboarding_account_signin_signup_cta">Sign in or sign up</string>
+    <string name="onboarding_account_signin_signup_cta">Sign in or create account</string>
     <string name="onboarding_account_signed_in_format">Signed in as %1$s</string>
-    <string name="onboarding_account_continue_cta">Continue</string>
-    <string name="onboarding_account_retry">Try again</string>
     <string name="onboarding_account_error">Something went wrong. Please try again.</string>
 
     <string name="onboarding_all_set_title">All set!</string>
@@ -38,12 +49,31 @@
     <string name="onboarding_all_set_signed_in_format">Welcome back! You\'re signed in as %1$s.</string>
     <string name="onboarding_all_set_account_created_message">Your account is ready. Your data will now sync across devices.</string>
 
-    <string name="journal_add_entry_title">New entry</string>
-    <string name="journal_add_entry_text_label">What\'s on your mind?</string>
+    <string name="journal_add_entry_title_today">Today</string>
+    <string name="journal_add_entry_title_yesterday">Yesterday</string>
+    <string name="journal_add_entry_text_placeholder">What\'s on your mind?</string>
     <string name="journal_add_entry_save_cta">Save</string>
     <string name="journal_add_entry_error">Something went wrong. Please try again.</string>
 
+    <string name="journal_starter_prompt_positive_1">Today was a good day because…</string>
+    <string name="journal_starter_prompt_positive_2">I\'m feeling grateful for…</string>
+    <string name="journal_starter_prompt_positive_3">Something that made me smile today was…</string>
+    <string name="journal_starter_prompt_positive_4">I\'m proud of myself for…</string>
+    <string name="journal_starter_prompt_positive_5">Today went better than expected because…</string>
+    <string name="journal_starter_prompt_neutral_1">Today was pretty average. I…</string>
+    <string name="journal_starter_prompt_neutral_2">Nothing major happened today, but…</string>
+    <string name="journal_starter_prompt_neutral_3">Today felt like any other day. I…</string>
+    <string name="journal_starter_prompt_neutral_4">I spent today mostly…</string>
+    <string name="journal_starter_prompt_neutral_5">Today was steady — I…</string>
+    <string name="journal_starter_prompt_negative_1">Today was tough because…</string>
+    <string name="journal_starter_prompt_negative_2">I\'m feeling drained after…</string>
+    <string name="journal_starter_prompt_negative_3">Today didn\'t go the way I hoped because…</string>
+    <string name="journal_starter_prompt_negative_4">I\'m struggling with…</string>
+    <string name="journal_starter_prompt_negative_5">Today felt heavy. I…</string>
+
     <string name="journal_help_me_start_cta">Help me start</string>
+    <string name="journal_help_me_start_signed_out_title">Sign in to use AI assist</string>
+    <string name="journal_help_me_start_signed_out_message">Get a starting line for today\'s entry, personalized to your mood. Sign in to try it.</string>
     <string name="journal_help_me_start_dialog_title">What\'s today\'s mood?</string>
     <string name="journal_help_me_start_tone_very_bad">Very bad</string>
     <string name="journal_help_me_start_tone_bad">Bad</string>
@@ -58,6 +88,7 @@
     <string name="journal_help_me_start_error_invalid_request">Something went wrong. Please try again.</string>
     <string name="journal_help_me_start_error_upstream_failed">Couldn\'t generate a prompt right now. Please try again.</string>
     <string name="journal_help_me_start_error_not_signed_in">Please sign in to use this feature.</string>
+    <string name="journal_help_me_start_error_daily_limit_reached">You\'ve used all your AI assist requests for today. Try again tomorrow.</string>
     <string name="journal_help_me_start_error_network_unavailable">No internet connection.</string>
     <string name="journal_help_me_start_error_unknown">Something went wrong. Please try again.</string>
 
@@ -91,8 +122,8 @@
     <string name="habit_checkin_error">Something went wrong. Please try again.</string>
     <string name="habit_checkin_done_label">Done</string>
     <string name="habit_checkin_not_done_label">Not done</string>
+    <string name="habit_checkin_not_logged_label">Not logged</string>
 
-    <string name="habit_detail_title">Habit</string>
     <string name="habit_detail_edit_action">Edit</string>
     <string name="habit_detail_save_cta">Save</string>
     <string name="habit_detail_cancel_edit_action">Cancel</string>
@@ -106,8 +137,6 @@
     <string name="habit_detail_delete_cancel_cta">Cancel</string>
     <string name="habit_detail_delete_error">Something went wrong. Please try again.</string>
     <string name="habit_detail_delete_checkin_action">Delete check-in</string>
-    <string name="habit_detail_delete_checkin_dialog_title">Delete check-in?</string>
-    <string name="habit_detail_delete_checkin_dialog_text">This can\'t be undone.</string>
 
     <string name="contribution_window_last_12_months_label">Last 12 months</string>
 
@@ -120,7 +149,9 @@
     <string name="auth_form_sign_up_cta">Create account</string>
     <string name="auth_form_sign_in_cta">Sign in</string>
     <string name="auth_form_sign_up_link_cta">New here? Create an account</string>
+    <string name="auth_form_sign_in_link_cta">Already have an account? Sign in</string>
     <string name="auth_form_google_cta">Sign in with Google</string>
+    <string name="auth_form_google_sign_up_cta">Sign up with Google</string>
     <string name="auth_error_email_already_registered">An account with this email already exists</string>
     <string name="auth_error_invalid_credentials">Incorrect email or password</string>
     <string name="auth_error_weak_password">Password is too weak</string>
@@ -136,7 +167,7 @@
     <string name="account_success_continue_cta">Continue</string>
     <string name="account_sync_local_data_cta">Sync local data</string>
 
-    <string name="account_sheet_signed_out_description">Sign in to sync your data across devices.</string>
+    <string name="account_section_title">Account</string>
     <string name="account_sign_out_confirm_title">Sign out?</string>
     <string name="account_sign_out_confirm_message">You can sign back in anytime — your data stays synced.</string>
     <string name="account_sign_out_confirm_cta">Sign out</string>
@@ -146,4 +177,9 @@
     <string name="data_sync_review_summary_format">%1$d journal entries, %2$d habits, %3$d check-ins</string>
     <string name="data_sync_review_confirm_cta">Add my data</string>
     <string name="data_sync_review_skip_cta">Not now</string>
+
+    <plurals name="journal_help_me_start_remaining_today">
+        <item quantity="one">%d generation left today</item>
+        <item quantity="other">%d generations left today</item>
+    </plurals>
 </resources>

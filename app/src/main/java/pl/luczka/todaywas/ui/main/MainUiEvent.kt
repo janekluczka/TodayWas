@@ -19,6 +19,10 @@ sealed interface MainUiEvent {
         val habitId: String,
     ) : MainUiEvent
 
+    data object NavigateToJournalList : MainUiEvent
+
+    data object NavigateToHabitList : MainUiEvent
+
     data object NavigateToAccount : MainUiEvent
 
     data class ShowError(

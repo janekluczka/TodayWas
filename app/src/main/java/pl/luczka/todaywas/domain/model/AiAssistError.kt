@@ -8,6 +8,8 @@ sealed interface AiAssistError {
 
     data object NotSignedIn : AiAssistError
 
+    data object DailyLimitReached : AiAssistError
+
     data object NetworkUnavailable : AiAssistError
 
     data object Unknown : AiAssistError

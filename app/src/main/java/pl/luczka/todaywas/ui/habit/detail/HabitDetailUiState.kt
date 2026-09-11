@@ -16,17 +16,19 @@ data class HabitDetailUiState(
     val contributionGrid: ContributionGridUiState,
     val availableWindows: List<ContributionWindowUiState>,
     val selectedWindow: ContributionWindowUiState,
-    val isEditSheetOpen: Boolean,
+    val editingDate: LocalDate? = null,
+    val editingValue: Int? = null,
     val isSaving: Boolean,
     val saveError: Boolean,
     val saveErrorIsWindowExpired: Boolean,
     val isDeleteHabitDialogVisible: Boolean = false,
     val isDeletingHabit: Boolean = false,
     val deleteHabitError: Boolean = false,
-    val checkInPendingDelete: LocalDate? = null,
     val isDeletingCheckIn: Boolean = false,
     val deleteCheckInError: Boolean = false,
-)
+) {
+    val isEditSheetOpen: Boolean get() = editingDate != null
+}
 
 data class HabitDetailRowUiState(
     val date: LocalDate,

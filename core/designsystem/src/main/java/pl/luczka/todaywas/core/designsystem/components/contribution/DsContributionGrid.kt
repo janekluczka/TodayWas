@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import pl.luczka.todaywas.core.designsystem.theme.DsColor
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import java.time.LocalDate
 
@@ -53,26 +54,29 @@ sealed interface DsContributionCellUiState {
     ) : DsContributionCellUiState
 }
 
-// Fixed, non-MaterialTheme.colorScheme palette: DsTheme has dynamicColor = true, so colorScheme
-// roles vary per device/wallpaper (Material You) and would make relative intensity comparisons
-// meaningless. These are the same values GitHub's own contribution graph uses.
+// A tonal ramp of the app's own teal hue (DsColor.teal*), not GitHub's green — this is a
+// journaling/habit app, not a code host. Fixed (not read from MaterialTheme.colorScheme) so
+// relative intensity comparisons stay meaningful regardless of the active theme — reaches straight
+// into the raw DsColor palette rather than through DsTheme's semantic roles.
+// One palette for every habit today; a per-habit color choice (e.g. picking a different hue per
+// scale habit) is a deliberately deferred future step, not built into this API yet.
 // Internal (not private) so DsContributionTimeline.kt can share the same rendering.
 internal val LightLevelColors = mapOf(
-    DsContributionLevel.NONE to Color(0xFFEBEDF0),
-    DsContributionLevel.LEVEL_1 to Color(0xFF9BE9A8),
-    DsContributionLevel.LEVEL_2 to Color(0xFF40C463),
-    DsContributionLevel.LEVEL_3 to Color(0xFF30A14E),
-    DsContributionLevel.LEVEL_4 to Color(0xFF216E39),
-    DsContributionLevel.LEVEL_5 to Color(0xFF0E4429),
+    DsContributionLevel.NONE to DsColor.neutralVariant90,
+    DsContributionLevel.LEVEL_1 to DsColor.teal90,
+    DsContributionLevel.LEVEL_2 to DsColor.teal70,
+    DsContributionLevel.LEVEL_3 to DsColor.teal60,
+    DsContributionLevel.LEVEL_4 to DsColor.teal40,
+    DsContributionLevel.LEVEL_5 to DsColor.teal10,
 )
 
 internal val DarkLevelColors = mapOf(
-    DsContributionLevel.NONE to Color(0xFF161B22),
-    DsContributionLevel.LEVEL_1 to Color(0xFF0E4429),
-    DsContributionLevel.LEVEL_2 to Color(0xFF006D32),
-    DsContributionLevel.LEVEL_3 to Color(0xFF26A641),
-    DsContributionLevel.LEVEL_4 to Color(0xFF39D353),
-    DsContributionLevel.LEVEL_5 to Color(0xFF56D364),
+    DsContributionLevel.NONE to DsColor.neutralVariant30,
+    DsContributionLevel.LEVEL_1 to DsColor.teal30,
+    DsContributionLevel.LEVEL_2 to DsColor.teal60,
+    DsContributionLevel.LEVEL_3 to DsColor.teal70,
+    DsContributionLevel.LEVEL_4 to DsColor.teal80,
+    DsContributionLevel.LEVEL_5 to DsColor.teal90,
 )
 
 internal val CELL_SIZE = 12.dp
@@ -91,19 +95,18 @@ internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean =
         is DsContributionCellUiState.Blank -> cell.hasGapBefore
     }
 
-// Shared by both DsContributionGrid (horizontal) and DsContributionTimeline (vertical) so the two
-// stay visually consistent without duplicating the palette/size logic. Pure rendering only —
-// month-gap spacing is the week container's job (see weekHasGapBefore), not a per-cell concern,
-// since "before" means a different axis in each component.
+// Pure rendering only — month-gap spacing is the week container's job (see weekHasGapBefore), not
+// a per-cell concern, since "before" means a different axis in each caller.
 @Composable
 internal fun ContributionCell(
     cell: DsContributionCellUiState,
     levelColors: Map<DsContributionLevel, Color>,
     modifier: Modifier = Modifier,
     cellSize: Dp = CELL_SIZE,
+    cellSpacing: Dp = CELL_SPACING,
 ) {
     val cellModifier = modifier
-        .padding(CELL_SPACING / 2)
+        .padding(cellSpacing / 2)
         .size(cellSize)
     when (cell) {
         is DsContributionCellUiState.Level -> Box(
@@ -116,10 +119,16 @@ internal fun ContributionCell(
     }
 }
 
+// cellSize/cellSpacing/monthGap default to the compact sizing this ships with today (Main's
+// overview-scale usage) — a caller that needs a bigger read (e.g. a single-habit drill-down) can
+// override them without affecting every other caller.
 @Composable
 fun DsContributionGrid(
     cells: List<DsContributionCellUiState>,
     modifier: Modifier = Modifier,
+    cellSize: Dp = CELL_SIZE,
+    cellSpacing: Dp = CELL_SPACING,
+    monthGap: Dp = MONTH_GAP,
 ) {
     val levelColors = contributionLevelColors()
 
@@ -134,10 +143,17 @@ fun DsContributionGrid(
         items(cells.chunked(7)) { week ->
             Column(
                 modifier = Modifier.padding(
-                    start = if (week.weekHasGapBefore()) MONTH_GAP else 0.dp,
+                    start = if (week.weekHasGapBefore()) monthGap else 0.dp,
                 ),
             ) {
-                week.forEach { cell -> ContributionCell(cell = cell, levelColors = levelColors) }
+                week.forEach { cell ->
+                    ContributionCell(
+                        cell = cell,
+                        levelColors = levelColors,
+                        cellSize = cellSize,
+                        cellSpacing = cellSpacing,
+                    )
+                }
             }
         }
     }

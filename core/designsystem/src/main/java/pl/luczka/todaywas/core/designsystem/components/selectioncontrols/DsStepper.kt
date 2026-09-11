@@ -1,19 +1,20 @@
 package pl.luczka.todaywas.core.designsystem.components.selectioncontrols
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsFilledTonalIconButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
-import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 @Composable
 fun DsStepper(
@@ -26,9 +27,10 @@ fun DsStepper(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier.fillMaxWidth(),
     ) {
-        DsIconButton(
+        DsFilledTonalIconButton(
             onClick = { onValueChange(value - 1) },
             enabled = value > range.first,
         ) {
@@ -39,9 +41,9 @@ fun DsStepper(
         }
         DsText(
             text = value.toString(),
-            modifier = Modifier.padding(horizontal = DsSpacing.space300),
+            style = MaterialTheme.typography.headlineSmall,
         )
-        DsIconButton(
+        DsFilledTonalIconButton(
             onClick = { onValueChange(value + 1) },
             enabled = value < range.last,
         ) {

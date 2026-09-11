@@ -10,14 +10,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
-import pl.luczka.todaywas.domain.model.ContributionGrid
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
@@ -26,13 +27,11 @@ import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
-import pl.luczka.todaywas.ui.mapper.toDomain
-import pl.luczka.todaywas.ui.mapper.toHabitUiStates
+import pl.luczka.todaywas.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
+import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
@@ -52,19 +51,12 @@ class MainViewModel @Inject constructor(
     private val clock: Clock,
 ) : ViewModel() {
 
-    private val selectedJournalWindow =
-        MutableStateFlow<ContributionWindow>(ContributionWindow.RollingTwelveMonths)
-
     private val _uiState = MutableStateFlow(
         MainUiState(
+            isLoading = true,
             journalEntries = emptyList(),
             habits = emptyList(),
-            journalContributionGrid = ContributionGrid(
-                window = ContributionWindow.RollingTwelveMonths,
-                days = emptyMap(),
-            ).toUiState(clock.instant()),
-            journalAvailableWindows = listOf(ContributionWindowUiState.RollingTwelveMonths),
-            journalSelectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+            journalContributionCells = emptyList(),
             fabActions = emptyList(),
             fabExpanded = false,
             authState = AuthStateUi.Loading,
@@ -78,15 +70,13 @@ class MainViewModel @Inject constructor(
     private val eventChannel = Channel<MainUiEvent>(Channel.BUFFERED)
     val events: Flow<MainUiEvent> = eventChannel.receiveAsFlow()
 
-    private val journalContributionData: Flow<JournalContributionData> = observeJournalContribution(
-        selectedJournalWindow,
-    ).map { summary ->
-        val now = clock.instant()
-        JournalContributionData(
-            grid = summary.grid.toUiState(now),
-            availableWindows = summary.availableWindows.map { it.toUiState() },
-        )
-    }
+    // The full RollingTwelveMonths grid, same data source the Journal list screen's grid uses —
+    // Main just renders it as a single scrollable row (DsContributionRow) instead of stacked
+    // weekly columns.
+    private val journalContributionCells: Flow<List<DsContributionCellUiState>> =
+        observeJournalContribution(flowOf(ContributionWindow.RollingTwelveMonths)).map { summary ->
+            summary.grid.toUiState(clock.instant()).cells
+        }
 
     init {
         viewModelScope.launch {
@@ -98,30 +88,29 @@ class MainViewModel @Inject constructor(
                 RawMainSources(
                     journalEntries = entries.map { it.toUiState() },
                     addableSlots = addableSlots.map { it.toUiState() },
-                    habits = board.toHabitUiStates(today = LocalDate.now(clock)),
+                    habits = board.toSortedHabitUiStates(
+                        today = LocalDate.now(clock),
+                        sort = HabitSortUiState.RECENTLY_CHECKED_IN,
+                    ),
                 )
             }
             combine(
                 rawSources,
-                selectedJournalWindow,
-                journalContributionData,
-            ) { raw, selectedWindow, contribution ->
+                journalContributionCells,
+            ) { raw, contributionCells ->
                 CombinedMainState(
                     journalEntries = raw.journalEntries,
                     addableSlots = raw.addableSlots,
                     habits = raw.habits,
-                    journalContributionGrid = contribution.grid,
-                    journalAvailableWindows = contribution.availableWindows,
-                    journalSelectedWindow = selectedWindow.toUiState(),
+                    journalContributionCells = contributionCells,
                 )
             }.collect { combined ->
                 _uiState.update {
                     it.copy(
+                        isLoading = false,
                         journalEntries = combined.journalEntries,
                         habits = combined.habits,
-                        journalContributionGrid = combined.journalContributionGrid,
-                        journalAvailableWindows = combined.journalAvailableWindows,
-                        journalSelectedWindow = combined.journalSelectedWindow,
+                        journalContributionCells = combined.journalContributionCells,
                         fabActions = toFabActions(combined.addableSlots, combined.habits),
                     )
                 }
@@ -151,7 +140,10 @@ class MainViewModel @Inject constructor(
             MainIntent.FabToggled -> onFabToggled()
             is MainIntent.JournalEntryClicked -> onJournalEntryClicked(intent.entry)
             is MainIntent.HabitClicked -> onHabitClicked(intent.habit)
-            is MainIntent.JournalWindowSelected -> onJournalWindowSelected(intent.window)
+            MainIntent.JournalViewAllClicked -> eventChannel.trySend(
+                MainUiEvent.NavigateToJournalList,
+            )
+            MainIntent.HabitViewAllClicked -> eventChannel.trySend(MainUiEvent.NavigateToHabitList)
             MainIntent.AccountIconClicked -> _uiState.update {
                 it.copy(
                     isAccountSheetVisible = true,
@@ -199,10 +191,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun onJournalWindowSelected(window: ContributionWindowUiState) {
-        selectedJournalWindow.update { window.toDomain() }
-    }
-
     private fun onFabActionClicked(action: FabActionUiState) {
         _uiState.update { it.copy(fabExpanded = false) }
         when (action) {
@@ -243,17 +231,10 @@ class MainViewModel @Inject constructor(
         val habits: List<HabitUiState>,
     )
 
-    private data class JournalContributionData(
-        val grid: ContributionGridUiState,
-        val availableWindows: List<ContributionWindowUiState>,
-    )
-
     private data class CombinedMainState(
         val journalEntries: List<JournalEntryUiState>,
         val addableSlots: List<JournalDateSlotUiState>,
         val habits: List<HabitUiState>,
-        val journalContributionGrid: ContributionGridUiState,
-        val journalAvailableWindows: List<ContributionWindowUiState>,
-        val journalSelectedWindow: ContributionWindowUiState,
+        val journalContributionCells: List<DsContributionCellUiState>,
     )
 }

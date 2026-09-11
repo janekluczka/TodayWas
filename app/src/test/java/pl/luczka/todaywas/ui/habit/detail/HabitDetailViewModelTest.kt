@@ -203,33 +203,47 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should set isEditSheetOpen true when EditClicked is dispatched`() =
+    fun `should set isEditSheetOpen true and preload editingValue when EditRowClicked is dispatched`() =
         runTest {
             // Arrange
-            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(1)),
+                        updatedAt = now.minus(Duration.ofHours(1)),
+                    ),
+                ),
+            )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
 
             // Act
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
             runCurrent()
 
             // Assert
             assertTrue(viewModel.uiState.value.isEditSheetOpen)
+            assertEquals(today, viewModel.uiState.value.editingDate)
+            assertEquals(1, viewModel.uiState.value.editingValue)
             collectJob.cancel()
         }
 
     @Test
-    fun `should exit edit mode and discard pending values when CancelEditClicked is dispatched`() =
+    fun `should exit edit mode and discard the pending value when CancelEditClicked is dispatched`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(1))
 
             // Act
             viewModel.onIntent(HabitDetailIntent.CancelEditClicked)
@@ -237,12 +251,8 @@ class HabitDetailViewModelTest {
 
             // Assert
             assertFalse(viewModel.uiState.value.isEditSheetOpen)
-            assertEquals(
-                null,
-                viewModel.uiState.value.rows
-                    .find { it.date == today }
-                    ?.value,
-            )
+            assertEquals(null, viewModel.uiState.value.editingDate)
+            assertEquals(null, viewModel.uiState.value.editingValue)
             collectJob.cancel()
         }
 
@@ -254,7 +264,7 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
 
             // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
@@ -268,15 +278,15 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should call only the insert path and exit edit mode when Save touches only a not-yet-logged row`() =
+    fun `should call only the insert path and exit edit mode when Save touches a not-yet-logged row`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(1))
 
             // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
@@ -293,7 +303,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should call only the update path when Save touches only an in-window logged row`() =
+    fun `should call only the update path when Save touches an in-window logged row`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
@@ -312,8 +322,8 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(0))
 
             // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
@@ -325,43 +335,6 @@ class HabitDetailViewModelTest {
             assertEquals(1, repository.updateCheckInCallCount)
             assertEquals(today, repository.lastUpdatedDate)
             assertEquals(0, repository.lastUpdatedValue)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should call both paths and clear pending only if both succeed when Save touches a new and an existing row`() =
-        runTest {
-            // Arrange
-            val repository = FakeHabitRepository(
-                initialHabits = listOf(habit),
-                initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = "1",
-                        habitId = "1",
-                        date = today,
-                        value = 1,
-                        createdAt = now.minus(Duration.ofHours(1)),
-                        updatedAt = now.minus(Duration.ofHours(1)),
-                    ),
-                ),
-            )
-            val viewModel = viewModel(repository)
-            val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(yesterday, 1))
-
-            // Act
-            viewModel.onIntent(HabitDetailIntent.SaveClicked)
-            runCurrent()
-
-            // Assert
-            assertFalse(viewModel.uiState.value.isSaving)
-            assertFalse(viewModel.uiState.value.saveError)
-            assertEquals(1, repository.updateCheckInCallCount)
-            assertEquals(yesterday, repository.lastLoggedDate)
-            assertEquals(mapOf("1" to 1), repository.lastLoggedValues)
             collectJob.cancel()
         }
 
@@ -386,8 +359,8 @@ class HabitDetailViewModelTest {
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
             // Bypasses the UI's enabled gate on purpose, mirroring a real mid-session expiry.
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 0))
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(0))
 
             // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
@@ -510,8 +483,8 @@ class HabitDetailViewModelTest {
             val gridBefore = viewModel.uiState.value.contributionGrid
 
             // Act
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(yesterday, 1))
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(yesterday))
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(1))
             runCurrent()
 
             // Assert
@@ -528,8 +501,8 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-            viewModel.onIntent(HabitDetailIntent.EditClicked)
-            viewModel.onIntent(HabitDetailIntent.ValueChanged(today, 1))
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(1))
 
             // Act
             viewModel.onIntent(HabitDetailIntent.SaveClicked)
@@ -623,42 +596,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should set checkInPendingDelete when DeleteCheckInClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val repository = FakeHabitRepository(initialHabits = listOf(habit))
-            val viewModel = viewModel(repository)
-            val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
-
-            // Act
-            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
-
-            // Assert
-            assertEquals(today, viewModel.uiState.value.checkInPendingDelete)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should clear checkInPendingDelete when DeleteCheckInDismissed is dispatched`() =
-        runTest {
-            // Arrange
-            val repository = FakeHabitRepository(initialHabits = listOf(habit))
-            val viewModel = viewModel(repository)
-            val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
-            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
-
-            // Act
-            viewModel.onIntent(HabitDetailIntent.DeleteCheckInDismissed)
-
-            // Assert
-            assertEquals(null, viewModel.uiState.value.checkInPendingDelete)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should delete the check-in and clear checkInPendingDelete when DeleteCheckInConfirmed succeeds`() =
+    fun `should delete the check-in immediately with no confirmation step when DeleteCheckInClicked is dispatched`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
@@ -677,23 +615,21 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
 
             // Act
-            viewModel.onIntent(HabitDetailIntent.DeleteCheckInConfirmed)
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
             runCurrent()
 
             // Assert
             assertEquals(1, repository.deleteCheckInCallCount)
             assertEquals(today, repository.lastDeletedCheckInDate)
             assertFalse(viewModel.uiState.value.isDeletingCheckIn)
-            assertEquals(null, viewModel.uiState.value.checkInPendingDelete)
             assertFalse(viewModel.uiState.value.deleteCheckInError)
             collectJob.cancel()
         }
 
     @Test
-    fun `should clear checkInPendingDelete and set deleteCheckInError when DeleteCheckInConfirmed fails`() =
+    fun `should set deleteCheckInError when DeleteCheckInClicked fails`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
@@ -701,15 +637,68 @@ class HabitDetailViewModelTest {
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
-            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
 
             // Act
-            viewModel.onIntent(HabitDetailIntent.DeleteCheckInConfirmed)
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
             runCurrent()
 
             // Assert
-            assertEquals(null, viewModel.uiState.value.checkInPendingDelete)
             assertTrue(viewModel.uiState.value.deleteCheckInError)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should delete the check-in and close the sheet when ValueChanged deselects an already-logged row`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(1)),
+                        updatedAt = now.minus(Duration.ofHours(1)),
+                    ),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(null))
+            runCurrent()
+
+            // Assert
+            assertEquals(1, repository.deleteCheckInCallCount)
+            assertEquals(today, repository.lastDeletedCheckInDate)
+            assertFalse(viewModel.uiState.value.isEditSheetOpen)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should only clear editingValue without deleting when ValueChanged deselects a not-yet-logged row`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.EditRowClicked(today))
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(1))
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.ValueChanged(null))
+            runCurrent()
+
+            // Assert
+            assertEquals(0, repository.deleteCheckInCallCount)
+            assertTrue(viewModel.uiState.value.isEditSheetOpen)
+            assertEquals(null, viewModel.uiState.value.editingValue)
             collectJob.cancel()
         }
 }

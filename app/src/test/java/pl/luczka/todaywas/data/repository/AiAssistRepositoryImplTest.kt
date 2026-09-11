@@ -41,7 +41,7 @@ class AiAssistRepositoryImplTest {
             // Arrange
             val repository = repository {
                 respond(
-                    """{"text":"Generated prompt"}""",
+                    """{"text":"Generated prompt","remaining":7}""",
                     HttpStatusCode.OK,
                     headersOf(HttpHeaders.ContentType, "application/json"),
                 )
@@ -55,7 +55,8 @@ class AiAssistRepositoryImplTest {
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals("Generated prompt", result.getOrNull())
+            assertEquals("Generated prompt", result.getOrNull()?.text)
+            assertEquals(7, result.getOrNull()?.remainingToday)
         }
 
     @Test
@@ -77,12 +78,36 @@ class AiAssistRepositoryImplTest {
         }
 
     @Test
+    fun `should return AiAssistException with DailyLimitReached when the proxy returns 429`() =
+        runTest {
+            // Arrange
+            val repository = repository {
+                respond(
+                    """{"error":"daily_limit_reached","remaining":0}""",
+                    HttpStatusCode.TooManyRequests,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+
+            // Act
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
+
+            // Assert
+            assertTrue(result.isFailure)
+            val error = (result.exceptionOrNull() as? AiAssistException)?.error
+            assertEquals(AiAssistError.DailyLimitReached, error)
+        }
+
+    @Test
     fun `should return the refined text when refineJournalEntry succeeds`() =
         runTest {
             // Arrange
             val repository = repository {
                 respond(
-                    """{"text":"Refined text"}""",
+                    """{"text":"Refined text","remaining":4}""",
                     HttpStatusCode.OK,
                     headersOf(HttpHeaders.ContentType, "application/json"),
                 )
@@ -93,7 +118,7 @@ class AiAssistRepositoryImplTest {
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals("Refined text", result.getOrNull())
+            assertEquals("Refined text", result.getOrNull()?.text)
         }
 
     @Test
@@ -107,7 +132,7 @@ class AiAssistRepositoryImplTest {
                 capturedRequestTimeoutMillis = timeoutConfig?.requestTimeoutMillis
                 capturedSocketTimeoutMillis = timeoutConfig?.socketTimeoutMillis
                 respond(
-                    """{"text":"ok"}""",
+                    """{"text":"ok","remaining":9}""",
                     HttpStatusCode.OK,
                     headersOf(HttpHeaders.ContentType, "application/json"),
                 )
@@ -129,7 +154,7 @@ class AiAssistRepositoryImplTest {
             val repository = repository {
                 delay(50)
                 respond(
-                    """{"text":"ok"}""",
+                    """{"text":"ok","remaining":9}""",
                     HttpStatusCode.OK,
                     headersOf(HttpHeaders.ContentType, "application/json"),
                 )

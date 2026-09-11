@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.onboarding
+package pl.luczka.todaywas.ui.onboarding.accountsetup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -29,11 +29,12 @@ import pl.luczka.todaywas.ui.auth.util.isValidEmail
 import pl.luczka.todaywas.ui.auth.util.isValidPassword
 import pl.luczka.todaywas.ui.auth.util.isValidRepeatPassword
 import pl.luczka.todaywas.ui.mapper.toUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
+import pl.luczka.todaywas.ui.onboarding.AccountSubStep
+import pl.luczka.todaywas.ui.onboarding.AllSetReason
 import javax.inject.Inject
 
 @HiltViewModel
-class OnboardingViewModel @Inject constructor(
+class OnboardingAccountSetupViewModel @Inject constructor(
     private val completeOnboarding: CompleteOnboardingUseCase,
     observeAuthState: ObserveAuthStateUseCase,
     observeOnboardingState: ObserveOnboardingStateUseCase,
@@ -46,22 +47,11 @@ class OnboardingViewModel @Inject constructor(
     private val shouldReviewLocalDataBeforeSync: ShouldReviewLocalDataBeforeSyncUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
-        OnboardingUiState(
-            step = OnboardingStep.WELCOME,
-            isSaving = false,
-            saveError = false,
-            accountSubStep = AccountSubStep.CHOICE,
-            authState = AuthStateUi.Loading,
-            signInForm = SignInFormUiState(),
-            signUpForm = SignUpFormUiState(),
-            allSetReason = AllSetReason.NO_ACCOUNT,
-        ),
-    )
-    val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(OnboardingAccountSetupUiState())
+    val uiState: StateFlow<OnboardingAccountSetupUiState> = _uiState.asStateFlow()
 
-    private val eventChannel = Channel<OnboardingUiEvent>(Channel.BUFFERED)
-    val events: Flow<OnboardingUiEvent> = eventChannel.receiveAsFlow()
+    private val eventChannel = Channel<OnboardingAccountSetupUiEvent>(Channel.BUFFERED)
+    val events: Flow<OnboardingAccountSetupUiEvent> = eventChannel.receiveAsFlow()
 
     private var pendingAllSetReason = AllSetReason.NO_ACCOUNT
 
@@ -78,143 +68,54 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    fun onIntent(intent: OnboardingIntent) {
+    fun onIntent(intent: OnboardingAccountSetupIntent) {
         when (intent) {
-            OnboardingIntent.NextClicked -> onNextClicked()
-            OnboardingIntent.SkipClicked -> onSkipClicked()
-            OnboardingIntent.StepBack -> onStepBack()
-            OnboardingIntent.ContinueWithoutAccountClicked -> onContinueWithoutAccountClicked()
-            OnboardingIntent.SignInSignUpClicked ->
-                _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_IN) }
-            is OnboardingIntent.SignInEmailChanged -> onSignInEmailChanged(intent.value)
-            is OnboardingIntent.SignInPasswordChanged -> onSignInPasswordChanged(intent.value)
-            OnboardingIntent.SignInSubmitClicked -> onSignInSubmitClicked()
-            is OnboardingIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(
-                intent.idToken,
-            )
-            OnboardingIntent.GoogleSignInFailed -> onGoogleSignInFailed()
-            OnboardingIntent.SignUpLinkClicked ->
-                _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_UP) }
-            is OnboardingIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
-            is OnboardingIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
-            is OnboardingIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(
-                intent.value,
-            )
-            OnboardingIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
-            OnboardingIntent.SyncConfirmClicked -> onSyncConfirmClicked()
-            OnboardingIntent.SyncSkipClicked -> onSyncSkipClicked()
-        }
-    }
-
-    private fun onNextClicked() {
-        when (_uiState.value.step) {
-            OnboardingStep.WELCOME -> _uiState.update {
-                it.copy(
-                    step = OnboardingStep.ACCOUNT_INFO,
-                )
+            OnboardingAccountSetupIntent.StepBack -> onStepBack()
+            is OnboardingAccountSetupIntent.SignInEmailChanged ->
+                onSignInEmailChanged(intent.value)
+            is OnboardingAccountSetupIntent.SignInPasswordChanged ->
+                onSignInPasswordChanged(intent.value)
+            OnboardingAccountSetupIntent.SignInSubmitClicked -> onSignInSubmitClicked()
+            is OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived ->
+                onSignInGoogleIdTokenReceived(intent.idToken)
+            OnboardingAccountSetupIntent.GoogleSignInFailed -> onGoogleSignInFailed()
+            OnboardingAccountSetupIntent.SignUpLinkClicked -> _uiState.update {
+                it.copy(accountSubStep = AccountSubStep.SIGN_UP)
             }
-            OnboardingStep.ACCOUNT_INFO -> onCompleteAccountStep()
-            OnboardingStep.ALL_SET -> eventChannel.trySend(OnboardingUiEvent.Finished)
-        }
-    }
-
-    private fun onCompleteAccountStep() {
-        if (_uiState.value.isSaving) return
-        val reason = if (_uiState.value.authState is AuthStateUi.SignedIn) {
-            AllSetReason.SIGNED_IN
-        } else {
-            AllSetReason.NO_ACCOUNT
-        }
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSaving = true,
-                    saveError = false,
-                )
+            OnboardingAccountSetupIntent.SignInLinkClicked -> _uiState.update {
+                it.copy(accountSubStep = AccountSubStep.SIGN_IN)
             }
-            val result = reachAllSet(reason)
-            _uiState.update {
-                it.copy(
-                    isSaving = false,
-                    saveError = result.isFailure,
-                )
-            }
+            is OnboardingAccountSetupIntent.SignUpEmailChanged ->
+                onSignUpEmailChanged(intent.value)
+            is OnboardingAccountSetupIntent.SignUpPasswordChanged ->
+                onSignUpPasswordChanged(intent.value)
+            is OnboardingAccountSetupIntent.SignUpRepeatPasswordChanged ->
+                onSignUpRepeatPasswordChanged(intent.value)
+            OnboardingAccountSetupIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
+            is OnboardingAccountSetupIntent.SignUpGoogleIdTokenReceived ->
+                onSignUpGoogleIdTokenReceived(intent.idToken)
+            OnboardingAccountSetupIntent.SyncConfirmClicked -> onSyncConfirmClicked()
+            OnboardingAccountSetupIntent.SyncSkipClicked -> onSyncSkipClicked()
         }
     }
 
-    // The single place onboarding is marked complete for every path that actually visits the
-    // ALL_SET step. SkipClicked bypasses ALL_SET entirely (it finishes straight from wherever the
-    // user is) and persists via completeOnboarding() directly instead. Both persist before
-    // advancing so RootViewModel's routing decision on a later cold start never races an
-    // unpersisted completion.
-    private suspend fun reachAllSet(reason: AllSetReason): Result<Unit> {
-        val result = completeOnboarding()
-        if (result.isSuccess) {
-            _uiState.update { it.copy(step = OnboardingStep.ALL_SET, allSetReason = reason) }
-        }
-        return result
-    }
-
+    // DATA_SYNC_REVIEW is a dead end (no back affordance shown for it, matches its own summary
+    // screen having no back button) — only SIGN_IN/SIGN_UP have a back path.
     private fun onStepBack() {
-        when (_uiState.value.step) {
-            OnboardingStep.ACCOUNT_INFO -> onAccountInfoStepBack()
-            OnboardingStep.ALL_SET -> _uiState.update {
-                it.copy(
-                    step = OnboardingStep.ACCOUNT_INFO,
-                )
-            }
-            OnboardingStep.WELCOME -> eventChannel.trySend(OnboardingUiEvent.ExitApp)
-        }
-    }
-
-    private fun onAccountInfoStepBack() {
         when (_uiState.value.accountSubStep) {
             AccountSubStep.SIGN_UP -> _uiState.update {
-                it.copy(
-                    accountSubStep = AccountSubStep.SIGN_IN,
-                )
+                it.copy(accountSubStep = AccountSubStep.SIGN_IN)
             }
-            AccountSubStep.SIGN_IN -> _uiState.update {
-                it.copy(
-                    accountSubStep = AccountSubStep.CHOICE,
-                )
-            }
+            AccountSubStep.SIGN_IN -> eventChannel.trySend(
+                OnboardingAccountSetupUiEvent.NavigateBack,
+            )
             AccountSubStep.DATA_SYNC_REVIEW -> Unit
-            AccountSubStep.CHOICE -> _uiState.update { it.copy(step = OnboardingStep.WELCOME) }
         }
-    }
-
-    private fun onSkipClicked() {
-        if (_uiState.value.isSaving) return
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSaving = true,
-                    saveError = false,
-                )
-            }
-            val result = completeOnboarding()
-            _uiState.update {
-                it.copy(
-                    isSaving = false,
-                    saveError = result.isFailure,
-                )
-            }
-            if (result.isSuccess) {
-                eventChannel.trySend(OnboardingUiEvent.Finished)
-            }
-        }
-    }
-
-    private fun onContinueWithoutAccountClicked() {
-        viewModelScope.launch { reachAllSet(AllSetReason.NO_ACCOUNT) }
     }
 
     private fun onSignInEmailChanged(value: String) {
         _uiState.update {
-            it.copy(
-                signInForm = it.signInForm.copy(email = value, emailError = false),
-            )
+            it.copy(signInForm = it.signInForm.copy(email = value, emailError = false))
         }
     }
 
@@ -256,7 +157,7 @@ class OnboardingViewModel @Inject constructor(
     }
 
     private fun onGoogleSignInFailed() {
-        eventChannel.trySend(OnboardingUiEvent.ShowError(AuthError.Unknown.toUiState()))
+        eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(AuthError.Unknown.toUiState()))
     }
 
     private suspend fun applySignInResult(result: Result<Unit>) {
@@ -266,15 +167,13 @@ class OnboardingViewModel @Inject constructor(
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
-            eventChannel.trySend(OnboardingUiEvent.ShowError(error.toUiState()))
+            eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(error.toUiState()))
         }
     }
 
     private fun onSignUpEmailChanged(value: String) {
         _uiState.update {
-            it.copy(
-                signUpForm = it.signUpForm.copy(email = value, emailError = false),
-            )
+            it.copy(signUpForm = it.signUpForm.copy(email = value, emailError = false))
         }
     }
 
@@ -322,6 +221,13 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    private fun onSignUpGoogleIdTokenReceived(idToken: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = true)) }
+            applySignUpResult(signInWithGoogle(idToken))
+        }
+    }
+
     private suspend fun applySignUpResult(result: Result<Unit>) {
         if (result.isSuccess) {
             _uiState.update { it.copy(signUpForm = SignUpFormUiState()) }
@@ -329,12 +235,12 @@ class OnboardingViewModel @Inject constructor(
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = false)) }
-            eventChannel.trySend(OnboardingUiEvent.ShowError(error.toUiState()))
+            eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(error.toUiState()))
         }
     }
 
-    // Shows the data-review step only the first time there's unsynced local data to offer;
-    // otherwise syncs transparently in the background and proceeds straight to ALL_SET.
+    // Shows the data-review substep only the first time there's unsynced local data to offer;
+    // otherwise syncs transparently in the background and finishes immediately.
     private suspend fun proceedAfterAuthSuccess(reason: AllSetReason) {
         val summary = getLocalDataSummary()
         if (shouldReviewLocalDataBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
@@ -347,7 +253,7 @@ class OnboardingViewModel @Inject constructor(
             }
         } else {
             viewModelScope.launch { syncLocalData() }
-            reachAllSet(reason)
+            finish(reason)
         }
     }
 
@@ -357,15 +263,20 @@ class OnboardingViewModel @Inject constructor(
             _uiState.update { it.copy(isSyncing = true) }
             val result = syncLocalData()
             if (result.isSuccess) markLocalDataSynced()
-            reachAllSet(pendingAllSetReason)
             _uiState.update { it.copy(isSyncing = false, dataSyncSummary = null) }
+            finish(pendingAllSetReason)
         }
     }
 
     private fun onSyncSkipClicked() {
-        viewModelScope.launch {
-            reachAllSet(pendingAllSetReason)
-            _uiState.update { it.copy(dataSyncSummary = null) }
+        _uiState.update { it.copy(dataSyncSummary = null) }
+        viewModelScope.launch { finish(pendingAllSetReason) }
+    }
+
+    private suspend fun finish(reason: AllSetReason) {
+        val result = completeOnboarding()
+        if (result.isSuccess) {
+            eventChannel.trySend(OnboardingAccountSetupUiEvent.Finished(reason))
         }
     }
 }

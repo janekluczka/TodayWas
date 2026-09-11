@@ -34,7 +34,6 @@ import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import java.time.Clock
@@ -135,6 +134,59 @@ class MainViewModelTest {
     fun tearDown() {
         Dispatchers.resetMain()
     }
+
+    @Test
+    fun `should start with isLoading true then flip false once data has loaded`() =
+        runTest {
+            // Arrange & Act
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository()
+            val viewModel = MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(
+                    journalRepository,
+                ),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeJournalContribution = ObserveJournalContributionUseCase(
+                    journalRepository,
+                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                ),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(
+                    authRepository,
+                    journalRepository,
+                    habitRepository,
+                    onboardingRepository,
+                ),
+                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+            )
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isLoading)
+        }
+
+    @Test
+    fun `should order habits by most recently checked-in first`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(
+                habits = listOf(habit(id = "1"), habit(id = "2"), habit(id = "3")),
+                checkIns = listOf(
+                    checkIn(habitId = "1", date = LocalDate.now().minusDays(5), value = 1),
+                    checkIn(habitId = "2", date = LocalDate.now(), value = 1),
+                ),
+            )
+
+            // Act
+            val ids = viewModel.uiState.value.habits
+                .map { it.id }
+
+            // Assert
+            assertEquals(listOf("2", "1", "3"), ids)
+        }
 
     @Test
     fun `should reflect entries from both sources in uiState`() =
@@ -387,7 +439,41 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should reflect loaded entries in journalContributionGrid and window state`() =
+    fun `should emit NavigateToJournalList when JournalViewAllClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            val events = mutableListOf<MainUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(MainIntent.JournalViewAllClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(listOf(MainUiEvent.NavigateToJournalList), events)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should emit NavigateToHabitList when HabitViewAllClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            val events = mutableListOf<MainUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(MainIntent.HabitViewAllClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(listOf(MainUiEvent.NavigateToHabitList), events)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should expose the full RollingTwelveMonths grid in journalContributionCells including today's level`() =
         runTest {
             // Arrange
             val today = entry(LocalDate.now())
@@ -397,63 +483,24 @@ class MainViewModelTest {
             val state = viewModel.uiState.value
 
             // Assert
-            assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.journalSelectedWindow)
-            assertTrue(
-                state.journalAvailableWindows.contains(
-                    ContributionWindowUiState.RollingTwelveMonths,
-                ),
-            )
-            assertTrue(
-                state.journalAvailableWindows.contains(
-                    ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-                ),
-            )
-            assertTrue(levelFor(state.journalContributionGrid.cells, LocalDate.now()) != null)
+            assertTrue(state.journalContributionCells.size > 7)
+            assertTrue(levelFor(state.journalContributionCells, LocalDate.now()) != null)
         }
 
     @Test
-    fun `should update journalSelectedWindow without changing an already-visible day's level when JournalWindowSelected is dispatched`() =
-        runTest {
-            // Arrange
-            val today = entry(LocalDate.now())
-            val older = entry(LocalDate.now().minusDays(3))
-            val viewModel = viewModel(entries = listOf(today, older))
-            val levelBefore =
-                levelFor(viewModel.uiState.value.journalContributionGrid.cells, LocalDate.now())
-
-            // Act
-            viewModel.onIntent(
-                MainIntent.JournalWindowSelected(
-                    ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-                ),
-            )
-            runCurrent()
-
-            // Assert
-            assertEquals(
-                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-                viewModel.uiState.value.journalSelectedWindow,
-            )
-            assertEquals(
-                levelBefore,
-                levelFor(viewModel.uiState.value.journalContributionGrid.cells, LocalDate.now()),
-            )
-        }
-
-    @Test
-    fun `should reuse the journalContributionGrid instance across an unrelated state change`() =
+    fun `should reuse the journalContributionCells instance across an unrelated state change`() =
         runTest {
             // Arrange
             val today = entry(LocalDate.now())
             val viewModel = viewModel(entries = listOf(today))
-            val gridBefore = viewModel.uiState.value.journalContributionGrid
+            val cellsBefore = viewModel.uiState.value.journalContributionCells
 
             // Act
             viewModel.onIntent(MainIntent.FabToggled)
             runCurrent()
 
             // Assert
-            assertTrue(gridBefore === viewModel.uiState.value.journalContributionGrid)
+            assertTrue(cellsBefore === viewModel.uiState.value.journalContributionCells)
         }
 
     @Test
