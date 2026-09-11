@@ -319,13 +319,13 @@ None — no schema or data migration involved in this plan.
 
 #### Automated
 
-- [ ] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 1.4 Two near-simultaneous sync paths on a device don't crash/ANR/race
+- [x] 1.4 Two near-simultaneous sync paths on a device don't crash/ANR/race
 
 ### Phase 2: Fix silent sync failure on account creation
 

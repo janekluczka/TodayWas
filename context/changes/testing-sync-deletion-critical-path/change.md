@@ -1,7 +1,7 @@
 ---
 change_id: testing-sync-deletion-critical-path
 title: Testing sync deletion critical path
-status: planned
+status: implementing
 created: 2026-09-11
 updated: 2026-09-11
 archived_at: null
