@@ -66,7 +66,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Sync & deletion critical-path coverage | Prove the account-upload and soft-delete-sync paths don't silently lose data | #1, #2, #3 | unit + integration | researched | `context/changes/testing-sync-deletion-critical-path/` |
+| 1 | Sync & deletion critical-path coverage | Prove the account-upload and soft-delete-sync paths don't silently lose data | #1, #2, #3 | unit + integration | planned | `context/changes/testing-sync-deletion-critical-path/` |
 | 2 | Cascade & account-boundary regression locks | Lock in two already-fixed-but-unprotected bugs so they can't silently regress | #4, #6 | unit + integration | not started | — |
 | 3 | RLS ownership verification | Verify cross-user isolation on all 3 tables, including the new DELETE policies | #5 | Postgres/RLS-level | not started | — |
 
