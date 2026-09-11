@@ -129,8 +129,20 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.3 Adding a sync/merge test
 
-- TBD — see §3 Phase 1 for the soft-delete-sync and account-upload
-  patterns this phase establishes.
+- **Pure decision-function test** (no DB): construct `SyncMeta` fixtures directly and assert on
+  `mergeForSync()`'s `pushIds`/`applyIds`. **Reference test**:
+  `app/src/test/java/pl/luczka/todaywas/data/util/SyncMergeTest.kt`.
+- **End-to-end chain test** (real DAO → real mapper → real merge decision, for a specific
+  entity-level behavior like soft-delete push-eligibility): build a real Robolectric Room DB
+  (same builder as 6.2), perform the write, read back, map via the entity's real `toSyncMeta()`,
+  then call the real `mergeForSync()` — don't hand-build `SyncMeta` for this style, the point is
+  proving the whole chain, not the decision function in isolation. **Reference test**:
+  `app/src/test/java/pl/luczka/todaywas/data/util/SyncMergeIntegrationTest.kt`.
+- **ViewModel-level sync failure/success handling** (e.g. account-creation upload): use the
+  existing `Fake*Repository`'s `syncWithRemoteResult` field to inject success/failure, assert on
+  emitted `UiEvent`s and resulting `UiState`. **Reference test**:
+  `app/src/test/java/pl/luczka/todaywas/ui/account/AccountViewModelTest.kt`.
+- **Run locally**: `./gradlew.bat testDebugUnitTest`.
 
 ### 6.4 Adding an RLS ownership test
 
@@ -139,7 +151,14 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.5 Per-rollout-phase notes
 
-(Filled in as each phase lands.)
+- **Phase 1** (`testing-sync-deletion-critical-path`): found `HabitRepositoryImpl`/
+  `JournalRepositoryImpl` were unscoped in Hilt, so the `syncMutex` meant to serialize concurrent
+  syncs was silently getting a fresh instance per injection site — fixed with `@Singleton` on
+  `RepositoryModule`'s bindings. Also found `AccountViewModel`/`OnboardingAccountSetupViewModel`
+  proceeded to the success screen even when the account-creation sync failed — fixed to surface
+  an error and stay on the review step. If you're adding a new Hilt-bound repository or use case
+  that holds coordination state (a `Mutex`, a cache, etc.), check whether it needs `@Singleton` —
+  it's easy to add the state and forget the scope.
 
 ## 7. What We Deliberately Don't Test
 

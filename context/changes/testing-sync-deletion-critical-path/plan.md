@@ -331,18 +331,18 @@ None — no schema or data migration involved in this plan.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 36a6d49
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — 36a6d49
+- [x] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug` — 36a6d49
 
 #### Manual
 
-- [x] 2.4 Forced sync failure during confirm shows an error and stays retry-capable on a device — verified via the automated ViewModel failure-path tests instead of a live repro (would require signing out of a real account); skipped live device repro by explicit user choice
+- [x] 2.4 Forced sync failure during confirm shows an error and stays retry-capable on a device — verified via the automated ViewModel failure-path tests instead of a live repro (would require signing out of a real account); skipped live device repro by explicit user choice — 36a6d49
 
 ### Phase 3: End-to-end soft-delete → sync-push regression test
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 Debug build succeeds: `./gradlew.bat assembleDebug`
