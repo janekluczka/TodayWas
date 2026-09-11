@@ -319,25 +319,25 @@ None — no schema or data migration involved in this plan.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — bf6d143
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — bf6d143
+- [x] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug` — bf6d143
 
 #### Manual
 
-- [x] 1.4 Two near-simultaneous sync paths on a device don't crash/ANR/race
+- [x] 1.4 Two near-simultaneous sync paths on a device don't crash/ANR/race — bf6d143
 
 ### Phase 2: Fix silent sync failure on account creation
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 2.4 Forced sync failure during confirm shows an error and stays retry-capable on a device
+- [x] 2.4 Forced sync failure during confirm shows an error and stays retry-capable on a device — verified via the automated ViewModel failure-path tests instead of a live repro (would require signing out of a real account); skipped live device repro by explicit user choice
 
 ### Phase 3: End-to-end soft-delete → sync-push regression test
 

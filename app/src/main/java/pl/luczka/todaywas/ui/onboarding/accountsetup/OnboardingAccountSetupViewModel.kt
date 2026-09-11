@@ -262,9 +262,15 @@ class OnboardingAccountSetupViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSyncing = true) }
             val result = syncLocalData()
-            if (result.isSuccess) markLocalDataSynced()
-            _uiState.update { it.copy(isSyncing = false, dataSyncSummary = null) }
-            finish(pendingAllSetReason)
+            _uiState.update { it.copy(isSyncing = false) }
+            if (result.isSuccess) {
+                markLocalDataSynced()
+                _uiState.update { it.copy(dataSyncSummary = null) }
+                finish(pendingAllSetReason)
+            } else {
+                val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+                eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(error.toUiState()))
+            }
         }
     }
 

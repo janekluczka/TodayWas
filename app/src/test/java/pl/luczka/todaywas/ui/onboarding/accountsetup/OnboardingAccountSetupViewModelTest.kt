@@ -447,6 +447,44 @@ class OnboardingAccountSetupViewModelTest {
         }
 
     @Test
+    fun `should show an error and stay on DATA_SYNC_REVIEW without marking synced when SyncConfirmClicked's sync fails`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository()
+            val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+            journalRepository.syncWithRemoteResult =
+                Result.failure(RuntimeException("network error"))
+            val onboardingRepository = FakeOnboardingRepository()
+            val viewModel = viewModel(
+                onboardingRepository,
+                authRepository,
+                journalRepository = journalRepository,
+            )
+            advanceToSignUp(viewModel)
+            fillSignUpForm(viewModel)
+            viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
+            assertEquals(AccountSubStep.DATA_SYNC_REVIEW, viewModel.uiState.value.accountSubStep)
+            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+
+            // Act
+            viewModel.onIntent(OnboardingAccountSetupIntent.SyncConfirmClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(
+                listOf(OnboardingAccountSetupUiEvent.ShowError(AuthErrorUiState.UNKNOWN)),
+                events,
+            )
+            assertEquals(0, onboardingRepository.markLocalDataSyncedCallCount)
+            assertEquals(0, onboardingRepository.completeOnboardingCallCount)
+            assertEquals(AccountSubStep.DATA_SYNC_REVIEW, viewModel.uiState.value.accountSubStep)
+            assertTrue(viewModel.uiState.value.dataSyncSummary != null)
+            assertFalse(viewModel.uiState.value.isSyncing)
+            collectJob.cancel()
+        }
+
+    @Test
     fun `should emit Finished without marking synced when SyncSkipClicked after sign-up`() =
         runTest {
             // Arrange

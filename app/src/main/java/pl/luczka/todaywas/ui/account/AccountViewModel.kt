@@ -271,9 +271,15 @@ class AccountViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSyncing = true) }
             val result = syncLocalData()
-            if (result.isSuccess) markLocalDataSynced()
-            _uiState.update { it.copy(isSyncing = false, dataSyncSummary = null) }
-            finishPostSyncAction(postSyncAction)
+            _uiState.update { it.copy(isSyncing = false) }
+            if (result.isSuccess) {
+                markLocalDataSynced()
+                _uiState.update { it.copy(dataSyncSummary = null) }
+                finishPostSyncAction(postSyncAction)
+            } else {
+                val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+                eventChannel.trySend(AccountUiEvent.ShowError(error.toUiState()))
+            }
         }
     }
 
