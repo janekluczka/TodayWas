@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-12
+> Last updated: 2026-09-12 (rollout complete — all 3 phases shipped)
 
 ## 1. Strategy
 
@@ -44,7 +44,7 @@ research's job, see §1 principle #3).
 | 2 | When the first sync after account creation fails, the user is routed to the same success screen as when it succeeds — no error shown, no retry offered — so they believe their data is safely backed up when it silently isn't | High | Medium | interview Q1; PRD US-04 acceptance criteria ("no data lost or duplicated during upload"); research (`testing-sync-deletion-critical-path`) confirmed the completion step runs unconditionally regardless of sync result |
 | 3 | The lock meant to serialize concurrent sync attempts does not actually work — each independent trigger point (app launch, account sync, onboarding sync, background worker) gets its own separate, uncoordinated lock instance, so two sync attempts can still run at the same time and race, risking a newer edit being overwritten by a stale snapshot | High | High | interview Q1/Q4 ("hit or miss"); research (`testing-sync-deletion-critical-path`) confirmed the lock is structurally unable to serialize across trigger points — a new, previously-undocumented finding |
 | 4 | A regression that re-couples local-data clearing on sign-out to the network result (instead of the actual observed session-state transition) would go completely undetected — no existing test can construct the one real scenario where they diverge (a reachable-but-erroring auth server, not a general network failure), so a stale "already synced" flag could again leak one account's local data into a different account on the same device | High | Low | research (`testing-cascade-account-boundary-locks`) confirmed the current fix is sound for the real trigger condition, but found the test fake structurally cannot construct the decoupled case; archive `2026-08-10-account-creation-and-sync/` impl-review — the original bug this guards against |
-| 5 | RLS policies on `journal_entries`/`habits`/`habit_check_ins` — including the DELETE policies added for per-item delete — don't actually scope by owning user, allowing cross-user read/write/delete | High | Low–Medium | `entry-delete` plan (new DELETE policies added, never independently verified); project privacy rule (CLAUDE.md); abuse/IDOR lens (multi-tenant data + auth) |
+| 5 | RLS policies on `journal_entries`/`habits`/`habit_check_ins` are correctly configured (all 12 policies across 3 tables × 4 operations scope by `user_id = auth.uid()`, confirmed live) but have never been proven at runtime against an actual cross-user request — a future policy change or migration could silently break isolation with nothing to catch it | High | Low | research (`testing-rls-ownership-verification`) confirmed live policy correctness via direct `pg_policies` query and confirmed no service-role bypass exists anywhere in the app; `entry-delete` plan's own signed-in E2E verification was left unchecked; abuse/IDOR lens (multi-tenant data + auth) |
 | 6 | The correct, transactional local cascade-delete order (check-ins before habit) and the remote GC purge order (check-ins before habits, required by the live `NO ACTION` FK) are unprotected by any regression test — a future refactor could silently break the transaction, reorder the local cascade, or reorder/drop the remote purge call without any test failing | Medium | Low | research (`testing-cascade-account-boundary-locks`) confirmed the fix is fully intact today (transactional cascade, live schema query confirms the FK), but found no test asserts call order, a mid-cascade failure, or the remote purge ordering; hot-spot dir `ui/habit` (top churn, 30d) |
 
 ### Risk Response Guidance
@@ -55,7 +55,7 @@ research's job, see §1 principle #3).
 | #2 | A failed sync during the account-creation confirm step surfaces a visible error/retry to the user, and does not advance to the same terminal state as success | "The confirm button's job is done once it calls sync" — the completion step must condition on the result, not just fire once the call returns | The exact completion call and what currently makes it run unconditionally; the "already synced" flag's success-gating (which does work correctly today and should stay covered) | ViewModel-level unit test simulating a failed `syncLocalData()` during confirm | Testing only the happy-path confirm flow (already covered) instead of the failure branch |
 | #3 | Two sync attempts triggered from different parts of the app at the same time cannot both proceed unserialized — a second concurrent attempt waits or is skipped, never races | "A lock guarding sync logic guarantees only one sync runs at a time" — true only if every trigger point shares the same lock instance, which must be verified, not assumed | Confirmed today: the lock is scoped per call site rather than shared — the fix (if planned) and its test both need to target the sharing mechanism, not the lock's own logic (which is fine in isolation) | integration/DI-level test proving two trigger points either share a lock instance or are otherwise serialized | Testing the lock's `withLock` behavior in isolation (already effectively proven fine) instead of proving cross-call-site coordination |
 | #4 | No previously-signed-in account's local data is visible or uploadable after a sign-out where the local session cleared but the network call still reported failure | "A test that makes signOut() fail also naturally covers this" — it doesn't, if the fake ties call failure to the session staying signed-in, the exact decoupled case never gets exercised | Confirmed today: the real trigger is a reachable-but-erroring auth response (session clears, then the error is rethrown), not a general network failure (which never clears the session at all) — the test double must be able to express that distinction | unit test extending the existing sign-out use-case test suite, with a fake capable of representing "cleared AND failed" as one state | A fake/mock where "call fails" and "session stays signed in" are the same knob — asserting the happy path and the coupled-failure path without ever exercising the decoupled one |
-| #5 | An authenticated user A can never read, modify, or delete a row owned by user B, across all three tables and all four operations | "RLS policies exist, therefore they're correct" — existence isn't correctness | The exact current policy definitions on all three tables, including the newly-added DELETE policies | Postgres/RLS-level test, not a Kotlin unit test | Testing only "an unauthenticated request is rejected" (that's auth, not ownership) |
+| #5 | An authenticated user A can never read, modify, or delete a row owned by user B, across all three tables and all four operations — proven by an actual request, not by reading policy text | "The policy text says `user_id = auth.uid()`, therefore it's correct" — correct SQL text doesn't prove PostgREST + Supabase actually enforce it at runtime for a real authenticated request | Confirmed today: policy definitions are correct on all three tables including DELETE; no service-role or other bypass path exists anywhere in the app — the test must exercise the real enforcement path (two real users, real requests), not re-derive what's already confirmed in policy text | Postgres/RLS-level test (first of its kind in this project — no existing tooling to extend) | Testing only "an unauthenticated request is rejected" (that's auth, not ownership); re-querying `pg_policies` instead of making an actual cross-user request |
 | #6 | Habit cascade delete stays consistent locally and remotely even under a mid-cascade failure; the remote GC purge order never regresses | "This is already correct, so there's nothing to test" — correctness today doesn't survive a future refactor without a test that would fail if the order or transaction changed | Confirmed today: the local cascade is already transactional and ordered check-ins-first; the remote purge is already ordered check-ins-first per the live FK constraint — the test should lock in this specific order and the transaction boundary, not re-verify the fix exists | repository/data-source-level test (call order + fake-failure-mid-cascade) | Testing that both tables end up empty without asserting the order they were touched in, or that a mid-cascade failure leaves no partial state |
 
 ## 3. Phased Rollout
@@ -67,8 +67,8 @@ orchestrator updates Status as artifacts appear on disk.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Sync & deletion critical-path coverage | Prove the account-upload and soft-delete-sync paths don't silently lose data | #1, #2, #3 | unit + integration | complete | `context/changes/testing-sync-deletion-critical-path/` |
-| 2 | Cascade & account-boundary regression locks | Lock in two already-fixed-but-unprotected bugs so they can't silently regress | #4, #6 | unit + integration | planned | `context/changes/testing-cascade-account-boundary-locks/` |
-| 3 | RLS ownership verification | Verify cross-user isolation on all 3 tables, including the new DELETE policies | #5 | Postgres/RLS-level | not started | — |
+| 2 | Cascade & account-boundary regression locks | Lock in two already-fixed-but-unprotected bugs so they can't silently regress | #4, #6 | unit + integration | complete | `context/changes/testing-cascade-account-boundary-locks/` |
+| 3 | RLS ownership verification | Verify cross-user isolation on all 3 tables, including the new DELETE policies | #5 | Postgres/RLS-level | complete | `context/changes/testing-rls-ownership-verification/` |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
 
@@ -83,7 +83,7 @@ current session.
 | unit + integration | JUnit4 | via AGP/Gradle defaults | 50 existing test files across `data/`, `domain/`, `ui/` — `meaningful` base |
 | local DB integration | Room + Robolectric | per `libs.versions.toml` | Used today for DAO/database tests (e.g. `HabitCheckInDaoTest.kt`) |
 | instrumented / e2e | AndroidX Test + Espresso | per `libs.versions.toml` | Configured but unused beyond the stock `ExampleInstrumentedTest.kt` |
-| Postgres / RLS | none yet — see Phase 3 | n/a | No policy-level test tooling exists today |
+| Postgres / RLS | Session-variable simulation via Supabase MCP `execute_sql` | n/a | `supabase/tests/rls_ownership.sql` — see §6.4 |
 | (optional) AI-native | none available this session | n/a | No Context7/Exa/Playwright MCP in this session; not recommended until a real gap justifies it |
 
 **Stack grounding tools (current session):**
@@ -103,7 +103,7 @@ phase lands; before that, the gate is `planned`.
 | ktlintCheck | local + CI (`.github/workflows/ci.yml`) | required | style/syntax drift |
 | testDebugUnitTest | local + CI | required; expanded scope after §3 Phase 1/2 | logic regressions, including the sync/deletion risks above |
 | assembleDebug | CI | required | compile-time breakage |
-| RLS/ownership check | manual via Supabase MCP, or scripted | planned — required after §3 Phase 3 | cross-user data access |
+| RLS/ownership check | manual via Supabase MCP `execute_sql` (`supabase/tests/rls_ownership.sql`) | required (manual re-run whenever RLS policies change) | cross-user data access |
 
 ## 6. Cookbook Patterns
 
@@ -146,8 +146,26 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.4 Adding an RLS ownership test
 
-- TBD — see §3 Phase 3 for the Postgres-level cross-user isolation
-  pattern this phase establishes.
+- **Location**: `supabase/tests/` (e.g. `rls_ownership.sql`) — a test artifact, not a migration;
+  never applied via `apply_migration`, consistent with this project's MCP-only convention.
+- **Technique**: session-variable simulation — `PERFORM set_config('request.jwt.claims',
+  json_build_object('sub', <uuid>, 'role', 'authenticated')::text, true); SET LOCAL ROLE
+  authenticated;` — exactly what PostgREST does per-request, so this exercises the real
+  enforcement path. Wrap the whole script in `BEGIN; ... ROLLBACK;` so nothing persists.
+- **Fixture owners**: borrow two existing `auth.users` IDs (`SELECT id FROM auth.users ORDER BY
+  created_at LIMIT 1 OFFSET 0/1`) — `user_id` on these tables has a live FK to `auth.users`, so
+  synthetic UUIDs are not usable. Insert fixtures *before* the role switch (the elevated role
+  executing the script owns the tables, so RLS doesn't apply to that insert).
+- **Assertion shape per operation**: SELECT → `IF EXISTS (...) THEN RAISE EXCEPTION`; INSERT
+  (claiming another user's ownership) → nested `BEGIN ... EXCEPTION WHEN insufficient_privilege
+  THEN NULL` (a `WITH CHECK` violation raises `SQLSTATE 42501`, it doesn't silently no-op);
+  UPDATE/DELETE → `GET DIAGNOSTICS rows_affected = ROW_COUNT; IF rows_affected != 0 THEN RAISE
+  EXCEPTION` (the `USING` clause filters visibility before `WITH CHECK` is considered, so these
+  silently affect 0 rows rather than throwing). Testing one direction (user A blocked from user B)
+  is sufficient for a symmetric `user_id = auth.uid()` predicate.
+- **Run**: paste the file into the Supabase MCP `execute_sql` tool (or the SQL editor) against the
+  linked project, whenever RLS policies on these tables change. A clean run produces no output.
+- **Reference test**: `supabase/tests/rls_ownership.sql`.
 
 ### 6.5 Per-rollout-phase notes
 
@@ -159,6 +177,12 @@ the relevant rollout phase ships; before that, the sub-section reads
   an error and stay on the review step. If you're adding a new Hilt-bound repository or use case
   that holds coordination state (a `Mutex`, a cache, etc.), check whether it needs `@Singleton` —
   it's easy to add the state and forget the scope.
+- **Phase 3** (`testing-rls-ownership-verification`): found the RLS policies themselves were
+  already correctly scoped on all three tables — the real gap was that this had never been proven
+  at runtime with an actual cross-user request. Also found `user_id` has a live FK to `auth.users`
+  on all three tables (missed by an `information_schema` query, only surfaced by actually trying an
+  insert), which rules out synthetic UUIDs for any future Postgres-level test fixture — borrow real
+  existing `auth.users` rows instead, inside a transaction that always rolls back.
 
 ## 7. What We Deliberately Don't Test
 
@@ -176,8 +200,8 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-09-11
-- Stack versions last verified: 2026-09-11
+- Strategy (§1–§5) last reviewed: 2026-09-12
+- Stack versions last verified: 2026-09-12
 - AI-native tool references last verified: 2026-09-11 (none available this session)
 
 Refresh (`/10x-test-plan --refresh`) when:
