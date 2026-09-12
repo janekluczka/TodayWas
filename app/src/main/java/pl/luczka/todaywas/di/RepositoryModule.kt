@@ -24,6 +24,7 @@ import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.HabitRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.repository.OnboardingRepository
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -33,9 +34,11 @@ abstract class RepositoryModule {
     abstract fun bindOnboardingRepository(impl: OnboardingRepositoryImpl): OnboardingRepository
 
     @Binds
+    @Singleton
     abstract fun bindJournalRepository(impl: JournalRepositoryImpl): JournalRepository
 
     @Binds
+    @Singleton
     abstract fun bindHabitRepository(impl: HabitRepositoryImpl): HabitRepository
 
     @Binds

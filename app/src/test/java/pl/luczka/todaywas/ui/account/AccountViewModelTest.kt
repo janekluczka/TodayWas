@@ -568,6 +568,39 @@ class AccountViewModelTest {
     }
 
     @Test
+    fun `should show an error and stay on DATA_SYNC_REVIEW without marking synced when SyncConfirmClicked's sync fails`() = runTest {
+        // Arrange
+        val repository = FakeAuthRepository()
+        val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
+        journalRepository.syncWithRemoteResult = Result.failure(RuntimeException("network error"))
+        val onboardingRepository = FakeOnboardingRepository()
+        val viewModel =
+            viewModel(
+                repository,
+                journalRepository = journalRepository,
+                onboardingRepository = onboardingRepository,
+            )
+        val events = mutableListOf<AccountUiEvent>()
+        val collectJob = launch { viewModel.events.collect { events.add(it) } }
+        viewModel.onIntent(AccountIntent.SignUpLinkClicked)
+        fillSignUpForm(viewModel)
+        viewModel.onIntent(AccountIntent.SignUpSubmitClicked)
+        assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
+
+        // Act
+        viewModel.onIntent(AccountIntent.SyncConfirmClicked)
+        runCurrent()
+
+        // Assert
+        assertEquals(listOf(AccountUiEvent.ShowError(AuthErrorUiState.UNKNOWN)), events)
+        assertEquals(0, onboardingRepository.markLocalDataSyncedCallCount)
+        assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
+        assertTrue(viewModel.uiState.value.dataSyncSummary != null)
+        assertFalse(viewModel.uiState.value.isSyncing)
+        collectJob.cancel()
+    }
+
+    @Test
     fun `should show DATA_SYNC_REVIEW when SyncLocalDataClicked is dispatched with unsynced local data`() = runTest {
         // Arrange
         val repository =
