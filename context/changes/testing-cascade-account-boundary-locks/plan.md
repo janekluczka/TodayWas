@@ -259,17 +259,17 @@ None — no schema or data migration involved.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — c349575
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — c349575
+- [x] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug` — c349575
 
 ### Phase 2: Real-DB test for the local cascade delete's order and rollback
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug`
 
 ### Phase 3: Remote GC purge order regression test
 
