@@ -146,8 +146,26 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.4 Adding an RLS ownership test
 
-- TBD — see §3 Phase 3 for the Postgres-level cross-user isolation
-  pattern this phase establishes.
+- **Location**: `supabase/tests/` (e.g. `rls_ownership.sql`) — a test artifact, not a migration;
+  never applied via `apply_migration`, consistent with this project's MCP-only convention.
+- **Technique**: session-variable simulation — `PERFORM set_config('request.jwt.claims',
+  json_build_object('sub', <uuid>, 'role', 'authenticated')::text, true); SET LOCAL ROLE
+  authenticated;` — exactly what PostgREST does per-request, so this exercises the real
+  enforcement path. Wrap the whole script in `BEGIN; ... ROLLBACK;` so nothing persists.
+- **Fixture owners**: borrow two existing `auth.users` IDs (`SELECT id FROM auth.users ORDER BY
+  created_at LIMIT 1 OFFSET 0/1`) — `user_id` on these tables has a live FK to `auth.users`, so
+  synthetic UUIDs are not usable. Insert fixtures *before* the role switch (the elevated role
+  executing the script owns the tables, so RLS doesn't apply to that insert).
+- **Assertion shape per operation**: SELECT → `IF EXISTS (...) THEN RAISE EXCEPTION`; INSERT
+  (claiming another user's ownership) → nested `BEGIN ... EXCEPTION WHEN insufficient_privilege
+  THEN NULL` (a `WITH CHECK` violation raises `SQLSTATE 42501`, it doesn't silently no-op);
+  UPDATE/DELETE → `GET DIAGNOSTICS rows_affected = ROW_COUNT; IF rows_affected != 0 THEN RAISE
+  EXCEPTION` (the `USING` clause filters visibility before `WITH CHECK` is considered, so these
+  silently affect 0 rows rather than throwing). Testing one direction (user A blocked from user B)
+  is sufficient for a symmetric `user_id = auth.uid()` predicate.
+- **Run**: paste the file into the Supabase MCP `execute_sql` tool (or the SQL editor) against the
+  linked project, whenever RLS policies on these tables change. A clean run produces no output.
+- **Reference test**: `supabase/tests/rls_ownership.sql`.
 
 ### 6.5 Per-rollout-phase notes
 
@@ -159,6 +177,12 @@ the relevant rollout phase ships; before that, the sub-section reads
   an error and stay on the review step. If you're adding a new Hilt-bound repository or use case
   that holds coordination state (a `Mutex`, a cache, etc.), check whether it needs `@Singleton` —
   it's easy to add the state and forget the scope.
+- **Phase 3** (`testing-rls-ownership-verification`): found the RLS policies themselves were
+  already correctly scoped on all three tables — the real gap was that this had never been proven
+  at runtime with an actual cross-user request. Also found `user_id` has a live FK to `auth.users`
+  on all three tables (missed by an `information_schema` query, only surfaced by actually trying an
+  insert), which rules out synthetic UUIDs for any future Postgres-level test fixture — borrow real
+  existing `auth.users` rows instead, inside a transaction that always rolls back.
 
 ## 7. What We Deliberately Don't Test
 
