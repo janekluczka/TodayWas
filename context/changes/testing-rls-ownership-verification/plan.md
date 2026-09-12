@@ -199,5 +199,5 @@ test artifact, not a migration; it is never applied via `apply_migration`.
 
 #### Automated
 
-- [x] 1.1 The script runs clean via the Supabase MCP `execute_sql` tool
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 1.1 The script runs clean via the Supabase MCP `execute_sql` tool — ee5d627
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — ee5d627
