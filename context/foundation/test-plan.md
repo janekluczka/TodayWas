@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-12
+> Last updated: 2026-09-12 (rollout complete — all 3 phases shipped)
 
 ## 1. Strategy
 
@@ -68,7 +68,7 @@ orchestrator updates Status as artifacts appear on disk.
 |---|---|---|---|---|---|---|
 | 1 | Sync & deletion critical-path coverage | Prove the account-upload and soft-delete-sync paths don't silently lose data | #1, #2, #3 | unit + integration | complete | `context/changes/testing-sync-deletion-critical-path/` |
 | 2 | Cascade & account-boundary regression locks | Lock in two already-fixed-but-unprotected bugs so they can't silently regress | #4, #6 | unit + integration | complete | `context/changes/testing-cascade-account-boundary-locks/` |
-| 3 | RLS ownership verification | Verify cross-user isolation on all 3 tables, including the new DELETE policies | #5 | Postgres/RLS-level | planned | `context/changes/testing-rls-ownership-verification/` |
+| 3 | RLS ownership verification | Verify cross-user isolation on all 3 tables, including the new DELETE policies | #5 | Postgres/RLS-level | complete | `context/changes/testing-rls-ownership-verification/` |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
 
@@ -83,7 +83,7 @@ current session.
 | unit + integration | JUnit4 | via AGP/Gradle defaults | 50 existing test files across `data/`, `domain/`, `ui/` — `meaningful` base |
 | local DB integration | Room + Robolectric | per `libs.versions.toml` | Used today for DAO/database tests (e.g. `HabitCheckInDaoTest.kt`) |
 | instrumented / e2e | AndroidX Test + Espresso | per `libs.versions.toml` | Configured but unused beyond the stock `ExampleInstrumentedTest.kt` |
-| Postgres / RLS | none yet — see Phase 3 | n/a | No policy-level test tooling exists today |
+| Postgres / RLS | Session-variable simulation via Supabase MCP `execute_sql` | n/a | `supabase/tests/rls_ownership.sql` — see §6.4 |
 | (optional) AI-native | none available this session | n/a | No Context7/Exa/Playwright MCP in this session; not recommended until a real gap justifies it |
 
 **Stack grounding tools (current session):**
@@ -103,7 +103,7 @@ phase lands; before that, the gate is `planned`.
 | ktlintCheck | local + CI (`.github/workflows/ci.yml`) | required | style/syntax drift |
 | testDebugUnitTest | local + CI | required; expanded scope after §3 Phase 1/2 | logic regressions, including the sync/deletion risks above |
 | assembleDebug | CI | required | compile-time breakage |
-| RLS/ownership check | manual via Supabase MCP, or scripted | planned — required after §3 Phase 3 | cross-user data access |
+| RLS/ownership check | manual via Supabase MCP `execute_sql` (`supabase/tests/rls_ownership.sql`) | required (manual re-run whenever RLS policies change) | cross-user data access |
 
 ## 6. Cookbook Patterns
 
@@ -200,8 +200,8 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-09-11
-- Stack versions last verified: 2026-09-11
+- Strategy (§1–§5) last reviewed: 2026-09-12
+- Stack versions last verified: 2026-09-12
 - AI-native tool references last verified: 2026-09-11 (none available this session)
 
 Refresh (`/10x-test-plan --refresh`) when:
