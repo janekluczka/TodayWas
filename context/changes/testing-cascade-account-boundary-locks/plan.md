@@ -275,6 +275,6 @@ None — no schema or data migration involved.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 0914b17
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — 0914b17
+- [x] 3.3 Debug build succeeds: `./gradlew.bat assembleDebug` — 0914b17
