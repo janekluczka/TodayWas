@@ -5,6 +5,7 @@ import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
 class FakeRemoteHabitDataSource(
     private val habits: MutableMap<String, HabitRemoteDto> = mutableMapOf(),
     var shouldFail: Boolean = false,
+    private val callOrderLog: MutableList<String>? = null,
 ) : RemoteHabitDataSource {
 
     var upsertCallCount = 0
@@ -29,6 +30,7 @@ class FakeRemoteHabitDataSource(
         cutoff: String,
     ): Result<Unit> {
         purgeCallCount++
+        callOrderLog?.add("habit")
         if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
         habits.values
             .filter { it.userId == userId && it.deletedAt != null && it.deletedAt < cutoff }

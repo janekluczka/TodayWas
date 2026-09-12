@@ -512,6 +512,59 @@ class HabitRepositoryImplTest {
         }
 
     @Test
+    fun `should purge check-ins before habits remotely during syncWithRemote GC`() =
+        runTest {
+            // Arrange
+            val agedOut = Instant
+                .now()
+                .minus(TOMBSTONE_GC_WINDOW)
+                .minusSeconds(3_600)
+                .toEpochMilli()
+            val tombstonedHabit = HabitEntity(
+                id = "1",
+                name = "Long gone",
+                description = null,
+                type = "BINARY",
+                scaleMin = null,
+                scaleMax = null,
+                createdAt = 1_000L,
+                updatedAt = agedOut,
+                deletedAt = agedOut,
+            )
+            val tombstonedCheckIn = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = agedOut,
+                deletedAt = agedOut,
+            )
+            val local = FakeLocalHabitDataSource(
+                habits = mutableMapOf("1" to tombstonedHabit),
+                checkIns = mutableMapOf(("1" to "2026-07-27") to tombstonedCheckIn),
+            )
+            val callOrderLog = mutableListOf<String>()
+            val remoteHabits = FakeRemoteHabitDataSource(callOrderLog = callOrderLog)
+            val remoteCheckIns = FakeRemoteHabitCheckInDataSource(callOrderLog = callOrderLog)
+            val auth = FakeAuthRepository(currentUserId = "user-1")
+            val repository =
+                repository(
+                    local = local,
+                    remoteHabitDataSource = remoteHabits,
+                    remoteHabitCheckInDataSource = remoteCheckIns,
+                    authRepository = auth,
+                )
+
+            // Act
+            val result = repository.syncWithRemote()
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(listOf("check-in", "habit"), callOrderLog)
+        }
+
+    @Test
     fun `should delegate to the local data source when clearLocal is called`() =
         runTest {
             // Arrange

@@ -267,14 +267,14 @@ None — no schema or data migration involved.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 2.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 801d571
+- [x] 2.2 Lint passes: `./gradlew.bat ktlintCheck` — 801d571
+- [x] 2.3 Debug build succeeds: `./gradlew.bat assembleDebug` — 801d571
 
 ### Phase 3: Remote GC purge order regression test
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 Debug build succeeds: `./gradlew.bat assembleDebug`
