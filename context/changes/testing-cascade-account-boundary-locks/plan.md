@@ -259,9 +259,9 @@ None — no schema or data migration involved.
 
 #### Automated
 
-- [ ] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 1.3 Debug build succeeds: `./gradlew.bat assembleDebug`
 
 ### Phase 2: Real-DB test for the local cascade delete's order and rollback
 
