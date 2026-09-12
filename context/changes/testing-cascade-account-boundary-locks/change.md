@@ -1,7 +1,7 @@
 ---
 change_id: testing-cascade-account-boundary-locks
 title: Cascade & account-boundary regression locks
-status: preparing
+status: planned
 created: 2026-09-12
 updated: 2026-09-12
 archived_at: null
