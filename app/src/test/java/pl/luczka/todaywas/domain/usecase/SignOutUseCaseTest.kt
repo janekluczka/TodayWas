@@ -73,6 +73,37 @@ class SignOutUseCaseTest {
         }
 
     @Test
+    fun `should clear local data when signOut fails but the local session clears anyway`() =
+        runTest {
+            // Arrange
+            val authRepository =
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
+            authRepository.signOutError = AuthError.NetworkUnavailable
+            authRepository.signOutClearsSessionAnyway = true
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val useCase =
+                SignOutUseCase(
+                    authRepository,
+                    journalRepository,
+                    habitRepository,
+                    onboardingRepository,
+                )
+
+            // Act
+            val result = useCase()
+
+            // Assert
+            assertTrue(result.isFailure)
+            assertEquals(1, journalRepository.clearLocalCallCount)
+            assertEquals(1, habitRepository.clearLocalCallCount)
+            assertEquals(1, onboardingRepository.resetSyncFlagCallCount)
+        }
+
+    @Test
     fun `should not clear local data when already signed out before the call`() =
         runTest {
             // Arrange

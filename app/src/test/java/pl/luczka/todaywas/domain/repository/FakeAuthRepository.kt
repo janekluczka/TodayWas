@@ -17,6 +17,7 @@ class FakeAuthRepository(
     var signInError: AuthError? = null
     var signInWithGoogleError: AuthError? = null
     var signOutError: AuthError? = null
+    var signOutClearsSessionAnyway: Boolean = false
 
     var signUpCallCount = 0
         private set
@@ -54,7 +55,10 @@ class FakeAuthRepository(
 
     override suspend fun signOut(): Result<Unit> {
         signOutCallCount++
-        return signOutError?.let { Result.failure(AuthException(it)) } ?: run {
+        return signOutError?.let {
+            if (signOutClearsSessionAnyway) state.value = AuthState.SignedOut
+            Result.failure(AuthException(it))
+        } ?: run {
             state.value = AuthState.SignedOut
             Result.success(Unit)
         }
