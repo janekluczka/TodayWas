@@ -155,7 +155,15 @@ private fun AddJournalEntryScreenContent(
     if (uiState.helpMeStart.isVisible) {
         HelpMeStartBottomSheet(
             uiState = uiState.helpMeStart,
-            onIntent = onIntent,
+            onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeStartDismissed) },
+            onSignInClicked = { onIntent(AddJournalEntryIntent.SignInClicked) },
+            onToneSelected = { onIntent(AddJournalEntryIntent.ToneSelected(it)) },
+            onThoughtsChanged = { onIntent(AddJournalEntryIntent.ThoughtsChanged(it)) },
+            onGenerateClicked = { onIntent(AddJournalEntryIntent.GenerateClicked) },
+            onRegenerateClicked = { onIntent(AddJournalEntryIntent.RegenerateClicked) },
+            onUseGeneratedTextClicked = {
+                onIntent(AddJournalEntryIntent.UseGeneratedTextClicked)
+            },
         )
     }
 }
@@ -175,7 +183,7 @@ private fun JournalDateSlotUiState.title(): String = when (this) {
 // tapping it while signed out opens the sheet with a sign-in explainer instead of the tone
 // picker, so the feature stays discoverable either way.
 @Composable
-private fun StarterPromptList(
+fun StarterPromptList(
     starterPrompts: List<JournalStarterPromptUiState>,
     onPromptClicked: (String) -> Unit,
     onHelpMeStartClicked: () -> Unit,
@@ -280,9 +288,15 @@ private fun LocalDate.toSlot(
 // input it acts on rather than floating in a header disconnected from it.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HelpMeStartBottomSheet(
+fun HelpMeStartBottomSheet(
     uiState: HelpMeStartUiState,
-    onIntent: (AddJournalEntryIntent) -> Unit,
+    onDismissRequest: () -> Unit,
+    onSignInClicked: () -> Unit,
+    onToneSelected: (JournalPromptToneUiState) -> Unit,
+    onThoughtsChanged: (String) -> Unit,
+    onGenerateClicked: () -> Unit,
+    onRegenerateClicked: () -> Unit,
+    onUseGeneratedTextClicked: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = uiState.error?.let { aiAssistErrorMessage(it) }
@@ -291,7 +305,7 @@ private fun HelpMeStartBottomSheet(
     }
 
     DsModalBottomSheet(
-        onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeStartDismissed) },
+        onDismissRequest = onDismissRequest,
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -313,7 +327,7 @@ private fun HelpMeStartBottomSheet(
                         )
                         DsButton(
                             text = stringResource(R.string.onboarding_account_signin_signup_cta),
-                            onClick = { onIntent(AddJournalEntryIntent.SignInClicked) },
+                            onClick = onSignInClicked,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -328,7 +342,7 @@ private fun HelpMeStartBottomSheet(
                             items = JournalPromptToneUiState.entries.toList(),
                             selectedItem = uiState.selectedTone,
                             onItemSelected = { tone ->
-                                tone?.let { onIntent(AddJournalEntryIntent.ToneSelected(it)) }
+                                tone?.let(onToneSelected)
                             },
                             enabled = !uiState.isGenerating,
                             allowDeselect = false,
@@ -340,7 +354,7 @@ private fun HelpMeStartBottomSheet(
                         // a second line doesn't reflow the sheet around it.
                         DsPlainTextField(
                             value = uiState.thoughts,
-                            onValueChange = { onIntent(AddJournalEntryIntent.ThoughtsChanged(it)) },
+                            onValueChange = onThoughtsChanged,
                             placeholder = stringResource(
                                 R.string.journal_help_me_start_thoughts_label,
                             ),
@@ -356,7 +370,7 @@ private fun HelpMeStartBottomSheet(
                                 text = stringResource(
                                     R.string.journal_help_me_start_regenerate_cta,
                                 ),
-                                onClick = { onIntent(AddJournalEntryIntent.RegenerateClicked) },
+                                onClick = onRegenerateClicked,
                                 enabled = !uiState.isGenerating &&
                                     (uiState.remainingToday ?: 1) > 0,
                             )
@@ -375,7 +389,7 @@ private fun HelpMeStartBottomSheet(
                         if (uiState.step == HelpMeStartStep.INPUT) {
                             DsButtonWithLoading(
                                 text = stringResource(R.string.journal_help_me_start_generate_cta),
-                                onClick = { onIntent(AddJournalEntryIntent.GenerateClicked) },
+                                onClick = onGenerateClicked,
                                 enabled = uiState.selectedTone != null && !uiState.isGenerating,
                                 loading = uiState.isGenerating,
                                 modifier = Modifier.fillMaxWidth(),
@@ -383,9 +397,7 @@ private fun HelpMeStartBottomSheet(
                         } else {
                             DsButton(
                                 text = stringResource(R.string.journal_help_me_start_use_this_cta),
-                                onClick = {
-                                    onIntent(AddJournalEntryIntent.UseGeneratedTextClicked)
-                                },
+                                onClick = onUseGeneratedTextClicked,
                                 enabled = !uiState.isGenerating,
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -527,7 +539,13 @@ private fun HelpMeStartBottomSheetPreview(
     DsTheme {
         HelpMeStartBottomSheet(
             uiState = state,
-            onIntent = {},
+            onDismissRequest = {},
+            onSignInClicked = {},
+            onToneSelected = {},
+            onThoughtsChanged = {},
+            onGenerateClicked = {},
+            onRegenerateClicked = {},
+            onUseGeneratedTextClicked = {},
         )
     }
 }

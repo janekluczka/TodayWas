@@ -108,6 +108,13 @@
     <string name="journal_help_me_refine_cta">Help me refine</string>
     <string name="journal_help_me_refine_dialog_title">Refine this entry</string>
     <string name="journal_help_me_refine_generate_cta">Refine</string>
+    <string name="journal_help_me_refine_thoughts_label">A few thoughts about the refinement (optional)</string>
+
+    <string name="journal_edit_entry_title">Edit journal entry</string>
+    <string name="journal_edit_discard_dialog_title">Discard changes?</string>
+    <string name="journal_edit_discard_dialog_text">Your edits haven\'t been saved.</string>
+    <string name="journal_edit_discard_confirm_cta">Discard</string>
+    <string name="journal_edit_discard_cancel_cta">Keep editing</string>
 
     <string name="habit_create_title">New habit</string>
     <string name="habit_create_name_label">Title</string>

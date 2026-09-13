@@ -721,23 +721,23 @@ way around, doesn't break either side mid-rollout.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 69bf0b5
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — 69bf0b5
+- [x] 3.3 App compiles: `./gradlew.bat compileDebugKotlin` — 69bf0b5
 
 #### Manual
 
-- [x] 3.4 Add Journal Entry's help-me-start sheet unchanged
-- [x] 3.5 Journal Entry Detail's help-me-refine dialog unchanged
+- [x] 3.4 Add Journal Entry's help-me-start sheet unchanged — 69bf0b5
+- [x] 3.5 Journal Entry Detail's help-me-refine dialog unchanged — 69bf0b5
 
 ### Phase 4: Build the Edit Journal Entry screen
 
 #### Automated
 
-- [ ] 4.1 New EditJournalEntryViewModelTest passes: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 App compiles: `./gradlew.bat compileDebugKotlin`
-- [ ] 4.4 New previews render without errors
+- [x] 4.1 New EditJournalEntryViewModelTest passes: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 4.4 New previews render without errors
 
 #### Manual
 
