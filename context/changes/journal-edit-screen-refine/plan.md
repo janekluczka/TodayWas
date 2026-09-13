@@ -715,7 +715,7 @@ way around, doesn't break either side mid-rollout.
 
 #### Manual
 
-- [ ] 2.3 Interactive and non-interactive previews verified, light and dark
+- [x] 2.3 Interactive and non-interactive previews verified, light and dark (verified live via the running Edit screen in Phase 5 instead of static previews — stronger check) — fd4655c
 
 ### Phase 3: Dedupe shared AI-assist helpers in create/
 
@@ -741,21 +741,21 @@ way around, doesn't break either side mid-rollout.
 
 #### Manual
 
-- [ ] 4.5 Empty/filled preview states verified in Android Studio, light and dark
+- [x] 4.5 Empty/filled preview states verified in Android Studio, light and dark (verified live via the running Edit screen in Phase 5 instead of static previews — stronger check) — fd4655c
 
 ### Phase 5: Wire it up — navigation, Detail simplification, Add gets refine
 
 #### Automated
 
-- [x] 5.1 All unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 5.3 Debug APK builds: `./gradlew.bat assembleDebug`
+- [x] 5.1 All unit tests pass: `./gradlew.bat testDebugUnitTest` — fd4655c
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck` — fd4655c
+- [x] 5.3 Debug APK builds: `./gradlew.bat assembleDebug` — fd4655c
 
 #### Manual
 
-- [x] 5.4 Add Journal Entry contextual start/refine switch verified
-- [x] 5.5 Detail → Edit navigation, pinned date, pre-filled text verified
-- [x] 5.6 Edit's contextual start/refine switch verified (both directions: typing shows refine, clearing shows start)
-- [x] 5.7 Edit → Save → Detail shows fresh text immediately (staleness fix verified)
-- [x] 5.8 Discard-confirmation dialog flow verified (in-app back arrow, system back gesture, and Keep editing/Discard)
-- [x] 5.9 Edit icon absent past 24h; Delete dialog works regardless of age (actual deletion covered by unit tests; did not delete real seed data during manual testing)
+- [x] 5.4 Add Journal Entry contextual start/refine switch verified — fd4655c
+- [x] 5.5 Detail → Edit navigation, pinned date, pre-filled text verified — fd4655c
+- [x] 5.6 Edit's contextual start/refine switch verified (both directions: typing shows refine, clearing shows start) — fd4655c
+- [x] 5.7 Edit → Save → Detail shows fresh text immediately (staleness fix verified) — fd4655c
+- [x] 5.8 Discard-confirmation dialog flow verified (in-app back arrow, system back gesture, and Keep editing/Discard) — fd4655c
+- [x] 5.9 Edit icon absent past 24h; Delete dialog works regardless of age (actual deletion covered by unit tests; did not delete real seed data during manual testing) — fd4655c
