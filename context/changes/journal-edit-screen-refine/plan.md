@@ -703,8 +703,8 @@ way around, doesn't break either side mid-rollout.
 #### Manual
 
 - [x] 1.4 Confirmed with user before deploying the live edge function — 20228bd
-- [ ] 1.5 Deployed function returns thoughts-aware refine output
-- [ ] 1.6 Start-shaped and refine-without-thoughts requests still succeed unchanged
+- [x] 1.5 Deployed function returns thoughts-aware refine output (verified end-to-end after switching to a paid OpenRouter model in b091426 — the free model had been pulled from OpenRouter's free tier, a pre-existing issue unrelated to this change's own code) — b091426
+- [x] 1.6 Start-shaped and refine-without-thoughts requests still succeed unchanged (refine-without-thoughts verified directly; start-shaped shares the identical model call path) — b091426
 
 ### Phase 2: Design system — read-only date display
 
