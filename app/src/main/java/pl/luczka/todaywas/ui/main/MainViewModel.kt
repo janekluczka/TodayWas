@@ -75,6 +75,7 @@ class MainViewModel @Inject constructor(
                     addableSlots = addableSlots.map { it.toUiState() },
                     habits = board.toSortedHabitUiStates(
                         today = LocalDate.now(clock),
+                        now = clock.instant(),
                         sort = HabitSortUiState.RECENTLY_CHECKED_IN,
                     ),
                 )

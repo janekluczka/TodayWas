@@ -24,12 +24,14 @@ import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionValueBadge
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.lists.DsListItem
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.habit.HabitRow
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
@@ -105,8 +107,14 @@ private fun HabitListScreenContent(
                         .padding(horizontal = DsSpacing.space600),
                 ) {
                     items(uiState.habits) { habit ->
-                        HabitRow(
-                            habit = habit,
+                        DsListItem(
+                            text = habit.name,
+                            trailingContent = {
+                                DsContributionValueBadge(
+                                    level = habit.todayLevel,
+                                    valueText = habit.todayStatus.toValueText(),
+                                )
+                            },
                             onClick = { onIntent(HabitListIntent.HabitClicked(habit)) },
                         )
                     }
@@ -114,6 +122,14 @@ private fun HabitListScreenContent(
             }
         }
     }
+}
+
+// The value badge is too small for localized "Done"/"Not done" text (unlike HabitRow elsewhere),
+// so it shows the raw value for both binary and scale habits, and nothing for an unlogged day.
+private fun HabitCheckInStatusUiState.toValueText(): String = when (this) {
+    HabitCheckInStatusUiState.NotLogged -> ""
+    is HabitCheckInStatusUiState.LoggedBinary -> if (done) "1" else "0"
+    is HabitCheckInStatusUiState.LoggedScale -> value.toString()
 }
 
 @Composable
@@ -150,14 +166,29 @@ private class HabitListUiStatePreviewProvider : PreviewParameterProvider<HabitLi
         HabitListUiState(isLoading = false, habits = emptyList()),
         HabitListUiState(
             isLoading = false,
-            habits = (1..8).map {
+            habits = listOf(
                 HabitUiState(
-                    id = it.toString(),
-                    name = "Habit $it",
+                    id = "1",
+                    name = "Drink water",
                     type = HabitTypeUiState.BINARY,
                     todayStatus = HabitCheckInStatusUiState.NotLogged,
-                )
-            },
+                    todayLevel = DsContributionLevel.NONE,
+                ),
+                HabitUiState(
+                    id = "2",
+                    name = "Run",
+                    type = HabitTypeUiState.BINARY,
+                    todayStatus = HabitCheckInStatusUiState.LoggedBinary(done = true),
+                    todayLevel = DsContributionLevel.LEVEL_5,
+                ),
+                HabitUiState(
+                    id = "3",
+                    name = "Mood",
+                    type = HabitTypeUiState.SCALE,
+                    todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 3),
+                    todayLevel = DsContributionLevel.LEVEL_3,
+                ),
+            ),
         ),
     )
 }

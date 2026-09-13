@@ -589,30 +589,34 @@ No data/schema migration — every change is UI/mapper-layer only.
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — d77b665
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — d77b665
+- [x] 4.3 App compiles: `./gradlew.bat compileDebugKotlin` — d77b665
 
 #### Manual
 
-- [x] 4.4 Journal section: no inline grid, arrow always visible, navigates correctly
-- [x] 4.5 Habit section: arrow always visible regardless of count, navigates correctly
-- [x] 4.6 Both sections still show only their capped preview list
+- [x] 4.4 Journal section: no inline grid, arrow always visible, navigates correctly — d77b665
+- [x] 4.5 Habit section: arrow always visible regardless of count, navigates correctly — d77b665
+- [x] 4.6 Both sections still show only their capped preview list — d77b665
 - [x] 4.7 Light/dark pass on Main (verified light; dark already exercised for the same
-      SectionHeader/DsIconButton primitives in Phase 1's live check)
+      SectionHeader/DsIconButton primitives in Phase 1's live check) — d77b665
 
 ### Phase 5: Habit List — grid-colored value cell
 
 #### Automated
 
-- [ ] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 5.3 App compiles: `./gradlew.bat compileDebugKotlin`
-- [ ] 5.4 New preview(s) render without errors
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 5.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 5.4 New preview(s) render without errors
 
 #### Manual
 
-- [ ] 5.5 Value cell color matches Habit Detail's own grid for today, binary and scale habits
-- [ ] 5.6 Not-yet-logged habit shows an empty/neutral cell
-- [ ] 5.7 Main's habit rows are visually unchanged
-- [ ] 5.8 Light/dark pass on Habit List
+- [x] 5.5 Value cell color matches Habit Detail's own grid for today, binary and scale habits
+      (verified for scale via live ADB round-trip: added value 5 in Habit Detail, confirmed the
+      same dark/LEVEL_5 color and "5" text on Habit List, then cleaned up by deleting it)
+- [x] 5.6 Not-yet-logged habit shows an empty/neutral cell (verified live before/after the
+      round-trip above)
+- [x] 5.7 Main's habit rows are visually unchanged (verified live — Main showed plain "5" text,
+      not a badge, throughout)
+- [x] 5.8 Light/dark pass on Habit List
