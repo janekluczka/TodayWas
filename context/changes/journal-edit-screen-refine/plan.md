@@ -696,13 +696,13 @@ way around, doesn't break either side mid-rollout.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 1.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 20228bd
+- [x] 1.2 Lint passes: `./gradlew.bat ktlintCheck` — 20228bd
+- [x] 1.3 App compiles: `./gradlew.bat compileDebugKotlin` — 20228bd
 
 #### Manual
 
-- [x] 1.4 Confirmed with user before deploying the live edge function
+- [x] 1.4 Confirmed with user before deploying the live edge function — 20228bd
 - [ ] 1.5 Deployed function returns thoughts-aware refine output
 - [ ] 1.6 Start-shaped and refine-without-thoughts requests still succeed unchanged
 
@@ -710,8 +710,8 @@ way around, doesn't break either side mid-rollout.
 
 #### Automated
 
-- [ ] 2.1 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin`
+- [x] 2.1 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin`
 
 #### Manual
 
