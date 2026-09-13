@@ -710,8 +710,8 @@ way around, doesn't break either side mid-rollout.
 
 #### Automated
 
-- [x] 2.1 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin`
+- [x] 2.1 Lint passes: `./gradlew.bat ktlintCheck` — b3e61c9
+- [x] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin` — b3e61c9
 
 #### Manual
 
@@ -721,14 +721,14 @@ way around, doesn't break either side mid-rollout.
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 App compiles: `./gradlew.bat compileDebugKotlin`
 
 #### Manual
 
-- [ ] 3.4 Add Journal Entry's help-me-start sheet unchanged
-- [ ] 3.5 Journal Entry Detail's help-me-refine dialog unchanged
+- [x] 3.4 Add Journal Entry's help-me-start sheet unchanged
+- [x] 3.5 Journal Entry Detail's help-me-refine dialog unchanged
 
 ### Phase 4: Build the Edit Journal Entry screen
 

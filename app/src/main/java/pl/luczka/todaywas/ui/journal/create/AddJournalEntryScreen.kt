@@ -285,7 +285,7 @@ private fun HelpMeStartBottomSheet(
     onIntent: (AddJournalEntryIntent) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val errorMessage = uiState.error?.let { helpMeStartErrorMessage(it) }
+    val errorMessage = uiState.error?.let { aiAssistErrorMessage(it) }
     LaunchedEffect(uiState.error) {
         errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
@@ -323,7 +323,7 @@ private fun HelpMeStartBottomSheet(
                             style = MaterialTheme.typography.titleMedium,
                         )
                         val toneLabels =
-                            JournalPromptToneUiState.entries.associateWith { toneLabel(it) }
+                            JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
                         DsChoiceFlowRow(
                             items = JournalPromptToneUiState.entries.toList(),
                             selectedItem = uiState.selectedTone,
@@ -364,7 +364,7 @@ private fun HelpMeStartBottomSheet(
                         uiState.remainingToday?.let { remaining ->
                             DsText(
                                 text = pluralStringResource(
-                                    R.plurals.journal_help_me_start_remaining_today,
+                                    R.plurals.journal_ai_assist_remaining_today,
                                     remaining,
                                     remaining,
                                 ),
@@ -402,36 +402,32 @@ private fun HelpMeStartBottomSheet(
 }
 
 @Composable
-private fun toneLabel(tone: JournalPromptToneUiState): String = when (tone) {
-    JournalPromptToneUiState.VERY_BAD -> stringResource(
-        R.string.journal_help_me_start_tone_very_bad,
-    )
-    JournalPromptToneUiState.BAD -> stringResource(R.string.journal_help_me_start_tone_bad)
-    JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_help_me_start_tone_neutral)
-    JournalPromptToneUiState.GOOD -> stringResource(R.string.journal_help_me_start_tone_good)
-    JournalPromptToneUiState.VERY_GOOD -> stringResource(
-        R.string.journal_help_me_start_tone_very_good,
-    )
+fun aiAssistToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
+    JournalPromptToneUiState.VERY_BAD -> stringResource(R.string.journal_ai_assist_tone_very_bad)
+    JournalPromptToneUiState.BAD -> stringResource(R.string.journal_ai_assist_tone_bad)
+    JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_ai_assist_tone_neutral)
+    JournalPromptToneUiState.GOOD -> stringResource(R.string.journal_ai_assist_tone_good)
+    JournalPromptToneUiState.VERY_GOOD -> stringResource(R.string.journal_ai_assist_tone_very_good)
 }
 
 @Composable
-private fun helpMeStartErrorMessage(error: AiAssistErrorUiState): String = when (error) {
+fun aiAssistErrorMessage(error: AiAssistErrorUiState): String = when (error) {
     AiAssistErrorUiState.INVALID_REQUEST -> stringResource(
-        R.string.journal_help_me_start_error_invalid_request,
+        R.string.journal_ai_assist_error_invalid_request,
     )
     AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(
-        R.string.journal_help_me_start_error_upstream_failed,
+        R.string.journal_ai_assist_error_upstream_failed,
     )
     AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(
-        R.string.journal_help_me_start_error_not_signed_in,
+        R.string.journal_ai_assist_error_not_signed_in,
     )
     AiAssistErrorUiState.DAILY_LIMIT_REACHED -> stringResource(
-        R.string.journal_help_me_start_error_daily_limit_reached,
+        R.string.journal_ai_assist_error_daily_limit_reached,
     )
     AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(
-        R.string.journal_help_me_start_error_network_unavailable,
+        R.string.journal_ai_assist_error_network_unavailable,
     )
-    AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_help_me_start_error_unknown)
+    AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_ai_assist_error_unknown)
 }
 
 private val previewStarterPrompts = JournalStarterPromptTone.entries.map { tone ->

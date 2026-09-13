@@ -42,6 +42,8 @@ import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.journal.create.MAX_REGENERATIONS
+import pl.luczka.todaywas.ui.journal.create.aiAssistErrorMessage
+import pl.luczka.todaywas.ui.journal.create.aiAssistToneLabel
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
@@ -233,7 +235,7 @@ private fun HelpMeRefineDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400)) {
                 val toneLabels = JournalPromptToneUiState.entries.associateWith {
-                    refineToneLabel(
+                    aiAssistToneLabel(
                         it,
                     )
                 }
@@ -257,7 +259,7 @@ private fun HelpMeRefineDialog(
                     )
                 }
                 uiState.error?.let { error ->
-                    DsText(text = helpMeRefineErrorMessage(error))
+                    DsText(text = aiAssistErrorMessage(error))
                 }
             }
         },
@@ -283,39 +285,6 @@ private fun HelpMeRefineDialog(
             )
         },
     )
-}
-
-@Composable
-private fun refineToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
-    JournalPromptToneUiState.VERY_BAD -> stringResource(
-        R.string.journal_help_me_start_tone_very_bad,
-    )
-    JournalPromptToneUiState.BAD -> stringResource(R.string.journal_help_me_start_tone_bad)
-    JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_help_me_start_tone_neutral)
-    JournalPromptToneUiState.GOOD -> stringResource(R.string.journal_help_me_start_tone_good)
-    JournalPromptToneUiState.VERY_GOOD -> stringResource(
-        R.string.journal_help_me_start_tone_very_good,
-    )
-}
-
-@Composable
-private fun helpMeRefineErrorMessage(error: AiAssistErrorUiState): String = when (error) {
-    AiAssistErrorUiState.INVALID_REQUEST -> stringResource(
-        R.string.journal_help_me_start_error_invalid_request,
-    )
-    AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(
-        R.string.journal_help_me_start_error_upstream_failed,
-    )
-    AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(
-        R.string.journal_help_me_start_error_not_signed_in,
-    )
-    AiAssistErrorUiState.DAILY_LIMIT_REACHED -> stringResource(
-        R.string.journal_help_me_start_error_daily_limit_reached,
-    )
-    AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(
-        R.string.journal_help_me_start_error_network_unavailable,
-    )
-    AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_help_me_start_error_unknown)
 }
 
 private class JournalEntryDetailScreenPreviewStateProvider :
