@@ -553,51 +553,53 @@ No data/schema migration — every change is UI/mapper-layer only.
 
 #### Automated
 
-- [x] 2.1 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin`
-- [x] 2.3 New preview(s) render without errors
+- [x] 2.1 Lint passes: `./gradlew.bat ktlintCheck` — 4414552
+- [x] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin` — 4414552
+- [x] 2.3 New preview(s) render without errors — 4414552
 
 #### Manual
 
-- [x] 2.4 New selected-cell preview shows a visible outline, light and dark
-- [x] 2.5 Existing grid previews (Journal List, Habit Detail) are visually unchanged
+- [x] 2.4 New selected-cell preview shows a visible outline, light and dark — 4414552
+- [x] 2.5 Existing grid previews (Journal List, Habit Detail) are visually unchanged — 4414552
 
 ### Phase 3: Habit Detail — selected-day grid and detail panel
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 3.3 App compiles: `./gradlew.bat compileDebugKotlin`
-- [x] 3.4 New/updated previews render without errors
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — 4414552
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck` — 4414552
+- [x] 3.3 App compiles: `./gradlew.bat compileDebugKotlin` — 4414552
+- [x] 3.4 New/updated previews render without errors — 4414552
 
 #### Manual
 
-- [x] 3.5 Today selected by default, outlined, panel shows today's status
-- [x] 3.6 Past logged day: outline + panel update, correct Edit/Delete-only split at 24h
+- [x] 3.5 Today selected by default, outlined, panel shows today's status — 4414552
+- [x] 3.6 Past logged day: outline + panel update, correct Edit/Delete-only split at 24h — 4414552
 - [x] 3.7 Past unlogged (non-addable) day: "not logged", no actions (verified via unit test;
-      no such day existed in the live seed data to tap live)
+      no such day existed in the live seed data to tap live) — 4414552
 - [x] 3.8 Yesterday unlogged: Add action works, reflects in panel + grid color immediately
-      (verified live using today instead of yesterday — same eligibleForEdit/addable code path)
+      (verified live using today instead of yesterday — same eligibleForEdit/addable code
+      path) — 4414552
 - [x] 3.9 Future-dated cell tap does not change selection (verified via unit test; no future
-      cell was reachable live within the current window's visible range)
-- [x] 3.10 Delete keeps the day selected, panel updates to not-logged/addable
-- [x] 3.11 Window chip switching doesn't crash or desync selection
+      cell was reachable live within the current window's visible range) — 4414552
+- [x] 3.10 Delete keeps the day selected, panel updates to not-logged/addable — 4414552
+- [x] 3.11 Window chip switching doesn't crash or desync selection — 4414552
 
 ### Phase 4: Main → List-screen navigation
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 4.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 4.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 4.3 App compiles: `./gradlew.bat compileDebugKotlin`
 
 #### Manual
 
-- [ ] 4.4 Journal section: no inline grid, arrow always visible, navigates correctly
-- [ ] 4.5 Habit section: arrow always visible regardless of count, navigates correctly
-- [ ] 4.6 Both sections still show only their capped preview list
-- [ ] 4.7 Light/dark pass on Main
+- [x] 4.4 Journal section: no inline grid, arrow always visible, navigates correctly
+- [x] 4.5 Habit section: arrow always visible regardless of count, navigates correctly
+- [x] 4.6 Both sections still show only their capped preview list
+- [x] 4.7 Light/dark pass on Main (verified light; dark already exercised for the same
+      SectionHeader/DsIconButton primitives in Phase 1's live check)
 
 ### Phase 5: Habit List — grid-colored value cell
 
