@@ -541,4 +541,33 @@ class EditJournalEntryViewModelTest {
             assertNull(viewModel.uiState.value.helpMeRefine.refinedText)
             collectJob.cancel()
         }
+
+    @Test
+    fun `should discard the result and emit Discarded when the edit window closes during a generate`() =
+        runTest {
+            // Arrange
+            val clock = MutableClock(createdAt.plus(Duration.ofHours(1)))
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.generateResult =
+                Result.success(AiPromptResult(text = "Generated prompt.", remainingToday = 9))
+            val viewModel = viewModel(clock = clock, aiAssistRepository = aiAssistRepository)
+            runCurrent()
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeStartClicked)
+            viewModel.onIntent(
+                EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
+            )
+            val events = mutableListOf<EditJournalEntryUiEvent>()
+            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+            clock.advanceTo(createdAt.plus(Duration.ofHours(25)))
+
+            // Act
+            viewModel.onIntent(EditJournalEntryIntent.GenerateClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(listOf(EditJournalEntryUiEvent.Discarded), events)
+            assertFalse(viewModel.uiState.value.helpMeStart.isVisible)
+            assertNull(viewModel.uiState.value.helpMeStart.generatedText)
+            collectJob.cancel()
+        }
 }

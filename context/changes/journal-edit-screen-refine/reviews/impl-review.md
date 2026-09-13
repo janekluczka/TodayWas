@@ -6,6 +6,7 @@
 - **Date**: 2026-09-13
 - **Verdict**: APPROVED
 - **Findings**: 0 critical, 0 warnings, 4 observations
+- **Triage**: F1 fixed, F2 fixed, F3 fixed, F4 skipped (pre-existing, out of scope)
 
 ## Verdicts
 
@@ -28,7 +29,7 @@
 - **Location**: app/src/test/java/pl/luczka/todaywas/ui/journal/create/AddJournalEntryViewModelTest.kt:240,257
 - **Detail**: Phase 5 renamed `AddJournalEntryIntent.ToneSelected`/`ThoughtsChanged` to `HelpMeStartToneSelected`/`HelpMeStartThoughtsChanged`. The two test bodies were correctly updated to dispatch the renamed intents, but their backtick-quoted names still read `` `should update selectedTone when ToneSelected is dispatched` `` and `` `should update thoughts when ThoughtsChanged is dispatched` `` — cosmetic only, no functional or coverage gap.
 - **Fix**: Rename the two test methods to `` `should update selectedTone when HelpMeStartToneSelected is dispatched` `` and `` `should update thoughts when HelpMeStartThoughtsChanged is dispatched` ``.
-- **Decision**: PENDING
+- **Decision**: FIXED
 
 ### F2 — No client-side length cap mirroring the server's thoughts limit
 
@@ -38,7 +39,7 @@
 - **Location**: app/src/main/java/pl/luczka/todaywas/ui/journal/edit/HelpMeRefineStep.kt:9 (MAX_REFINE_TEXT_LENGTH); supabase/functions/ai-proxy/index.ts:35 (MAX_THOUGHTS_LENGTH = 1000)
 - **Detail**: The edge function caps `thoughts` at 1000 chars, the same way it caps `text` at 8000. The client mirrors the 8000-char text cap (`MAX_REFINE_TEXT_LENGTH`, used to disable the refine entry point) but has no equivalent client-side check for `thoughts` in either the start or refine flow. A user typing over 1000 chars into a thoughts field gets a generic "Something went wrong" instead of a clear local message.
 - **Fix**: Add a client-side `MAX_THOUGHTS_LENGTH` constant mirroring the server's, and disable Generate/Refine (or show inline guidance) once thoughts exceed it — same pattern already used for `MAX_REFINE_TEXT_LENGTH`.
-- **Decision**: PENDING
+- **Decision**: FIXED — added `MAX_THOUGHTS_LENGTH = 1000` to `create/HelpMeStartUiState.kt`, cross-imported into `edit/`; both `HelpMeStartBottomSheet`'s Generate button and `HelpMeRefineBottomSheet`'s Refine button now also require `thoughts.length <= MAX_THOUGHTS_LENGTH`.
 
 ### F3 — help-me-start's onGenerate has no 24h-expiry re-check, unlike onRefine
 
@@ -48,7 +49,7 @@
 - **Location**: app/src/main/java/pl/luczka/todaywas/ui/journal/edit/EditJournalEntryViewModel.kt (onGenerate vs. onRefine)
 - **Detail**: `onRefine()` explicitly re-checks `isEditable(entry.createdAt)` after the network round-trip and discards the result if the 24h window closed mid-flight. `onGenerate()` (help-me-start, also reachable on the Edit screen once text is cleared) has no equivalent check. Not a data-safety bug — `SaveClicked` always re-validates via `UpdateJournalEntryUseCase` and correctly falls back to `Discarded` on `EditWindowExpiredException`, so nothing is silently lost — but it's an asymmetry between two structurally identical flows that could read as an oversight to a future maintainer.
 - **Fix**: Either add the same `isEditable` re-check to `onGenerate` for consistency, or leave a one-line comment explaining why it's intentionally omitted (worst case is just a wasted round-trip, caught at Save).
-- **Decision**: PENDING
+- **Decision**: FIXED — `onGenerate` now re-checks `isEditable(entry.createdAt)` after the async call and emits `Discarded` on expiry, mirroring `onRefine` exactly. New regression test added: `` `should discard the result and emit Discarded when the edit window closes during a generate` ``.
 
 ### F4 — Pre-existing: env-var force-unwraps outside try/catch in ai-proxy
 
@@ -58,7 +59,7 @@
 - **Location**: supabase/functions/ai-proxy/index.ts:140-142
 - **Detail**: `Deno.env.get("SUPABASE_URL")!` / `Deno.env.get("SUPABASE_ANON_KEY")!` sit outside the try/catch wrapping `callOpenRouter`. If either secret were ever unset, this throws uncaught (generic Deno 500) instead of the function's own `jsonResponse(502, ...)` shape. This predates this change (from `ai-assist-proxy-foundation`) and isn't touched by the refine/thoughts work — flagged only for completeness, doesn't affect this plan's verdict.
 - **Fix**: Wrap the `createClient` call (or the env-var reads) in the same try/catch as the OpenRouter call, if ever revisited.
-- **Decision**: PENDING
+- **Decision**: SKIPPED — pre-existing, out of this change's scope; left for a separate change.
 
 ## What checked out cleanly
 

@@ -48,6 +48,7 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.journal.create.HelpMeStartBottomSheet
 import pl.luczka.todaywas.ui.journal.create.JournalStarterPromptTone
 import pl.luczka.todaywas.ui.journal.create.JournalStarterPromptUiState
+import pl.luczka.todaywas.ui.journal.create.MAX_THOUGHTS_LENGTH
 import pl.luczka.todaywas.ui.journal.create.StarterPromptList
 import pl.luczka.todaywas.ui.journal.create.aiAssistErrorMessage
 import pl.luczka.todaywas.ui.journal.create.aiAssistToneLabel
@@ -326,7 +327,9 @@ fun HelpMeRefineBottomSheet(
                     DsButtonWithLoading(
                         text = stringResource(R.string.journal_help_me_refine_generate_cta),
                         onClick = onRefineClicked,
-                        enabled = uiState.selectedTone != null && !uiState.isGenerating,
+                        enabled = uiState.selectedTone != null &&
+                            !uiState.isGenerating &&
+                            uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
                         loading = uiState.isGenerating,
                         modifier = Modifier.fillMaxWidth(),
                     )

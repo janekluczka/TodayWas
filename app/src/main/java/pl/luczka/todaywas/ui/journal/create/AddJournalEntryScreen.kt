@@ -417,7 +417,9 @@ fun HelpMeStartBottomSheet(
                             DsButtonWithLoading(
                                 text = stringResource(R.string.journal_help_me_start_generate_cta),
                                 onClick = onGenerateClicked,
-                                enabled = uiState.selectedTone != null && !uiState.isGenerating,
+                                enabled = uiState.selectedTone != null &&
+                                    !uiState.isGenerating &&
+                                    uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
                                 loading = uiState.isGenerating,
                                 modifier = Modifier.fillMaxWidth(),
                             )

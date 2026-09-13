@@ -4,6 +4,11 @@ import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
+// Mirrors ai-proxy's MAX_THOUGHTS_LENGTH (supabase/functions/ai-proxy/index.ts) so both the start
+// and refine thoughts fields disable locally instead of always failing server-side with a generic
+// invalid_request error.
+const val MAX_THOUGHTS_LENGTH = 1000
+
 @Immutable
 data class HelpMeStartUiState(
     val isVisible: Boolean = false,

@@ -237,7 +237,7 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should update selectedTone when ToneSelected is dispatched`() =
+    fun `should update selectedTone when HelpMeStartToneSelected is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
@@ -254,7 +254,7 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should update thoughts when ThoughtsChanged is dispatched`() =
+    fun `should update thoughts when HelpMeStartThoughtsChanged is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()

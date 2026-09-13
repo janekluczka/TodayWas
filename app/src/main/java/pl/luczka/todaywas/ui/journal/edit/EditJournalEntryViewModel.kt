@@ -208,8 +208,10 @@ class EditJournalEntryViewModel @AssistedInject constructor(
     }
 
     private fun onGenerate() {
-        val helpMeStart = _uiState.value.helpMeStart
+        val state = _uiState.value
+        val helpMeStart = state.helpMeStart
         val tone = helpMeStart.selectedTone ?: return
+        val entry = state.entry ?: return
         if (helpMeStart.isGenerating) return
         if ((helpMeStart.remainingToday ?: 1) <= 0) return
         _uiState.update {
@@ -220,6 +222,13 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         generateJob = viewModelScope.launch {
             val result =
                 requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
+            // Mirrors onRefine's expired-mid-flight handling: the 24h window can close during the
+            // 10-20s call, and this screen has no non-editing fallback to show instead.
+            if (!isEditable(entry.createdAt)) {
+                _uiState.update { it.copy(helpMeStart = HelpMeStartUiState()) }
+                eventChannel.trySend(EditJournalEntryUiEvent.Discarded)
+                return@launch
+            }
             _uiState.update { current ->
                 current.copy(helpMeStart = current.helpMeStart.applyResult(result))
             }
