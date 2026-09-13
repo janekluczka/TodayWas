@@ -17,13 +17,27 @@ class RequestJournalRefinementPromptUseCaseTest {
             val useCase = RequestJournalRefinementPromptUseCase(repository)
 
             // Act
-            val result = useCase("Original draft text.", JournalPromptTone.GOOD)
+            val result = useCase("Original draft text.", JournalPromptTone.GOOD, thoughts = null)
 
             // Assert
             assertTrue(result.isSuccess)
             assertEquals(1, repository.refineCallCount)
             assertEquals("Original draft text.", repository.lastRefineText)
             assertEquals(JournalPromptTone.GOOD, repository.lastRefineTone)
+        }
+
+    @Test
+    fun `should delegate thoughts to the repository when provided`() =
+        runTest {
+            // Arrange
+            val repository = FakeAiAssistRepository()
+            val useCase = RequestJournalRefinementPromptUseCase(repository)
+
+            // Act
+            useCase("Original draft text.", JournalPromptTone.GOOD, thoughts = "make it shorter")
+
+            // Assert
+            assertEquals("make it shorter", repository.lastRefineThoughts)
         }
 
     @Test
@@ -36,7 +50,7 @@ class RequestJournalRefinementPromptUseCaseTest {
             val useCase = RequestJournalRefinementPromptUseCase(repository)
 
             // Act
-            val result = useCase("Original draft text.", JournalPromptTone.BAD)
+            val result = useCase("Original draft text.", JournalPromptTone.BAD, thoughts = null)
 
             // Assert
             assertTrue(result.isFailure)

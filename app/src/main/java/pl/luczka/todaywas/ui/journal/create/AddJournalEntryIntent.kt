@@ -17,17 +17,17 @@ sealed interface AddJournalEntryIntent {
 
     data object CancelClicked : AddJournalEntryIntent
 
+    data object SignInClicked : AddJournalEntryIntent
+
     data object HelpMeStartClicked : AddJournalEntryIntent
 
     data object HelpMeStartDismissed : AddJournalEntryIntent
 
-    data object SignInClicked : AddJournalEntryIntent
-
-    data class ToneSelected(
+    data class HelpMeStartToneSelected(
         val tone: JournalPromptToneUiState,
     ) : AddJournalEntryIntent
 
-    data class ThoughtsChanged(
+    data class HelpMeStartThoughtsChanged(
         val thoughts: String,
     ) : AddJournalEntryIntent
 
@@ -36,4 +36,22 @@ sealed interface AddJournalEntryIntent {
     data object RegenerateClicked : AddJournalEntryIntent
 
     data object UseGeneratedTextClicked : AddJournalEntryIntent
+
+    data object HelpMeRefineClicked : AddJournalEntryIntent
+
+    data object HelpMeRefineDismissed : AddJournalEntryIntent
+
+    data class HelpMeRefineToneSelected(
+        val tone: JournalPromptToneUiState,
+    ) : AddJournalEntryIntent
+
+    data class HelpMeRefineThoughtsChanged(
+        val thoughts: String,
+    ) : AddJournalEntryIntent
+
+    data object RefineClicked : AddJournalEntryIntent
+
+    data object RegenerateRefineClicked : AddJournalEntryIntent
+
+    data object UseRefinedTextClicked : AddJournalEntryIntent
 }

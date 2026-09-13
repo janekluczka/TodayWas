@@ -40,6 +40,7 @@ fun DsDateStrip(
     selectedDate: LocalDate,
     isSelectable: (LocalDate) -> Boolean,
     onDateSelected: (LocalDate) -> Unit,
+    interactive: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val selectedPage = selectedDate.toEpochDay().toInt()
@@ -63,8 +64,8 @@ fun DsDateStrip(
             DateStripCard(
                 date = date,
                 selected = date == selectedDate,
-                available = isSelectable(date),
-                onClick = { onDateSelected(date) },
+                available = interactive && isSelectable(date),
+                onClick = { if (interactive) onDateSelected(date) },
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -105,6 +106,20 @@ private fun DsDateStripPreview() {
             selectedDate = today,
             isSelectable = { it == today || it == today.minusDays(1) },
             onDateSelected = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DsDateStripNonInteractivePreview() {
+    DsTheme {
+        val today = LocalDate.now()
+        DsDateStrip(
+            selectedDate = today,
+            isSelectable = { it == today },
+            onDateSelected = {},
+            interactive = false,
         )
     }
 }

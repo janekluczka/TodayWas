@@ -42,6 +42,11 @@ data class JournalEntryDetailKey(
 ) : TodayWasKey
 
 @Serializable
+data class EditJournalEntryKey(
+    val id: String,
+) : TodayWasKey
+
+@Serializable
 data object CreateHabitKey : TodayWasKey
 
 @Serializable

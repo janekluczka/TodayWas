@@ -13,5 +13,6 @@ interface AiAssistRepository {
     suspend fun refineJournalEntry(
         text: String,
         tone: JournalPromptTone,
+        thoughts: String?,
     ): Result<AiPromptResult>
 }

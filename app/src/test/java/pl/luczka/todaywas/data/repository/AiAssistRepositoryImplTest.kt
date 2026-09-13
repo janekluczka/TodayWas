@@ -5,6 +5,7 @@ import io.github.jan.supabase.functions.Functions
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.engine.mock.toByteArray
 import io.ktor.client.plugins.HttpTimeoutCapability
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
@@ -114,11 +115,40 @@ class AiAssistRepositoryImplTest {
             }
 
             // Act
-            val result = repository.refineJournalEntry("Original text", JournalPromptTone.NEUTRAL)
+            val result = repository.refineJournalEntry(
+                "Original text",
+                JournalPromptTone.NEUTRAL,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
             assertEquals("Refined text", result.getOrNull()?.text)
+        }
+
+    @Test
+    fun `should include thoughts in the request body when refining with thoughts provided`() =
+        runTest {
+            // Arrange
+            var capturedBody: String? = null
+            val repository = repository { request ->
+                capturedBody = String(request.body.toByteArray())
+                respond(
+                    """{"text":"Refined text","remaining":4}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+
+            // Act
+            repository.refineJournalEntry(
+                "Original text",
+                JournalPromptTone.NEUTRAL,
+                thoughts = "make it shorter",
+            )
+
+            // Assert
+            assertTrue(capturedBody.orEmpty().contains("make it shorter"))
         }
 
     @Test

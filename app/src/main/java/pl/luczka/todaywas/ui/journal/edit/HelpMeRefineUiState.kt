@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.journal.detail
+package pl.luczka.todaywas.ui.journal.edit
 
 import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
@@ -13,8 +13,11 @@ data class HelpMeRefineUiState(
     val isVisible: Boolean = false,
     val step: HelpMeRefineStep = HelpMeRefineStep.INPUT,
     val selectedTone: JournalPromptToneUiState? = null,
+    val thoughts: String = "",
     val refinedText: String? = null,
     val isGenerating: Boolean = false,
     val error: AiAssistErrorUiState? = null,
-    val regenerationsUsed: Int = 0,
+    // Null until the first refine/regenerate call this session returns -- same server-enforced
+    // daily quota "help me start" uses (see HelpMeStartUiState), not a client-side regeneration cap.
+    val remainingToday: Int? = null,
 )

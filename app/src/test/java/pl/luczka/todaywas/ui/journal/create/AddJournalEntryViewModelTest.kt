@@ -30,7 +30,10 @@ import pl.luczka.todaywas.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalStarterPromptUseCase
+import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineStep
+import pl.luczka.todaywas.ui.journal.edit.MAX_REFINE_TEXT_LENGTH
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
@@ -51,6 +54,7 @@ class AddJournalEntryViewModelTest {
         observeAuthState = ObserveAuthStateUseCase(authRepository),
         addJournalEntry = AddJournalEntryUseCase(repository),
         requestJournalStarterPrompt = RequestJournalStarterPromptUseCase(aiAssistRepository),
+        requestJournalRefinementPrompt = RequestJournalRefinementPromptUseCase(aiAssistRepository),
         random = random,
     )
 
@@ -233,14 +237,14 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should update selectedTone when ToneSelected is dispatched`() =
+    fun `should update selectedTone when HelpMeStartToneSelected is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
 
             // Act
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Assert
             assertEquals(
@@ -250,14 +254,16 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should update thoughts when ThoughtsChanged is dispatched`() =
+    fun `should update thoughts when HelpMeStartThoughtsChanged is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
 
             // Act
-            viewModel.onIntent(AddJournalEntryIntent.ThoughtsChanged("made progress on a hard bug"))
+            viewModel.onIntent(
+                AddJournalEntryIntent.HelpMeStartThoughtsChanged("made progress on a hard bug"),
+            )
 
             // Assert
             assertEquals(
@@ -275,7 +281,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "Generated prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -298,7 +304,7 @@ class AddJournalEntryViewModelTest {
             val aiAssistRepository = FakeAiAssistRepository()
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -318,7 +324,7 @@ class AddJournalEntryViewModelTest {
                 Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -341,7 +347,7 @@ class AddJournalEntryViewModelTest {
                 Result.failure(AiAssistException(AiAssistError.DailyLimitReached))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -362,7 +368,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             aiAssistRepository.generateResult =
@@ -387,7 +393,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             aiAssistRepository.generateResult =
@@ -413,7 +419,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "Last prompt.", remainingToday = 0))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             val callCountAfterFirstGenerate = aiAssistRepository.generateCallCount
@@ -436,7 +442,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             aiAssistRepository.generateResult =
@@ -465,7 +471,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(AddJournalEntryIntent.ToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             aiAssistRepository.generateResult =
@@ -488,5 +494,143 @@ class AddJournalEntryViewModelTest {
 
             // Assert
             assertEquals(8, viewModel.uiState.value.helpMeStart.remainingToday)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while signed out`() =
+        runTest {
+            // Arrange
+            val viewModel =
+                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while the draft is blank`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while the draft exceeds MAX_REFINE_TEXT_LENGTH`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(
+                AddJournalEntryIntent.TextChanged("a".repeat(MAX_REFINE_TEXT_LENGTH + 1)),
+            )
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should make helpMeRefine visible when HelpMeRefineClicked is dispatched while signed in with a valid draft`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.helpMeRefine.isVisible)
+        }
+
+    @Test
+    fun `should move to PREVIEW step, set refinedText and remainingToday, and pass thoughts through when RefineClicked succeeds`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult =
+                Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
+            viewModel.onIntent(
+                AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
+            )
+            viewModel.onIntent(
+                AddJournalEntryIntent.HelpMeRefineThoughtsChanged("make it shorter"),
+            )
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.RefineClicked)
+            runCurrent()
+
+            // Assert
+            val helpMeRefine = viewModel.uiState.value.helpMeRefine
+            assertEquals(HelpMeRefineStep.PREVIEW, helpMeRefine.step)
+            assertEquals("Refined text.", helpMeRefine.refinedText)
+            assertEquals(9, helpMeRefine.remainingToday)
+            assertEquals("Today was good.", aiAssistRepository.lastRefineText)
+            assertEquals("make it shorter", aiAssistRepository.lastRefineThoughts)
+        }
+
+    @Test
+    fun `should not call the repository when RegenerateRefineClicked is dispatched after remainingToday reaches 0`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult =
+                Result.success(AiPromptResult(text = "Last refinement.", remainingToday = 0))
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
+            viewModel.onIntent(
+                AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
+            )
+            viewModel.onIntent(AddJournalEntryIntent.RefineClicked)
+            runCurrent()
+            val callCountAtZero = aiAssistRepository.refineCallCount
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.RegenerateRefineClicked)
+            runCurrent()
+
+            // Assert
+            assertEquals(0, viewModel.uiState.value.helpMeRefine.remainingToday)
+            assertEquals(callCountAtZero, aiAssistRepository.refineCallCount)
+        }
+
+    @Test
+    fun `should copy refinedText into text when UseRefinedTextClicked`() =
+        runTest {
+            // Arrange
+            val aiAssistRepository = FakeAiAssistRepository()
+            aiAssistRepository.refineResult =
+                Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+            val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
+            viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
+            viewModel.onIntent(
+                AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
+            )
+            viewModel.onIntent(AddJournalEntryIntent.RefineClicked)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(AddJournalEntryIntent.UseRefinedTextClicked)
+
+            // Assert
+            assertEquals("Refined text.", viewModel.uiState.value.text)
+            assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
         }
 }

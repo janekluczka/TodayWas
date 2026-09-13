@@ -45,6 +45,8 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsPlainTextField
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineBottomSheet
+import pl.luczka.todaywas.ui.journal.edit.MAX_REFINE_TEXT_LENGTH
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
@@ -147,6 +149,15 @@ private fun AddJournalEntryScreenContent(
                             .align(Alignment.BottomStart)
                             .fillMaxWidth(),
                     )
+                } else if (uiState.authState is AuthStateUi.SignedIn &&
+                    uiState.text.length <= MAX_REFINE_TEXT_LENGTH
+                ) {
+                    DsAssistChip(
+                        text = stringResource(R.string.journal_help_me_refine_cta),
+                        leadingIcon = Icons.Filled.AutoAwesome,
+                        onClick = { onIntent(AddJournalEntryIntent.HelpMeRefineClicked) },
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                    )
                 }
             }
         }
@@ -155,7 +166,31 @@ private fun AddJournalEntryScreenContent(
     if (uiState.helpMeStart.isVisible) {
         HelpMeStartBottomSheet(
             uiState = uiState.helpMeStart,
-            onIntent = onIntent,
+            onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeStartDismissed) },
+            onSignInClicked = { onIntent(AddJournalEntryIntent.SignInClicked) },
+            onToneSelected = { onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(it)) },
+            onThoughtsChanged = {
+                onIntent(AddJournalEntryIntent.HelpMeStartThoughtsChanged(it))
+            },
+            onGenerateClicked = { onIntent(AddJournalEntryIntent.GenerateClicked) },
+            onRegenerateClicked = { onIntent(AddJournalEntryIntent.RegenerateClicked) },
+            onUseGeneratedTextClicked = {
+                onIntent(AddJournalEntryIntent.UseGeneratedTextClicked)
+            },
+        )
+    }
+
+    if (uiState.helpMeRefine.isVisible) {
+        HelpMeRefineBottomSheet(
+            uiState = uiState.helpMeRefine,
+            onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeRefineDismissed) },
+            onToneSelected = { onIntent(AddJournalEntryIntent.HelpMeRefineToneSelected(it)) },
+            onThoughtsChanged = {
+                onIntent(AddJournalEntryIntent.HelpMeRefineThoughtsChanged(it))
+            },
+            onRefineClicked = { onIntent(AddJournalEntryIntent.RefineClicked) },
+            onRegenerateClicked = { onIntent(AddJournalEntryIntent.RegenerateRefineClicked) },
+            onUseRefinedTextClicked = { onIntent(AddJournalEntryIntent.UseRefinedTextClicked) },
         )
     }
 }
@@ -175,7 +210,7 @@ private fun JournalDateSlotUiState.title(): String = when (this) {
 // tapping it while signed out opens the sheet with a sign-in explainer instead of the tone
 // picker, so the feature stays discoverable either way.
 @Composable
-private fun StarterPromptList(
+fun StarterPromptList(
     starterPrompts: List<JournalStarterPromptUiState>,
     onPromptClicked: (String) -> Unit,
     onHelpMeStartClicked: () -> Unit,
@@ -280,18 +315,24 @@ private fun LocalDate.toSlot(
 // input it acts on rather than floating in a header disconnected from it.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HelpMeStartBottomSheet(
+fun HelpMeStartBottomSheet(
     uiState: HelpMeStartUiState,
-    onIntent: (AddJournalEntryIntent) -> Unit,
+    onDismissRequest: () -> Unit,
+    onSignInClicked: () -> Unit,
+    onToneSelected: (JournalPromptToneUiState) -> Unit,
+    onThoughtsChanged: (String) -> Unit,
+    onGenerateClicked: () -> Unit,
+    onRegenerateClicked: () -> Unit,
+    onUseGeneratedTextClicked: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val errorMessage = uiState.error?.let { helpMeStartErrorMessage(it) }
+    val errorMessage = uiState.error?.let { aiAssistErrorMessage(it) }
     LaunchedEffect(uiState.error) {
         errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
 
     DsModalBottomSheet(
-        onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeStartDismissed) },
+        onDismissRequest = onDismissRequest,
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -313,7 +354,7 @@ private fun HelpMeStartBottomSheet(
                         )
                         DsButton(
                             text = stringResource(R.string.onboarding_account_signin_signup_cta),
-                            onClick = { onIntent(AddJournalEntryIntent.SignInClicked) },
+                            onClick = onSignInClicked,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -323,12 +364,12 @@ private fun HelpMeStartBottomSheet(
                             style = MaterialTheme.typography.titleMedium,
                         )
                         val toneLabels =
-                            JournalPromptToneUiState.entries.associateWith { toneLabel(it) }
+                            JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
                         DsChoiceFlowRow(
                             items = JournalPromptToneUiState.entries.toList(),
                             selectedItem = uiState.selectedTone,
                             onItemSelected = { tone ->
-                                tone?.let { onIntent(AddJournalEntryIntent.ToneSelected(it)) }
+                                tone?.let(onToneSelected)
                             },
                             enabled = !uiState.isGenerating,
                             allowDeselect = false,
@@ -340,7 +381,7 @@ private fun HelpMeStartBottomSheet(
                         // a second line doesn't reflow the sheet around it.
                         DsPlainTextField(
                             value = uiState.thoughts,
-                            onValueChange = { onIntent(AddJournalEntryIntent.ThoughtsChanged(it)) },
+                            onValueChange = onThoughtsChanged,
                             placeholder = stringResource(
                                 R.string.journal_help_me_start_thoughts_label,
                             ),
@@ -356,7 +397,7 @@ private fun HelpMeStartBottomSheet(
                                 text = stringResource(
                                     R.string.journal_help_me_start_regenerate_cta,
                                 ),
-                                onClick = { onIntent(AddJournalEntryIntent.RegenerateClicked) },
+                                onClick = onRegenerateClicked,
                                 enabled = !uiState.isGenerating &&
                                     (uiState.remainingToday ?: 1) > 0,
                             )
@@ -364,7 +405,7 @@ private fun HelpMeStartBottomSheet(
                         uiState.remainingToday?.let { remaining ->
                             DsText(
                                 text = pluralStringResource(
-                                    R.plurals.journal_help_me_start_remaining_today,
+                                    R.plurals.journal_ai_assist_remaining_today,
                                     remaining,
                                     remaining,
                                 ),
@@ -375,17 +416,17 @@ private fun HelpMeStartBottomSheet(
                         if (uiState.step == HelpMeStartStep.INPUT) {
                             DsButtonWithLoading(
                                 text = stringResource(R.string.journal_help_me_start_generate_cta),
-                                onClick = { onIntent(AddJournalEntryIntent.GenerateClicked) },
-                                enabled = uiState.selectedTone != null && !uiState.isGenerating,
+                                onClick = onGenerateClicked,
+                                enabled = uiState.selectedTone != null &&
+                                    !uiState.isGenerating &&
+                                    uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
                                 loading = uiState.isGenerating,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         } else {
                             DsButton(
                                 text = stringResource(R.string.journal_help_me_start_use_this_cta),
-                                onClick = {
-                                    onIntent(AddJournalEntryIntent.UseGeneratedTextClicked)
-                                },
+                                onClick = onUseGeneratedTextClicked,
                                 enabled = !uiState.isGenerating,
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -402,36 +443,32 @@ private fun HelpMeStartBottomSheet(
 }
 
 @Composable
-private fun toneLabel(tone: JournalPromptToneUiState): String = when (tone) {
-    JournalPromptToneUiState.VERY_BAD -> stringResource(
-        R.string.journal_help_me_start_tone_very_bad,
-    )
-    JournalPromptToneUiState.BAD -> stringResource(R.string.journal_help_me_start_tone_bad)
-    JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_help_me_start_tone_neutral)
-    JournalPromptToneUiState.GOOD -> stringResource(R.string.journal_help_me_start_tone_good)
-    JournalPromptToneUiState.VERY_GOOD -> stringResource(
-        R.string.journal_help_me_start_tone_very_good,
-    )
+fun aiAssistToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
+    JournalPromptToneUiState.VERY_BAD -> stringResource(R.string.journal_ai_assist_tone_very_bad)
+    JournalPromptToneUiState.BAD -> stringResource(R.string.journal_ai_assist_tone_bad)
+    JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_ai_assist_tone_neutral)
+    JournalPromptToneUiState.GOOD -> stringResource(R.string.journal_ai_assist_tone_good)
+    JournalPromptToneUiState.VERY_GOOD -> stringResource(R.string.journal_ai_assist_tone_very_good)
 }
 
 @Composable
-private fun helpMeStartErrorMessage(error: AiAssistErrorUiState): String = when (error) {
+fun aiAssistErrorMessage(error: AiAssistErrorUiState): String = when (error) {
     AiAssistErrorUiState.INVALID_REQUEST -> stringResource(
-        R.string.journal_help_me_start_error_invalid_request,
+        R.string.journal_ai_assist_error_invalid_request,
     )
     AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(
-        R.string.journal_help_me_start_error_upstream_failed,
+        R.string.journal_ai_assist_error_upstream_failed,
     )
     AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(
-        R.string.journal_help_me_start_error_not_signed_in,
+        R.string.journal_ai_assist_error_not_signed_in,
     )
     AiAssistErrorUiState.DAILY_LIMIT_REACHED -> stringResource(
-        R.string.journal_help_me_start_error_daily_limit_reached,
+        R.string.journal_ai_assist_error_daily_limit_reached,
     )
     AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(
-        R.string.journal_help_me_start_error_network_unavailable,
+        R.string.journal_ai_assist_error_network_unavailable,
     )
-    AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_help_me_start_error_unknown)
+    AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_ai_assist_error_unknown)
 }
 
 private val previewStarterPrompts = JournalStarterPromptTone.entries.map { tone ->
@@ -531,7 +568,13 @@ private fun HelpMeStartBottomSheetPreview(
     DsTheme {
         HelpMeStartBottomSheet(
             uiState = state,
-            onIntent = {},
+            onDismissRequest = {},
+            onSignInClicked = {},
+            onToneSelected = {},
+            onThoughtsChanged = {},
+            onGenerateClicked = {},
+            onRegenerateClicked = {},
+            onUseGeneratedTextClicked = {},
         )
     }
 }

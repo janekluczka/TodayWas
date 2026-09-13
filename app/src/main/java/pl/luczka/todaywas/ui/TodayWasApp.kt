@@ -16,6 +16,7 @@ import pl.luczka.todaywas.ui.habit.list.HabitListScreen
 import pl.luczka.todaywas.ui.habit.logcheckin.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.create.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.detail.JournalEntryDetailScreen
+import pl.luczka.todaywas.ui.journal.edit.EditJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.list.JournalListScreen
 import pl.luczka.todaywas.ui.main.MainScreen
 import pl.luczka.todaywas.ui.onboarding.accountsetup.OnboardingAccountSetupScreen
@@ -125,6 +126,15 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                 JournalEntryDetailScreen(
                     id = key.id,
                     onBack = { backStack.removeLastOrNull() },
+                    onEditClicked = { backStack.add(EditJournalEntryKey(id = key.id)) },
+                )
+            }
+            entry<EditJournalEntryKey> { key ->
+                EditJournalEntryScreen(
+                    id = key.id,
+                    onSaved = { backStack.removeLastOrNull() },
+                    onDiscarded = { backStack.removeLastOrNull() },
+                    onNavigateToSignIn = { backStack.add(AccountKey) },
                 )
             }
             entry<CreateHabitKey> {
