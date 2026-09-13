@@ -605,18 +605,18 @@ No data/schema migration — every change is UI/mapper-layer only.
 
 #### Automated
 
-- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 5.3 App compiles: `./gradlew.bat compileDebugKotlin`
-- [x] 5.4 New preview(s) render without errors
+- [x] 5.1 Unit tests pass: `./gradlew.bat testDebugUnitTest` — c49054b
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck` — c49054b
+- [x] 5.3 App compiles: `./gradlew.bat compileDebugKotlin` — c49054b
+- [x] 5.4 New preview(s) render without errors — c49054b
 
 #### Manual
 
 - [x] 5.5 Value cell color matches Habit Detail's own grid for today, binary and scale habits
       (verified for scale via live ADB round-trip: added value 5 in Habit Detail, confirmed the
-      same dark/LEVEL_5 color and "5" text on Habit List, then cleaned up by deleting it)
+      same dark/LEVEL_5 color and "5" text on Habit List, then cleaned up by deleting it) — c49054b
 - [x] 5.6 Not-yet-logged habit shows an empty/neutral cell (verified live before/after the
-      round-trip above)
+      round-trip above) — c49054b
 - [x] 5.7 Main's habit rows are visually unchanged (verified live — Main showed plain "5" text,
-      not a badge, throughout)
-- [x] 5.8 Light/dark pass on Habit List
+      not a badge, throughout) — c49054b
+- [x] 5.8 Light/dark pass on Habit List — c49054b
