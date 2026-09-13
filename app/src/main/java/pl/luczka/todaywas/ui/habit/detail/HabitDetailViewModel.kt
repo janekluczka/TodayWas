@@ -44,6 +44,7 @@ private data class HabitDetailViewModelState(
     val type: HabitTypeUiState = HabitTypeUiState.BINARY,
     val range: IntRange = 0..0,
     val checkIns: List<HabitCheckIn> = emptyList(),
+    val selectedDate: LocalDate,
     val selectedWindow: ContributionWindow = ContributionWindow.RollingTwelveMonths,
     val editingDate: LocalDate? = null,
     val editingValue: Int? = null,
@@ -66,7 +67,9 @@ private data class HabitDetailViewModelState(
         habitName = habitName,
         type = type,
         range = range,
-        rows = checkIns.toHabitDetailRows(freshLoggableDates, isEditable),
+        selectedDate = selectedDate,
+        selectedDay = checkIns.toSelectedDayUiState(selectedDate, freshLoggableDates, isEditable),
+        checkInCount = checkIns.size,
         contributionGrid = contributionGrid,
         availableWindows = availableWindows,
         selectedWindow = selectedWindow.toUiState(),
@@ -101,7 +104,10 @@ class HabitDetailViewModel @AssistedInject constructor(
     private val clock: Clock,
 ) : ViewModel() {
 
-    private val viewModelState = MutableStateFlow(HabitDetailViewModelState())
+    // Captured once at construction rather than re-derived on every emission, so the selection
+    // doesn't silently jump to a new "today" if the screen is left open across midnight.
+    private val viewModelState =
+        MutableStateFlow(HabitDetailViewModelState(selectedDate = LocalDate.now(clock)))
 
     private val contributionData: Flow<ContributionData> = observeHabitContribution(
         habitId,
@@ -128,7 +134,7 @@ class HabitDetailViewModel @AssistedInject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = run {
-            val initialState = HabitDetailViewModelState()
+            val initialState = HabitDetailViewModelState(selectedDate = LocalDate.now(clock))
             initialState.toUiState(
                 freshLoggableDates = getFreshLoggableDates(),
                 isEditable = isEditable::invoke,
@@ -164,6 +170,7 @@ class HabitDetailViewModel @AssistedInject constructor(
 
     fun onIntent(intent: HabitDetailIntent) {
         when (intent) {
+            is HabitDetailIntent.DaySelected -> onDaySelected(intent.date)
             is HabitDetailIntent.EditRowClicked -> onEditRowClicked(intent.date)
             is HabitDetailIntent.ValueChanged -> onValueChanged(intent.value)
             HabitDetailIntent.SaveClicked -> onSaveClicked()
@@ -175,6 +182,13 @@ class HabitDetailViewModel @AssistedInject constructor(
             HabitDetailIntent.DeleteHabitDismissed -> onDeleteHabitDismissed()
             is HabitDetailIntent.DeleteCheckInClicked -> onDeleteCheckInClicked(intent.date)
         }
+    }
+
+    // The grid can render cells for dates after today (week-padding in the mapper upstream) —
+    // rejecting those here keeps DsContributionGrid itself agnostic of what "future" means.
+    private fun onDaySelected(date: LocalDate) {
+        if (date.isAfter(LocalDate.now(clock))) return
+        viewModelState.update { it.copy(selectedDate = date) }
     }
 
     private fun onEditRowClicked(date: LocalDate) {

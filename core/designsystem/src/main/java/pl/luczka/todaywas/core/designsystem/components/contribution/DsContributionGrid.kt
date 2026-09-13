@@ -1,6 +1,8 @@
 package pl.luczka.todaywas.core.designsystem.components.contribution
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.theme.DsColor
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 enum class DsContributionLevel {
     NONE,
@@ -96,7 +101,8 @@ internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean =
     }
 
 // Pure rendering only — month-gap spacing is the week container's job (see weekHasGapBefore), not
-// a per-cell concern, since "before" means a different axis in each caller.
+// a per-cell concern, since "before" means a different axis in each caller. Selection/click only
+// ever apply to a Level cell — a Blank cell carries no date, so it silently ignores both.
 @Composable
 internal fun ContributionCell(
     cell: DsContributionCellUiState,
@@ -104,24 +110,41 @@ internal fun ContributionCell(
     modifier: Modifier = Modifier,
     cellSize: Dp = CELL_SIZE,
     cellSpacing: Dp = CELL_SPACING,
+    selected: Boolean = false,
+    onClick: (() -> Unit)? = null,
 ) {
     val cellModifier = modifier
         .padding(cellSpacing / 2)
         .size(cellSize)
     when (cell) {
-        is DsContributionCellUiState.Level -> Box(
-            modifier = cellModifier.background(
-                color = levelColors.getValue(cell.level),
-                shape = RoundedCornerShape(2.dp),
-            ),
-        )
+        is DsContributionCellUiState.Level -> {
+            val shape = RoundedCornerShape(2.dp)
+            val clickModifier = if (onClick != null) {
+                val label = cell.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+                Modifier.clickable(onClickLabel = label, onClick = onClick)
+            } else {
+                Modifier
+            }
+            val selectionModifier = if (selected) {
+                Modifier.border(2.dp, MaterialTheme.colorScheme.primary, shape)
+            } else {
+                Modifier
+            }
+            Box(
+                modifier = cellModifier
+                    .background(color = levelColors.getValue(cell.level), shape = shape)
+                    .then(clickModifier)
+                    .then(selectionModifier),
+            )
+        }
         is DsContributionCellUiState.Blank -> Box(modifier = cellModifier)
     }
 }
 
 // cellSize/cellSpacing/monthGap default to the compact sizing this ships with today (Main's
 // overview-scale usage) — a caller that needs a bigger read (e.g. a single-habit drill-down) can
-// override them without affecting every other caller.
+// override them without affecting every other caller. selectedDate/onCellClick default to
+// null so every existing non-interactive caller compiles and renders unchanged.
 @Composable
 fun DsContributionGrid(
     cells: List<DsContributionCellUiState>,
@@ -129,6 +152,8 @@ fun DsContributionGrid(
     cellSize: Dp = CELL_SIZE,
     cellSpacing: Dp = CELL_SPACING,
     monthGap: Dp = MONTH_GAP,
+    selectedDate: LocalDate? = null,
+    onCellClick: ((LocalDate) -> Unit)? = null,
 ) {
     val levelColors = contributionLevelColors()
 
@@ -147,11 +172,18 @@ fun DsContributionGrid(
                 ),
             ) {
                 week.forEach { cell ->
+                    val date = (cell as? DsContributionCellUiState.Level)?.date
                     ContributionCell(
                         cell = cell,
                         levelColors = levelColors,
                         cellSize = cellSize,
                         cellSpacing = cellSpacing,
+                        selected = date != null && date == selectedDate,
+                        onClick = if (date != null && onCellClick != null) {
+                            { onCellClick(date) }
+                        } else {
+                            null
+                        },
                     )
                 }
             }
@@ -219,5 +251,21 @@ private fun DsContributionGridPreview(
 ) {
     DsTheme {
         DsContributionGrid(cells = cells)
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DsContributionGridSelectedPreview() {
+    val today = LocalDate.now()
+    val cells = List(7) {
+        DsContributionCellUiState.Level(today.minusDays(it.toLong()), DsContributionLevel.LEVEL_3)
+    }
+    DsTheme {
+        DsContributionGrid(
+            cells = cells,
+            selectedDate = today.minusDays(2),
+            onCellClick = {},
+        )
     }
 }

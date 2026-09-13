@@ -12,7 +12,11 @@ data class HabitDetailUiState(
     val habitName: String,
     val type: HabitTypeUiState,
     val range: IntRange,
-    val rows: List<HabitDetailRowUiState>,
+    val selectedDate: LocalDate,
+    val selectedDay: HabitDetailDayUiState,
+    // Total check-ins ever logged for this habit, independent of the currently selected day —
+    // used only by the delete-habit confirmation dialog's "this will delete N check-ins" warning.
+    val checkInCount: Int,
     val contributionGrid: ContributionGridUiState,
     val availableWindows: List<ContributionWindowUiState>,
     val selectedWindow: ContributionWindowUiState,
@@ -30,7 +34,7 @@ data class HabitDetailUiState(
     val isEditSheetOpen: Boolean get() = editingDate != null
 }
 
-data class HabitDetailRowUiState(
+data class HabitDetailDayUiState(
     val date: LocalDate,
     val value: Int?,
     val eligibleForEdit: Boolean,

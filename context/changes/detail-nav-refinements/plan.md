@@ -539,47 +539,50 @@ No data/schema migration — every change is UI/mapper-layer only.
 
 #### Automated
 
-- [x] 1.1 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 1.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin`
+- [x] 1.1 Lint passes: `./gradlew.bat ktlintCheck` — ea051e4
+- [x] 1.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin` — ea051e4
 
 #### Manual
 
 - [x] 1.3 All three existing previews render correctly in light/dark with visible gaps and rounded
-      corners
-- [x] 1.4 Single-item list renders with full outer radius on all four corners
-- [x] 1.5 Live on Main: no regression to the outer card silhouette
+      corners — ea051e4
+- [x] 1.4 Single-item list renders with full outer radius on all four corners — ea051e4
+- [x] 1.5 Live on Main: no regression to the outer card silhouette — ea051e4
 
 ### Phase 2: DsContributionGrid — tap-to-select with outlined state
 
 #### Automated
 
-- [ ] 2.1 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin`
-- [ ] 2.3 New preview(s) render without errors
+- [x] 2.1 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 2.2 Design system module compiles: `./gradlew.bat :core:designsystem:compileDebugKotlin`
+- [x] 2.3 New preview(s) render without errors
 
 #### Manual
 
-- [ ] 2.4 New selected-cell preview shows a visible outline, light and dark
-- [ ] 2.5 Existing grid previews (Journal List, Habit Detail) are visually unchanged
+- [x] 2.4 New selected-cell preview shows a visible outline, light and dark
+- [x] 2.5 Existing grid previews (Journal List, Habit Detail) are visually unchanged
 
 ### Phase 3: Habit Detail — selected-day grid and detail panel
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 3.3 App compiles: `./gradlew.bat compileDebugKotlin`
-- [ ] 3.4 New/updated previews render without errors
+- [x] 3.1 Unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 3.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 3.3 App compiles: `./gradlew.bat compileDebugKotlin`
+- [x] 3.4 New/updated previews render without errors
 
 #### Manual
 
-- [ ] 3.5 Today selected by default, outlined, panel shows today's status
-- [ ] 3.6 Past logged day: outline + panel update, correct Edit/Delete-only split at 24h
-- [ ] 3.7 Past unlogged (non-addable) day: "not logged", no actions
-- [ ] 3.8 Yesterday unlogged: Add action works, reflects in panel + grid color immediately
-- [ ] 3.9 Future-dated cell tap does not change selection
-- [ ] 3.10 Delete keeps the day selected, panel updates to not-logged/addable
-- [ ] 3.11 Window chip switching doesn't crash or desync selection
+- [x] 3.5 Today selected by default, outlined, panel shows today's status
+- [x] 3.6 Past logged day: outline + panel update, correct Edit/Delete-only split at 24h
+- [x] 3.7 Past unlogged (non-addable) day: "not logged", no actions (verified via unit test;
+      no such day existed in the live seed data to tap live)
+- [x] 3.8 Yesterday unlogged: Add action works, reflects in panel + grid color immediately
+      (verified live using today instead of yesterday — same eligibleForEdit/addable code path)
+- [x] 3.9 Future-dated cell tap does not change selection (verified via unit test; no future
+      cell was reachable live within the current window's visible range)
+- [x] 3.10 Delete keeps the day selected, panel updates to not-logged/addable
+- [x] 3.11 Window chip switching doesn't crash or desync selection
 
 ### Phase 4: Main → List-screen navigation
 

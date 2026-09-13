@@ -5,6 +5,10 @@ import java.time.LocalDate
 
 sealed interface HabitDetailIntent {
 
+    data class DaySelected(
+        val date: LocalDate,
+    ) : HabitDetailIntent
+
     data class EditRowClicked(
         val date: LocalDate,
     ) : HabitDetailIntent

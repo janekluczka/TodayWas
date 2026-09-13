@@ -86,7 +86,26 @@ class HabitDetailViewModelTest {
     }
 
     @Test
-    fun `should include every logged date plus today and yesterday even if unlogged in rows`() =
+    fun `should default selectedDate and selectedDay to today when the screen loads`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+
+            // Act
+            runCurrent()
+            val state = viewModel.uiState.value
+
+            // Assert
+            assertEquals("Drink water", state.habitName)
+            assertEquals(today, state.selectedDate)
+            assertEquals(today, state.selectedDay.date)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should update selectedDate and selectedDay when DaySelected is dispatched`() =
         runTest {
             // Arrange
             val oldDate = today.minusDays(10)
@@ -105,22 +124,39 @@ class HabitDetailViewModelTest {
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
 
             // Act
+            viewModel.onIntent(HabitDetailIntent.DaySelected(oldDate))
             runCurrent()
-            val dates = viewModel.uiState.value.rows
-                .map { it.date }
 
             // Assert
-            assertTrue(dates.contains(oldDate))
-            assertTrue(dates.contains(today))
-            assertTrue(dates.contains(yesterday))
-            assertEquals(3, dates.size)
+            assertEquals(oldDate, viewModel.uiState.value.selectedDate)
+            assertEquals(1, viewModel.uiState.value.selectedDay.value)
+            assertTrue(viewModel.uiState.value.selectedDay.alreadyLogged)
             collectJob.cancel()
         }
 
     @Test
-    fun `should derive eligibleForEdit true and alreadyLogged false when a day is not yet logged`() =
+    fun `should ignore DaySelected for a date after today`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DaySelected(today.plusDays(1)))
+            runCurrent()
+
+            // Assert
+            assertEquals(today, viewModel.uiState.value.selectedDate)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should derive eligibleForEdit true and alreadyLogged false when today is not yet logged`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
@@ -129,13 +165,12 @@ class HabitDetailViewModelTest {
 
             // Act
             runCurrent()
-            val row = viewModel.uiState.value.rows
-                .find { it.date == today }
+            val day = viewModel.uiState.value.selectedDay
 
             // Assert
             assertEquals("Drink water", viewModel.uiState.value.habitName)
-            assertTrue(row?.eligibleForEdit == true)
-            assertFalse(row?.alreadyLogged == true)
+            assertTrue(day.eligibleForEdit)
+            assertFalse(day.alreadyLogged)
             collectJob.cancel()
         }
 
@@ -161,13 +196,12 @@ class HabitDetailViewModelTest {
 
             // Act
             runCurrent()
-            val row = viewModel.uiState.value.rows
-                .find { it.date == today }
+            val day = viewModel.uiState.value.selectedDay
 
             // Assert
-            assertEquals(1, row?.value)
-            assertTrue(row?.alreadyLogged == true)
-            assertTrue(row?.eligibleForEdit == true)
+            assertEquals(1, day.value)
+            assertTrue(day.alreadyLogged)
+            assertTrue(day.eligibleForEdit)
             collectJob.cancel()
         }
 
@@ -190,15 +224,69 @@ class HabitDetailViewModelTest {
             )
             val viewModel = viewModel(repository)
             val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
 
             // Act
+            viewModel.onIntent(HabitDetailIntent.DaySelected(yesterday))
             runCurrent()
-            val row = viewModel.uiState.value.rows
-                .find { it.date == yesterday }
+            val day = viewModel.uiState.value.selectedDay
 
             // Assert
-            assertTrue(row?.alreadyLogged == true)
-            assertFalse(row?.eligibleForEdit == true)
+            assertTrue(day.alreadyLogged)
+            assertFalse(day.eligibleForEdit)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should derive eligibleForEdit false and alreadyLogged false when an older unlogged day is selected`() =
+        runTest {
+            // Arrange
+            val oldDate = today.minusDays(10)
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DaySelected(oldDate))
+            runCurrent()
+            val day = viewModel.uiState.value.selectedDay
+
+            // Assert
+            assertFalse(day.alreadyLogged)
+            assertFalse(day.eligibleForEdit)
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `should keep selectedDate unchanged after deleting the selected day's check-in`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(habit),
+                initialCheckIns = listOf(
+                    HabitCheckIn(
+                        id = "1",
+                        habitId = "1",
+                        date = today,
+                        value = 1,
+                        createdAt = now.minus(Duration.ofHours(1)),
+                        updatedAt = now.minus(Duration.ofHours(1)),
+                    ),
+                ),
+            )
+            val viewModel = viewModel(repository)
+            val collectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.DeleteCheckInClicked(today))
+            runCurrent()
+
+            // Assert
+            assertEquals(1, repository.deleteCheckInCallCount)
+            assertEquals(today, repository.lastDeletedCheckInDate)
+            assertEquals(today, viewModel.uiState.value.selectedDate)
             collectJob.cancel()
         }
 

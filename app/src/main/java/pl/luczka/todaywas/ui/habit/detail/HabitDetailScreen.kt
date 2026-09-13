@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -39,7 +37,6 @@ import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsBottomSheet
-import pl.luczka.todaywas.core.designsystem.components.dividers.DsHorizontalDivider
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
@@ -161,16 +158,17 @@ private fun HabitDetailScreenContent(
                 cellSize = DETAIL_GRID_CELL_SIZE,
                 cellSpacing = DETAIL_GRID_CELL_SPACING,
                 monthGap = DETAIL_GRID_MONTH_GAP,
+                selectedDate = uiState.selectedDate,
+                onCellClick = { date -> onIntent(HabitDetailIntent.DaySelected(date)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = DsSpacing.space400),
             )
-            HabitDetailRowsList(
-                rows = uiState.rows,
+            DayDetailPanel(
+                day = uiState.selectedDay,
                 type = uiState.type,
                 onIntent = onIntent,
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
                     .padding(horizontal = DsSpacing.space600),
             )
@@ -193,38 +191,9 @@ private fun HabitDetailScreenContent(
 
     if (uiState.isDeleteHabitDialogVisible) {
         DeleteHabitDialog(
-            checkInCount = uiState.rows.count { it.alreadyLogged },
+            checkInCount = uiState.checkInCount,
             onIntent = onIntent,
         )
-    }
-}
-
-// The rows list is the habit's full check-in history (unbounded, grows over the habit's
-// lifetime) — a LazyColumn keeps it virtualized. The DsCard + DsHorizontalDivider pairing gives it
-// the same bordered/divided look as DsSectionedList without reusing that component directly:
-// DsSectionedList is explicitly built for small, non-lazy lists (e.g. Main's capped 5-item
-// sections) and would eagerly compose every row here as a habit's history grows.
-@Composable
-private fun HabitDetailRowsList(
-    rows: List<HabitDetailRowUiState>,
-    type: HabitTypeUiState,
-    onIntent: (HabitDetailIntent) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    DsCard(modifier = modifier) {
-        LazyColumn {
-            itemsIndexed(rows, key = { _, row -> row.date.toEpochDay() }) { index, row ->
-                HabitDetailRow(
-                    row = row,
-                    type = type,
-                    onIntent = onIntent,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(DsSpacing.space400),
-                )
-                if (index < rows.lastIndex) DsHorizontalDivider()
-            }
-        }
     }
 }
 
@@ -241,44 +210,59 @@ private fun valueLabel(
     else -> value.toString()
 }
 
+// Replaces the old full-history rows list: shows only the day currently selected in the grid
+// above, with whichever of Edit/Add (same icon, same sheet either way) and Delete apply. Neither
+// action shows for an unlogged day outside the addable window (today/yesterday) — see
+// HabitDetailMapper.toSelectedDayUiState for the eligibility rule.
 @Composable
-private fun HabitDetailRow(
-    row: HabitDetailRowUiState,
+private fun DayDetailPanel(
+    day: HabitDetailDayUiState,
     type: HabitTypeUiState,
     onIntent: (HabitDetailIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val formattedDate = row.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-    val dateLabel = if (row.date == LocalDate.now()) {
+    val formattedDate = day.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+    val dateLabel = if (day.date == LocalDate.now()) {
         stringResource(R.string.habit_detail_today_suffix_format, formattedDate)
     } else {
         formattedDate
     }
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
-    ) {
-        DsText(text = dateLabel, modifier = Modifier.weight(1f))
-        DsText(text = valueLabel(row.value, type))
-        if (row.eligibleForEdit) {
-            DsIconButton(onClick = { onIntent(HabitDetailIntent.EditRowClicked(row.date)) }) {
-                DsIcon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = stringResource(R.string.habit_detail_edit_action),
-                )
+    val statusLabel = if (day.alreadyLogged) {
+        valueLabel(day.value, type)
+    } else {
+        stringResource(R.string.habit_checkin_not_logged_label)
+    }
+    DsCard(modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(DsSpacing.space400),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                DsText(text = dateLabel)
+                DsText(text = statusLabel)
             }
-        }
-        if (row.alreadyLogged) {
-            DsIconButton(
-                onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(row.date)) },
-            ) {
-                DsIcon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = stringResource(
-                        R.string.habit_detail_delete_checkin_action,
-                    ),
-                )
+            if (day.eligibleForEdit) {
+                DsIconButton(onClick = { onIntent(HabitDetailIntent.EditRowClicked(day.date)) }) {
+                    DsIcon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = stringResource(R.string.habit_detail_edit_action),
+                    )
+                }
+            }
+            if (day.alreadyLogged) {
+                DsIconButton(
+                    onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(day.date)) },
+                ) {
+                    DsIcon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = stringResource(
+                            R.string.habit_detail_delete_checkin_action,
+                        ),
+                    )
+                }
             }
         }
     }
@@ -378,31 +362,20 @@ private fun ContributionWindowUiState.label(): String = when (this) {
 
 private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<HabitDetailUiState> {
     override val values = sequenceOf(
+        // Today selected, not yet logged but addable.
         HabitDetailUiState(
             isLoading = false,
             habitName = "Drink water",
             type = HabitTypeUiState.BINARY,
             range = 0..1,
-            rows = listOf(
-                HabitDetailRowUiState(
-                    date = LocalDate.now(),
-                    value = null,
-                    eligibleForEdit = true,
-                    alreadyLogged = false,
-                ),
-                HabitDetailRowUiState(
-                    date = LocalDate.now().minusDays(1),
-                    value = 1,
-                    eligibleForEdit = false,
-                    alreadyLogged = true,
-                ),
-                HabitDetailRowUiState(
-                    date = LocalDate.now().minusDays(5),
-                    value = 0,
-                    eligibleForEdit = false,
-                    alreadyLogged = true,
-                ),
+            selectedDate = LocalDate.now(),
+            selectedDay = HabitDetailDayUiState(
+                date = LocalDate.now(),
+                value = null,
+                eligibleForEdit = true,
+                alreadyLogged = false,
             ),
+            checkInCount = 2,
             contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(
                 ContributionWindowUiState.RollingTwelveMonths,
@@ -413,25 +386,20 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             saveError = false,
             saveErrorIsWindowExpired = false,
         ),
+        // A past day, logged and still within the edit window, edit sheet open.
         HabitDetailUiState(
             isLoading = false,
             habitName = "Mood",
             type = HabitTypeUiState.SCALE,
             range = 1..5,
-            rows = listOf(
-                HabitDetailRowUiState(
-                    date = LocalDate.now(),
-                    value = 4,
-                    eligibleForEdit = true,
-                    alreadyLogged = true,
-                ),
-                HabitDetailRowUiState(
-                    date = LocalDate.now().minusDays(1),
-                    value = 3,
-                    eligibleForEdit = true,
-                    alreadyLogged = true,
-                ),
+            selectedDate = LocalDate.now(),
+            selectedDay = HabitDetailDayUiState(
+                date = LocalDate.now(),
+                value = 4,
+                eligibleForEdit = true,
+                alreadyLogged = true,
             ),
+            checkInCount = 2,
             contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(
                 ContributionWindowUiState.RollingTwelveMonths,
@@ -444,25 +412,20 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             saveError = true,
             saveErrorIsWindowExpired = false,
         ),
+        // A past day, logged but past the edit window: delete-only, no edit action.
         HabitDetailUiState(
             isLoading = false,
             habitName = "Drink water",
             type = HabitTypeUiState.BINARY,
             range = 0..1,
-            rows = listOf(
-                HabitDetailRowUiState(
-                    date = LocalDate.now(),
-                    value = 1,
-                    eligibleForEdit = true,
-                    alreadyLogged = true,
-                ),
-                HabitDetailRowUiState(
-                    date = LocalDate.now().minusDays(1),
-                    value = 0,
-                    eligibleForEdit = false,
-                    alreadyLogged = true,
-                ),
+            selectedDate = LocalDate.now().minusDays(1),
+            selectedDay = HabitDetailDayUiState(
+                date = LocalDate.now().minusDays(1),
+                value = 0,
+                eligibleForEdit = false,
+                alreadyLogged = true,
             ),
+            checkInCount = 2,
             contributionGrid = ContributionGridUiState(cells = emptyList()),
             availableWindows = listOf(
                 ContributionWindowUiState.RollingTwelveMonths,
@@ -473,6 +436,30 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             saveError = false,
             saveErrorIsWindowExpired = false,
             isDeleteHabitDialogVisible = true,
+        ),
+        // An older, unlogged, non-addable day: view-only, no actions.
+        HabitDetailUiState(
+            isLoading = false,
+            habitName = "Drink water",
+            type = HabitTypeUiState.BINARY,
+            range = 0..1,
+            selectedDate = LocalDate.now().minusDays(5),
+            selectedDay = HabitDetailDayUiState(
+                date = LocalDate.now().minusDays(5),
+                value = null,
+                eligibleForEdit = false,
+                alreadyLogged = false,
+            ),
+            checkInCount = 2,
+            contributionGrid = ContributionGridUiState(cells = emptyList()),
+            availableWindows = listOf(
+                ContributionWindowUiState.RollingTwelveMonths,
+                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
+            ),
+            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
+            isSaving = false,
+            saveError = false,
+            saveErrorIsWindowExpired = false,
         ),
     )
 }

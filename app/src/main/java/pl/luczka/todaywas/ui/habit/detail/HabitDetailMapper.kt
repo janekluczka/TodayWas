@@ -6,24 +6,26 @@ import pl.luczka.todaywas.domain.model.HabitType
 import java.time.Instant
 import java.time.LocalDate
 
-fun List<HabitCheckIn>.toHabitDetailRows(
+// Today/yesterday are addable even unlogged (existing == null but selectedDate is one of
+// freshLoggableDates) — every other unlogged date is view-only, no action. A logged date is
+// editable only within the 24h edit window; deletion is always allowed regardless of age, so it
+// doesn't gate on eligibleForEdit at all (see alreadyLogged on the caller side).
+fun List<HabitCheckIn>.toSelectedDayUiState(
+    selectedDate: LocalDate,
     freshLoggableDates: List<LocalDate>,
     isEditable: (Instant) -> Boolean,
-): List<HabitDetailRowUiState> {
-    val existingByDate = associateBy { it.date }
-    // Today/yesterday always show, even unlogged, so they stay reachable to add a value; every
-    // other date only appears once it actually has a check-in — this is the full history, not a
-    // fixed backfill window.
-    val dates = (existingByDate.keys + freshLoggableDates).sortedDescending()
-    return dates.map { date ->
-        val existing = existingByDate[date]
-        HabitDetailRowUiState(
-            date = date,
-            value = existing?.value,
-            eligibleForEdit = existing == null || isEditable(existing.createdAt),
-            alreadyLogged = existing != null,
-        )
-    }
+): HabitDetailDayUiState {
+    val existing = find { it.date == selectedDate }
+    return HabitDetailDayUiState(
+        date = selectedDate,
+        value = existing?.value,
+        eligibleForEdit = if (existing != null) {
+            isEditable(existing.createdAt)
+        } else {
+            selectedDate in freshLoggableDates
+        },
+        alreadyLogged = existing != null,
+    )
 }
 
 fun Habit.detailRange(): IntRange = if (type == HabitType.BINARY) {
