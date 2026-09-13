@@ -4,11 +4,6 @@ import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
-// Still used by Journal Entry Detail's "help me refine" (JournalEntryDetailViewModel/Screen),
-// which keeps its own client-side regeneration cap for now. Add Journal Entry no longer uses this
-// -- see remainingToday below, which reflects the real server-enforced daily quota instead.
-const val MAX_REGENERATIONS = 3
-
 @Immutable
 data class HelpMeStartUiState(
     val isVisible: Boolean = false,

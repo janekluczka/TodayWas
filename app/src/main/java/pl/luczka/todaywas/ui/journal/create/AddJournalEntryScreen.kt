@@ -45,6 +45,8 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsPlainTextField
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineBottomSheet
+import pl.luczka.todaywas.ui.journal.edit.MAX_REFINE_TEXT_LENGTH
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
@@ -147,6 +149,15 @@ private fun AddJournalEntryScreenContent(
                             .align(Alignment.BottomStart)
                             .fillMaxWidth(),
                     )
+                } else if (uiState.authState is AuthStateUi.SignedIn &&
+                    uiState.text.length <= MAX_REFINE_TEXT_LENGTH
+                ) {
+                    DsAssistChip(
+                        text = stringResource(R.string.journal_help_me_refine_cta),
+                        leadingIcon = Icons.Filled.AutoAwesome,
+                        onClick = { onIntent(AddJournalEntryIntent.HelpMeRefineClicked) },
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                    )
                 }
             }
         }
@@ -157,13 +168,29 @@ private fun AddJournalEntryScreenContent(
             uiState = uiState.helpMeStart,
             onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeStartDismissed) },
             onSignInClicked = { onIntent(AddJournalEntryIntent.SignInClicked) },
-            onToneSelected = { onIntent(AddJournalEntryIntent.ToneSelected(it)) },
-            onThoughtsChanged = { onIntent(AddJournalEntryIntent.ThoughtsChanged(it)) },
+            onToneSelected = { onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(it)) },
+            onThoughtsChanged = {
+                onIntent(AddJournalEntryIntent.HelpMeStartThoughtsChanged(it))
+            },
             onGenerateClicked = { onIntent(AddJournalEntryIntent.GenerateClicked) },
             onRegenerateClicked = { onIntent(AddJournalEntryIntent.RegenerateClicked) },
             onUseGeneratedTextClicked = {
                 onIntent(AddJournalEntryIntent.UseGeneratedTextClicked)
             },
+        )
+    }
+
+    if (uiState.helpMeRefine.isVisible) {
+        HelpMeRefineBottomSheet(
+            uiState = uiState.helpMeRefine,
+            onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeRefineDismissed) },
+            onToneSelected = { onIntent(AddJournalEntryIntent.HelpMeRefineToneSelected(it)) },
+            onThoughtsChanged = {
+                onIntent(AddJournalEntryIntent.HelpMeRefineThoughtsChanged(it))
+            },
+            onRefineClicked = { onIntent(AddJournalEntryIntent.RefineClicked) },
+            onRegenerateClicked = { onIntent(AddJournalEntryIntent.RegenerateRefineClicked) },
+            onUseRefinedTextClicked = { onIntent(AddJournalEntryIntent.UseRefinedTextClicked) },
         )
     }
 }

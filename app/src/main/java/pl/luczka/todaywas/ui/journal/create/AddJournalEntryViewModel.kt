@@ -17,7 +17,11 @@ import pl.luczka.todaywas.domain.model.AiPromptResult
 import pl.luczka.todaywas.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.domain.usecase.RequestJournalStarterPromptUseCase
+import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineStep
+import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineUiState
+import pl.luczka.todaywas.ui.journal.edit.MAX_REFINE_TEXT_LENGTH
 import pl.luczka.todaywas.ui.mapper.toDomain
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
@@ -33,6 +37,7 @@ class AddJournalEntryViewModel @Inject constructor(
     observeAuthState: ObserveAuthStateUseCase,
     private val addJournalEntry: AddJournalEntryUseCase,
     private val requestJournalStarterPrompt: RequestJournalStarterPromptUseCase,
+    private val requestJournalRefinementPrompt: RequestJournalRefinementPromptUseCase,
     random: Random,
 ) : ViewModel() {
 
@@ -59,6 +64,9 @@ class AddJournalEntryViewModel @Inject constructor(
     // Tracks the in-flight generate/regenerate call so a stale response can never land after the
     // dialog session it belongs to has already been reset (dismissed, reopened, or accepted).
     private var generateJob: Job? = null
+
+    // Same purpose as generateJob, for the independent refine sheet.
+    private var refineJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -93,11 +101,26 @@ class AddJournalEntryViewModel @Inject constructor(
             AddJournalEntryIntent.HelpMeStartClicked -> onHelpMeStartClicked()
             AddJournalEntryIntent.HelpMeStartDismissed -> onHelpMeStartDismissed()
             AddJournalEntryIntent.SignInClicked -> onSignInClicked()
-            is AddJournalEntryIntent.ToneSelected -> onToneSelected(intent.tone)
-            is AddJournalEntryIntent.ThoughtsChanged -> onThoughtsChanged(intent.thoughts)
+            is AddJournalEntryIntent.HelpMeStartToneSelected -> onHelpMeStartToneSelected(
+                intent.tone,
+            )
+            is AddJournalEntryIntent.HelpMeStartThoughtsChanged -> onHelpMeStartThoughtsChanged(
+                intent.thoughts,
+            )
             AddJournalEntryIntent.GenerateClicked -> onGenerate()
             AddJournalEntryIntent.RegenerateClicked -> onGenerate()
             AddJournalEntryIntent.UseGeneratedTextClicked -> onUseGeneratedTextClicked()
+            AddJournalEntryIntent.HelpMeRefineClicked -> onHelpMeRefineClicked()
+            AddJournalEntryIntent.HelpMeRefineDismissed -> onHelpMeRefineDismissed()
+            is AddJournalEntryIntent.HelpMeRefineToneSelected -> onHelpMeRefineToneSelected(
+                intent.tone,
+            )
+            is AddJournalEntryIntent.HelpMeRefineThoughtsChanged -> onHelpMeRefineThoughtsChanged(
+                intent.thoughts,
+            )
+            AddJournalEntryIntent.RefineClicked -> onRefine()
+            AddJournalEntryIntent.RegenerateRefineClicked -> onRefine()
+            AddJournalEntryIntent.UseRefinedTextClicked -> onUseRefinedTextClicked()
         }
     }
 
@@ -171,11 +194,11 @@ class AddJournalEntryViewModel @Inject constructor(
         eventChannel.trySend(AddJournalEntryUiEvent.NavigateToSignIn)
     }
 
-    private fun onToneSelected(tone: JournalPromptToneUiState) {
+    private fun onHelpMeStartToneSelected(tone: JournalPromptToneUiState) {
         _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(selectedTone = tone)) }
     }
 
-    private fun onThoughtsChanged(thoughts: String) {
+    private fun onHelpMeStartThoughtsChanged(thoughts: String) {
         _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(thoughts = thoughts)) }
     }
 
@@ -234,6 +257,109 @@ class AddJournalEntryViewModel @Inject constructor(
             copy(
                 step = HelpMeStartStep.PREVIEW,
                 generatedText = prompt.text,
+                isGenerating = false,
+                error = null,
+                remainingToday = prompt.remainingToday,
+            )
+        },
+        onFailure = { throwable ->
+            val error =
+                (throwable as? AiAssistException)?.error?.toUiState()
+                    ?: AiAssistErrorUiState.UNKNOWN
+            copy(
+                isGenerating = false,
+                error = error,
+                remainingToday = if (error == AiAssistErrorUiState.DAILY_LIMIT_REACHED) {
+                    0
+                } else {
+                    remainingToday
+                },
+            )
+        },
+    )
+
+    private fun onHelpMeRefineClicked() {
+        val state = _uiState.value
+        if (state.authState !is AuthStateUi.SignedIn) return
+        if (state.text.isBlank() || state.text.length > MAX_REFINE_TEXT_LENGTH) return
+        refineJob?.cancel()
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = true),
+            )
+        }
+    }
+
+    private fun onHelpMeRefineDismissed() {
+        refineJob?.cancel()
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false),
+            )
+        }
+    }
+
+    private fun onHelpMeRefineToneSelected(tone: JournalPromptToneUiState) {
+        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(selectedTone = tone)) }
+    }
+
+    private fun onHelpMeRefineThoughtsChanged(thoughts: String) {
+        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(thoughts = thoughts)) }
+    }
+
+    private fun onRefine() {
+        val helpMeRefine = _uiState.value.helpMeRefine
+        val tone = helpMeRefine.selectedTone ?: return
+        if (helpMeRefine.isGenerating) return
+        if ((helpMeRefine.remainingToday ?: 1) <= 0) return
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.copy(isGenerating = true, error = null),
+            )
+        }
+        refineJob = viewModelScope.launch {
+            val result = requestJournalRefinementPrompt(
+                _uiState.value.text,
+                tone.toDomain(),
+                helpMeRefine.thoughts.ifBlank { null },
+            )
+            _uiState.update { current ->
+                current.copy(helpMeRefine = current.helpMeRefine.applyResult(result))
+            }
+        }
+    }
+
+    private fun onUseRefinedTextClicked() {
+        val refinedText = _uiState.value.helpMeRefine.refinedText ?: return
+        refineJob?.cancel()
+        _uiState.update {
+            it.copy(
+                text = refinedText,
+                helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false),
+            )
+        }
+    }
+
+    // Preserves remainingToday, mirroring HelpMeStartUiState's resetForNewSession.
+    private fun HelpMeRefineUiState.resetForNewSession(
+        isVisible: Boolean,
+    ): HelpMeRefineUiState = copy(
+        isVisible = isVisible,
+        step = HelpMeRefineStep.INPUT,
+        selectedTone = null,
+        thoughts = "",
+        refinedText = null,
+        isGenerating = false,
+        error = null,
+    )
+
+    private fun HelpMeRefineUiState.applyResult(
+        result: Result<AiPromptResult>,
+    ): HelpMeRefineUiState = result.fold(
+        onSuccess = { prompt ->
+            copy(
+                step = HelpMeRefineStep.PREVIEW,
+                refinedText = prompt.text,
                 isGenerating = false,
                 error = null,
                 remainingToday = prompt.remainingToday,

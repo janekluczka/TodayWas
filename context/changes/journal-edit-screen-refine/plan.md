@@ -734,10 +734,10 @@ way around, doesn't break either side mid-rollout.
 
 #### Automated
 
-- [x] 4.1 New EditJournalEntryViewModelTest passes: `./gradlew.bat testDebugUnitTest`
-- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [x] 4.3 App compiles: `./gradlew.bat compileDebugKotlin`
-- [x] 4.4 New previews render without errors
+- [x] 4.1 New EditJournalEntryViewModelTest passes: `./gradlew.bat testDebugUnitTest` — fc098b1
+- [x] 4.2 Lint passes: `./gradlew.bat ktlintCheck` — fc098b1
+- [x] 4.3 App compiles: `./gradlew.bat compileDebugKotlin` — fc098b1
+- [x] 4.4 New previews render without errors — fc098b1
 
 #### Manual
 
@@ -747,15 +747,15 @@ way around, doesn't break either side mid-rollout.
 
 #### Automated
 
-- [ ] 5.1 All unit tests pass: `./gradlew.bat testDebugUnitTest`
-- [ ] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
-- [ ] 5.3 Debug APK builds: `./gradlew.bat assembleDebug`
+- [x] 5.1 All unit tests pass: `./gradlew.bat testDebugUnitTest`
+- [x] 5.2 Lint passes: `./gradlew.bat ktlintCheck`
+- [x] 5.3 Debug APK builds: `./gradlew.bat assembleDebug`
 
 #### Manual
 
-- [ ] 5.4 Add Journal Entry contextual start/refine switch verified
-- [ ] 5.5 Detail → Edit navigation, pinned date, pre-filled text verified
-- [ ] 5.6 Edit's contextual start/refine switch verified
-- [ ] 5.7 Edit → Save → Detail shows fresh text immediately (staleness fix verified)
-- [ ] 5.8 Discard-confirmation dialog flow verified
-- [ ] 5.9 Edit icon absent past 24h; Delete works regardless of age
+- [x] 5.4 Add Journal Entry contextual start/refine switch verified
+- [x] 5.5 Detail → Edit navigation, pinned date, pre-filled text verified
+- [x] 5.6 Edit's contextual start/refine switch verified (both directions: typing shows refine, clearing shows start)
+- [x] 5.7 Edit → Save → Detail shows fresh text immediately (staleness fix verified)
+- [x] 5.8 Discard-confirmation dialog flow verified (in-app back arrow, system back gesture, and Keep editing/Discard)
+- [x] 5.9 Edit icon absent past 24h; Delete dialog works regardless of age (actual deletion covered by unit tests; did not delete real seed data during manual testing)
