@@ -3,7 +3,6 @@ package pl.luczka.todaywas.ui.mapper
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
@@ -13,12 +12,10 @@ import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 
 class HabitMapperTest {
 
     private val today = LocalDate.of(2026, 6, 15)
-    private val now = today.atStartOfDay(ZoneOffset.UTC).toInstant()
 
     private fun habit(
         id: String = "1",
@@ -50,7 +47,7 @@ class HabitMapperTest {
     )
 
     private fun HabitCheckInBoard.sorted(sort: HabitSortUiState) =
-        toSortedHabitUiStates(today, now, sort)
+        toSortedHabitUiStates(today, sort)
 
     @Test
     fun `should return NotLogged when no check-in exists for today`() {
@@ -129,10 +126,7 @@ class HabitMapperTest {
             checkIn(habitId = "1", date = today, value = 5),
         )
         val board = HabitCheckInBoard(habits = listOf(habit()), checkIns = checkIns)
-        val expectedLevel = HabitContributionCalculator
-            .compute(checkIns, ContributionWindow.RollingTwelveMonths, now)
-            .days
-            .getValue(today)
+        val expectedLevel = HabitContributionCalculator.levelForDate(checkIns, today)!!
 
         // Act
         val level = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayLevel

@@ -36,7 +36,7 @@ class HabitListViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(observeHabitCheckInBoard(), selectedSort) { board, sort ->
-                board.toSortedHabitUiStates(LocalDate.now(clock), clock.instant(), sort) to sort
+                board.toSortedHabitUiStates(LocalDate.now(clock), sort) to sort
             }.collect { (sorted, sort) ->
                 _uiState.update {
                     it.copy(isLoading = false, habits = sorted, selectedSort = sort)

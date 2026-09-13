@@ -1,7 +1,6 @@
 package pl.luczka.todaywas.ui.mapper
 
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
@@ -11,14 +10,12 @@ import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
-import java.time.Instant
 import java.time.LocalDate
 
 // Sorts on domain data (Habit + HabitCheckIn) before mapping to HabitUiState, so the UI model
 // never needs to carry createdAt/lastCheckInDate purely for ordering purposes.
 fun HabitCheckInBoard.toSortedHabitUiStates(
     today: LocalDate,
-    now: Instant,
     sort: HabitSortUiState,
 ): List<HabitUiState> {
     val sortedHabits = when (sort) {
@@ -38,8 +35,7 @@ fun HabitCheckInBoard.toSortedHabitUiStates(
         val habitCheckIns = checkIns.filter { it.habitId == habit.id }
         val todayCheckIn = habitCheckIns.find { it.date == today }
         val todayLevel = HabitContributionCalculator
-            .compute(habitCheckIns, ContributionWindow.RollingTwelveMonths, now)
-            .days[today]
+            .levelForDate(habitCheckIns, today)
             ?.toUiState()
             ?: DsContributionLevel.NONE
         habit.toUiState(todayCheckIn, todayLevel)

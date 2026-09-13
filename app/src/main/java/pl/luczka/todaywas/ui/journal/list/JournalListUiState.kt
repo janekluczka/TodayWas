@@ -11,8 +11,7 @@ data class JournalListUiState(
     val isLoading: Boolean = true,
     val entries: List<JournalEntryUiState> = emptyList(),
     val selectedSort: JournalSortUiState = JournalSortUiState.NEWEST_FIRST,
-    // The full multi-week, window-selectable grid — Main shows the same underlying cell data as
-    // a single scrollable row instead (see MainViewModel.journalContributionCells).
+    // The full multi-week, window-selectable grid.
     val contributionGrid: ContributionGridUiState = ContributionGridUiState(cells = emptyList()),
     val availableWindows: List<ContributionWindowUiState> =
         listOf(ContributionWindowUiState.RollingTwelveMonths),
