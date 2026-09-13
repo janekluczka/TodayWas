@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const OPENROUTER_MODEL = "openai/gpt-oss-20b:free";
+const OPENROUTER_MODEL = "openai/gpt-oss-20b";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // Shared by "help me start" and "help me refine" -- one counter per user per day, regardless of
