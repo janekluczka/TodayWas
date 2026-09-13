@@ -29,6 +29,9 @@ class FakeAiAssistRepository : AiAssistRepository {
     var lastRefineTone: JournalPromptTone? = null
         private set
 
+    var lastRefineThoughts: String? = null
+        private set
+
     override suspend fun generateJournalStarterPrompt(
         tone: JournalPromptTone,
         thoughts: String?,
@@ -42,10 +45,12 @@ class FakeAiAssistRepository : AiAssistRepository {
     override suspend fun refineJournalEntry(
         text: String,
         tone: JournalPromptTone,
+        thoughts: String?,
     ): Result<AiPromptResult> {
         refineCallCount++
         lastRefineText = text
         lastRefineTone = tone
+        lastRefineThoughts = thoughts
         return refineResult
     }
 }

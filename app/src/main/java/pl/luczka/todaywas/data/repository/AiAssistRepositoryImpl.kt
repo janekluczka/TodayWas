@@ -45,7 +45,10 @@ class AiAssistRepositoryImpl @Inject constructor(
     override suspend fun refineJournalEntry(
         text: String,
         tone: JournalPromptTone,
-    ): Result<AiPromptResult> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, text = text))
+        thoughts: String?,
+    ): Result<AiPromptResult> = invokeAiProxy(
+        AiPromptRequestDto(tone = tone.level, text = text, thoughts = thoughts),
+    )
 
     private suspend fun invokeAiProxy(request: AiPromptRequestDto): Result<AiPromptResult> = try {
         val response = supabase.functions.invoke(function = FUNCTION_NAME) {

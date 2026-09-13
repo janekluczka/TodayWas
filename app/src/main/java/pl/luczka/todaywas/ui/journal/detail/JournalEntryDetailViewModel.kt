@@ -216,7 +216,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
             )
         }
         refineJob = viewModelScope.launch {
-            val result = requestJournalRefinementPrompt(state.editedText, tone.toDomain())
+            val result = requestJournalRefinementPrompt(state.editedText, tone.toDomain(), null)
             // The 24h window can close mid-request (the call takes 10-20s); a result that lands
             // after expiry must be discarded and treated exactly like a Save that lost the race.
             if (!isEditable(entry.createdAt)) {

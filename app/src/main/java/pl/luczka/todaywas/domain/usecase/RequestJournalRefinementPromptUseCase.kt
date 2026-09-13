@@ -12,5 +12,6 @@ class RequestJournalRefinementPromptUseCase @Inject constructor(
     suspend operator fun invoke(
         text: String,
         tone: JournalPromptTone,
-    ): Result<AiPromptResult> = repository.refineJournalEntry(text, tone)
+        thoughts: String?,
+    ): Result<AiPromptResult> = repository.refineJournalEntry(text, tone, thoughts)
 }
