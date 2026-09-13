@@ -16,10 +16,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import pl.luczka.todaywas.core.designsystem.components.cards.DsCard
+import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.components.dividers.DsHorizontalDivider
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
@@ -27,6 +30,11 @@ import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 private const val SKELETON_ROW_COUNT = 3
+
+// Matches M3's default Card shape (MaterialTheme.shapes.medium, unmodified by DsTheme) so the
+// list's outer silhouette is pixel-identical to when this was one uniform DsCard.
+private val OUTER_CORNER_RADIUS = 12.dp
+private val INNER_CORNER_RADIUS = 2.dp
 
 // A titled section: up to a handful of rows in one bordered card, divided, with an optional
 // trailing "view all" row. Built for the small, caller-capped lists this ships with today (Main's
@@ -49,6 +57,11 @@ fun <T> DsSectionedList(
     onViewAllClicked: (() -> Unit)? = null,
     viewAllLabel: String? = null,
 ) {
+    // Both must be set for a trailing row to actually render (see the ViewAllRow call below) — a
+    // caller passing only one is treated as "no view-all" everywhere, including corner/divider
+    // placement, so a half-configured caller can't produce a dangling trailing divider.
+    val hasViewAll = onViewAllClicked != null && viewAllLabel != null
+
     Column(modifier = modifier) {
         if (title != null) {
             DsText(
@@ -57,21 +70,72 @@ fun <T> DsSectionedList(
                 modifier = Modifier.padding(bottom = DsSpacing.space200),
             )
         }
-        DsCard {
+        Column {
             when {
                 isLoading -> repeat(SKELETON_ROW_COUNT) { index ->
-                    SkeletonRow()
-                    if (index < SKELETON_ROW_COUNT - 1) DsHorizontalDivider()
+                    val shape = itemShape(
+                        isFirst = index == 0,
+                        isLast = index == SKELETON_ROW_COUNT - 1,
+                    )
+                    SectionItem(shape = shape) { SkeletonRow() }
+                    if (index <
+                        SKELETON_ROW_COUNT - 1
+                    ) {
+                        DsHorizontalDivider(color = Color.Transparent)
+                    }
                 }
                 else -> items.forEachIndexed { index, item ->
-                    itemContent(item)
-                    if (index < items.lastIndex || onViewAllClicked != null) DsHorizontalDivider()
+                    val isLast = index == items.lastIndex && !hasViewAll
+                    SectionItem(shape = itemShape(isFirst = index == 0, isLast = isLast)) {
+                        itemContent(item)
+                    }
+                    if (index < items.lastIndex ||
+                        hasViewAll
+                    ) {
+                        DsHorizontalDivider(color = Color.Transparent)
+                    }
                 }
             }
             if (!isLoading && onViewAllClicked != null && viewAllLabel != null) {
-                ViewAllRow(label = viewAllLabel, onClick = onViewAllClicked)
+                SectionItem(shape = itemShape(isFirst = false, isLast = true)) {
+                    ViewAllRow(label = viewAllLabel, onClick = onViewAllClicked)
+                }
             }
         }
+    }
+}
+
+// The list's outer silhouette (first item's top corners, last visual element's bottom corners)
+// keeps the old outer-Card radius; every edge adjacent to a (transparent) divider gets a small
+// radius instead, so items read as separated, rounded pieces rather than one flat block.
+private fun itemShape(
+    isFirst: Boolean,
+    isLast: Boolean,
+): Shape {
+    val top = if (isFirst) OUTER_CORNER_RADIUS else INNER_CORNER_RADIUS
+    val bottom = if (isLast) OUTER_CORNER_RADIUS else INNER_CORNER_RADIUS
+    return RoundedCornerShape(
+        topStart = top,
+        topEnd = top,
+        bottomStart = bottom,
+        bottomEnd = bottom,
+    )
+}
+
+// Each item now paints its own background instead of sharing one outer DsCard, so the (now
+// transparent) divider between items reveals the screen behind the list instead of more card.
+@Composable
+private fun SectionItem(
+    shape: Shape,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        content()
     }
 }
 
@@ -137,6 +201,7 @@ private fun PreviewRow(text: String) {
 private enum class DsSectionedListPreviewState {
     POPULATED_WITH_VIEW_ALL,
     POPULATED_NO_VIEW_ALL,
+    SINGLE_ITEM,
     LOADING,
 }
 
@@ -163,6 +228,12 @@ private fun DsSectionedListPreview(
             DsSectionedListPreviewState.POPULATED_NO_VIEW_ALL -> DsSectionedList(
                 title = "Habits",
                 items = listOf("Drink water", "Mood"),
+                isLoading = false,
+                itemContent = { PreviewRow(it) },
+            )
+            DsSectionedListPreviewState.SINGLE_ITEM -> DsSectionedList(
+                title = "Habits",
+                items = listOf("Drink water"),
                 isLoading = false,
                 itemContent = { PreviewRow(it) },
             )
