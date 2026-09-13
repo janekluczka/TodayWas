@@ -1,10 +1,10 @@
 ---
 change_id: journal-edit-screen-refine
 title: Replace journal edit bottom sheet with a dedicated edit screen, unify AI assist
-status: impl_reviewed
+status: archived
 created: 2026-09-13
 updated: 2026-09-13
-archived_at: null
+archived_at: 2026-09-13T19:34:49Z
 ---
 
 ## Notes
