@@ -34,7 +34,7 @@ private const val SKELETON_ROW_COUNT = 3
 // Matches M3's default Card shape (MaterialTheme.shapes.medium, unmodified by DsTheme) so the
 // list's outer silhouette is pixel-identical to when this was one uniform DsCard.
 private val OUTER_CORNER_RADIUS = 12.dp
-private val INNER_CORNER_RADIUS = 2.dp
+private val INNER_CORNER_RADIUS = 4.dp
 
 // A titled section: up to a handful of rows in one bordered card, divided, with an optional
 // trailing "view all" row. Built for the small, caller-capped lists this ships with today (Main's

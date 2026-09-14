@@ -17,7 +17,6 @@ import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.JournalSortUiState
 import java.time.Clock
 import java.time.Instant
@@ -118,35 +117,16 @@ class JournalListViewModelTest {
         }
 
     @Test
-    fun `should default to RollingTwelveMonths window with a 7-cell grid`() =
+    fun `should populate a non-empty contributionGrid`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel(listOf(entry("1", LocalDate.now())))
 
             // Assert
-            assertEquals(
-                ContributionWindowUiState.RollingTwelveMonths,
-                viewModel.uiState.value.selectedWindow,
-            )
             assertTrue(
                 viewModel.uiState.value.contributionGrid.cells
                     .isNotEmpty(),
             )
-        }
-
-    @Test
-    fun `should update selectedWindow when WindowSelected is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel(listOf(entry("1", LocalDate.now())))
-            val newWindow = ContributionWindowUiState.CalendarYear(LocalDate.now().year)
-
-            // Act
-            viewModel.onIntent(JournalListIntent.WindowSelected(newWindow))
-            runCurrent()
-
-            // Assert
-            assertEquals(newWindow, viewModel.uiState.value.selectedWindow)
         }
 
     @Test

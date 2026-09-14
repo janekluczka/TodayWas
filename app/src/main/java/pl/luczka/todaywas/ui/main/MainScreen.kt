@@ -222,60 +222,70 @@ private fun AccountBottomSheet(
                 modifier = Modifier.padding(DsSpacing.space600),
             )
             is AuthStateUi.SignedIn -> {
-                AccountSectionList(title = stringResource(R.string.account_section_title)) {
-                    DsListItem(
-                        text = authState.email
-                            ?: stringResource(R.string.preferences_signed_in_no_email),
-                        leadingIcon = Icons.Default.Person,
-                    )
-                }
-                AccountSectionList {
-                    DsListItem(
-                        text = stringResource(R.string.preferences_sign_out_cta),
-                        leadingIcon = Icons.AutoMirrored.Filled.Logout,
-                        contentColor = MaterialTheme.colorScheme.error,
-                        trailingContent = if (uiState.isSigningOut) {
-                            { DsLoadingIndicator(modifier = Modifier.size(20.dp)) }
-                        } else {
-                            null
+                AccountSectionList(
+                    title = stringResource(R.string.account_section_title),
+                    bottomPadding = DsSpacing.space600,
+                    rows = listOf(
+                        {
+                            DsListItem(
+                                text = authState.email
+                                    ?: stringResource(R.string.preferences_signed_in_no_email),
+                                leadingIcon = Icons.Default.Person,
+                            )
                         },
-                        onClick = if (uiState.isSigningOut) {
-                            null
-                        } else {
-                            { onIntent(MainIntent.SignOutClicked) }
+                        {
+                            DsListItem(
+                                text = stringResource(R.string.preferences_sign_out_cta),
+                                leadingIcon = Icons.AutoMirrored.Filled.Logout,
+                                trailingContent = if (uiState.isSigningOut) {
+                                    { DsLoadingIndicator(modifier = Modifier.size(20.dp)) }
+                                } else {
+                                    null
+                                },
+                                onClick = if (uiState.isSigningOut) {
+                                    null
+                                } else {
+                                    { onIntent(MainIntent.SignOutClicked) }
+                                },
+                            )
                         },
-                    )
-                }
+                    ),
+                )
             }
             AuthStateUi.SignedOut -> {
                 AccountSectionList(
                     title = stringResource(R.string.account_section_title),
                     bottomPadding = DsSpacing.space600,
-                ) {
-                    DsListItem(
-                        text = stringResource(R.string.onboarding_account_signin_signup_cta),
-                        leadingIcon = Icons.Default.Person,
-                        onClick = { onIntent(MainIntent.SignInSignUpPromptClicked) },
-                    )
-                }
+                    rows = listOf(
+                        {
+                            DsListItem(
+                                text = stringResource(
+                                    R.string.onboarding_account_signin_signup_cta,
+                                ),
+                                leadingIcon = Icons.Default.Person,
+                                onClick = { onIntent(MainIntent.SignInSignUpPromptClicked) },
+                            )
+                        },
+                    ),
+                )
             }
         }
     }
 }
 
-// A single-row DsSectionedList — every account-sheet section today (identity/CTA, sign out) is
-// exactly one row, but wrapping in DsSectionedList keeps the card/divider treatment identical to
-// a future section that grows past one row (e.g. Settings, once there's a real item for it).
+// One DsSectionedList per state (signed-in: identity + sign out together; signed-out: the
+// sign-in/sign-up prompt alone) so every row in the sheet shares a single card/divider treatment
+// instead of each row getting its own separate card.
 @Composable
 private fun AccountSectionList(
+    rows: List<@Composable () -> Unit>,
     title: String? = null,
     bottomPadding: Dp = DsSpacing.space200,
-    row: @Composable () -> Unit,
 ) {
     DsSectionedList(
-        items = listOf(Unit),
+        items = rows,
         isLoading = false,
-        itemContent = { row() },
+        itemContent = { it() },
         title = title,
         modifier = Modifier.padding(
             start = DsSpacing.space600,
@@ -381,8 +391,10 @@ private fun JournalSection(
             onArrowClicked = { onIntent(MainIntent.JournalViewAllClicked) },
             arrowContentDescription = stringResource(R.string.main_journal_view_all_cta),
             modifier = Modifier.padding(
-                horizontal = DsSpacing.space600,
-                vertical = DsSpacing.space200,
+                start = DsSpacing.space600,
+                top = DsSpacing.space200,
+                end = DsSpacing.space200,
+                bottom = DsSpacing.space200,
             ),
         )
         when {
@@ -434,8 +446,10 @@ private fun HabitSection(
             onArrowClicked = { onIntent(MainIntent.HabitViewAllClicked) },
             arrowContentDescription = stringResource(R.string.main_habit_view_all_cta),
             modifier = Modifier.padding(
-                horizontal = DsSpacing.space600,
-                vertical = DsSpacing.space200,
+                start = DsSpacing.space600,
+                top = DsSpacing.space200,
+                end = DsSpacing.space200,
+                bottom = DsSpacing.space200,
             ),
         )
         when {

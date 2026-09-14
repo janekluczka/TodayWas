@@ -6,20 +6,11 @@ data class ContributionGridUiState(
     val cells: List<DsContributionCellUiState>,
 )
 
-sealed interface ContributionWindowUiState {
-
-    data object RollingTwelveMonths : ContributionWindowUiState
-
-    data class CalendarYear(
-        val year: Int,
-    ) : ContributionWindowUiState
-}
-
-// Two supported grid layouts, so a future user-facing preference can switch between them without
-// touching the grid component itself (it only ever renders a precomputed cell list, agnostic to
-// which layout produced it). CONTINUOUS is the default — plain GitHub-style continuous weeks, no
-// month awareness. BY_MONTH gives each month its own column block with truncated boundary columns
-// (see `toByMonthCells`) but isn't wired into any screen yet.
+// Two supported grid layouts, agnostic to the grid component itself (it only ever renders a
+// precomputed cell list). BY_MONTH gives each month its own column block with truncated boundary
+// columns (see `toByMonthCells`) so cells line up with actual calendar days — the only layout used
+// by any screen today. CONTINUOUS (plain GitHub-style continuous weeks, no month awareness) is
+// kept for the calculator/mapper tests that exercise both algorithms directly.
 enum class ContributionGridType {
     CONTINUOUS,
     BY_MONTH,

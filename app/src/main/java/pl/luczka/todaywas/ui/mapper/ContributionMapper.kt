@@ -4,18 +4,16 @@ import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributi
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.domain.model.ContributionGrid
 import pl.luczka.todaywas.domain.model.ContributionLevel
-import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.dateRange
 import pl.luczka.todaywas.ui.model.ContributionGridType
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 
 fun ContributionGrid.toUiState(
     now: Instant,
-    type: ContributionGridType = ContributionGridType.CONTINUOUS,
+    type: ContributionGridType = ContributionGridType.BY_MONTH,
 ): ContributionGridUiState {
     val range = window.dateRange(now)
     val cells = when (type) {
@@ -90,14 +88,4 @@ fun ContributionLevel.toUiState(): DsContributionLevel = when (this) {
     ContributionLevel.LEVEL_3 -> DsContributionLevel.LEVEL_3
     ContributionLevel.LEVEL_4 -> DsContributionLevel.LEVEL_4
     ContributionLevel.LEVEL_5 -> DsContributionLevel.LEVEL_5
-}
-
-fun ContributionWindow.toUiState(): ContributionWindowUiState = when (this) {
-    ContributionWindow.RollingTwelveMonths -> ContributionWindowUiState.RollingTwelveMonths
-    is ContributionWindow.CalendarYear -> ContributionWindowUiState.CalendarYear(year)
-}
-
-fun ContributionWindowUiState.toDomain(): ContributionWindow = when (this) {
-    ContributionWindowUiState.RollingTwelveMonths -> ContributionWindow.RollingTwelveMonths
-    is ContributionWindowUiState.CalendarYear -> ContributionWindow.CalendarYear(year)
 }

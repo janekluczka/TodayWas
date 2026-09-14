@@ -1,18 +1,19 @@
 package pl.luczka.todaywas.ui.habit.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -21,20 +22,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsFilledTonalIconButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
-import pl.luczka.todaywas.core.designsystem.components.cards.DsCard
-import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGridSize
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
@@ -45,18 +46,10 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-
-// Bigger than the compact 12dp/2dp/6dp used elsewhere (Main, journal view-all) — this is the one
-// place a single habit's grid is the main content rather than one of several overview items, so
-// there's room to make it easier to read.
-private val DETAIL_GRID_CELL_SIZE = 28.dp
-private val DETAIL_GRID_CELL_SPACING = 4.dp
-private val DETAIL_GRID_MONTH_GAP = 8.dp
 
 @Composable
 fun HabitDetailScreen(
@@ -142,27 +135,19 @@ private fun HabitDetailScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            ContributionWindowChipRow(
-                availableWindows = uiState.availableWindows,
-                selectedWindow = uiState.selectedWindow,
-                onWindowSelected = { onIntent(HabitDetailIntent.WindowSelected(it)) },
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space200,
-                ),
-            )
-            // Full-bleed (no horizontal inset), same reasoning as the journal view-all screen's
-            // grid: it needs all available width so more weeks are visible at once.
+            // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp
+            // content padding, so it scrolls edge-to-edge while resting at the same inset as the
+            // day panel below it.
             DsContributionGrid(
                 cells = uiState.contributionGrid.cells,
-                cellSize = DETAIL_GRID_CELL_SIZE,
-                cellSpacing = DETAIL_GRID_CELL_SPACING,
-                monthGap = DETAIL_GRID_MONTH_GAP,
+                cellSize = DsContributionGridSize.LARGE,
+                contentPadding = PaddingValues(horizontal = DsSpacing.space400),
+                showMonthLabels = true,
                 selectedDate = uiState.selectedDate,
                 onCellClick = { date -> onIntent(HabitDetailIntent.DaySelected(date)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = DsSpacing.space400),
+                    .padding(top = DsSpacing.space200, bottom = DsSpacing.space600),
             )
             DayDetailPanel(
                 day = uiState.selectedDay,
@@ -170,7 +155,7 @@ private fun HabitDetailScreenContent(
                 onIntent = onIntent,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = DsSpacing.space600),
+                    .padding(horizontal = DsSpacing.space400),
             )
         }
     }
@@ -211,9 +196,16 @@ private fun valueLabel(
 }
 
 // Replaces the old full-history rows list: shows only the day currently selected in the grid
-// above, with whichever of Edit/Add (same icon, same sheet either way) and Delete apply. Neither
-// action shows for an unlogged day outside the addable window (today/yesterday) — see
-// HabitDetailMapper.toSelectedDayUiState for the eligibility rule.
+// above, centered under it with plenty of whitespace to spare. A logged value gets a very large
+// display style since it's the one thing worth emphasizing here; "Not logged" is deliberately
+// plain (titleMedium) rather than matching that size — it's an absence, not a value to celebrate.
+// The status text sits over an invisible displayLarge copy of the "Not logged" label, so the box
+// it occupies is always exactly the same size regardless of which day is selected — without it,
+// switching between a big logged value and the small "Not logged" label would visibly resize the
+// panel and shift the buttons below it. Edit-or-Add/Delete are filled icon buttons, not text
+// buttons, so the pair reads as a compact action cluster under the centered date/value rather than
+// a left-aligned row. Neither action shows for an unlogged day outside the addable window
+// (today/yesterday) — see HabitDetailMapper.toSelectedDayUiState for the eligibility rule.
 @Composable
 private fun DayDetailPanel(
     day: HabitDetailDayUiState,
@@ -232,36 +224,63 @@ private fun DayDetailPanel(
     } else {
         stringResource(R.string.habit_checkin_not_logged_label)
     }
-    DsCard(modifier = modifier) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(DsSpacing.space400),
+    val statusStyle = if (day.alreadyLogged) {
+        MaterialTheme.typography.displayLarge
+    } else {
+        MaterialTheme.typography.titleMedium
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
+    ) {
+        DsText(text = dateLabel, style = MaterialTheme.typography.titleMedium)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(
+                top = DsSpacing.space100,
+                bottom = DsSpacing.space400,
+            ),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                DsText(text = dateLabel)
-                DsText(text = statusLabel)
-            }
-            if (day.eligibleForEdit) {
-                DsIconButton(onClick = { onIntent(HabitDetailIntent.EditRowClicked(day.date)) }) {
-                    DsIcon(
-                        imageVector = Icons.Filled.Edit,
-                        contentDescription = stringResource(R.string.habit_detail_edit_action),
-                    )
+            DsText(
+                text = stringResource(R.string.habit_checkin_not_logged_label),
+                style = MaterialTheme.typography.displayLarge,
+                color = Color.Transparent,
+            )
+            DsText(text = statusLabel, style = statusStyle)
+        }
+        if (day.eligibleForEdit || day.alreadyLogged) {
+            Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
+                if (day.eligibleForEdit) {
+                    DsFilledTonalIconButton(
+                        onClick = { onIntent(HabitDetailIntent.EditRowClicked(day.date)) },
+                    ) {
+                        DsIcon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = stringResource(
+                                if (day.alreadyLogged) {
+                                    R.string.habit_detail_edit_action
+                                } else {
+                                    R.string.habit_detail_add_action
+                                },
+                            ),
+                        )
+                    }
                 }
-            }
-            if (day.alreadyLogged) {
-                DsIconButton(
-                    onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(day.date)) },
-                ) {
-                    DsIcon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = stringResource(
-                            R.string.habit_detail_delete_checkin_action,
+                if (day.alreadyLogged) {
+                    DsFilledTonalIconButton(
+                        onClick = { onIntent(HabitDetailIntent.DeleteCheckInClicked(day.date)) },
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
                         ),
-                    )
+                    ) {
+                        DsIcon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = stringResource(
+                                R.string.habit_detail_delete_checkin_action,
+                            ),
+                        )
+                    }
                 }
             }
         }
@@ -333,33 +352,6 @@ private fun DeleteHabitDialog(
     )
 }
 
-@Composable
-private fun ContributionWindowChipRow(
-    availableWindows: List<ContributionWindowUiState>,
-    selectedWindow: ContributionWindowUiState,
-    onWindowSelected: (ContributionWindowUiState) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    LazyRow(modifier = modifier) {
-        items(availableWindows) { window ->
-            DsChip(
-                text = window.label(),
-                selected = window == selectedWindow,
-                onClick = { onWindowSelected(window) },
-                modifier = Modifier.padding(end = DsSpacing.space200),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ContributionWindowUiState.label(): String = when (this) {
-    ContributionWindowUiState.RollingTwelveMonths -> stringResource(
-        R.string.contribution_window_last_12_months_label,
-    )
-    is ContributionWindowUiState.CalendarYear -> year.toString()
-}
-
 private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<HabitDetailUiState> {
     override val values = sequenceOf(
         // Today selected, not yet logged but addable.
@@ -377,11 +369,6 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             ),
             checkInCount = 2,
             contributionGrid = ContributionGridUiState(cells = emptyList()),
-            availableWindows = listOf(
-                ContributionWindowUiState.RollingTwelveMonths,
-                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-            ),
-            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             isSaving = false,
             saveError = false,
             saveErrorIsWindowExpired = false,
@@ -401,11 +388,6 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             ),
             checkInCount = 2,
             contributionGrid = ContributionGridUiState(cells = emptyList()),
-            availableWindows = listOf(
-                ContributionWindowUiState.RollingTwelveMonths,
-                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-            ),
-            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             editingDate = LocalDate.now(),
             editingValue = 4,
             isSaving = false,
@@ -427,11 +409,6 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             ),
             checkInCount = 2,
             contributionGrid = ContributionGridUiState(cells = emptyList()),
-            availableWindows = listOf(
-                ContributionWindowUiState.RollingTwelveMonths,
-                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-            ),
-            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             isSaving = false,
             saveError = false,
             saveErrorIsWindowExpired = false,
@@ -452,11 +429,6 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
             ),
             checkInCount = 2,
             contributionGrid = ContributionGridUiState(cells = emptyList()),
-            availableWindows = listOf(
-                ContributionWindowUiState.RollingTwelveMonths,
-                ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-            ),
-            selectedWindow = ContributionWindowUiState.RollingTwelveMonths,
             isSaving = false,
             saveError = false,
             saveErrorIsWindowExpired = false,

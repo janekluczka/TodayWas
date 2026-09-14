@@ -29,17 +29,17 @@ class ContributionMapperTest {
             .chunked(7)
 
     @Test
-    fun `should default to CONTINUOUS when type is not specified`() {
+    fun `should default to BY_MONTH when type is not specified`() {
         // Arrange
         val grid =
             ContributionGrid(window = ContributionWindow.CalendarYear(2026), days = emptyMap())
 
         // Act
         val default = grid.toUiState(now)
-        val explicitContinuous = grid.toUiState(now, ContributionGridType.CONTINUOUS)
+        val explicitByMonth = grid.toUiState(now, ContributionGridType.BY_MONTH)
 
         // Assert
-        assertEquals(explicitContinuous, default)
+        assertEquals(explicitByMonth, default)
     }
 
     @Test

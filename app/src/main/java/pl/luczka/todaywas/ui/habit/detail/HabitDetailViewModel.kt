@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -29,10 +29,8 @@ import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
-import pl.luczka.todaywas.ui.mapper.toDomain
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import java.time.Clock
 import java.time.Instant
@@ -45,7 +43,6 @@ private data class HabitDetailViewModelState(
     val range: IntRange = 0..0,
     val checkIns: List<HabitCheckIn> = emptyList(),
     val selectedDate: LocalDate,
-    val selectedWindow: ContributionWindow = ContributionWindow.RollingTwelveMonths,
     val editingDate: LocalDate? = null,
     val editingValue: Int? = null,
     val isSaving: Boolean = false,
@@ -61,7 +58,6 @@ private data class HabitDetailViewModelState(
         freshLoggableDates: List<LocalDate>,
         isEditable: (Instant) -> Boolean,
         contributionGrid: ContributionGridUiState,
-        availableWindows: List<ContributionWindowUiState>,
     ): HabitDetailUiState = HabitDetailUiState(
         isLoading = isLoading,
         habitName = habitName,
@@ -71,8 +67,6 @@ private data class HabitDetailViewModelState(
         selectedDay = checkIns.toSelectedDayUiState(selectedDate, freshLoggableDates, isEditable),
         checkInCount = checkIns.size,
         contributionGrid = contributionGrid,
-        availableWindows = availableWindows,
-        selectedWindow = selectedWindow.toUiState(),
         editingDate = editingDate,
         editingValue = editingValue,
         isSaving = isSaving,
@@ -85,11 +79,6 @@ private data class HabitDetailViewModelState(
         deleteCheckInError = deleteCheckInError,
     )
 }
-
-private data class ContributionData(
-    val grid: ContributionGridUiState,
-    val availableWindows: List<ContributionWindowUiState>,
-)
 
 @HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)
 class HabitDetailViewModel @AssistedInject constructor(
@@ -109,27 +98,17 @@ class HabitDetailViewModel @AssistedInject constructor(
     private val viewModelState =
         MutableStateFlow(HabitDetailViewModelState(selectedDate = LocalDate.now(clock)))
 
-    private val contributionData: Flow<ContributionData> = observeHabitContribution(
+    // Always the rolling 12-month window — no user-facing window switch.
+    private val contributionGrid: Flow<ContributionGridUiState> = observeHabitContribution(
         habitId,
-        viewModelState.map { it.selectedWindow }.distinctUntilChanged(),
-    ).map { summary ->
-        val now = clock.instant()
-        ContributionData(
-            grid = summary.grid.toUiState(now),
-            availableWindows = summary.availableWindows.map { it.toUiState() },
-        )
-    }
+        flowOf(ContributionWindow.RollingTwelveMonths),
+    ).map { summary -> summary.grid.toUiState(clock.instant()) }
 
     val uiState: StateFlow<HabitDetailUiState> = combine(
         viewModelState,
-        contributionData,
-    ) { state, contribution ->
-        state.toUiState(
-            getFreshLoggableDates(),
-            isEditable::invoke,
-            contribution.grid,
-            contribution.availableWindows,
-        )
+        contributionGrid,
+    ) { state, grid ->
+        state.toUiState(getFreshLoggableDates(), isEditable::invoke, grid)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -139,10 +118,9 @@ class HabitDetailViewModel @AssistedInject constructor(
                 freshLoggableDates = getFreshLoggableDates(),
                 isEditable = isEditable::invoke,
                 contributionGrid = ContributionGrid(
-                    window = initialState.selectedWindow,
+                    window = ContributionWindow.RollingTwelveMonths,
                     days = emptyMap(),
                 ).toUiState(clock.instant()),
-                availableWindows = listOf(ContributionWindowUiState.RollingTwelveMonths),
             )
         },
     )
@@ -176,7 +154,6 @@ class HabitDetailViewModel @AssistedInject constructor(
             HabitDetailIntent.SaveClicked -> onSaveClicked()
             HabitDetailIntent.CancelEditClicked -> onCancelEditClicked()
             HabitDetailIntent.BackClicked -> onBackClicked()
-            is HabitDetailIntent.WindowSelected -> onWindowSelected(intent.window)
             HabitDetailIntent.DeleteHabitClicked -> onDeleteHabitClicked()
             HabitDetailIntent.DeleteHabitConfirmed -> onDeleteHabitConfirmed()
             HabitDetailIntent.DeleteHabitDismissed -> onDeleteHabitDismissed()
@@ -196,10 +173,6 @@ class HabitDetailViewModel @AssistedInject constructor(
             .find { it.date == date }
             ?.value
         viewModelState.update { it.copy(editingDate = date, editingValue = existingValue) }
-    }
-
-    private fun onWindowSelected(window: ContributionWindowUiState) {
-        viewModelState.update { it.copy(selectedWindow = window.toDomain()) }
     }
 
     private fun onValueChanged(value: Int?) {

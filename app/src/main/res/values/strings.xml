@@ -13,11 +13,11 @@
     <string name="main_empty_state_title">Nothing here yet</string>
     <string name="main_empty_state_description">Start journaling or create a habit to see it here.</string>
 
-    <string name="journal_list_title">All entries</string>
+    <string name="journal_list_title">Journal</string>
     <string name="journal_sort_newest_first">Newest first</string>
     <string name="journal_sort_oldest_first">Oldest first</string>
 
-    <string name="habit_list_title">All habits</string>
+    <string name="habit_list_title">Habits</string>
     <string name="habit_sort_recently_checked_in">Recently checked-in</string>
     <string name="habit_sort_alphabetical">Alphabetical</string>
     <string name="habit_sort_date_created">Date created</string>
@@ -132,6 +132,7 @@
     <string name="habit_checkin_not_logged_label">Not logged</string>
 
     <string name="habit_detail_edit_action">Edit</string>
+    <string name="habit_detail_add_action">Add</string>
     <string name="habit_detail_save_cta">Save</string>
     <string name="habit_detail_cancel_edit_action">Cancel</string>
     <string name="habit_detail_error">Something went wrong. Please try again.</string>
@@ -144,8 +145,6 @@
     <string name="habit_detail_delete_cancel_cta">Cancel</string>
     <string name="habit_detail_delete_error">Something went wrong. Please try again.</string>
     <string name="habit_detail_delete_checkin_action">Delete check-in</string>
-
-    <string name="contribution_window_last_12_months_label">Last 12 months</string>
 
     <string name="auth_form_email_label">Email</string>
     <string name="auth_form_email_error">Enter a valid email address</string>

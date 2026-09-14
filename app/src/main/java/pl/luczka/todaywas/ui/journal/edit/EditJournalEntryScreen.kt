@@ -39,7 +39,6 @@ import pl.luczka.todaywas.core.designsystem.components.dialogs.DsAlertDialog
 import pl.luczka.todaywas.core.designsystem.components.dialogs.DsModalBottomSheet
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
-import pl.luczka.todaywas.core.designsystem.components.pickers.DsDateStrip
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsPlainTextField
@@ -106,7 +105,8 @@ private fun EditJournalEntryScreenContent(
     DsScaffold(
         topBar = {
             DsTopBar(
-                title = stringResource(R.string.journal_edit_entry_title),
+                title = uiState.entry?.formattedDate
+                    ?: stringResource(R.string.journal_edit_entry_title),
                 navigationIcon = {
                     DsIconButton(onClick = { onIntent(EditJournalEntryIntent.BackClicked) }) {
                         DsIcon(
@@ -133,7 +133,6 @@ private fun EditJournalEntryScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            FixedJournalDateStrip(entry = uiState.entry)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -207,21 +206,6 @@ private fun EditJournalEntryScreenContent(
     if (uiState.isDiscardConfirmVisible) {
         DiscardChangesDialog(onIntent = onIntent)
     }
-}
-
-@Composable
-private fun FixedJournalDateStrip(
-    entry: JournalEntryUiState?,
-    modifier: Modifier = Modifier,
-) {
-    if (entry == null) return
-    DsDateStrip(
-        selectedDate = entry.date,
-        isSelectable = { it == entry.date },
-        onDateSelected = {},
-        interactive = false,
-        modifier = modifier.fillMaxWidth(),
-    )
 }
 
 @Composable

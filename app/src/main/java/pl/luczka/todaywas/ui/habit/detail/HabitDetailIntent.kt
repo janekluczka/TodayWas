@@ -1,6 +1,5 @@
 package pl.luczka.todaywas.ui.habit.detail
 
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.LocalDate
 
 sealed interface HabitDetailIntent {
@@ -26,10 +25,6 @@ sealed interface HabitDetailIntent {
     data object CancelEditClicked : HabitDetailIntent
 
     data object BackClicked : HabitDetailIntent
-
-    data class WindowSelected(
-        val window: ContributionWindowUiState,
-    ) : HabitDetailIntent
 
     data object DeleteHabitClicked : HabitDetailIntent
 

@@ -4,16 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -21,11 +23,15 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsColor
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.format.TextStyle
+import java.util.Locale
 
 enum class DsContributionLevel {
     NONE,
@@ -84,9 +90,26 @@ internal val DarkLevelColors = mapOf(
     DsContributionLevel.LEVEL_5 to DsColor.teal90,
 )
 
-internal val CELL_SIZE = 12.dp
-internal val CELL_SPACING = 2.dp
-internal val MONTH_GAP = 6.dp
+// The selected-cell ring is drawn as three concentric layers, outside in: a 2.dp ring in the
+// selection color, a 2.dp gap that lets the surface behind the grid show through (so the ring
+// visibly floats off the cell rather than sitting flush against it), then the cell's own level
+// color filling the remainder. The ring's own outer corner radius matches the preset's own
+// cellCornerRadius so a selected cell reads as the same rounded shape, just outlined.
+internal val SELECTION_RING_WIDTH = 2.dp
+internal val SELECTION_RING_GAP = 1.dp
+
+// Named presets a screen picks from instead of wiring cell/spacing/gap/corner dp values by hand.
+// cellCornerRadius is per-preset (not a single shared constant) since a bigger cell reads better
+// with a proportionally bigger corner radius than a smaller one does.
+enum class DsContributionGridSize(
+    val cellSize: Dp,
+    val cellSpacing: Dp,
+    val monthGap: Dp,
+    val cellCornerRadius: Dp,
+) {
+    MEDIUM(cellSize = 24.dp, cellSpacing = 4.dp, monthGap = 24.dp, cellCornerRadius = 4.dp),
+    LARGE(cellSize = 32.dp, cellSpacing = 4.dp, monthGap = 24.dp, cellCornerRadius = 8.dp),
+}
 
 @Composable
 internal fun contributionLevelColors(): Map<DsContributionLevel, Color> =
@@ -100,94 +123,162 @@ internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean =
         is DsContributionCellUiState.Blank -> cell.hasGapBefore
     }
 
-// Pure rendering only — month-gap spacing is the week container's job (see weekHasGapBefore), not
-// a per-cell concern, since "before" means a different axis in each caller. Selection/click only
-// ever apply to a Level cell — a Blank cell carries no date, so it silently ignores both.
+// Pure rendering only — spacing between cells is the week container's job (a verticalArrangement),
+// and spacing between weeks is the outer LazyRow's job (horizontalArrangement) — a cell never
+// carries its own margin, so there's no edge-bleed at the very first/last cell in either axis.
+// Selection/click only ever apply to a Level cell — a Blank cell carries no date, so it silently
+// ignores both.
 @Composable
 internal fun ContributionCell(
     cell: DsContributionCellUiState,
     levelColors: Map<DsContributionLevel, Color>,
     modifier: Modifier = Modifier,
-    cellSize: Dp = CELL_SIZE,
-    cellSpacing: Dp = CELL_SPACING,
+    cellSize: Dp = 12.dp,
+    cellCornerRadius: Dp = 4.dp,
     selected: Boolean = false,
     onClick: (() -> Unit)? = null,
 ) {
-    val cellModifier = modifier
-        .padding(cellSpacing / 2)
-        .size(cellSize)
+    val shape = RoundedCornerShape(cellCornerRadius)
     when (cell) {
         is DsContributionCellUiState.Level -> {
-            val shape = RoundedCornerShape(2.dp)
             val clickModifier = if (onClick != null) {
                 val label = cell.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
                 Modifier.clickable(onClickLabel = label, onClick = onClick)
             } else {
                 Modifier
             }
-            val selectionModifier = if (selected) {
-                Modifier.border(2.dp, MaterialTheme.colorScheme.primary, shape)
+            val fillSize = if (selected) {
+                cellSize - (SELECTION_RING_WIDTH + SELECTION_RING_GAP) * 2
             } else {
-                Modifier
+                cellSize
+            }
+            val fillShape = if (selected) {
+                val fillCornerRadius =
+                    (cellCornerRadius - SELECTION_RING_WIDTH - SELECTION_RING_GAP)
+                        .coerceAtLeast(0.dp)
+                RoundedCornerShape(fillCornerRadius)
+            } else {
+                shape
             }
             Box(
-                modifier = cellModifier
-                    .background(color = levelColors.getValue(cell.level), shape = shape)
-                    .then(clickModifier)
-                    .then(selectionModifier),
-            )
+                contentAlignment = Alignment.Center,
+                modifier = modifier
+                    .size(cellSize)
+                    .then(clickModifier),
+            ) {
+                if (selected) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .border(SELECTION_RING_WIDTH, MaterialTheme.colorScheme.primary, shape),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(fillSize)
+                        .background(color = levelColors.getValue(cell.level), shape = fillShape),
+                )
+            }
         }
-        is DsContributionCellUiState.Blank -> Box(modifier = cellModifier)
+        is DsContributionCellUiState.Blank -> Box(modifier = modifier.size(cellSize))
     }
 }
 
-// cellSize/cellSpacing/monthGap default to the compact sizing this ships with today (Main's
-// overview-scale usage) — a caller that needs a bigger read (e.g. a single-habit drill-down) can
-// override them without affecting every other caller. selectedDate/onCellClick default to
-// null so every existing non-interactive caller compiles and renders unchanged.
+// cellSize picks one of the named DsContributionGridSize presets — the screen just passes the
+// preset it wants rather than wiring cell/spacing/gap dp values by hand. selectedDate/onCellClick
+// default to null so every existing non-interactive caller compiles and renders unchanged.
+// contentPadding defaults to none — the screen embedding this grid owns whatever horizontal inset
+// it needs (e.g. 16.dp to match the rest of that screen's content) rather than this component
+// baking one in, since a hardcoded inset here would either double up with or fight the screen's
+// own. showMonthLabels is opt-in (defaults off) since Main's compact overview scale has no room
+// for it; screens with a full-size drill-down grid can turn it on.
 @Composable
 fun DsContributionGrid(
     cells: List<DsContributionCellUiState>,
     modifier: Modifier = Modifier,
-    cellSize: Dp = CELL_SIZE,
-    cellSpacing: Dp = CELL_SPACING,
-    monthGap: Dp = MONTH_GAP,
+    cellSize: DsContributionGridSize = DsContributionGridSize.MEDIUM,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    showMonthLabels: Boolean = false,
     selectedDate: LocalDate? = null,
     onCellClick: ((LocalDate) -> Unit)? = null,
 ) {
     val levelColors = contributionLevelColors()
+    val weeks = cells.chunked(7)
 
     // Each week is one lazy item (not one item per cell) — a week is always exactly 7 cells, so
     // there's no need for LazyHorizontalGrid's per-item grid-slot math; a plain Column stacking
-    // 7 cells inside a LazyRow item is simpler and cheaper.
+    // 7 cells inside a LazyRow item is simpler and cheaper. horizontalArrangement/
+    // verticalArrangement supply the normal cellSpacing gap on both axes with zero bleed at the
+    // outer edges (Arrangement.spacedBy never adds space before the first or after the last
+    // item) — a month boundary just tops that base gap up to the full monthGap via one extra
+    // leading padding, skipped entirely for the very first week since there's nothing before it
+    // to gap from.
     LazyRow(
         reverseLayout = true,
-        contentPadding = PaddingValues(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(cellSize.cellSpacing),
+        contentPadding = contentPadding,
         modifier = modifier,
     ) {
-        items(cells.chunked(7)) { week ->
+        itemsIndexed(weeks) { index, week ->
+            val extraGapBeforeMonth = if (index > 0 && week.weekHasGapBefore()) {
+                cellSize.monthGap - cellSize.cellSpacing
+            } else {
+                0.dp
+            }
             Column(
-                modifier = Modifier.padding(
-                    start = if (week.weekHasGapBefore()) monthGap else 0.dp,
-                ),
+                modifier = Modifier.padding(start = extraGapBeforeMonth),
             ) {
-                week.forEach { cell ->
-                    val date = (cell as? DsContributionCellUiState.Level)?.date
-                    ContributionCell(
-                        cell = cell,
-                        levelColors = levelColors,
-                        cellSize = cellSize,
-                        cellSpacing = cellSpacing,
-                        selected = date != null && date == selectedDate,
-                        onClick = if (date != null && onCellClick != null) {
-                            { onCellClick(date) }
-                        } else {
-                            null
-                        },
+                if (showMonthLabels) {
+                    // A month's true first calendar week (weekHasGapBefore) always gets a real
+                    // label; the oldest week in view (the last item, wherever the window happens
+                    // to be cut off) gets one too even when it isn't a real month-start, so the
+                    // leftmost visible column is never unlabeled. Every other week still reserves
+                    // the exact same two-line height via a transparent copy of the label, so the
+                    // 7-cell blocks stay aligned in a row across the whole grid regardless of
+                    // which columns actually show text.
+                    MonthYearLabel(
+                        week = week,
+                        visible = index == weeks.lastIndex || week.weekHasGapBefore(),
                     )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(cellSize.cellSpacing)) {
+                    week.forEach { cell ->
+                        val date = (cell as? DsContributionCellUiState.Level)?.date
+                        ContributionCell(
+                            cell = cell,
+                            levelColors = levelColors,
+                            cellSize = cellSize.cellSize,
+                            cellCornerRadius = cellSize.cellCornerRadius,
+                            selected = date != null && date == selectedDate,
+                            onClick = if (date != null && onCellClick != null) {
+                                { onCellClick(date) }
+                            } else {
+                                null
+                            },
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MonthYearLabel(
+    week: List<DsContributionCellUiState>,
+    visible: Boolean,
+) {
+    val date = week.firstNotNullOfOrNull { (it as? DsContributionCellUiState.Level)?.date }
+    val color = if (visible) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        Color.Transparent
+    }
+    val yearText = date?.year?.toString().orEmpty()
+    val monthText = date?.month?.getDisplayName(TextStyle.SHORT, Locale.getDefault()).orEmpty()
+    Column(modifier = Modifier.padding(bottom = DsSpacing.space100)) {
+        DsText(text = monthText, style = MaterialTheme.typography.labelSmall, color = color)
+        DsText(text = yearText, style = MaterialTheme.typography.labelSmall, color = color)
     }
 }
 

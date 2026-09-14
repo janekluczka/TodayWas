@@ -2,7 +2,7 @@ package pl.luczka.todaywas.ui.journal.list
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,6 +27,7 @@ import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGrid
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionGridSize
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
@@ -35,7 +36,6 @@ import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.ui.journal.JournalEntryRow
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.ui.model.JournalSortUiState
 import java.time.Instant
@@ -91,42 +91,30 @@ private fun JournalListScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            // Full-bleed (no horizontal inset): it needs all available width so more weeks are
-            // visible at once — same reasoning as Habit Detail's grid.
+            // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp
+            // content padding via contentPadding, so it scrolls edge-to-edge while still resting
+            // at the same inset as the rest of the screen's content.
             DsContributionGrid(
                 cells = uiState.contributionGrid.cells,
+                cellSize = DsContributionGridSize.MEDIUM,
+                contentPadding = PaddingValues(horizontal = DsSpacing.space400),
+                showMonthLabels = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = DsSpacing.space200),
             )
-            ContributionWindowChipRow(
-                availableWindows = uiState.availableWindows,
-                selectedWindow = uiState.selectedWindow,
-                onWindowSelected = { onIntent(JournalListIntent.WindowSelected(it)) },
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space200,
-                ),
-            )
             SortChipRow(
                 selected = uiState.selectedSort,
                 onSortSelected = { onIntent(JournalListIntent.SortSelected(it)) },
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space200,
-                ),
+                modifier = Modifier.fillMaxWidth(),
             )
             if (!uiState.isLoading && uiState.entries.isEmpty()) {
                 DsText(
                     text = stringResource(R.string.main_journal_empty_state),
-                    modifier = Modifier.padding(horizontal = DsSpacing.space600),
+                    modifier = Modifier.padding(horizontal = DsSpacing.space400),
                 )
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = DsSpacing.space600),
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(uiState.entries) { entry ->
                         JournalEntryRow(
                             entry = entry,
@@ -140,53 +128,32 @@ private fun JournalListScreenContent(
 }
 
 @Composable
-private fun ContributionWindowChipRow(
-    availableWindows: List<ContributionWindowUiState>,
-    selectedWindow: ContributionWindowUiState,
-    onWindowSelected: (ContributionWindowUiState) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    LazyRow(modifier = modifier) {
-        items(availableWindows) { window ->
-            DsChip(
-                text = window.label(),
-                selected = window == selectedWindow,
-                onClick = { onWindowSelected(window) },
-                modifier = Modifier.padding(end = DsSpacing.space200),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ContributionWindowUiState.label(): String = when (this) {
-    ContributionWindowUiState.RollingTwelveMonths -> stringResource(
-        R.string.contribution_window_last_12_months_label,
-    )
-    is ContributionWindowUiState.CalendarYear -> year.toString()
-}
-
-@Composable
 private fun SortChipRow(
     selected: JournalSortUiState,
     onSortSelected: (JournalSortUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    LazyRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
+        contentPadding = PaddingValues(
+            horizontal = DsSpacing.space400,
+            vertical = DsSpacing.space200,
+        ),
         modifier = modifier,
     ) {
-        DsChip(
-            text = stringResource(R.string.journal_sort_newest_first),
-            selected = selected == JournalSortUiState.NEWEST_FIRST,
-            onClick = { onSortSelected(JournalSortUiState.NEWEST_FIRST) },
-        )
-        DsChip(
-            text = stringResource(R.string.journal_sort_oldest_first),
-            selected = selected == JournalSortUiState.OLDEST_FIRST,
-            onClick = { onSortSelected(JournalSortUiState.OLDEST_FIRST) },
-        )
+        items(JournalSortUiState.entries) { sort ->
+            DsChip(
+                text = stringResource(sort.labelRes()),
+                selected = sort == selected,
+                onClick = { onSortSelected(sort) },
+            )
+        }
     }
+}
+
+private fun JournalSortUiState.labelRes(): Int = when (this) {
+    JournalSortUiState.NEWEST_FIRST -> R.string.journal_sort_newest_first
+    JournalSortUiState.OLDEST_FIRST -> R.string.journal_sort_oldest_first
 }
 
 private class JournalListUiStatePreviewProvider : PreviewParameterProvider<JournalListUiState> {
@@ -198,18 +165,12 @@ private class JournalListUiStatePreviewProvider : PreviewParameterProvider<Journ
             )
         },
     )
-    private val previewWindows = listOf(
-        ContributionWindowUiState.RollingTwelveMonths,
-        ContributionWindowUiState.CalendarYear(LocalDate.now().year),
-    )
-
     override val values = sequenceOf(
         JournalListUiState(isLoading = true),
         JournalListUiState(
             isLoading = false,
             entries = emptyList(),
             contributionGrid = previewGrid,
-            availableWindows = previewWindows,
         ),
         JournalListUiState(
             isLoading = false,
@@ -223,7 +184,6 @@ private class JournalListUiStatePreviewProvider : PreviewParameterProvider<Journ
                 )
             },
             contributionGrid = previewGrid,
-            availableWindows = previewWindows,
         ),
     )
 }

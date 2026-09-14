@@ -27,7 +27,6 @@ import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
-import pl.luczka.todaywas.ui.model.ContributionWindowUiState
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -463,7 +462,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should reflect loaded check-ins in contributionGrid and window state`() =
+    fun `should reflect loaded check-ins in contributionGrid`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
@@ -487,64 +486,7 @@ class HabitDetailViewModelTest {
             val state = viewModel.uiState.value
 
             // Assert
-            assertEquals(ContributionWindowUiState.RollingTwelveMonths, state.selectedWindow)
-            assertTrue(
-                state.availableWindows.contains(ContributionWindowUiState.RollingTwelveMonths),
-            )
-            assertTrue(
-                state.availableWindows.contains(ContributionWindowUiState.CalendarYear(today.year)),
-            )
             assertEquals(DsContributionLevel.LEVEL_5, levelFor(state.contributionGrid.cells, today))
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should update selectedWindow without changing an already-visible day's level when WindowSelected is dispatched`() =
-        runTest {
-            // Arrange
-            val repository = FakeHabitRepository(
-                initialHabits = listOf(habit),
-                initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = "1",
-                        habitId = "1",
-                        date = today,
-                        value = 1,
-                        createdAt = now,
-                        updatedAt = now,
-                    ),
-                    HabitCheckIn(
-                        id = "2",
-                        habitId = "1",
-                        date = today.minusDays(3),
-                        value = 0,
-                        createdAt = now.minus(Duration.ofDays(3)),
-                        updatedAt = now.minus(Duration.ofDays(3)),
-                    ),
-                ),
-            )
-            val viewModel = viewModel(repository)
-            val collectJob = launch { viewModel.uiState.collect {} }
-            runCurrent()
-            val levelBefore = levelFor(viewModel.uiState.value.contributionGrid.cells, today)
-
-            // Act
-            viewModel.onIntent(
-                HabitDetailIntent.WindowSelected(
-                    ContributionWindowUiState.CalendarYear(today.year),
-                ),
-            )
-            runCurrent()
-
-            // Assert
-            assertEquals(
-                ContributionWindowUiState.CalendarYear(today.year),
-                viewModel.uiState.value.selectedWindow,
-            )
-            assertEquals(
-                levelBefore,
-                levelFor(viewModel.uiState.value.contributionGrid.cells, today),
-            )
             collectJob.cancel()
         }
 

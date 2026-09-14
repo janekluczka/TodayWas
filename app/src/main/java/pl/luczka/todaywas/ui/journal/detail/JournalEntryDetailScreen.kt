@@ -80,7 +80,8 @@ private fun JournalEntryDetailScreenContent(
     DsScaffold(
         topBar = {
             DsTopBar(
-                title = stringResource(R.string.journal_detail_title),
+                title = uiState.entry?.formattedDate
+                    ?: stringResource(R.string.journal_detail_title),
                 navigationIcon = {
                     DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.BackClicked) }) {
                         DsIcon(
@@ -104,7 +105,6 @@ private fun JournalEntryDetailScreenContent(
                 .padding(DsSpacing.space600),
         ) {
             if (uiState.entry != null) {
-                DsText(text = uiState.entry.formattedDate)
                 DsText(text = uiState.entry.text)
             }
         }

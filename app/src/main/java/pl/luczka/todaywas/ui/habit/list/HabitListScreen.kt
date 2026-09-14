@@ -2,11 +2,12 @@ package pl.luczka.todaywas.ui.habit.list
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,13 +26,12 @@ import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionValueBadge
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
-import pl.luczka.todaywas.core.designsystem.components.lists.DsListItem
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.habit.HabitRow
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
@@ -90,31 +90,18 @@ private fun HabitListScreenContent(
             SortChipRow(
                 selected = uiState.selectedSort,
                 onSortSelected = { onIntent(HabitListIntent.SortSelected(it)) },
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space200,
-                ),
+                modifier = Modifier.fillMaxWidth(),
             )
             if (!uiState.isLoading && uiState.habits.isEmpty()) {
                 DsText(
                     text = stringResource(R.string.main_habit_empty_state),
-                    modifier = Modifier.padding(horizontal = DsSpacing.space600),
+                    modifier = Modifier.padding(horizontal = DsSpacing.space400),
                 )
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = DsSpacing.space600),
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(uiState.habits) { habit ->
-                        DsListItem(
-                            text = habit.name,
-                            trailingContent = {
-                                DsContributionValueBadge(
-                                    level = habit.todayLevel,
-                                    valueText = habit.todayStatus.toValueText(),
-                                )
-                            },
+                        HabitRow(
+                            habit = habit,
                             onClick = { onIntent(HabitListIntent.HabitClicked(habit)) },
                         )
                     }
@@ -124,40 +111,34 @@ private fun HabitListScreenContent(
     }
 }
 
-// The value badge is too small for localized "Done"/"Not done" text (unlike HabitRow elsewhere),
-// so it shows the raw value for both binary and scale habits, and nothing for an unlogged day.
-private fun HabitCheckInStatusUiState.toValueText(): String = when (this) {
-    HabitCheckInStatusUiState.NotLogged -> ""
-    is HabitCheckInStatusUiState.LoggedBinary -> if (done) "1" else "0"
-    is HabitCheckInStatusUiState.LoggedScale -> value.toString()
-}
-
 @Composable
 private fun SortChipRow(
     selected: HabitSortUiState,
     onSortSelected: (HabitSortUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    LazyRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
+        contentPadding = PaddingValues(
+            horizontal = DsSpacing.space400,
+            vertical = DsSpacing.space200,
+        ),
         modifier = modifier,
     ) {
-        DsChip(
-            text = stringResource(R.string.habit_sort_recently_checked_in),
-            selected = selected == HabitSortUiState.RECENTLY_CHECKED_IN,
-            onClick = { onSortSelected(HabitSortUiState.RECENTLY_CHECKED_IN) },
-        )
-        DsChip(
-            text = stringResource(R.string.habit_sort_alphabetical),
-            selected = selected == HabitSortUiState.ALPHABETICAL,
-            onClick = { onSortSelected(HabitSortUiState.ALPHABETICAL) },
-        )
-        DsChip(
-            text = stringResource(R.string.habit_sort_date_created),
-            selected = selected == HabitSortUiState.DATE_CREATED,
-            onClick = { onSortSelected(HabitSortUiState.DATE_CREATED) },
-        )
+        items(HabitSortUiState.entries) { sort ->
+            DsChip(
+                text = stringResource(sort.labelRes()),
+                selected = sort == selected,
+                onClick = { onSortSelected(sort) },
+            )
+        }
     }
+}
+
+private fun HabitSortUiState.labelRes(): Int = when (this) {
+    HabitSortUiState.RECENTLY_CHECKED_IN -> R.string.habit_sort_recently_checked_in
+    HabitSortUiState.ALPHABETICAL -> R.string.habit_sort_alphabetical
+    HabitSortUiState.DATE_CREATED -> R.string.habit_sort_date_created
 }
 
 private class HabitListUiStatePreviewProvider : PreviewParameterProvider<HabitListUiState> {

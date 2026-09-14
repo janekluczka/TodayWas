@@ -24,7 +24,6 @@ fun <T> DsChoiceFlowRow(
 ) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
         modifier = modifier,
     ) {
         for (item in items) {
