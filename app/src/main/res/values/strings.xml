@@ -4,10 +4,10 @@
     <string name="main_top_bar_title">TodayWas</string>
 
     <string name="main_journal_section_title">Journal</string>
-    <string name="main_journal_empty_state">No entries yet — add one to get started.</string>
+    <string name="main_journal_empty_state">No entries yet</string>
     <string name="main_journal_view_all_cta">View all entries</string>
     <string name="main_habit_section_title">Habits</string>
-    <string name="main_habit_empty_state">No habits yet — create one to get started.</string>
+    <string name="main_habit_empty_state">No habits yet</string>
     <string name="main_habit_view_all_cta">View all habits</string>
 
     <string name="main_empty_state_title">Nothing here yet</string>

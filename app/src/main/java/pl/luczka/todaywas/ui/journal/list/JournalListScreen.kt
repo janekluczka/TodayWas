@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.ui.journal.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +12,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -109,10 +112,18 @@ private fun JournalListScreenContent(
                 modifier = Modifier.fillMaxWidth(),
             )
             if (!uiState.isLoading && uiState.entries.isEmpty()) {
-                DsText(
-                    text = stringResource(R.string.main_journal_empty_state),
-                    modifier = Modifier.padding(horizontal = DsSpacing.space400),
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = DsSpacing.space400),
+                ) {
+                    DsText(
+                        text = stringResource(R.string.main_journal_empty_state),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(uiState.entries) { entry ->

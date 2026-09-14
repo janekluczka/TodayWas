@@ -50,7 +50,10 @@ class MainViewModel @Inject constructor(
             isLoading = true,
             journalEntries = emptyList(),
             habits = emptyList(),
-            fabActions = emptyList(),
+            disabledFabActions = setOf(
+                FabActionUiState.ADD_JOURNAL_ENTRY,
+                FabActionUiState.LOG_HABIT_CHECK_INS,
+            ),
             fabExpanded = false,
             authState = AuthStateUi.Loading,
             isAccountSheetVisible = false,
@@ -84,7 +87,7 @@ class MainViewModel @Inject constructor(
                         isLoading = false,
                         journalEntries = raw.journalEntries,
                         habits = raw.habits,
-                        fabActions = toFabActions(raw.addableSlots, raw.habits),
+                        disabledFabActions = toDisabledFabActions(raw.addableSlots, raw.habits),
                     )
                 }
             }
@@ -189,13 +192,13 @@ class MainViewModel @Inject constructor(
         eventChannel.trySend(MainUiEvent.NavigateToHabitDetail(habit.id))
     }
 
-    private fun toFabActions(
+    // CREATE_HABIT is never disabled — it has no eligibility criteria, unlike the other two.
+    private fun toDisabledFabActions(
         addableSlots: List<JournalDateSlotUiState>,
         habits: List<HabitUiState>,
-    ): List<FabActionUiState> = listOfNotNull(
-        FabActionUiState.ADD_JOURNAL_ENTRY.takeIf { addableSlots.isNotEmpty() },
-        FabActionUiState.CREATE_HABIT,
-        FabActionUiState.LOG_HABIT_CHECK_INS.takeIf { habits.isNotEmpty() },
+    ): Set<FabActionUiState> = setOfNotNull(
+        FabActionUiState.ADD_JOURNAL_ENTRY.takeIf { addableSlots.isEmpty() },
+        FabActionUiState.LOG_HABIT_CHECK_INS.takeIf { habits.isEmpty() },
     )
 
     private data class RawMainSources(

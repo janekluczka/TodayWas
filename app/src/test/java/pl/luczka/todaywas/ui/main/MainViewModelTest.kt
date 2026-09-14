@@ -255,65 +255,58 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should include ADD_JOURNAL_ENTRY in fabActions when a journal slot is addable`() =
+    fun `should not disable ADD_JOURNAL_ENTRY when a journal slot is addable`() =
         runTest {
             // Arrange
             val viewModel = viewModel(entries = emptyList())
 
             // Act
-            val fabActions = viewModel.uiState.value.fabActions
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
 
             // Assert
-            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY in fabActions)
+            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY !in disabledFabActions)
         }
 
     @Test
-    fun `should exclude ADD_JOURNAL_ENTRY from fabActions when no slots are addable`() =
+    fun `should disable ADD_JOURNAL_ENTRY when no slots are addable`() =
         runTest {
             // Arrange
             val entries = listOf(entry(LocalDate.now()), entry(LocalDate.now().minusDays(1)))
             val viewModel = viewModel(entries = entries)
 
             // Act
-            val fabActions = viewModel.uiState.value.fabActions
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
 
             // Assert
-            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY !in fabActions)
+            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY in disabledFabActions)
         }
 
     @Test
-    fun `should include CREATE_HABIT but not LOG_HABIT_CHECK_INS in fabActions when no habits exist`() =
+    fun `should never disable CREATE_HABIT but disable LOG_HABIT_CHECK_INS when no habits exist`() =
         runTest {
             // Arrange
             val entries = listOf(entry(LocalDate.now()))
             val viewModel = viewModel(entries = entries)
 
             // Act
-            val fabActions = viewModel.uiState.value.fabActions
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
 
             // Assert
-            assertTrue(FabActionUiState.CREATE_HABIT in fabActions)
-            assertTrue(FabActionUiState.LOG_HABIT_CHECK_INS !in fabActions)
+            assertTrue(FabActionUiState.CREATE_HABIT !in disabledFabActions)
+            assertTrue(FabActionUiState.LOG_HABIT_CHECK_INS in disabledFabActions)
         }
 
     @Test
-    fun `should include journal and habit actions together in fabActions when slots and habits exist`() =
+    fun `should disable no actions when slots and habits both exist`() =
         runTest {
             // Arrange
             val viewModel = viewModel(habits = listOf(habit(id = "1")))
 
             // Act
-            val fabActions = viewModel.uiState.value.fabActions
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
 
             // Assert
-            assertEquals(
-                listOf(
-                    FabActionUiState.ADD_JOURNAL_ENTRY,
-                    FabActionUiState.CREATE_HABIT,
-                    FabActionUiState.LOG_HABIT_CHECK_INS,
-                ),
-                fabActions,
-            )
+            assertEquals(emptySet<FabActionUiState>(), disabledFabActions)
         }
 
     @Test
