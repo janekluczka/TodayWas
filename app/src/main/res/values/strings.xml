@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Today Was...</string>
+    <string name="app_name">Today was …</string>
 
-    <string name="main_top_bar_title">TodayWas</string>
+    <string name="main_top_bar_title">Today was …</string>
 
     <string name="main_journal_section_title">Journal</string>
     <string name="main_journal_empty_state">No entries yet</string>
@@ -14,8 +14,8 @@
     <string name="main_empty_state_description">Start journaling or create a habit to see it here.</string>
 
     <string name="journal_list_title">Journal</string>
-    <string name="journal_sort_newest_first">Newest first</string>
-    <string name="journal_sort_oldest_first">Oldest first</string>
+    <string name="journal_sort_newest_first">Newest</string>
+    <string name="journal_sort_oldest_first">Oldest</string>
 
     <string name="habit_list_title">Habits</string>
     <string name="habit_sort_recently_checked_in">Recently checked-in</string>

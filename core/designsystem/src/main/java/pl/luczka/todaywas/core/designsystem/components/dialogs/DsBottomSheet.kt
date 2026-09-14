@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,10 +37,6 @@ fun DsBottomSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        // ModalBottomSheet's own default (colorScheme.surfaceContainerLow) is a role DsTheme never
-        // overrides, so it silently falls back to M3's baseline Purple instead of our palette —
-        // same fix as DsModalBottomSheet's containerColor override.
-        containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier,
     ) {
         Row(
