@@ -36,7 +36,8 @@ fun GoogleSignInLaunchButton(
     var isLaunching by remember { mutableStateOf(false) }
 
     GoogleSignInButton(
-        enabled = enabled && !isLaunching,
+        enabled = enabled,
+        loading = isLaunching,
         text = text,
         onClick = {
             // Google sign-in isn't configured until GOOGLE_WEB_CLIENT_ID is set in
