@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Concept A: 3x3 contribution-grid callback, brightness rising diagonally toward the
+     bottom-right "today" cell — direct nod to DsContributionGrid's own teal tonal ramp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- row 0 -->
+    <path android:fillColor="#1F4F44" android:pathData="M31,28 L39,28 A3,3 0 0 1 42,31 L42,39 A3,3 0 0 1 39,42 L31,42 A3,3 0 0 1 28,39 L28,31 A3,3 0 0 1 31,28 Z" />
+    <path android:fillColor="#1F4F44" android:pathData="M50,28 L58,28 A3,3 0 0 1 61,31 L61,39 A3,3 0 0 1 58,42 L50,42 A3,3 0 0 1 47,39 L47,31 A3,3 0 0 1 50,28 Z" />
+    <path android:fillColor="#3A6A5E" android:pathData="M69,28 L77,28 A3,3 0 0 1 80,31 L80,39 A3,3 0 0 1 77,42 L69,42 A3,3 0 0 1 66,39 L66,31 A3,3 0 0 1 69,28 Z" />
+    <!-- row 1 -->
+    <path android:fillColor="#1F4F44" android:pathData="M31,47 L39,47 A3,3 0 0 1 42,50 L42,58 A3,3 0 0 1 39,61 L31,61 A3,3 0 0 1 28,58 L28,50 A3,3 0 0 1 31,47 Z" />
+    <path android:fillColor="#3A6A5E" android:pathData="M50,47 L58,47 A3,3 0 0 1 61,50 L61,58 A3,3 0 0 1 58,61 L50,61 A3,3 0 0 1 47,58 L47,50 A3,3 0 0 1 50,47 Z" />
+    <path android:fillColor="#5B8D7F" android:pathData="M69,47 L77,47 A3,3 0 0 1 80,50 L80,58 A3,3 0 0 1 77,61 L69,61 A3,3 0 0 1 66,58 L66,50 A3,3 0 0 1 69,47 Z" />
+    <!-- row 2 -->
+    <path android:fillColor="#3A6A5E" android:pathData="M31,66 L39,66 A3,3 0 0 1 42,69 L42,77 A3,3 0 0 1 39,80 L31,80 A3,3 0 0 1 28,77 L28,69 A3,3 0 0 1 31,66 Z" />
+    <path android:fillColor="#5B8D7F" android:pathData="M50,66 L58,66 A3,3 0 0 1 61,69 L61,77 A3,3 0 0 1 58,80 L50,80 A3,3 0 0 1 47,77 L47,69 A3,3 0 0 1 50,66 Z" />
+    <path android:fillColor="#B9ECDA" android:pathData="M69,66 L77,66 A3,3 0 0 1 80,69 L80,77 A3,3 0 0 1 77,80 L69,80 A3,3 0 0 1 66,77 L66,69 A3,3 0 0 1 69,66 Z" />
+</vector>

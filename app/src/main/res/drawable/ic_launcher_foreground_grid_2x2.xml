@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Concept B: 4 bold cells, same brightness ramp as Concept A but larger/simpler shapes for
+     legibility at small launcher sizes. Bottom-right cell is brightest ("today"). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#1F4F44" android:pathData="M31,26 L45,26 A5,5 0 0 1 50,31 L50,45 A5,5 0 0 1 45,50 L31,50 A5,5 0 0 1 26,45 L26,31 A5,5 0 0 1 31,26 Z" />
+    <path android:fillColor="#5B8D7F" android:pathData="M63,26 L77,26 A5,5 0 0 1 82,31 L82,45 A5,5 0 0 1 77,50 L63,50 A5,5 0 0 1 58,45 L58,31 A5,5 0 0 1 63,26 Z" />
+    <path android:fillColor="#5B8D7F" android:pathData="M31,58 L45,58 A5,5 0 0 1 50,63 L50,77 A5,5 0 0 1 45,82 L31,82 A5,5 0 0 1 26,77 L26,63 A5,5 0 0 1 31,58 Z" />
+    <path android:fillColor="#B9ECDA" android:pathData="M63,58 L77,58 A5,5 0 0 1 82,63 L82,77 A5,5 0 0 1 77,82 L63,82 A5,5 0 0 1 58,77 L58,63 A5,5 0 0 1 63,58 Z" />
+</vector>
