@@ -13,8 +13,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
-import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.model.Habit
@@ -28,7 +26,6 @@ import pl.luczka.todaywas.domain.repository.FakeOnboardingRepository
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
@@ -101,10 +98,6 @@ class MainViewModelTest {
                 journalRepository,
             ),
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-            observeJournalContribution = ObserveJournalContributionUseCase(
-                journalRepository,
-                clock,
-            ),
             observeAuthState = ObserveAuthStateUseCase(authRepository),
             syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
             signOut = SignOutUseCase(
@@ -116,14 +109,6 @@ class MainViewModelTest {
             clock = clock,
         )
     }
-
-    private fun levelFor(
-        cells: List<DsContributionCellUiState>,
-        date: LocalDate,
-    ): DsContributionLevel? = cells
-        .filterIsInstance<DsContributionCellUiState.Level>()
-        .find { it.date == date }
-        ?.level
 
     @Before
     fun setUp() {
@@ -149,10 +134,6 @@ class MainViewModelTest {
                     journalRepository,
                 ),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-                observeJournalContribution = ObserveJournalContributionUseCase(
-                    journalRepository,
-                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
-                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(
@@ -473,37 +454,6 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should expose the full RollingTwelveMonths grid in journalContributionCells including today's level`() =
-        runTest {
-            // Arrange
-            val today = entry(LocalDate.now())
-
-            // Act
-            val viewModel = viewModel(entries = listOf(today))
-            val state = viewModel.uiState.value
-
-            // Assert
-            assertTrue(state.journalContributionCells.size > 7)
-            assertTrue(levelFor(state.journalContributionCells, LocalDate.now()) != null)
-        }
-
-    @Test
-    fun `should reuse the journalContributionCells instance across an unrelated state change`() =
-        runTest {
-            // Arrange
-            val today = entry(LocalDate.now())
-            val viewModel = viewModel(entries = listOf(today))
-            val cellsBefore = viewModel.uiState.value.journalContributionCells
-
-            // Act
-            viewModel.onIntent(MainIntent.FabToggled)
-            runCurrent()
-
-            // Assert
-            assertTrue(cellsBefore === viewModel.uiState.value.journalContributionCells)
-        }
-
-    @Test
     fun `should sync local data when the screen loads while already signed in`() =
         runTest {
             // Arrange
@@ -522,10 +472,6 @@ class MainViewModelTest {
                     journalRepository,
                 ),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-                observeJournalContribution = ObserveJournalContributionUseCase(
-                    journalRepository,
-                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
-                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(
@@ -558,10 +504,6 @@ class MainViewModelTest {
                     journalRepository,
                 ),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-                observeJournalContribution = ObserveJournalContributionUseCase(
-                    journalRepository,
-                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
-                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(
@@ -739,10 +681,6 @@ class MainViewModelTest {
                     journalRepository,
                 ),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-                observeJournalContribution = ObserveJournalContributionUseCase(
-                    journalRepository,
-                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
-                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(
@@ -784,10 +722,6 @@ class MainViewModelTest {
                     journalRepository,
                 ),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-                observeJournalContribution = ObserveJournalContributionUseCase(
-                    journalRepository,
-                    Clock.fixed(Instant.now(), ZoneOffset.UTC),
-                ),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
                 syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(

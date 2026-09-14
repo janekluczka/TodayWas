@@ -1,9 +1,11 @@
 package pl.luczka.todaywas.ui.mapper
 
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.model.HabitType
+import pl.luczka.todaywas.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
@@ -30,12 +32,20 @@ fun HabitCheckInBoard.toSortedHabitUiStates(
         HabitSortUiState.DATE_CREATED -> habits.sortedBy { it.createdAt }
     }
     return sortedHabits.map { habit ->
-        val todayCheckIn = checkIns.find { it.habitId == habit.id && it.date == today }
-        habit.toUiState(todayCheckIn)
+        val habitCheckIns = checkIns.filter { it.habitId == habit.id }
+        val todayCheckIn = habitCheckIns.find { it.date == today }
+        val todayLevel = HabitContributionCalculator
+            .levelForDate(habitCheckIns, today)
+            ?.toUiState()
+            ?: DsContributionLevel.NONE
+        habit.toUiState(todayCheckIn, todayLevel)
     }
 }
 
-fun Habit.toUiState(todayCheckIn: HabitCheckIn?): HabitUiState = HabitUiState(
+fun Habit.toUiState(
+    todayCheckIn: HabitCheckIn?,
+    todayLevel: DsContributionLevel = DsContributionLevel.NONE,
+): HabitUiState = HabitUiState(
     id = id,
     name = name,
     type = type.toUiState(),
@@ -47,6 +57,7 @@ fun Habit.toUiState(todayCheckIn: HabitCheckIn?): HabitUiState = HabitUiState(
         )
         else -> HabitCheckInStatusUiState.LoggedScale(value = todayCheckIn.value)
     },
+    todayLevel = todayLevel,
 )
 
 fun HabitType.toUiState(): HabitTypeUiState = when (this) {

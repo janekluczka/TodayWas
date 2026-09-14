@@ -9,7 +9,8 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 // just here: the client-side "N regenerations" cap this replaces was purely in-memory and reset
 // the moment a screen was left and reentered, so the real limit has to live where a client can't
 // reset it.
-const DAILY_AI_ASSIST_LIMIT = 10;
+// Temporarily raised for manual testing during feature/refinements -- restore to 10 before merge.
+const DAILY_AI_ASSIST_LIMIT = 1000;
 
 const TONE_LABELS: Record<number, string> = {
   1: "very bad",

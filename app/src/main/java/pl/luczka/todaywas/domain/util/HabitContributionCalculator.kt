@@ -6,6 +6,7 @@ import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.dateRange
 import java.time.Instant
+import java.time.LocalDate
 import kotlin.math.ceil
 
 object HabitContributionCalculator {
@@ -25,6 +26,19 @@ object HabitContributionCalculator {
                 date to levelFor(checkIn.value, sortedValues)
             }.toMap()
         return ContributionGrid(window = window, days = days)
+    }
+
+    // Cheaper than compute() for callers that only need one day's level (e.g. a habit list row's
+    // "today" badge) — skips the whole-window date-range walk (compute() always iterates every
+    // day in the window even when only one date is asked for), while using the exact same
+    // levelFor() ranking so results stay identical to what a real grid would show for that date.
+    fun levelForDate(
+        checkIns: List<HabitCheckIn>,
+        date: LocalDate,
+    ): ContributionLevel? {
+        val checkIn = checkIns.find { it.date == date } ?: return null
+        val sortedValues = checkIns.map { it.value }.sorted()
+        return levelFor(checkIn.value, sortedValues)
     }
 
     private fun levelFor(

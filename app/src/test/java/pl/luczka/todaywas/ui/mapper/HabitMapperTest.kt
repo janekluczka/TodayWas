@@ -2,10 +2,12 @@ package pl.luczka.todaywas.ui.mapper
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.model.HabitType
+import pl.luczka.todaywas.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 import java.time.Instant
@@ -102,6 +104,35 @@ class HabitMapperTest {
 
         // Assert
         assertEquals(HabitCheckInStatusUiState.NotLogged, status)
+    }
+
+    @Test
+    fun `should return NONE for todayLevel when the habit has no check-ins`() {
+        // Arrange
+        val board = HabitCheckInBoard(habits = listOf(habit()), checkIns = emptyList())
+
+        // Act
+        val level = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayLevel
+
+        // Assert
+        assertEquals(DsContributionLevel.NONE, level)
+    }
+
+    @Test
+    fun `should compute todayLevel matching HabitContributionCalculator's own output`() {
+        // Arrange
+        val checkIns = listOf(
+            checkIn(habitId = "1", date = today.minusDays(1), value = 1),
+            checkIn(habitId = "1", date = today, value = 5),
+        )
+        val board = HabitCheckInBoard(habits = listOf(habit()), checkIns = checkIns)
+        val expectedLevel = HabitContributionCalculator.levelForDate(checkIns, today)!!
+
+        // Act
+        val level = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayLevel
+
+        // Assert
+        assertEquals(expectedLevel.toUiState(), level)
     }
 
     @Test

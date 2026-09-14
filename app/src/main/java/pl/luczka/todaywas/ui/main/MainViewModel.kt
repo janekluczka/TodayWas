@@ -10,20 +10,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.domain.model.AuthError
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
-import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
@@ -44,7 +39,6 @@ class MainViewModel @Inject constructor(
     observeJournalEntries: ObserveJournalEntriesUseCase,
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
-    observeJournalContribution: ObserveJournalContributionUseCase,
     private val observeAuthState: ObserveAuthStateUseCase,
     private val syncLocalData: SyncLocalDataUseCase,
     private val signOut: SignOutUseCase,
@@ -56,7 +50,6 @@ class MainViewModel @Inject constructor(
             isLoading = true,
             journalEntries = emptyList(),
             habits = emptyList(),
-            journalContributionCells = emptyList(),
             fabActions = emptyList(),
             fabExpanded = false,
             authState = AuthStateUi.Loading,
@@ -70,17 +63,9 @@ class MainViewModel @Inject constructor(
     private val eventChannel = Channel<MainUiEvent>(Channel.BUFFERED)
     val events: Flow<MainUiEvent> = eventChannel.receiveAsFlow()
 
-    // The full RollingTwelveMonths grid, same data source the Journal list screen's grid uses —
-    // Main just renders it as a single scrollable row (DsContributionRow) instead of stacked
-    // weekly columns.
-    private val journalContributionCells: Flow<List<DsContributionCellUiState>> =
-        observeJournalContribution(flowOf(ContributionWindow.RollingTwelveMonths)).map { summary ->
-            summary.grid.toUiState(clock.instant()).cells
-        }
-
     init {
         viewModelScope.launch {
-            val rawSources = combine(
+            combine(
                 observeJournalEntries(),
                 observeAddableJournalDateSlots(),
                 observeHabitCheckInBoard(),
@@ -93,25 +78,13 @@ class MainViewModel @Inject constructor(
                         sort = HabitSortUiState.RECENTLY_CHECKED_IN,
                     ),
                 )
-            }
-            combine(
-                rawSources,
-                journalContributionCells,
-            ) { raw, contributionCells ->
-                CombinedMainState(
-                    journalEntries = raw.journalEntries,
-                    addableSlots = raw.addableSlots,
-                    habits = raw.habits,
-                    journalContributionCells = contributionCells,
-                )
-            }.collect { combined ->
+            }.collect { raw ->
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        journalEntries = combined.journalEntries,
-                        habits = combined.habits,
-                        journalContributionCells = combined.journalContributionCells,
-                        fabActions = toFabActions(combined.addableSlots, combined.habits),
+                        journalEntries = raw.journalEntries,
+                        habits = raw.habits,
+                        fabActions = toFabActions(raw.addableSlots, raw.habits),
                     )
                 }
             }
@@ -229,12 +202,5 @@ class MainViewModel @Inject constructor(
         val journalEntries: List<JournalEntryUiState>,
         val addableSlots: List<JournalDateSlotUiState>,
         val habits: List<HabitUiState>,
-    )
-
-    private data class CombinedMainState(
-        val journalEntries: List<JournalEntryUiState>,
-        val addableSlots: List<JournalDateSlotUiState>,
-        val habits: List<HabitUiState>,
-        val journalContributionCells: List<DsContributionCellUiState>,
     )
 }

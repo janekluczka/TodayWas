@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.journal.create
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -33,6 +33,7 @@ import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsFilledTonalButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsAssistChip
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChoiceFlowRow
@@ -358,7 +359,7 @@ fun HelpMeStartBottomSheet(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
-                    HelpMeStartStep.INPUT, HelpMeStartStep.PREVIEW -> {
+                    HelpMeStartStep.INPUT -> {
                         DsText(
                             text = stringResource(R.string.journal_help_me_start_dialog_title),
                             style = MaterialTheme.typography.titleMedium,
@@ -389,46 +390,42 @@ fun HelpMeStartBottomSheet(
                             minLines = 3,
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        if (uiState.step == HelpMeStartStep.PREVIEW &&
-                            uiState.generatedText != null
-                        ) {
-                            DsText(text = uiState.generatedText)
-                            DsAssistChip(
+                        DsButtonWithLoading(
+                            text = stringResource(R.string.journal_help_me_start_generate_cta),
+                            onClick = onGenerateClicked,
+                            enabled = uiState.selectedTone != null &&
+                                !uiState.isGenerating &&
+                                uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
+                            loading = uiState.isGenerating,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    // A dedicated screen once a result exists, rather than reusing INPUT's layout
+                    // with the result appended below it — the tone picker/thoughts field step is
+                    // done at this point, so this screen shows only the result and the two actions
+                    // that apply to it. Regenerate silently reuses the last-selected tone/thoughts
+                    // (no way back to INPUT to change them without dismissing and reopening).
+                    HelpMeStartStep.PREVIEW -> {
+                        DsText(
+                            text = stringResource(R.string.journal_help_me_start_preview_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        uiState.generatedText?.let { DsText(text = it) }
+                        Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
+                            DsFilledTonalButtonWithLoading(
                                 text = stringResource(
                                     R.string.journal_help_me_start_regenerate_cta,
                                 ),
                                 onClick = onRegenerateClicked,
-                                enabled = !uiState.isGenerating &&
-                                    (uiState.remainingToday ?: 1) > 0,
-                            )
-                        }
-                        uiState.remainingToday?.let { remaining ->
-                            DsText(
-                                text = pluralStringResource(
-                                    R.plurals.journal_ai_assist_remaining_today,
-                                    remaining,
-                                    remaining,
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        if (uiState.step == HelpMeStartStep.INPUT) {
-                            DsButtonWithLoading(
-                                text = stringResource(R.string.journal_help_me_start_generate_cta),
-                                onClick = onGenerateClicked,
-                                enabled = uiState.selectedTone != null &&
-                                    !uiState.isGenerating &&
-                                    uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
+                                enabled = (uiState.remainingToday ?: 1) > 0,
                                 loading = uiState.isGenerating,
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.weight(1f),
                             )
-                        } else {
                             DsButton(
-                                text = stringResource(R.string.journal_help_me_start_use_this_cta),
+                                text = stringResource(R.string.journal_ai_assist_accept_cta),
                                 onClick = onUseGeneratedTextClicked,
                                 enabled = !uiState.isGenerating,
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }

@@ -13,11 +13,11 @@
     <string name="main_empty_state_title">Nothing here yet</string>
     <string name="main_empty_state_description">Start journaling or create a habit to see it here.</string>
 
-    <string name="journal_list_title">All entries</string>
+    <string name="journal_list_title">Journal</string>
     <string name="journal_sort_newest_first">Newest first</string>
     <string name="journal_sort_oldest_first">Oldest first</string>
 
-    <string name="habit_list_title">All habits</string>
+    <string name="habit_list_title">Habits</string>
     <string name="habit_sort_recently_checked_in">Recently checked-in</string>
     <string name="habit_sort_alphabetical">Alphabetical</string>
     <string name="habit_sort_date_created">Date created</string>
@@ -75,6 +75,7 @@
     <string name="journal_help_me_start_signed_out_title">Sign in to use AI assist</string>
     <string name="journal_help_me_start_signed_out_message">Get a starting line for today\'s entry, personalized to your mood. Sign in to try it.</string>
     <string name="journal_help_me_start_dialog_title">What\'s today\'s mood?</string>
+    <string name="journal_help_me_start_preview_title">Suggested start</string>
     <string name="journal_ai_assist_tone_very_bad">Very bad</string>
     <string name="journal_ai_assist_tone_bad">Bad</string>
     <string name="journal_ai_assist_tone_neutral">Neutral</string>
@@ -83,7 +84,7 @@
     <string name="journal_help_me_start_thoughts_label">A few thoughts (optional)</string>
     <string name="journal_help_me_start_generate_cta">Generate</string>
     <string name="journal_help_me_start_regenerate_cta">Regenerate</string>
-    <string name="journal_help_me_start_use_this_cta">Use this</string>
+    <string name="journal_ai_assist_accept_cta">Accept</string>
     <string name="journal_help_me_start_cancel_cta">Cancel</string>
     <string name="journal_ai_assist_error_invalid_request">Something went wrong. Please try again.</string>
     <string name="journal_ai_assist_error_upstream_failed">Couldn\'t generate a prompt right now. Please try again.</string>
@@ -107,6 +108,7 @@
 
     <string name="journal_help_me_refine_cta">Help me refine</string>
     <string name="journal_help_me_refine_dialog_title">Refine this entry</string>
+    <string name="journal_help_me_refine_preview_title">Refined journal</string>
     <string name="journal_help_me_refine_generate_cta">Refine</string>
     <string name="journal_help_me_refine_thoughts_label">A few thoughts about the refinement (optional)</string>
 
@@ -132,6 +134,7 @@
     <string name="habit_checkin_not_logged_label">Not logged</string>
 
     <string name="habit_detail_edit_action">Edit</string>
+    <string name="habit_detail_add_action">Add</string>
     <string name="habit_detail_save_cta">Save</string>
     <string name="habit_detail_cancel_edit_action">Cancel</string>
     <string name="habit_detail_error">Something went wrong. Please try again.</string>
@@ -144,8 +147,6 @@
     <string name="habit_detail_delete_cancel_cta">Cancel</string>
     <string name="habit_detail_delete_error">Something went wrong. Please try again.</string>
     <string name="habit_detail_delete_checkin_action">Delete check-in</string>
-
-    <string name="contribution_window_last_12_months_label">Last 12 months</string>
 
     <string name="auth_form_email_label">Email</string>
     <string name="auth_form_email_error">Enter a valid email address</string>
@@ -184,9 +185,4 @@
     <string name="data_sync_review_summary_format">%1$d journal entries, %2$d habits, %3$d check-ins</string>
     <string name="data_sync_review_confirm_cta">Add my data</string>
     <string name="data_sync_review_skip_cta">Not now</string>
-
-    <plurals name="journal_ai_assist_remaining_today">
-        <item quantity="one">%d generation left today</item>
-        <item quantity="other">%d generations left today</item>
-    </plurals>
 </resources>

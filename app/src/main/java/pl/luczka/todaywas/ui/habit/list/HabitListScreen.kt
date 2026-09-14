@@ -2,11 +2,12 @@ package pl.luczka.todaywas.ui.habit.list
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,6 +25,7 @@ import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsChip
+import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
@@ -88,22 +90,15 @@ private fun HabitListScreenContent(
             SortChipRow(
                 selected = uiState.selectedSort,
                 onSortSelected = { onIntent(HabitListIntent.SortSelected(it)) },
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space200,
-                ),
+                modifier = Modifier.fillMaxWidth(),
             )
             if (!uiState.isLoading && uiState.habits.isEmpty()) {
                 DsText(
                     text = stringResource(R.string.main_habit_empty_state),
-                    modifier = Modifier.padding(horizontal = DsSpacing.space600),
+                    modifier = Modifier.padding(horizontal = DsSpacing.space400),
                 )
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = DsSpacing.space600),
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(uiState.habits) { habit ->
                         HabitRow(
                             habit = habit,
@@ -122,26 +117,28 @@ private fun SortChipRow(
     onSortSelected: (HabitSortUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    LazyRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
+        contentPadding = PaddingValues(
+            horizontal = DsSpacing.space400,
+            vertical = DsSpacing.space200,
+        ),
         modifier = modifier,
     ) {
-        DsChip(
-            text = stringResource(R.string.habit_sort_recently_checked_in),
-            selected = selected == HabitSortUiState.RECENTLY_CHECKED_IN,
-            onClick = { onSortSelected(HabitSortUiState.RECENTLY_CHECKED_IN) },
-        )
-        DsChip(
-            text = stringResource(R.string.habit_sort_alphabetical),
-            selected = selected == HabitSortUiState.ALPHABETICAL,
-            onClick = { onSortSelected(HabitSortUiState.ALPHABETICAL) },
-        )
-        DsChip(
-            text = stringResource(R.string.habit_sort_date_created),
-            selected = selected == HabitSortUiState.DATE_CREATED,
-            onClick = { onSortSelected(HabitSortUiState.DATE_CREATED) },
-        )
+        items(HabitSortUiState.entries) { sort ->
+            DsChip(
+                text = stringResource(sort.labelRes()),
+                selected = sort == selected,
+                onClick = { onSortSelected(sort) },
+            )
+        }
     }
+}
+
+private fun HabitSortUiState.labelRes(): Int = when (this) {
+    HabitSortUiState.RECENTLY_CHECKED_IN -> R.string.habit_sort_recently_checked_in
+    HabitSortUiState.ALPHABETICAL -> R.string.habit_sort_alphabetical
+    HabitSortUiState.DATE_CREATED -> R.string.habit_sort_date_created
 }
 
 private class HabitListUiStatePreviewProvider : PreviewParameterProvider<HabitListUiState> {
@@ -150,14 +147,29 @@ private class HabitListUiStatePreviewProvider : PreviewParameterProvider<HabitLi
         HabitListUiState(isLoading = false, habits = emptyList()),
         HabitListUiState(
             isLoading = false,
-            habits = (1..8).map {
+            habits = listOf(
                 HabitUiState(
-                    id = it.toString(),
-                    name = "Habit $it",
+                    id = "1",
+                    name = "Drink water",
                     type = HabitTypeUiState.BINARY,
                     todayStatus = HabitCheckInStatusUiState.NotLogged,
-                )
-            },
+                    todayLevel = DsContributionLevel.NONE,
+                ),
+                HabitUiState(
+                    id = "2",
+                    name = "Run",
+                    type = HabitTypeUiState.BINARY,
+                    todayStatus = HabitCheckInStatusUiState.LoggedBinary(done = true),
+                    todayLevel = DsContributionLevel.LEVEL_5,
+                ),
+                HabitUiState(
+                    id = "3",
+                    name = "Mood",
+                    type = HabitTypeUiState.SCALE,
+                    todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 3),
+                    todayLevel = DsContributionLevel.LEVEL_3,
+                ),
+            ),
         ),
     )
 }

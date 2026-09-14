@@ -3,6 +3,8 @@ package pl.luczka.todaywas.core.designsystem.components.buttons
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -19,11 +21,13 @@ fun DsFilledTonalIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    colors: IconButtonColors = IconButtonDefaults.filledTonalIconButtonColors(),
     content: @Composable () -> Unit,
 ) {
     FilledTonalIconButton(
         onClick = onClick,
         enabled = enabled,
+        colors = colors,
         content = content,
         modifier = modifier,
     )
