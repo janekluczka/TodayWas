@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -31,6 +31,7 @@ import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsFilledTonalButtonWithLoading
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.chips.DsAssistChip
@@ -264,66 +265,71 @@ fun HelpMeRefineBottomSheet(
                     .fillMaxWidth()
                     .padding(DsSpacing.space600),
             ) {
-                DsText(
-                    text = stringResource(R.string.journal_help_me_refine_dialog_title),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                val toneLabels =
-                    JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
-                DsChoiceFlowRow(
-                    items = JournalPromptToneUiState.entries.toList(),
-                    selectedItem = uiState.selectedTone,
-                    onItemSelected = { tone ->
-                        tone?.let(onToneSelected)
-                    },
-                    enabled = !uiState.isGenerating,
-                    allowDeselect = false,
-                    label = { toneLabels.getValue(it) },
-                )
-                DsPlainTextField(
-                    value = uiState.thoughts,
-                    onValueChange = onThoughtsChanged,
-                    placeholder = stringResource(R.string.journal_help_me_refine_thoughts_label),
-                    enabled = !uiState.isGenerating,
-                    minLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                if (uiState.step == HelpMeRefineStep.PREVIEW && uiState.refinedText != null) {
-                    DsText(text = uiState.refinedText)
-                    DsAssistChip(
-                        text = stringResource(R.string.journal_help_me_start_regenerate_cta),
-                        onClick = onRegenerateClicked,
-                        enabled = !uiState.isGenerating && (uiState.remainingToday ?: 1) > 0,
-                    )
-                }
-                uiState.remainingToday?.let { remaining ->
-                    DsText(
-                        text = pluralStringResource(
-                            R.plurals.journal_ai_assist_remaining_today,
-                            remaining,
-                            remaining,
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (uiState.step == HelpMeRefineStep.INPUT) {
-                    DsButtonWithLoading(
-                        text = stringResource(R.string.journal_help_me_refine_generate_cta),
-                        onClick = onRefineClicked,
-                        enabled = uiState.selectedTone != null &&
-                            !uiState.isGenerating &&
-                            uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
-                        loading = uiState.isGenerating,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                } else {
-                    DsButton(
-                        text = stringResource(R.string.journal_help_me_start_use_this_cta),
-                        onClick = onUseRefinedTextClicked,
-                        enabled = !uiState.isGenerating,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                when (uiState.step) {
+                    HelpMeRefineStep.INPUT -> {
+                        DsText(
+                            text = stringResource(R.string.journal_help_me_refine_dialog_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        val toneLabels =
+                            JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
+                        DsChoiceFlowRow(
+                            items = JournalPromptToneUiState.entries.toList(),
+                            selectedItem = uiState.selectedTone,
+                            onItemSelected = { tone ->
+                                tone?.let(onToneSelected)
+                            },
+                            enabled = !uiState.isGenerating,
+                            allowDeselect = false,
+                            label = { toneLabels.getValue(it) },
+                        )
+                        DsPlainTextField(
+                            value = uiState.thoughts,
+                            onValueChange = onThoughtsChanged,
+                            placeholder = stringResource(
+                                R.string.journal_help_me_refine_thoughts_label,
+                            ),
+                            enabled = !uiState.isGenerating,
+                            minLines = 3,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        DsButtonWithLoading(
+                            text = stringResource(R.string.journal_help_me_refine_generate_cta),
+                            onClick = onRefineClicked,
+                            enabled = uiState.selectedTone != null &&
+                                !uiState.isGenerating &&
+                                uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
+                            loading = uiState.isGenerating,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    // A dedicated screen once a result exists, rather than reusing INPUT's layout
+                    // with the result appended below it — see the matching HelpMeStartBottomSheet
+                    // PREVIEW branch for the full rationale (same shared-flow pattern).
+                    HelpMeRefineStep.PREVIEW -> {
+                        DsText(
+                            text = stringResource(R.string.journal_help_me_refine_preview_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        uiState.refinedText?.let { DsText(text = it) }
+                        Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
+                            DsFilledTonalButtonWithLoading(
+                                text = stringResource(
+                                    R.string.journal_help_me_start_regenerate_cta,
+                                ),
+                                onClick = onRegenerateClicked,
+                                enabled = (uiState.remainingToday ?: 1) > 0,
+                                loading = uiState.isGenerating,
+                                modifier = Modifier.weight(1f),
+                            )
+                            DsButton(
+                                text = stringResource(R.string.journal_ai_assist_accept_cta),
+                                onClick = onUseRefinedTextClicked,
+                                enabled = !uiState.isGenerating,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
                 }
             }
             DsSnackbarHost(
