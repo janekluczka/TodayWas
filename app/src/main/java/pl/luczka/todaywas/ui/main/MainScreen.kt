@@ -1,10 +1,12 @@
 package pl.luczka.todaywas.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -64,6 +66,8 @@ import java.time.LocalDate
 
 // Each section shows at most this many items on Main before falling back to a "View all" row.
 private const val MAIN_SECTION_CAP = 5
+
+private val EMPTY_SECTION_HEIGHT = 96.dp
 
 @Composable
 fun MainScreen(
@@ -317,34 +321,29 @@ private fun SignOutConfirmDialog(onIntent: (MainIntent) -> Unit) {
     )
 }
 
+// Every action always shows in the expanded menu, in a fixed order — one currently unavailable
+// (e.g. no habits yet for LOG_HABIT_CHECK_INS) renders disabled rather than disappearing, so the
+// menu's shape/order never shifts around based on state.
 @Composable
 private fun MainFab(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
 ) {
-    val actions = uiState.fabActions
-    if (actions.isEmpty()) return
-
     Column(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
     ) {
         if (uiState.fabExpanded) {
-            for (action in actions) {
+            for (action in FabActionUiState.entries) {
                 DsExtendedFloatingActionButton(
                     text = stringResource(action.labelRes),
                     onClick = { onIntent(MainIntent.FabActionClicked(action)) },
+                    enabled = action !in uiState.disabledFabActions,
                 )
             }
         }
         DsFloatingActionButton(
-            onClick = {
-                if (actions.size == 1) {
-                    onIntent(MainIntent.FabActionClicked(actions.single()))
-                } else {
-                    onIntent(MainIntent.FabToggled)
-                }
-            },
+            onClick = { onIntent(MainIntent.FabToggled) },
         ) {
             DsIcon(
                 imageVector = Icons.Default.Add,
@@ -404,7 +403,7 @@ private fun JournalSection(
                 itemContent = {},
                 modifier = Modifier.padding(horizontal = DsSpacing.space600),
             )
-            uiState.journalEntries.isEmpty() -> JournalEmptyContent(onIntent)
+            uiState.journalEntries.isEmpty() -> JournalEmptyContent()
             else -> DsSectionedList(
                 items = uiState.journalEntries.take(MAIN_SECTION_CAP),
                 isLoading = false,
@@ -421,17 +420,8 @@ private fun JournalSection(
 }
 
 @Composable
-private fun JournalEmptyContent(onIntent: (MainIntent) -> Unit) {
-    Column(modifier = Modifier.padding(horizontal = DsSpacing.space600)) {
-        DsText(text = stringResource(R.string.main_journal_empty_state))
-        DsButton(
-            text = stringResource(R.string.main_fab_add_journal),
-            onClick = {
-                onIntent(MainIntent.FabActionClicked(FabActionUiState.ADD_JOURNAL_ENTRY))
-            },
-            modifier = Modifier.padding(top = DsSpacing.space200),
-        )
-    }
+private fun JournalEmptyContent() {
+    EmptySectionContent(text = stringResource(R.string.main_journal_empty_state))
 }
 
 @Composable
@@ -462,7 +452,7 @@ private fun HabitSection(
                     vertical = DsSpacing.space200,
                 ),
             )
-            uiState.habits.isEmpty() -> HabitEmptyContent(onIntent)
+            uiState.habits.isEmpty() -> HabitEmptyContent()
             else -> DsSectionedList(
                 items = uiState.habits.take(MAIN_SECTION_CAP),
                 isLoading = false,
@@ -482,13 +472,25 @@ private fun HabitSection(
 }
 
 @Composable
-private fun HabitEmptyContent(onIntent: (MainIntent) -> Unit) {
-    Column(modifier = Modifier.padding(horizontal = DsSpacing.space600)) {
-        DsText(text = stringResource(R.string.main_habit_empty_state))
-        DsButton(
-            text = stringResource(R.string.main_fab_create_habit),
-            onClick = { onIntent(MainIntent.FabActionClicked(FabActionUiState.CREATE_HABIT)) },
-            modifier = Modifier.padding(top = DsSpacing.space200),
+private fun HabitEmptyContent() {
+    EmptySectionContent(text = stringResource(R.string.main_habit_empty_state))
+}
+
+// Shared by both sections' empty state: no CTA (the FAB already covers that action), just a
+// muted, centered message reserving a modest fixed height so the section doesn't collapse to a
+// single cramped line of text.
+@Composable
+private fun EmptySectionContent(text: String) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(EMPTY_SECTION_HEIGHT)
+            .padding(horizontal = DsSpacing.space600),
+    ) {
+        DsText(
+            text = text,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -497,7 +499,7 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
     override val values = sequenceOf(
         previewMainUiState(isLoading = true),
         previewMainUiState(
-            fabActions = listOf(FabActionUiState.ADD_JOURNAL_ENTRY, FabActionUiState.CREATE_HABIT),
+            disabledFabActions = setOf(FabActionUiState.LOG_HABIT_CHECK_INS),
         ),
         previewMainUiState(
             journalEntries = listOf(
@@ -532,10 +534,7 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     todayStatus = HabitCheckInStatusUiState.LoggedScale(value = 4),
                 ),
             ),
-            fabActions = listOf(
-                FabActionUiState.CREATE_HABIT,
-                FabActionUiState.LOG_HABIT_CHECK_INS,
-            ),
+            disabledFabActions = setOf(FabActionUiState.ADD_JOURNAL_ENTRY),
         ),
         previewMainUiState(
             journalEntries = (1..7).map {
@@ -579,7 +578,7 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
 private fun previewMainUiState(
     journalEntries: List<JournalEntryUiState> = emptyList(),
     habits: List<HabitUiState> = emptyList(),
-    fabActions: List<FabActionUiState> = emptyList(),
+    disabledFabActions: Set<FabActionUiState> = emptySet(),
     authState: AuthStateUi = AuthStateUi.SignedOut,
     isAccountSheetVisible: Boolean = false,
     isSignOutConfirmVisible: Boolean = false,
@@ -588,7 +587,7 @@ private fun previewMainUiState(
     isLoading = isLoading,
     journalEntries = journalEntries,
     habits = habits,
-    fabActions = fabActions,
+    disabledFabActions = disabledFabActions,
     fabExpanded = false,
     authState = authState,
     isAccountSheetVisible = isAccountSheetVisible,

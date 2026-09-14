@@ -11,7 +11,7 @@ data class MainUiState(
     val isLoading: Boolean,
     val journalEntries: List<JournalEntryUiState>,
     val habits: List<HabitUiState>,
-    val fabActions: List<FabActionUiState>,
+    val disabledFabActions: Set<FabActionUiState>,
     val fabExpanded: Boolean,
     val authState: AuthStateUi,
     val isAccountSheetVisible: Boolean,

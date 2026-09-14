@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Concept: 6x6 grid, rounded-diamond silhouette (24 of 36 cells active, symmetric on both
+     axes). Color still ramps by diagonal (row+col) across the 7-step teal ramp so the
+     bottom-right "today" corner stays the brightest, even though the shape itself is symmetric.
+       . . x x . .
+       . x x x x .
+       x x x x x x
+       x x x x x x
+       . x x x x .
+       . . x x . . -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- row 0: (0,2) (0,3) -->
+    <path android:fillColor="#00382E" android:pathData="M47,25 L51,25 A2,2 0 0 1 53,27 L53,31 A2,2 0 0 1 51,33 L47,33 A2,2 0 0 1 45,31 L45,27 A2,2 0 0 1 47,25 Z" />
+    <path android:fillColor="#1F4F44" android:pathData="M57,25 L61,25 A2,2 0 0 1 63,27 L63,31 A2,2 0 0 1 61,33 L57,33 A2,2 0 0 1 55,31 L55,27 A2,2 0 0 1 57,25 Z" />
+    <!-- row 1: (1,1) (1,2) (1,3) (1,4) -->
+    <path android:fillColor="#00382E" android:pathData="M37,35 L41,35 A2,2 0 0 1 43,37 L43,41 A2,2 0 0 1 41,43 L37,43 A2,2 0 0 1 35,41 L35,37 A2,2 0 0 1 37,35 Z" />
+    <path android:fillColor="#1F4F44" android:pathData="M47,35 L51,35 A2,2 0 0 1 53,37 L53,41 A2,2 0 0 1 51,43 L47,43 A2,2 0 0 1 45,41 L45,37 A2,2 0 0 1 47,35 Z" />
+    <path android:fillColor="#3A6A5E" android:pathData="M57,35 L61,35 A2,2 0 0 1 63,37 L63,41 A2,2 0 0 1 61,43 L57,43 A2,2 0 0 1 55,41 L55,37 A2,2 0 0 1 57,35 Z" />
+    <path android:fillColor="#5B8D7F" android:pathData="M67,35 L71,35 A2,2 0 0 1 73,37 L73,41 A2,2 0 0 1 71,43 L67,43 A2,2 0 0 1 65,41 L65,37 A2,2 0 0 1 67,35 Z" />
+    <!-- row 2: (2,0) (2,1) (2,2) (2,3) (2,4) (2,5) -->
+    <path android:fillColor="#00382E" android:pathData="M27,45 L31,45 A2,2 0 0 1 33,47 L33,51 A2,2 0 0 1 31,53 L27,53 A2,2 0 0 1 25,51 L25,47 A2,2 0 0 1 27,45 Z" />
+    <path android:fillColor="#1F4F44" android:pathData="M37,45 L41,45 A2,2 0 0 1 43,47 L43,51 A2,2 0 0 1 41,53 L37,53 A2,2 0 0 1 35,51 L35,47 A2,2 0 0 1 37,45 Z" />
+    <path android:fillColor="#3A6A5E" android:pathData="M47,45 L51,45 A2,2 0 0 1 53,47 L53,51 A2,2 0 0 1 51,53 L47,53 A2,2 0 0 1 45,51 L45,47 A2,2 0 0 1 47,45 Z" />
+    <path android:fillColor="#5B8D7F" android:pathData="M57,45 L61,45 A2,2 0 0 1 63,47 L63,51 A2,2 0 0 1 61,53 L57,53 A2,2 0 0 1 55,51 L55,47 A2,2 0 0 1 57,45 Z" />
+    <path android:fillColor="#7CAFA1" android:pathData="M67,45 L71,45 A2,2 0 0 1 73,47 L73,51 A2,2 0 0 1 71,53 L67,53 A2,2 0 0 1 65,51 L65,47 A2,2 0 0 1 67,45 Z" />
+    <path android:fillColor="#9DD2C2" android:pathData="M77,45 L81,45 A2,2 0 0 1 83,47 L83,51 A2,2 0 0 1 81,53 L77,53 A2,2 0 0 1 75,51 L75,47 A2,2 0 0 1 77,45 Z" />
+    <!-- row 3: (3,0) (3,1) (3,2) (3,3) (3,4) (3,5) -->
+    <path android:fillColor="#1F4F44" android:pathData="M27,55 L31,55 A2,2 0 0 1 33,57 L33,61 A2,2 0 0 1 31,63 L27,63 A2,2 0 0 1 25,61 L25,57 A2,2 0 0 1 27,55 Z" />
+    <path android:fillColor="#3A6A5E" android:pathData="M37,55 L41,55 A2,2 0 0 1 43,57 L43,61 A2,2 0 0 1 41,63 L37,63 A2,2 0 0 1 35,61 L35,57 A2,2 0 0 1 37,55 Z" />
+    <path android:fillColor="#5B8D7F" android:pathData="M47,55 L51,55 A2,2 0 0 1 53,57 L53,61 A2,2 0 0 1 51,63 L47,63 A2,2 0 0 1 45,61 L45,57 A2,2 0 0 1 47,55 Z" />
+    <path android:fillColor="#7CAFA1" android:pathData="M57,55 L61,55 A2,2 0 0 1 63,57 L63,61 A2,2 0 0 1 61,63 L57,63 A2,2 0 0 1 55,61 L55,57 A2,2 0 0 1 57,55 Z" />
+    <path android:fillColor="#9DD2C2" android:pathData="M67,55 L71,55 A2,2 0 0 1 73,57 L73,61 A2,2 0 0 1 71,63 L67,63 A2,2 0 0 1 65,61 L65,57 A2,2 0 0 1 67,55 Z" />
+    <path android:fillColor="#B9ECDA" android:pathData="M77,55 L81,55 A2,2 0 0 1 83,57 L83,61 A2,2 0 0 1 81,63 L77,63 A2,2 0 0 1 75,61 L75,57 A2,2 0 0 1 77,55 Z" />
+    <!-- row 4: (4,1) (4,2) (4,3) (4,4) -->
+    <path android:fillColor="#5B8D7F" android:pathData="M37,65 L41,65 A2,2 0 0 1 43,67 L43,71 A2,2 0 0 1 41,73 L37,73 A2,2 0 0 1 35,71 L35,67 A2,2 0 0 1 37,65 Z" />
+    <path android:fillColor="#7CAFA1" android:pathData="M47,65 L51,65 A2,2 0 0 1 53,67 L53,71 A2,2 0 0 1 51,73 L47,73 A2,2 0 0 1 45,71 L45,67 A2,2 0 0 1 47,65 Z" />
+    <path android:fillColor="#9DD2C2" android:pathData="M57,65 L61,65 A2,2 0 0 1 63,67 L63,71 A2,2 0 0 1 61,73 L57,73 A2,2 0 0 1 55,71 L55,67 A2,2 0 0 1 57,65 Z" />
+    <path android:fillColor="#B9ECDA" android:pathData="M67,65 L71,65 A2,2 0 0 1 73,67 L73,71 A2,2 0 0 1 71,73 L67,73 A2,2 0 0 1 65,71 L65,67 A2,2 0 0 1 67,65 Z" />
+    <!-- row 5: (5,2) (5,3) -->
+    <path android:fillColor="#9DD2C2" android:pathData="M47,75 L51,75 A2,2 0 0 1 53,77 L53,81 A2,2 0 0 1 51,83 L47,83 A2,2 0 0 1 45,81 L45,77 A2,2 0 0 1 47,75 Z" />
+    <path android:fillColor="#B9ECDA" android:pathData="M57,75 L61,75 A2,2 0 0 1 63,77 L63,81 A2,2 0 0 1 61,83 L57,83 A2,2 0 0 1 55,81 L55,77 A2,2 0 0 1 57,75 Z" />
+</vector>

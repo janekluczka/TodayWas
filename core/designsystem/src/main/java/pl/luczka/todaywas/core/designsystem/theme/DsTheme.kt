@@ -41,6 +41,18 @@ private val DarkColorScheme = darkColorScheme(
     inverseSurface = DsColor.neutral90,
     inverseOnSurface = DsColor.neutral20,
     inversePrimary = DsColor.teal40,
+    // Elevation-tier roles (AlertDialog, ModalBottomSheet, Menu, ... all default to one of
+    // these) left unset here would silently fall back to M3's baseline Purple swatches instead
+    // of our palette — see DsModalBottomSheet/DsBottomSheet for where that surfaced as visibly
+    // purple dialogs. surfaceTint follows primary, same as M3's own convention.
+    surfaceTint = DsColor.teal80,
+    surfaceDim = DsColor.neutral6,
+    surfaceBright = DsColor.neutral20,
+    surfaceContainerLowest = DsColor.neutral6,
+    surfaceContainerLow = DsColor.neutral6,
+    surfaceContainer = DsColor.neutral10,
+    surfaceContainerHigh = DsColor.neutral20,
+    surfaceContainerHighest = DsColor.neutral20,
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -71,6 +83,15 @@ private val LightColorScheme = lightColorScheme(
     inverseSurface = DsColor.neutral20,
     inverseOnSurface = DsColor.neutral95,
     inversePrimary = DsColor.teal80,
+    // See the matching comment in DarkColorScheme above.
+    surfaceTint = DsColor.teal40,
+    surfaceDim = DsColor.neutral90,
+    surfaceBright = DsColor.neutral100,
+    surfaceContainerLowest = DsColor.neutral100,
+    surfaceContainerLow = DsColor.neutral99,
+    surfaceContainer = DsColor.neutral95,
+    surfaceContainerHigh = DsColor.neutral95,
+    surfaceContainerHighest = DsColor.neutral90,
 )
 
 @Composable
