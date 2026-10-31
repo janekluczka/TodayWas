@@ -112,7 +112,7 @@ private fun OnboardingAccountSetupScreenContent(
                             onIntent(OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived(it))
                         },
                         onGoogleSignInFailed = {
-                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed)
+                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
                         },
                         onSignUpLinkClicked = {
                             onIntent(OnboardingAccountSetupIntent.SignUpLinkClicked)
@@ -137,7 +137,7 @@ private fun OnboardingAccountSetupScreenContent(
                             onIntent(OnboardingAccountSetupIntent.SignUpGoogleIdTokenReceived(it))
                         },
                         onGoogleSignInFailed = {
-                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed)
+                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
                         },
                         onSignInLinkClicked = {
                             onIntent(OnboardingAccountSetupIntent.SignInLinkClicked)

@@ -143,7 +143,7 @@ private fun SignedOutContent(
             onPasswordChanged = { onIntent(AccountIntent.SignInPasswordChanged(it)) },
             onSubmitClicked = { onIntent(AccountIntent.SignInSubmitClicked) },
             onGoogleIdTokenReceived = { onIntent(AccountIntent.SignInGoogleIdTokenReceived(it)) },
-            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed) },
+            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
             onSignUpLinkClicked = { onIntent(AccountIntent.SignUpLinkClicked) },
         )
         AccountStep.SIGN_UP -> SignUpFormContent(
@@ -155,7 +155,7 @@ private fun SignedOutContent(
             onGoogleIdTokenReceived = {
                 onIntent(AccountIntent.SignUpGoogleIdTokenReceived(it))
             },
-            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed) },
+            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
             onSignInLinkClicked = { onIntent(AccountIntent.SignInLinkClicked) },
         )
         AccountStep.SUCCESS -> AccountSuccessContent(onIntent)

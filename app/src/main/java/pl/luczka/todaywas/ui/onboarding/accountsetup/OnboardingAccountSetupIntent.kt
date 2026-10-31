@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.ui.onboarding.accountsetup
 
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
+
 sealed interface OnboardingAccountSetupIntent {
 
     data object StepBack : OnboardingAccountSetupIntent
@@ -18,7 +20,9 @@ sealed interface OnboardingAccountSetupIntent {
         val idToken: String,
     ) : OnboardingAccountSetupIntent
 
-    data object GoogleSignInFailed : OnboardingAccountSetupIntent
+    data class GoogleSignInFailed(
+        val error: AuthErrorUiState,
+    ) : OnboardingAccountSetupIntent
 
     data object SignUpLinkClicked : OnboardingAccountSetupIntent
 

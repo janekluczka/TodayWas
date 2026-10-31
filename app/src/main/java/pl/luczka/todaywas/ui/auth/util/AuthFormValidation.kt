@@ -24,5 +24,6 @@ fun AuthErrorUiState.message(): String = when (this) {
     AuthErrorUiState.INVALID_CREDENTIALS -> stringResource(R.string.auth_error_invalid_credentials)
     AuthErrorUiState.WEAK_PASSWORD -> stringResource(R.string.auth_error_weak_password)
     AuthErrorUiState.NETWORK_UNAVAILABLE -> stringResource(R.string.auth_error_network_unavailable)
+    AuthErrorUiState.NO_GOOGLE_ACCOUNT -> stringResource(R.string.auth_error_no_google_account)
     AuthErrorUiState.UNKNOWN -> stringResource(R.string.auth_error_unknown)
 }

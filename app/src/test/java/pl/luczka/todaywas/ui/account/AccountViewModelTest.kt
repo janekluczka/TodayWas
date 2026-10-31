@@ -123,7 +123,7 @@ class AccountViewModelTest {
     fun `should clear userMessage when UserMessageShown is dispatched`() = runTest {
         // Arrange
         val viewModel = viewModel(FakeAuthRepository())
-        viewModel.onIntent(AccountIntent.GoogleSignInFailed)
+        viewModel.onIntent(AccountIntent.GoogleSignInFailed(AuthErrorUiState.UNKNOWN))
         runCurrent()
 
         // Act
@@ -305,16 +305,16 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `should show an error with Unknown when GoogleSignInFailed is dispatched`() = runTest {
+    fun `should show the reported error when GoogleSignInFailed is dispatched`() = runTest {
         // Arrange
         val viewModel = viewModel(FakeAuthRepository())
 
         // Act
-        viewModel.onIntent(AccountIntent.GoogleSignInFailed)
+        viewModel.onIntent(AccountIntent.GoogleSignInFailed(AuthErrorUiState.NO_GOOGLE_ACCOUNT))
         runCurrent()
 
         // Assert
-        assertEquals(AuthErrorUiState.UNKNOWN, viewModel.uiState.value.userMessage)
+        assertEquals(AuthErrorUiState.NO_GOOGLE_ACCOUNT, viewModel.uiState.value.userMessage)
     }
 
     @Test

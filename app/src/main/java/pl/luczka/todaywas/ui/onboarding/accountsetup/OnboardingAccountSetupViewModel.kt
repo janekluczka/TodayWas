@@ -26,6 +26,7 @@ import pl.luczka.todaywas.ui.auth.util.isValidEmail
 import pl.luczka.todaywas.ui.auth.util.isValidPassword
 import pl.luczka.todaywas.ui.auth.util.isValidRepeatPassword
 import pl.luczka.todaywas.ui.mapper.toUiState
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
 import javax.inject.Inject
@@ -76,7 +77,7 @@ class OnboardingAccountSetupViewModel @Inject constructor(
             OnboardingAccountSetupIntent.SignInSubmitClicked -> onSignInSubmitClicked()
             is OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived ->
                 onSignInGoogleIdTokenReceived(intent.idToken)
-            OnboardingAccountSetupIntent.GoogleSignInFailed -> onGoogleSignInFailed()
+            is OnboardingAccountSetupIntent.GoogleSignInFailed -> onGoogleSignInFailed(intent.error)
             OnboardingAccountSetupIntent.SignUpLinkClicked -> _uiState.update {
                 it.copy(accountSubStep = AccountSubStep.SIGN_UP)
             }
@@ -154,8 +155,8 @@ class OnboardingAccountSetupViewModel @Inject constructor(
         }
     }
 
-    private fun onGoogleSignInFailed() {
-        _uiState.update { it.copy(userMessage = AuthError.Unknown.toUiState()) }
+    private fun onGoogleSignInFailed(error: AuthErrorUiState) {
+        _uiState.update { it.copy(userMessage = error) }
     }
 
     private suspend fun applySignInResult(result: Result<Unit>) {

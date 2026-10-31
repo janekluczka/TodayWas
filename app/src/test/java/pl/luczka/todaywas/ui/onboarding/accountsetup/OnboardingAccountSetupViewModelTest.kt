@@ -325,18 +325,18 @@ class OnboardingAccountSetupViewModelTest {
         }
 
     @Test
-    fun `should show an error with Unknown when GoogleSignInFailed is dispatched`() =
+    fun `should show the reported error when GoogleSignInFailed is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
 
             // Act
-            viewModel.onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed)
+            viewModel.onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(AuthErrorUiState.NO_GOOGLE_ACCOUNT))
             runCurrent()
 
             // Assert
             assertEquals(
-                AuthErrorUiState.UNKNOWN,
+                AuthErrorUiState.NO_GOOGLE_ACCOUNT,
                 viewModel.uiState.value.userMessage,
             )
         }
