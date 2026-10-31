@@ -55,6 +55,8 @@ jobs:
         run: chmod +x gradlew
       - name: ktlint
         run: ./gradlew ktlintCheck
+      - name: Android Lint
+        run: ./gradlew lintDebug
       - name: Unit tests
         run: ./gradlew testDebugUnitTest
       - name: Debug build
