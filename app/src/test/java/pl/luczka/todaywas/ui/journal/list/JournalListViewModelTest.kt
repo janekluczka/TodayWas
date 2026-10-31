@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.journal.list
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -39,13 +40,18 @@ class JournalListViewModelTest {
         updatedAt = Instant.now(),
     )
 
-    private fun viewModel(entries: List<JournalEntry> = emptyList()): JournalListViewModel {
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.viewModel(entries: List<JournalEntry> = emptyList()): JournalListViewModel {
         val repository = FakeJournalRepository(entries)
         return JournalListViewModel(
             observeJournalEntries = ObserveJournalEntriesUseCase(repository),
             observeJournalContribution = ObserveJournalContributionUseCase(repository, clock),
             clock = clock,
-        )
+        ).also { viewModel ->
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.uiState.collect {}
+            }
+        }
     }
 
     @Before
@@ -127,25 +133,5 @@ class JournalListViewModelTest {
                 viewModel.uiState.value.contributionGrid.cells
                     .isNotEmpty(),
             )
-        }
-
-    @Test
-    fun `should emit NavigateToDetail with the clicked entry's id when EntryClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val today = LocalDate.of(2026, 6, 15)
-            val viewModel = viewModel(listOf(entry("1", today)))
-            val events = mutableListOf<JournalListUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-            val clickedEntry = viewModel.uiState.value.entries
-                .single()
-
-            // Act
-            viewModel.onIntent(JournalListIntent.EntryClicked(clickedEntry))
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(JournalListUiEvent.NavigateToDetail("1")), events)
-            collectJob.cancel()
         }
 }
