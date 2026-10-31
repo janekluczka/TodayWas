@@ -15,5 +15,5 @@ sealed interface LogHabitCheckInsIntent {
 
     data object SaveClicked : LogHabitCheckInsIntent
 
-    data object CancelClicked : LogHabitCheckInsIntent
+    data object NavigationHandled : LogHabitCheckInsIntent
 }

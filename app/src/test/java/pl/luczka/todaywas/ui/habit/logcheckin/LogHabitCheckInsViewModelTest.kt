@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.habit.logcheckin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -60,13 +61,18 @@ class LogHabitCheckInsViewModelTest {
         updatedAt = Instant.EPOCH,
     )
 
-    private fun viewModel(repository: FakeHabitRepository) = LogHabitCheckInsViewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.viewModel(repository: FakeHabitRepository) = LogHabitCheckInsViewModel(
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
         logHabitCheckIns = LogHabitCheckInsUseCase(repository),
         getFreshLoggableDates = GetFreshLoggableDatesUseCase(
             Clock.fixed(Instant.now(), ZoneOffset.UTC),
         ),
-    )
+    ).also { viewModel ->
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
 
     @Before
     fun setUp() {
@@ -237,14 +243,12 @@ class LogHabitCheckInsViewModelTest {
         }
 
     @Test
-    fun `should save entered values for the selected date and emit Saved when SaveClicked succeeds`() =
+    fun `should save entered values for the selected date and set Saved when SaveClicked succeeds`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
             val viewModel = viewModel(repository)
             viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
-            val events = mutableListOf<LogHabitCheckInsUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
@@ -255,20 +259,20 @@ class LogHabitCheckInsViewModelTest {
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(LocalDate.now(), repository.lastLoggedDate)
             assertEquals(mapOf("1" to 1), repository.lastLoggedValues)
-            assertEquals(listOf(LogHabitCheckInsUiEvent.Saved), events)
-            collectJob.cancel()
+            assertEquals(
+                LogHabitCheckInsNavigation.Saved,
+                viewModel.uiState.value.pendingNavigation,
+            )
         }
 
     @Test
-    fun `should set saveError and not emit Saved when SaveClicked fails`() =
+    fun `should set saveError and not navigate when SaveClicked fails`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
             repository.addCheckInsResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
-            val events = mutableListOf<LogHabitCheckInsUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
@@ -277,24 +281,23 @@ class LogHabitCheckInsViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.saveError)
-            assertTrue(events.isEmpty())
-            collectJob.cancel()
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should emit Cancelled when CancelClicked is dispatched`() =
+    fun `should clear pendingNavigation when NavigationHandled`() =
         runTest {
             // Arrange
-            val viewModel = viewModel(FakeHabitRepository())
-            val events = mutableListOf<LogHabitCheckInsUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(LogHabitCheckInsIntent.CancelClicked)
+            val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
+            val viewModel = viewModel(repository)
+            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
+            viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
             runCurrent()
 
+            // Act
+            viewModel.onIntent(LogHabitCheckInsIntent.NavigationHandled)
+
             // Assert
-            assertEquals(listOf(LogHabitCheckInsUiEvent.Cancelled), events)
-            collectJob.cancel()
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
         }
 }
