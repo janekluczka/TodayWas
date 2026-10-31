@@ -36,12 +36,11 @@ fun OnboardingAllSetScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                OnboardingAllSetUiEvent.Finished -> onFinished()
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            OnboardingAllSetNavigation.Finished -> onFinished()
         }
+        viewModel.onIntent(OnboardingAllSetIntent.NavigationHandled)
     }
 
     OnboardingAllSetScreenContent(
