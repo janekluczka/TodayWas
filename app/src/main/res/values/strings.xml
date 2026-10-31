@@ -40,7 +40,6 @@
     <string name="onboarding_account_description">All your data is stored locally, but you can enable remote sync and AI assist features by creating a free account.</string>
     <string name="onboarding_account_continue_without_account_cta">Continue without account</string>
     <string name="onboarding_account_signin_signup_cta">Sign in or create account</string>
-    <string name="onboarding_account_signed_in_format">Signed in as %1$s</string>
     <string name="onboarding_account_error">Something went wrong. Please try again.</string>
 
     <string name="onboarding_all_set_title">All set!</string>
@@ -51,7 +50,6 @@
 
     <string name="journal_add_entry_title_today">Today</string>
     <string name="journal_add_entry_title_yesterday">Yesterday</string>
-    <string name="journal_add_entry_text_placeholder">What\'s on your mind?</string>
     <string name="journal_add_entry_save_cta">Save</string>
     <string name="journal_add_entry_error">Something went wrong. Please try again.</string>
 
@@ -85,7 +83,6 @@
     <string name="journal_help_me_start_generate_cta">Generate</string>
     <string name="journal_help_me_start_regenerate_cta">Regenerate</string>
     <string name="journal_ai_assist_accept_cta">Accept</string>
-    <string name="journal_help_me_start_cancel_cta">Cancel</string>
     <string name="journal_ai_assist_error_invalid_request">Something went wrong. Please try again.</string>
     <string name="journal_ai_assist_error_upstream_failed">Couldn\'t generate a prompt right now. Please try again.</string>
     <string name="journal_ai_assist_error_not_signed_in">Please sign in to use this feature.</string>
@@ -96,9 +93,7 @@
     <string name="journal_detail_title">Journal entry</string>
     <string name="journal_detail_edit_action">Edit</string>
     <string name="journal_detail_save_cta">Save</string>
-    <string name="journal_detail_cancel_edit_action">Cancel</string>
     <string name="journal_detail_error">Something went wrong. Please try again.</string>
-    <string name="journal_detail_edit_window_expired_error">This entry can no longer be edited.</string>
     <string name="journal_detail_delete_action">Delete</string>
     <string name="journal_detail_delete_dialog_title">Delete entry?</string>
     <string name="journal_detail_delete_dialog_text">This can\'t be undone.</string>
@@ -183,7 +178,19 @@
     <string name="account_sign_out_cancel_cta">Cancel</string>
 
     <string name="data_sync_review_title">Add your existing data to this account?</string>
-    <string name="data_sync_review_summary_format">%1$d journal entries, %2$d habits, %3$d check-ins</string>
+    <string name="data_sync_review_summary_format">%1$s, %2$s, %3$s</string>
+    <plurals name="data_sync_review_journal_entries">
+        <item quantity="one">%d journal entry</item>
+        <item quantity="other">%d journal entries</item>
+    </plurals>
+    <plurals name="data_sync_review_habits">
+        <item quantity="one">%d habit</item>
+        <item quantity="other">%d habits</item>
+    </plurals>
+    <plurals name="data_sync_review_check_ins">
+        <item quantity="one">%d check-in</item>
+        <item quantity="other">%d check-ins</item>
+    </plurals>
     <string name="data_sync_review_confirm_cta">Add my data</string>
     <string name="data_sync_review_skip_cta">Not now</string>
 </resources>
