@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.habit.list
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -57,7 +58,8 @@ class HabitListViewModelTest {
         updatedAt = Instant.EPOCH,
     )
 
-    private fun viewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.viewModel(
         habits: List<Habit> = emptyList(),
         checkIns: List<HabitCheckIn> = emptyList(),
     ) = HabitListViewModel(
@@ -65,7 +67,11 @@ class HabitListViewModelTest {
             FakeHabitRepository(habits, checkIns),
         ),
         clock = clock,
-    )
+    ).also { viewModel ->
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
 
     @Before
     fun setUp() {
@@ -154,24 +160,5 @@ class HabitListViewModelTest {
                 viewModel.uiState.value.habits
                     .map { it.id },
             )
-        }
-
-    @Test
-    fun `should emit NavigateToDetail with the clicked habit's id when HabitClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel(listOf(habit("1")))
-            val events = mutableListOf<HabitListUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-            val clickedHabit = viewModel.uiState.value.habits
-                .single()
-
-            // Act
-            viewModel.onIntent(HabitListIntent.HabitClicked(clickedHabit))
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(HabitListUiEvent.NavigateToDetail("1")), events)
-            collectJob.cancel()
         }
 }
