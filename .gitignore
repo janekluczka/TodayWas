@@ -17,3 +17,4 @@
 node_modules
 local.properties
 .claude/session-handoff.md
+.agents/session-handoff.md
