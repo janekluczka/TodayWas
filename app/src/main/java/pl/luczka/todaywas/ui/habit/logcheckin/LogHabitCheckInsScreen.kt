@@ -114,7 +114,7 @@ private fun LogHabitCheckInsScreenContent(
                 onDateSelected = { onIntent(LogHabitCheckInsIntent.DateSelected(it)) },
             )
             LazyColumn(modifier = Modifier.weight(1f)) {
-                items(uiState.rows) { row ->
+                items(uiState.rows, key = { it.habitId }) { row ->
                     HabitCheckInRow(
                         row = row,
                         onIntent = onIntent,

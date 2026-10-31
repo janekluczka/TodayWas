@@ -126,7 +126,7 @@ private fun JournalListScreenContent(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(uiState.entries) { entry ->
+                    items(uiState.entries, key = { it.id }) { entry ->
                         JournalEntryRow(
                             entry = entry,
                             onClick = { onIntent(JournalListIntent.EntryClicked(entry)) },

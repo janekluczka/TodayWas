@@ -110,7 +110,7 @@ private fun HabitListScreenContent(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(uiState.habits) { habit ->
+                    items(uiState.habits, key = { it.id }) { habit ->
                         HabitRow(
                             habit = habit,
                             onClick = { onIntent(HabitListIntent.HabitClicked(habit)) },

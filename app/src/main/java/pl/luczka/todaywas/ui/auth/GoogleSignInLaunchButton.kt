@@ -28,8 +28,8 @@ fun GoogleSignInLaunchButton(
     enabled: Boolean,
     onIdTokenReceived: (String) -> Unit,
     onFailed: () -> Unit,
-    text: String = stringResource(R.string.auth_form_google_cta),
     modifier: Modifier = Modifier,
+    text: String = stringResource(R.string.auth_form_google_cta),
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()

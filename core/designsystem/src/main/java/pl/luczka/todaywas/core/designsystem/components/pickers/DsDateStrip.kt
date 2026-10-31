@@ -40,8 +40,8 @@ fun DsDateStrip(
     selectedDate: LocalDate,
     isSelectable: (LocalDate) -> Boolean,
     onDateSelected: (LocalDate) -> Unit,
-    interactive: Boolean = true,
     modifier: Modifier = Modifier,
+    interactive: Boolean = true,
 ) {
     val selectedPage = selectedDate.toEpochDay().toInt()
     val pagerState = rememberPagerState(initialPage = selectedPage) { Int.MAX_VALUE }
