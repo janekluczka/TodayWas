@@ -16,6 +16,8 @@ sealed interface EditJournalEntryIntent {
 
     data object DiscardDismissed : EditJournalEntryIntent
 
+    data object NavigationHandled : EditJournalEntryIntent
+
     data object SignInClicked : EditJournalEntryIntent
 
     data object HelpMeStartClicked : EditJournalEntryIntent

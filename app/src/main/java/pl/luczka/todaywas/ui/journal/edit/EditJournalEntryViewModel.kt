@@ -7,12 +7,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AiAssistException
@@ -65,9 +62,6 @@ class EditJournalEntryViewModel @AssistedInject constructor(
     )
     val uiState: StateFlow<EditJournalEntryUiState> = _uiState.asStateFlow()
 
-    private val eventChannel = Channel<EditJournalEntryUiEvent>(Channel.BUFFERED)
-    val events: Flow<EditJournalEntryUiEvent> = eventChannel.receiveAsFlow()
-
     // Tracks the in-flight generate/regenerate call so a stale response can never land after the
     // sheet session it belongs to has already been reset (dismissed, reopened, or accepted).
     private var generateJob: Job? = null
@@ -99,6 +93,8 @@ class EditJournalEntryViewModel @AssistedInject constructor(
             EditJournalEntryIntent.SaveClicked -> onSaveClicked()
             EditJournalEntryIntent.BackClicked -> onBackClicked()
             EditJournalEntryIntent.DiscardConfirmed -> onDiscardConfirmed()
+            EditJournalEntryIntent.NavigationHandled ->
+                _uiState.update { it.copy(pendingNavigation = null) }
             EditJournalEntryIntent.DiscardDismissed -> onDiscardDismissed()
             EditJournalEntryIntent.SignInClicked -> onSignInClicked()
             EditJournalEntryIntent.HelpMeStartClicked -> onHelpMeStartClicked()
@@ -139,10 +135,14 @@ class EditJournalEntryViewModel @AssistedInject constructor(
             val result = updateJournalEntry(entry.id, state.text)
             if (result.isSuccess) {
                 _uiState.update { it.copy(isSaving = false) }
-                eventChannel.trySend(EditJournalEntryUiEvent.Saved)
+                _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Saved) }
             } else if (result.exceptionOrNull() is EditWindowExpiredException) {
                 _uiState.update { it.copy(isSaving = false) }
-                eventChannel.trySend(EditJournalEntryUiEvent.Discarded)
+                _uiState.update {
+                    it.copy(
+                        pendingNavigation = EditJournalEntryNavigation.Discarded,
+                    )
+                }
             } else {
                 _uiState.update { it.copy(isSaving = false, saveError = true) }
             }
@@ -152,14 +152,14 @@ class EditJournalEntryViewModel @AssistedInject constructor(
     private fun onBackClicked() {
         val state = _uiState.value
         if (state.text == state.entry?.text.orEmpty()) {
-            eventChannel.trySend(EditJournalEntryUiEvent.Discarded)
+            _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
         } else {
             _uiState.update { it.copy(isDiscardConfirmVisible = true) }
         }
     }
 
     private fun onDiscardConfirmed() {
-        eventChannel.trySend(EditJournalEntryUiEvent.Discarded)
+        _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
     }
 
     private fun onDiscardDismissed() {
@@ -196,7 +196,7 @@ class EditJournalEntryViewModel @AssistedInject constructor(
                 helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
             )
         }
-        eventChannel.trySend(EditJournalEntryUiEvent.NavigateToSignIn)
+        _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.SignIn) }
     }
 
     private fun onHelpMeStartToneSelected(tone: JournalPromptToneUiState) {
@@ -226,7 +226,11 @@ class EditJournalEntryViewModel @AssistedInject constructor(
             // 10-20s call, and this screen has no non-editing fallback to show instead.
             if (!isEditable(entry.createdAt)) {
                 _uiState.update { it.copy(helpMeStart = HelpMeStartUiState()) }
-                eventChannel.trySend(EditJournalEntryUiEvent.Discarded)
+                _uiState.update {
+                    it.copy(
+                        pendingNavigation = EditJournalEntryNavigation.Discarded,
+                    )
+                }
                 return@launch
             }
             _uiState.update { current ->
@@ -300,7 +304,11 @@ class EditJournalEntryViewModel @AssistedInject constructor(
             // read-only.
             if (!isEditable(entry.createdAt)) {
                 _uiState.update { it.copy(helpMeRefine = HelpMeRefineUiState()) }
-                eventChannel.trySend(EditJournalEntryUiEvent.Discarded)
+                _uiState.update {
+                    it.copy(
+                        pendingNavigation = EditJournalEntryNavigation.Discarded,
+                    )
+                }
                 return@launch
             }
             _uiState.update { current ->
