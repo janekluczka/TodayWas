@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "agent-toolkit": {
+      "source": {
+        "source": "github",
+        "repo": "janekluczka/agent-toolkit"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "core@agent-toolkit": true
+  }
+}
