@@ -28,6 +28,7 @@ data class HabitDetailUiState(
     val deleteHabitError: Boolean = false,
     val isDeletingCheckIn: Boolean = false,
     val deleteCheckInError: Boolean = false,
+    val pendingNavigation: HabitDetailNavigation? = null,
 ) {
     val isEditSheetOpen: Boolean get() = editingDate != null
 }

@@ -580,7 +580,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should delete and emit NavigatedBack when DeleteHabitConfirmed succeeds`() =
+    fun `should delete and set HabitDeleted when DeleteHabitConfirmed succeeds`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
@@ -588,8 +588,6 @@ class HabitDetailViewModelTest {
             val stateCollectJob = launch { viewModel.uiState.collect {} }
             runCurrent()
             viewModel.onIntent(HabitDetailIntent.DeleteHabitClicked)
-            val events = mutableListOf<HabitDetailUiEvent>()
-            val eventsCollectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(HabitDetailIntent.DeleteHabitConfirmed)
@@ -598,9 +596,32 @@ class HabitDetailViewModelTest {
             // Assert
             assertEquals(1, repository.deleteHabitCallCount)
             assertEquals("1", repository.lastDeletedHabitId)
-            assertEquals(listOf(HabitDetailUiEvent.NavigatedBack), events)
+            assertEquals(
+                HabitDetailNavigation.HabitDeleted,
+                viewModel.uiState.value.pendingNavigation,
+            )
             stateCollectJob.cancel()
-            eventsCollectJob.cancel()
+        }
+
+    @Test
+    fun `should clear pendingNavigation when NavigationHandled`() =
+        runTest {
+            // Arrange
+            val repository = FakeHabitRepository(initialHabits = listOf(habit))
+            val viewModel = viewModel(repository)
+            val stateCollectJob = launch { viewModel.uiState.collect {} }
+            runCurrent()
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitClicked)
+            viewModel.onIntent(HabitDetailIntent.DeleteHabitConfirmed)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(HabitDetailIntent.NavigationHandled)
+            runCurrent()
+
+            // Assert
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
+            stateCollectJob.cancel()
         }
 
     @Test

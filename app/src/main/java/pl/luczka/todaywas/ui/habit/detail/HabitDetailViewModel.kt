@@ -6,7 +6,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -53,6 +51,7 @@ private data class HabitDetailViewModelState(
     val deleteHabitError: Boolean = false,
     val isDeletingCheckIn: Boolean = false,
     val deleteCheckInError: Boolean = false,
+    val pendingNavigation: HabitDetailNavigation? = null,
 ) {
     fun toUiState(
         freshLoggableDates: List<LocalDate>,
@@ -77,6 +76,7 @@ private data class HabitDetailViewModelState(
         deleteHabitError = deleteHabitError,
         isDeletingCheckIn = isDeletingCheckIn,
         deleteCheckInError = deleteCheckInError,
+        pendingNavigation = pendingNavigation,
     )
 }
 
@@ -125,9 +125,6 @@ class HabitDetailViewModel @AssistedInject constructor(
         },
     )
 
-    private val eventChannel = Channel<HabitDetailUiEvent>(Channel.BUFFERED)
-    val events: Flow<HabitDetailUiEvent> = eventChannel.receiveAsFlow()
-
     init {
         viewModelScope.launch {
             observeHabitCheckInBoard().collect { board ->
@@ -153,7 +150,8 @@ class HabitDetailViewModel @AssistedInject constructor(
             is HabitDetailIntent.ValueChanged -> onValueChanged(intent.value)
             HabitDetailIntent.SaveClicked -> onSaveClicked()
             HabitDetailIntent.CancelEditClicked -> onCancelEditClicked()
-            HabitDetailIntent.BackClicked -> onBackClicked()
+            HabitDetailIntent.NavigationHandled ->
+                viewModelState.update { it.copy(pendingNavigation = null) }
             HabitDetailIntent.DeleteHabitClicked -> onDeleteHabitClicked()
             HabitDetailIntent.DeleteHabitConfirmed -> onDeleteHabitConfirmed()
             HabitDetailIntent.DeleteHabitDismissed -> onDeleteHabitDismissed()
@@ -188,10 +186,6 @@ class HabitDetailViewModel @AssistedInject constructor(
 
     private fun onCancelEditClicked() {
         viewModelState.update { it.copy(editingDate = null, editingValue = null) }
-    }
-
-    private fun onBackClicked() {
-        eventChannel.trySend(HabitDetailUiEvent.NavigatedBack)
     }
 
     private fun onSaveClicked() {
@@ -247,7 +241,9 @@ class HabitDetailViewModel @AssistedInject constructor(
             viewModelState.update { it.copy(isDeletingHabit = true, deleteHabitError = false) }
             val result = deleteHabit(habitId)
             if (result.isSuccess) {
-                eventChannel.trySend(HabitDetailUiEvent.NavigatedBack)
+                viewModelState.update {
+                    it.copy(pendingNavigation = HabitDetailNavigation.HabitDeleted)
+                }
             } else {
                 viewModelState.update {
                     it.copy(
