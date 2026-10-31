@@ -136,7 +136,7 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         val entry = state.entry ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, saveError = false) }
-            val result = updateJournalEntry(entry.id, state.text, entry.createdAt)
+            val result = updateJournalEntry(entry.id, state.text)
             if (result.isSuccess) {
                 _uiState.update { it.copy(isSaving = false) }
                 eventChannel.trySend(EditJournalEntryUiEvent.Saved)

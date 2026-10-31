@@ -27,8 +27,8 @@ interface HabitRepository : Syncable {
         values: Map<String, Int>,
     ): Result<Unit>
 
-    // Callers must check EditWindow.isEditable first - enforced by UpdateHabitCheckInUseCase,
-    // not here.
+    // Callers must check EditWindow.isEditable against the stored check-in first - enforced by
+    // SaveHabitCheckInsUseCase, not here.
     suspend fun updateCheckIn(
         habitId: String,
         date: LocalDate,

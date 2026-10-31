@@ -211,7 +211,7 @@ class HabitDetailViewModel @AssistedInject constructor(
                     saveErrorIsWindowExpired = false,
                 )
             }
-            val result = saveHabitCheckIns(habitId, state.checkIns, mapOf(date to value))
+            val result = saveHabitCheckIns(habitId, mapOf(date to value))
             if (result.isSuccess) {
                 viewModelState.update {
                     it.copy(
