@@ -22,12 +22,12 @@ import pl.luczka.todaywas.ui.model.JournalSortUiState
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalListViewModelTest {
 
-    private val clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
+    private val clock = Clock.fixed(Instant.now(), ZoneId.systemDefault())
 
     private fun entry(
         id: String,

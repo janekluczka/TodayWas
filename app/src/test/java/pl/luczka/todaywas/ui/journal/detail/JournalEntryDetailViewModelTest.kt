@@ -22,7 +22,7 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalEntryDetailViewModelTest {
@@ -38,7 +38,7 @@ class JournalEntryDetailViewModelTest {
 
     private fun viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
-        clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC),
+        clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneId.systemDefault()),
         id: String = "1",
     ) = JournalEntryDetailViewModel(
         id = id,
@@ -81,7 +81,7 @@ class JournalEntryDetailViewModelTest {
     fun `should derive isEditable false when ScreenEntered is dispatched past the 24h window`() =
         runTest {
             // Arrange
-            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneOffset.UTC)
+            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneId.systemDefault())
             val viewModel = viewModel(clock = expiredClock)
 
             // Act
@@ -195,7 +195,7 @@ class JournalEntryDetailViewModelTest {
     fun `should succeed regardless of the entry's age, unlike editing`() =
         runTest {
             // Arrange - entry is well past its 24h edit window, unlike editing's expiry tests
-            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneOffset.UTC)
+            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneId.systemDefault())
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository, clock = expiredClock)
             viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)

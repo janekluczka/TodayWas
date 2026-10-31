@@ -38,7 +38,7 @@ import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
@@ -96,7 +96,7 @@ class MainViewModelTest {
         habits: List<Habit> = emptyList(),
         checkIns: List<HabitCheckIn> = emptyList(),
         authRepository: FakeAuthRepository = FakeAuthRepository(),
-        clock: Clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+        clock: Clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
     ): MainViewModel {
         val journalRepository = FakeJournalRepository(entries)
         val habitRepository = FakeHabitRepository(habits, checkIns)
@@ -151,7 +151,7 @@ class MainViewModelTest {
                     habitRepository,
                     onboardingRepository,
                 ),
-                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )
             assertTrue(viewModel.uiState.value.isLoading)
             collectUiState(viewModel)
@@ -374,7 +374,7 @@ class MainViewModelTest {
                     habitRepository,
                     onboardingRepository,
                 ),
-                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )
 
             // Assert
@@ -406,7 +406,7 @@ class MainViewModelTest {
                     habitRepository,
                     onboardingRepository,
                 ),
-                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )
 
             // Assert
@@ -599,7 +599,7 @@ class MainViewModelTest {
                     habitRepository,
                     onboardingRepository,
                 ),
-                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )
             viewModel.onIntent(MainIntent.AccountIconClicked)
             viewModel.onIntent(MainIntent.SignOutClicked)
@@ -640,7 +640,7 @@ class MainViewModelTest {
                     habitRepository,
                     onboardingRepository,
                 ),
-                clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )
             viewModel.onIntent(MainIntent.AccountIconClicked)
             viewModel.onIntent(MainIntent.SignOutClicked)

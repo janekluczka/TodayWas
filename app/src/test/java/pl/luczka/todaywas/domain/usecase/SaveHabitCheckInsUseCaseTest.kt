@@ -11,12 +11,12 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 class SaveHabitCheckInsUseCaseTest {
 
     private val now = Instant.parse("2026-08-02T12:00:00Z")
-    private val clock = Clock.fixed(now, ZoneOffset.UTC)
+    private val clock = Clock.fixed(now, ZoneId.systemDefault())
     private val date = LocalDate.of(2026, 8, 2)
 
     private fun checkIn(createdAt: Instant) = HabitCheckIn(

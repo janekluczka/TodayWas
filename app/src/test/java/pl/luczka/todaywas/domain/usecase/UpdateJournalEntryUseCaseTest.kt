@@ -12,7 +12,7 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 class UpdateJournalEntryUseCaseTest {
 
@@ -30,7 +30,7 @@ class UpdateJournalEntryUseCaseTest {
     fun `should delegate to the repository with unchanged id when within the edit window`() =
         runTest {
             // Arrange
-            val clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC)
+            val clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneId.systemDefault())
             val repository = FakeJournalRepository(listOf(storedEntry))
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
@@ -47,7 +47,7 @@ class UpdateJournalEntryUseCaseTest {
     fun `should return failure and never call the repository when at the 24h boundary`() =
         runTest {
             // Arrange
-            val clock = Clock.fixed(createdAt.plus(Duration.ofHours(24)), ZoneOffset.UTC)
+            val clock = Clock.fixed(createdAt.plus(Duration.ofHours(24)), ZoneId.systemDefault())
             val repository = FakeJournalRepository(listOf(storedEntry))
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
@@ -66,7 +66,7 @@ class UpdateJournalEntryUseCaseTest {
             // Arrange
             val clock = Clock.fixed(
                 createdAt.plus(Duration.ofHours(24).plusSeconds(1)),
-                ZoneOffset.UTC,
+                ZoneId.systemDefault(),
             )
             val repository = FakeJournalRepository(listOf(storedEntry))
             val useCase = UpdateJournalEntryUseCase(repository, clock)
@@ -84,7 +84,7 @@ class UpdateJournalEntryUseCaseTest {
     fun `should return failure and never call the repository when the entry does not exist`() =
         runTest {
             // Arrange
-            val clock = Clock.fixed(createdAt, ZoneOffset.UTC)
+            val clock = Clock.fixed(createdAt, ZoneId.systemDefault())
             val repository = FakeJournalRepository()
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 
@@ -100,7 +100,7 @@ class UpdateJournalEntryUseCaseTest {
     fun `should pass a repository failure through unchanged`() =
         runTest {
             // Arrange
-            val clock = Clock.fixed(createdAt, ZoneOffset.UTC)
+            val clock = Clock.fixed(createdAt, ZoneId.systemDefault())
             val repository = FakeJournalRepository(listOf(storedEntry))
             val failure = RuntimeException("write failed")
             repository.updateEntryResult = Result.failure(failure)

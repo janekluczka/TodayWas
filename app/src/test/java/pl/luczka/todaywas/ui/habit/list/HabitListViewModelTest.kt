@@ -23,13 +23,13 @@ import pl.luczka.todaywas.ui.model.HabitSortUiState
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HabitListViewModelTest {
 
     private val today = LocalDate.of(2026, 6, 15)
-    private val clock = Clock.fixed(today.atStartOfDay(ZoneOffset.UTC).toInstant(), ZoneOffset.UTC)
+    private val clock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault())
 
     private fun habit(
         id: String,

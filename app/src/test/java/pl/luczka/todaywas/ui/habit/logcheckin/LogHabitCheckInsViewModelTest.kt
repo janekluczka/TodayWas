@@ -26,7 +26,7 @@ import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LogHabitCheckInsViewModelTest {
@@ -66,7 +66,7 @@ class LogHabitCheckInsViewModelTest {
         observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
         logHabitCheckIns = LogHabitCheckInsUseCase(repository),
         getFreshLoggableDates = GetFreshLoggableDatesUseCase(
-            Clock.fixed(Instant.now(), ZoneOffset.UTC),
+            Clock.fixed(Instant.now(), ZoneId.systemDefault()),
         ),
     ).also { viewModel ->
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {

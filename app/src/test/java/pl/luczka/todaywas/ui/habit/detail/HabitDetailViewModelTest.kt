@@ -31,7 +31,7 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HabitDetailViewModelTest {
@@ -52,7 +52,7 @@ class HabitDetailViewModelTest {
 
     private fun viewModel(
         repository: FakeHabitRepository,
-        clock: Clock = Clock.fixed(now, ZoneOffset.UTC),
+        clock: Clock = Clock.fixed(now, ZoneId.systemDefault()),
         habitId: String = "1",
     ) = HabitDetailViewModel(
         habitId = habitId,

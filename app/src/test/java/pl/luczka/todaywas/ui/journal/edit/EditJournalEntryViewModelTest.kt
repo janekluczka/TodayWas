@@ -39,7 +39,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZoneOffset
 import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -56,7 +55,7 @@ class EditJournalEntryViewModelTest {
 
     private fun viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
-        clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC),
+        clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneId.systemDefault()),
         authRepository: AuthRepository = FakeAuthRepository(
             initialState = AuthState.SignedIn(userId = "1", email = "person@example.com"),
         ),
@@ -77,7 +76,7 @@ class EditJournalEntryViewModelTest {
     private class MutableClock(
         private var current: Instant,
     ) : Clock() {
-        override fun getZone(): ZoneId = ZoneOffset.UTC
+        override fun getZone(): ZoneId = ZoneId.systemDefault()
 
         override fun withZone(zone: ZoneId): Clock = this
 
