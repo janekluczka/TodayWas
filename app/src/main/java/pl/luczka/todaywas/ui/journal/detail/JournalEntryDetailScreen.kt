@@ -50,17 +50,20 @@ fun JournalEntryDetailScreen(
 
     LaunchedEffect(Unit) {
         viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-        viewModel.events.collect { event ->
-            when (event) {
-                JournalEntryDetailUiEvent.NavigatedBack -> onBack()
-                JournalEntryDetailUiEvent.NavigateToEdit -> onEditClicked()
-            }
+    }
+
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            JournalEntryDetailNavigation.EntryDeleted -> onBack()
         }
+        viewModel.onIntent(JournalEntryDetailIntent.NavigationHandled)
     }
 
     JournalEntryDetailScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        onBack = onBack,
+        onEditClicked = onEditClicked,
     )
 }
 
@@ -68,6 +71,8 @@ fun JournalEntryDetailScreen(
 private fun JournalEntryDetailScreenContent(
     uiState: JournalEntryDetailUiState,
     onIntent: (JournalEntryDetailIntent) -> Unit,
+    onBack: () -> Unit,
+    onEditClicked: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val deleteErrorMessage = stringResource(R.string.journal_detail_delete_error)
@@ -83,7 +88,7 @@ private fun JournalEntryDetailScreenContent(
                 title = uiState.entry?.formattedDate
                     ?: stringResource(R.string.journal_detail_title),
                 navigationIcon = {
-                    DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.BackClicked) }) {
+                    DsIconButton(onClick = onBack) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
@@ -91,7 +96,7 @@ private fun JournalEntryDetailScreenContent(
                     }
                 },
                 actions = {
-                    JournalEntryDetailActions(uiState, onIntent)
+                    JournalEntryDetailActions(uiState, onIntent, onEditClicked)
                 },
             )
         },
@@ -119,9 +124,10 @@ private fun JournalEntryDetailScreenContent(
 private fun JournalEntryDetailActions(
     uiState: JournalEntryDetailUiState,
     onIntent: (JournalEntryDetailIntent) -> Unit,
+    onEditClicked: () -> Unit,
 ) {
     if (uiState.isEditable) {
-        DsIconButton(onClick = { onIntent(JournalEntryDetailIntent.EditClicked) }) {
+        DsIconButton(onClick = onEditClicked) {
             DsIcon(
                 imageVector = Icons.Filled.Edit,
                 contentDescription = stringResource(R.string.journal_detail_edit_action),
@@ -200,6 +206,8 @@ private fun JournalEntryDetailScreenPreview(
         JournalEntryDetailScreenContent(
             uiState = state,
             onIntent = {},
+            onBack = {},
+            onEditClicked = {},
         )
     }
 }

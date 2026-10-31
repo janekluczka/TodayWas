@@ -2,7 +2,6 @@ package pl.luczka.todaywas.ui.journal.detail
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -125,42 +124,6 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `should emit NavigateToEdit when EditClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel()
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
-            val events = mutableListOf<JournalEntryDetailUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(JournalEntryDetailIntent.EditClicked)
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(JournalEntryDetailUiEvent.NavigateToEdit), events)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should emit NavigatedBack when BackClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel()
-            val events = mutableListOf<JournalEntryDetailUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(JournalEntryDetailIntent.BackClicked)
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(JournalEntryDetailUiEvent.NavigatedBack), events)
-            collectJob.cancel()
-        }
-
-    @Test
     fun `should show isDeleteDialogVisible when DeleteClicked is dispatched`() =
         runTest {
             // Arrange
@@ -188,7 +151,7 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `should delete and emit NavigatedBack when DeleteConfirmed succeeds`() =
+    fun `should delete and set EntryDeleted when DeleteConfirmed succeeds`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
@@ -196,8 +159,6 @@ class JournalEntryDetailViewModelTest {
             viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
-            val events = mutableListOf<JournalEntryDetailUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(JournalEntryDetailIntent.DeleteConfirmed)
@@ -206,8 +167,28 @@ class JournalEntryDetailViewModelTest {
             // Assert
             assertEquals(1, repository.deleteEntryCallCount)
             assertEquals("1", repository.lastDeletedId)
-            assertEquals(listOf(JournalEntryDetailUiEvent.NavigatedBack), events)
-            collectJob.cancel()
+            assertEquals(
+                JournalEntryDetailNavigation.EntryDeleted,
+                viewModel.uiState.value.pendingNavigation,
+            )
+        }
+
+    @Test
+    fun `should clear pendingNavigation when NavigationHandled`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+            val viewModel = viewModel(repository)
+            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
+            runCurrent()
+            viewModel.onIntent(JournalEntryDetailIntent.DeleteConfirmed)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(JournalEntryDetailIntent.NavigationHandled)
+
+            // Assert
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -239,8 +220,6 @@ class JournalEntryDetailViewModelTest {
             viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
-            val events = mutableListOf<JournalEntryDetailUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(JournalEntryDetailIntent.DeleteConfirmed)
@@ -250,7 +229,6 @@ class JournalEntryDetailViewModelTest {
             assertFalse(viewModel.uiState.value.isDeleting)
             assertFalse(viewModel.uiState.value.isDeleteDialogVisible)
             assertTrue(viewModel.uiState.value.deleteError)
-            assertEquals(emptyList<JournalEntryDetailUiEvent>(), events)
-            collectJob.cancel()
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
         }
 }

@@ -6,12 +6,9 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
@@ -36,14 +33,11 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
     )
     val uiState: StateFlow<JournalEntryDetailUiState> = _uiState.asStateFlow()
 
-    private val eventChannel = Channel<JournalEntryDetailUiEvent>(Channel.BUFFERED)
-    val events: Flow<JournalEntryDetailUiEvent> = eventChannel.receiveAsFlow()
-
     fun onIntent(intent: JournalEntryDetailIntent) {
         when (intent) {
             JournalEntryDetailIntent.ScreenEntered -> onScreenEntered()
-            JournalEntryDetailIntent.EditClicked -> onEditClicked()
-            JournalEntryDetailIntent.BackClicked -> onBackClicked()
+            JournalEntryDetailIntent.NavigationHandled ->
+                _uiState.update { it.copy(pendingNavigation = null) }
             JournalEntryDetailIntent.DeleteClicked -> onDeleteClicked()
             JournalEntryDetailIntent.DeleteConfirmed -> onDeleteConfirmed()
             JournalEntryDetailIntent.DeleteDismissed -> onDeleteDismissed()
@@ -67,14 +61,6 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
         }
     }
 
-    private fun onEditClicked() {
-        eventChannel.trySend(JournalEntryDetailUiEvent.NavigateToEdit)
-    }
-
-    private fun onBackClicked() {
-        eventChannel.trySend(JournalEntryDetailUiEvent.NavigatedBack)
-    }
-
     private fun onDeleteClicked() {
         _uiState.update { it.copy(isDeleteDialogVisible = true) }
     }
@@ -91,7 +77,9 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
             _uiState.update { it.copy(isDeleting = true, deleteError = false) }
             val result = deleteJournalEntry(entry.id)
             if (result.isSuccess) {
-                eventChannel.trySend(JournalEntryDetailUiEvent.NavigatedBack)
+                _uiState.update {
+                    it.copy(pendingNavigation = JournalEntryDetailNavigation.EntryDeleted)
+                }
             } else {
                 _uiState.update {
                     it.copy(isDeleting = false, deleteError = true, isDeleteDialogVisible = false)
