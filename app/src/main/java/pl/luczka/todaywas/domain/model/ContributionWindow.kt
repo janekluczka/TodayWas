@@ -14,7 +14,7 @@ sealed interface ContributionWindow {
 }
 
 fun ContributionWindow.dateRange(now: Instant): ClosedRange<LocalDate> {
-    val today = LocalDate.ofInstant(now, ZoneId.systemDefault())
+    val today = now.atZone(ZoneId.systemDefault()).toLocalDate()
     return when (this) {
         ContributionWindow.RollingTwelveMonths -> today.minusMonths(12).plusDays(1)..today
         is ContributionWindow.CalendarYear -> LocalDate.of(year, 1, 1)..LocalDate.of(year, 12, 31)
@@ -25,7 +25,7 @@ fun availableWindows(
     earliestDataDate: LocalDate?,
     now: Instant,
 ): List<ContributionWindow> {
-    val currentYear = LocalDate.ofInstant(now, ZoneId.systemDefault()).year
+    val currentYear = now.atZone(ZoneId.systemDefault()).year
     val earliestYear = earliestDataDate?.year ?: currentYear
     val years = (earliestYear..currentYear).reversed().map { ContributionWindow.CalendarYear(it) }
     return listOf(ContributionWindow.RollingTwelveMonths) + years

@@ -17,7 +17,7 @@ object EditWindow {
     // Today + yesterday, in the device's default zone - the fixed window a fresh (not-yet-logged)
     // habit check-in or journal entry can be backdated into.
     fun freshLoggableDates(now: Instant): List<LocalDate> {
-        val today = LocalDate.ofInstant(now, ZoneId.systemDefault())
+        val today = now.atZone(ZoneId.systemDefault()).toLocalDate()
         return listOf(today, today.minusDays(1))
     }
 }
