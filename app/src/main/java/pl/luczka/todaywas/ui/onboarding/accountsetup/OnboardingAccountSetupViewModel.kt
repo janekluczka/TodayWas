@@ -3,12 +3,9 @@ package pl.luczka.todaywas.ui.onboarding.accountsetup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AuthError
@@ -50,9 +47,6 @@ class OnboardingAccountSetupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(OnboardingAccountSetupUiState())
     val uiState: StateFlow<OnboardingAccountSetupUiState> = _uiState.asStateFlow()
 
-    private val eventChannel = Channel<OnboardingAccountSetupUiEvent>(Channel.BUFFERED)
-    val events: Flow<OnboardingAccountSetupUiEvent> = eventChannel.receiveAsFlow()
-
     private var pendingAllSetReason = AllSetReason.NO_ACCOUNT
 
     init {
@@ -71,6 +65,10 @@ class OnboardingAccountSetupViewModel @Inject constructor(
     fun onIntent(intent: OnboardingAccountSetupIntent) {
         when (intent) {
             OnboardingAccountSetupIntent.StepBack -> onStepBack()
+            OnboardingAccountSetupIntent.NavigationHandled ->
+                _uiState.update { it.copy(pendingNavigation = null) }
+            OnboardingAccountSetupIntent.UserMessageShown ->
+                _uiState.update { it.copy(userMessage = null) }
             is OnboardingAccountSetupIntent.SignInEmailChanged ->
                 onSignInEmailChanged(intent.value)
             is OnboardingAccountSetupIntent.SignInPasswordChanged ->
@@ -106,9 +104,9 @@ class OnboardingAccountSetupViewModel @Inject constructor(
             AccountSubStep.SIGN_UP -> _uiState.update {
                 it.copy(accountSubStep = AccountSubStep.SIGN_IN)
             }
-            AccountSubStep.SIGN_IN -> eventChannel.trySend(
-                OnboardingAccountSetupUiEvent.NavigateBack,
-            )
+            AccountSubStep.SIGN_IN -> _uiState.update {
+                it.copy(pendingNavigation = OnboardingAccountSetupNavigation.Back)
+            }
             AccountSubStep.DATA_SYNC_REVIEW -> Unit
         }
     }
@@ -157,7 +155,7 @@ class OnboardingAccountSetupViewModel @Inject constructor(
     }
 
     private fun onGoogleSignInFailed() {
-        eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(AuthError.Unknown.toUiState()))
+        _uiState.update { it.copy(userMessage = AuthError.Unknown.toUiState()) }
     }
 
     private suspend fun applySignInResult(result: Result<Unit>) {
@@ -167,7 +165,7 @@ class OnboardingAccountSetupViewModel @Inject constructor(
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
-            eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(error.toUiState()))
+            _uiState.update { it.copy(userMessage = error.toUiState()) }
         }
     }
 
@@ -235,7 +233,7 @@ class OnboardingAccountSetupViewModel @Inject constructor(
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = false)) }
-            eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(error.toUiState()))
+            _uiState.update { it.copy(userMessage = error.toUiState()) }
         }
     }
 
@@ -269,7 +267,7 @@ class OnboardingAccountSetupViewModel @Inject constructor(
                 finish(pendingAllSetReason)
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
-                eventChannel.trySend(OnboardingAccountSetupUiEvent.ShowError(error.toUiState()))
+                _uiState.update { it.copy(userMessage = error.toUiState()) }
             }
         }
     }
@@ -282,7 +280,11 @@ class OnboardingAccountSetupViewModel @Inject constructor(
     private suspend fun finish(reason: AllSetReason) {
         val result = completeOnboarding()
         if (result.isSuccess) {
-            eventChannel.trySend(OnboardingAccountSetupUiEvent.Finished(reason))
+            _uiState.update {
+                it.copy(
+                    pendingNavigation = OnboardingAccountSetupNavigation.Finished(reason),
+                )
+            }
         }
     }
 }

@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -167,31 +166,41 @@ class OnboardingAccountSetupViewModelTest {
         }
 
     @Test
-    fun `should emit NavigateBack when StepBack from SIGN_IN`() =
+    fun `should navigate back when StepBack from SIGN_IN`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.StepBack)
             runCurrent()
 
             // Assert
-            assertEquals(listOf(OnboardingAccountSetupUiEvent.NavigateBack), events)
-            collectJob.cancel()
+            assertEquals(OnboardingAccountSetupNavigation.Back, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should call signInWithEmail and emit Finished with SIGNED_IN reason when sign-in submit has valid fields`() =
+    fun `should clear pendingNavigation when NavigationHandled is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(OnboardingAccountSetupIntent.StepBack)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(OnboardingAccountSetupIntent.NavigationHandled)
+
+            // Assert
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
+        }
+
+    @Test
+    fun `should call signInWithEmail and finish with SIGNED_IN reason when sign-in submit has valid fields`() =
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository()
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(repository, authRepository)
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
             viewModel.onIntent(
                 OnboardingAccountSetupIntent.SignInEmailChanged("person@example.com"),
             )
@@ -205,11 +214,10 @@ class OnboardingAccountSetupViewModelTest {
             assertEquals(1, authRepository.signInCallCount)
             assertEquals(1, repository.completeOnboardingCallCount)
             assertEquals(
-                listOf(OnboardingAccountSetupUiEvent.Finished(AllSetReason.SIGNED_IN)),
-                events,
+                OnboardingAccountSetupNavigation.Finished(AllSetReason.SIGNED_IN),
+                viewModel.uiState.value.pendingNavigation,
             )
             assertFalse(viewModel.uiState.value.signInForm.isSubmitting)
-            collectJob.cancel()
         }
 
     @Test
@@ -230,7 +238,7 @@ class OnboardingAccountSetupViewModelTest {
         }
 
     @Test
-    fun `should emit a ShowError event and stop submitting when sign-in submit fails`() =
+    fun `should show an error and stop submitting when sign-in submit fails`() =
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository()
@@ -240,8 +248,6 @@ class OnboardingAccountSetupViewModelTest {
                 OnboardingAccountSetupIntent.SignInEmailChanged("person@example.com"),
             )
             viewModel.onIntent(OnboardingAccountSetupIntent.SignInPasswordChanged("password123"))
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.SignInSubmitClicked)
@@ -249,17 +255,14 @@ class OnboardingAccountSetupViewModelTest {
 
             // Assert
             assertEquals(
-                listOf(
-                    OnboardingAccountSetupUiEvent.ShowError(AuthErrorUiState.INVALID_CREDENTIALS),
-                ),
-                events,
+                AuthErrorUiState.INVALID_CREDENTIALS,
+                viewModel.uiState.value.userMessage,
             )
             assertFalse(viewModel.uiState.value.signInForm.isSubmitting)
-            collectJob.cancel()
         }
 
     @Test
-    fun `should call signUpWithEmail and emit Finished with ACCOUNT_CREATED reason when sign-up submit has valid fields`() =
+    fun `should call signUpWithEmail and finish with ACCOUNT_CREATED reason when sign-up submit has valid fields`() =
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository()
@@ -267,8 +270,6 @@ class OnboardingAccountSetupViewModelTest {
             val viewModel = viewModel(repository, authRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
@@ -277,11 +278,10 @@ class OnboardingAccountSetupViewModelTest {
             // Assert
             assertEquals(1, authRepository.signUpCallCount)
             assertEquals(
-                listOf(OnboardingAccountSetupUiEvent.Finished(AllSetReason.ACCOUNT_CREATED)),
-                events,
+                OnboardingAccountSetupNavigation.Finished(AllSetReason.ACCOUNT_CREATED),
+                viewModel.uiState.value.pendingNavigation,
             )
             assertFalse(viewModel.uiState.value.signUpForm.isSubmitting)
-            collectJob.cancel()
         }
 
     @Test
@@ -303,7 +303,7 @@ class OnboardingAccountSetupViewModelTest {
         }
 
     @Test
-    fun `should emit a ShowError event and stop submitting when sign-up submit fails`() =
+    fun `should show an error and stop submitting when sign-up submit fails`() =
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository()
@@ -311,8 +311,6 @@ class OnboardingAccountSetupViewModelTest {
             val viewModel = viewModel(authRepository = authRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
@@ -320,24 +318,17 @@ class OnboardingAccountSetupViewModelTest {
 
             // Assert
             assertEquals(
-                listOf(
-                    OnboardingAccountSetupUiEvent.ShowError(
-                        AuthErrorUiState.EMAIL_ALREADY_REGISTERED,
-                    ),
-                ),
-                events,
+                AuthErrorUiState.EMAIL_ALREADY_REGISTERED,
+                viewModel.uiState.value.userMessage,
             )
             assertFalse(viewModel.uiState.value.signUpForm.isSubmitting)
-            collectJob.cancel()
         }
 
     @Test
-    fun `should emit a ShowError event with Unknown when GoogleSignInFailed is dispatched`() =
+    fun `should show an error with Unknown when GoogleSignInFailed is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed)
@@ -345,10 +336,9 @@ class OnboardingAccountSetupViewModelTest {
 
             // Assert
             assertEquals(
-                listOf(OnboardingAccountSetupUiEvent.ShowError(AuthErrorUiState.UNKNOWN)),
-                events,
+                AuthErrorUiState.UNKNOWN,
+                viewModel.uiState.value.userMessage,
             )
-            collectJob.cancel()
         }
 
     @Test
@@ -391,15 +381,13 @@ class OnboardingAccountSetupViewModelTest {
         }
 
     @Test
-    fun `should emit Finished when sign-up succeeds with no local data`() =
+    fun `should finish when sign-up succeeds with no local data`() =
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(authRepository = authRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
@@ -407,14 +395,13 @@ class OnboardingAccountSetupViewModelTest {
 
             // Assert
             assertEquals(
-                listOf(OnboardingAccountSetupUiEvent.Finished(AllSetReason.ACCOUNT_CREATED)),
-                events,
+                OnboardingAccountSetupNavigation.Finished(AllSetReason.ACCOUNT_CREATED),
+                viewModel.uiState.value.pendingNavigation,
             )
-            collectJob.cancel()
         }
 
     @Test
-    fun `should mark data synced and emit Finished with ACCOUNT_CREATED reason when SyncConfirmClicked succeeds after sign-up`() =
+    fun `should mark data synced and finish with ACCOUNT_CREATED reason when SyncConfirmClicked succeeds after sign-up`() =
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository()
@@ -429,8 +416,6 @@ class OnboardingAccountSetupViewModelTest {
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
             assertEquals(AccountSubStep.DATA_SYNC_REVIEW, viewModel.uiState.value.accountSubStep)
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.SyncConfirmClicked)
@@ -440,10 +425,9 @@ class OnboardingAccountSetupViewModelTest {
             assertEquals(1, onboardingRepository.markLocalDataSyncedCallCount)
             assertEquals(1, onboardingRepository.completeOnboardingCallCount)
             assertEquals(
-                listOf(OnboardingAccountSetupUiEvent.Finished(AllSetReason.ACCOUNT_CREATED)),
-                events,
+                OnboardingAccountSetupNavigation.Finished(AllSetReason.ACCOUNT_CREATED),
+                viewModel.uiState.value.pendingNavigation,
             )
-            collectJob.cancel()
         }
 
     @Test
@@ -464,8 +448,6 @@ class OnboardingAccountSetupViewModelTest {
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
             assertEquals(AccountSubStep.DATA_SYNC_REVIEW, viewModel.uiState.value.accountSubStep)
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.SyncConfirmClicked)
@@ -473,19 +455,18 @@ class OnboardingAccountSetupViewModelTest {
 
             // Assert
             assertEquals(
-                listOf(OnboardingAccountSetupUiEvent.ShowError(AuthErrorUiState.UNKNOWN)),
-                events,
+                AuthErrorUiState.UNKNOWN,
+                viewModel.uiState.value.userMessage,
             )
             assertEquals(0, onboardingRepository.markLocalDataSyncedCallCount)
             assertEquals(0, onboardingRepository.completeOnboardingCallCount)
             assertEquals(AccountSubStep.DATA_SYNC_REVIEW, viewModel.uiState.value.accountSubStep)
             assertTrue(viewModel.uiState.value.dataSyncSummary != null)
             assertFalse(viewModel.uiState.value.isSyncing)
-            collectJob.cancel()
         }
 
     @Test
-    fun `should emit Finished without marking synced when SyncSkipClicked after sign-up`() =
+    fun `should finish without marking synced when SyncSkipClicked after sign-up`() =
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository()
@@ -499,8 +480,6 @@ class OnboardingAccountSetupViewModelTest {
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
-            val events = mutableListOf<OnboardingAccountSetupUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAccountSetupIntent.SyncSkipClicked)
@@ -510,10 +489,9 @@ class OnboardingAccountSetupViewModelTest {
             assertEquals(0, onboardingRepository.markLocalDataSyncedCallCount)
             assertEquals(1, onboardingRepository.completeOnboardingCallCount)
             assertEquals(
-                listOf(OnboardingAccountSetupUiEvent.Finished(AllSetReason.ACCOUNT_CREATED)),
-                events,
+                OnboardingAccountSetupNavigation.Finished(AllSetReason.ACCOUNT_CREATED),
+                viewModel.uiState.value.pendingNavigation,
             )
-            collectJob.cancel()
         }
 
     private fun entry() = JournalEntry(

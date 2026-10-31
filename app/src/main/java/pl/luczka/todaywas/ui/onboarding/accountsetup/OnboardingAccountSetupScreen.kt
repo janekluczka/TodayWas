@@ -48,15 +48,18 @@ fun OnboardingAccountSetupScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                OnboardingAccountSetupUiEvent.NavigateBack -> onBack()
-                is OnboardingAccountSetupUiEvent.Finished -> onFinished(event.reason)
-                is OnboardingAccountSetupUiEvent.ShowError -> snackbarHostState.showSnackbar(
-                    errorMessages.getValue(event.error),
-                )
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (val navigation = uiState.pendingNavigation ?: return@LaunchedEffect) {
+            OnboardingAccountSetupNavigation.Back -> onBack()
+            is OnboardingAccountSetupNavigation.Finished -> onFinished(navigation.reason)
+        }
+        viewModel.onIntent(OnboardingAccountSetupIntent.NavigationHandled)
+    }
+
+    uiState.userMessage?.let { userMessage ->
+        LaunchedEffect(userMessage) {
+            snackbarHostState.showSnackbar(errorMessages.getValue(userMessage))
+            viewModel.onIntent(OnboardingAccountSetupIntent.UserMessageShown)
         }
     }
 

@@ -45,4 +45,8 @@ sealed interface OnboardingAccountSetupIntent {
     data object SyncConfirmClicked : OnboardingAccountSetupIntent
 
     data object SyncSkipClicked : OnboardingAccountSetupIntent
+
+    data object NavigationHandled : OnboardingAccountSetupIntent
+
+    data object UserMessageShown : OnboardingAccountSetupIntent
 }
