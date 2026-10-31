@@ -51,4 +51,8 @@ sealed interface AccountIntent {
     data object SyncSkipClicked : AccountIntent
 
     data object SyncLocalDataClicked : AccountIntent
+
+    data object NavigationHandled : AccountIntent
+
+    data object UserMessageShown : AccountIntent
 }

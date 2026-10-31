@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.account
 import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.ui.auth.SignUpFormUiState
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
 
@@ -16,4 +17,7 @@ data class AccountUiState(
     val dataSyncSummary: LocalDataSummaryUi? = null,
     val isSyncing: Boolean = false,
     val hasSyncedLocalData: Boolean = false,
+    val pendingNavigation: AccountNavigation? = null,
+    // An error to show once in a snackbar; cleared by AccountIntent.UserMessageShown.
+    val userMessage: AuthErrorUiState? = null,
 )

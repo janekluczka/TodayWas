@@ -3,12 +3,9 @@ package pl.luczka.todaywas.ui.account
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AuthError
@@ -58,9 +55,6 @@ class AccountViewModel @Inject constructor(
     )
     val uiState: StateFlow<AccountUiState> = _uiState.asStateFlow()
 
-    private val eventChannel = Channel<AccountUiEvent>(Channel.BUFFERED)
-    val events: Flow<AccountUiEvent> = eventChannel.receiveAsFlow()
-
     private var postSyncAction = PostSyncAction.RETURN_HOME
 
     init {
@@ -105,11 +99,15 @@ class AccountViewModel @Inject constructor(
             is AccountIntent.SignUpGoogleIdTokenReceived -> onSignUpGoogleIdTokenReceived(
                 intent.idToken,
             )
-            AccountIntent.ContinueClicked -> eventChannel.trySend(AccountUiEvent.NavigatedBack)
+            AccountIntent.ContinueClicked -> _uiState.update {
+                it.copy(pendingNavigation = AccountNavigation.Back)
+            }
             AccountIntent.SignOutClicked -> onSignOutClicked()
             AccountIntent.SyncConfirmClicked -> onSyncConfirmClicked()
             AccountIntent.SyncSkipClicked -> onSyncSkipClicked()
             AccountIntent.SyncLocalDataClicked -> onSyncLocalDataClicked()
+            AccountIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
+            AccountIntent.UserMessageShown -> _uiState.update { it.copy(userMessage = null) }
         }
     }
 
@@ -117,7 +115,7 @@ class AccountViewModel @Inject constructor(
         if (_uiState.value.step == AccountStep.SIGN_UP) {
             _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
         } else {
-            eventChannel.trySend(AccountUiEvent.NavigatedBack)
+            _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
         }
     }
 
@@ -167,7 +165,7 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onGoogleSignInFailed() {
-        eventChannel.trySend(AccountUiEvent.ShowError(AuthError.Unknown.toUiState()))
+        _uiState.update { it.copy(userMessage = AuthError.Unknown.toUiState()) }
     }
 
     private suspend fun applySignInResult(result: Result<Unit>) {
@@ -177,7 +175,7 @@ class AccountViewModel @Inject constructor(
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
-            eventChannel.trySend(AccountUiEvent.ShowError(error.toUiState()))
+            _uiState.update { it.copy(userMessage = error.toUiState()) }
         }
     }
 
@@ -247,7 +245,7 @@ class AccountViewModel @Inject constructor(
         } else {
             val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
             _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = false)) }
-            eventChannel.trySend(AccountUiEvent.ShowError(error.toUiState()))
+            _uiState.update { it.copy(userMessage = error.toUiState()) }
         }
     }
 
@@ -278,7 +276,7 @@ class AccountViewModel @Inject constructor(
                 finishPostSyncAction(postSyncAction)
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
-                eventChannel.trySend(AccountUiEvent.ShowError(error.toUiState()))
+                _uiState.update { it.copy(userMessage = error.toUiState()) }
             }
         }
     }
@@ -305,7 +303,9 @@ class AccountViewModel @Inject constructor(
 
     private fun finishPostSyncAction(action: PostSyncAction) {
         when (action) {
-            PostSyncAction.NAVIGATE_BACK -> eventChannel.trySend(AccountUiEvent.NavigatedBack)
+            PostSyncAction.NAVIGATE_BACK -> _uiState.update {
+                it.copy(pendingNavigation = AccountNavigation.Back)
+            }
             PostSyncAction.SHOW_SUCCESS -> _uiState.update { it.copy(step = AccountStep.SUCCESS) }
             PostSyncAction.RETURN_HOME -> _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
         }
@@ -321,7 +321,7 @@ class AccountViewModel @Inject constructor(
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
                 _uiState.update { it.copy(isSigningOut = false) }
-                eventChannel.trySend(AccountUiEvent.ShowError(error.toUiState()))
+                _uiState.update { it.copy(userMessage = error.toUiState()) }
             }
         }
     }
