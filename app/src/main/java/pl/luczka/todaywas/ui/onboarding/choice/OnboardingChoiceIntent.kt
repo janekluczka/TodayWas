@@ -4,5 +4,5 @@ sealed interface OnboardingChoiceIntent {
 
     data object ContinueWithoutAccountClicked : OnboardingChoiceIntent
 
-    data object SignInSignUpClicked : OnboardingChoiceIntent
+    data object NavigationHandled : OnboardingChoiceIntent
 }
