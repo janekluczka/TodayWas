@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.main
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -30,6 +31,7 @@ import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.ui.mapper.toUiState
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
@@ -82,7 +84,14 @@ class MainViewModelTest {
         updatedAt = Instant.EPOCH,
     )
 
-    private fun viewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: MainViewModel) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
+
+    private fun TestScope.viewModel(
         entries: List<JournalEntry> = emptyList(),
         habits: List<Habit> = emptyList(),
         checkIns: List<HabitCheckIn> = emptyList(),
@@ -107,7 +116,7 @@ class MainViewModelTest {
                 onboardingRepository,
             ),
             clock = clock,
-        )
+        ).also { collectUiState(it) }
     }
 
     @Before
@@ -144,6 +153,8 @@ class MainViewModelTest {
                 ),
                 clock = Clock.fixed(Instant.now(), ZoneOffset.UTC),
             )
+            assertTrue(viewModel.uiState.value.isLoading)
+            collectUiState(viewModel)
 
             // Assert
             assertTrue(!viewModel.uiState.value.isLoading)
@@ -310,56 +321,17 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should emit NavigateToAddEntry and collapse the fab when FabActionClicked with ADD_JOURNAL_ENTRY`() =
+    fun `should collapse the fab when FabActionClicked is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel(entries = listOf(entry(LocalDate.now())))
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
             viewModel.onIntent(MainIntent.FabToggled)
-            viewModel.onIntent(MainIntent.FabActionClicked(FabActionUiState.ADD_JOURNAL_ENTRY))
-            runCurrent()
+
+            // Act
+            viewModel.onIntent(MainIntent.FabActionClicked)
 
             // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToAddEntry), events)
             assertEquals(false, viewModel.uiState.value.fabExpanded)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should emit NavigateToCreateHabit when FabActionClicked with CREATE_HABIT`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel()
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(MainIntent.FabActionClicked(FabActionUiState.CREATE_HABIT))
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToCreateHabit), events)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should emit NavigateToLogHabitCheckIns when FabActionClicked with LOG_HABIT_CHECK_INS`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel(habits = listOf(habit(id = "1")))
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(MainIntent.FabActionClicked(FabActionUiState.LOG_HABIT_CHECK_INS))
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToLogHabitCheckIns), events)
-            collectJob.cancel()
         }
 
     @Test
@@ -373,77 +345,6 @@ class MainViewModelTest {
 
             // Assert
             assertTrue(viewModel.uiState.value.fabExpanded)
-        }
-
-    @Test
-    fun `should emit NavigateToJournalDetail with the clicked entry when JournalEntryClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val today = entry(LocalDate.now())
-            val viewModel = viewModel(entries = listOf(today))
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(MainIntent.JournalEntryClicked(today.toUiState()))
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToJournalDetail(today.toUiState())), events)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should emit NavigateToHabitDetail with the clicked habit's id when HabitClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel(habits = listOf(habit(id = "1")))
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(
-                MainIntent.HabitClicked(habit(id = "1").toUiState(todayCheckIn = null)),
-            )
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToHabitDetail("1")), events)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should emit NavigateToJournalList when JournalViewAllClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel()
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(MainIntent.JournalViewAllClicked)
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToJournalList), events)
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should emit NavigateToHabitList when HabitViewAllClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel()
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(MainIntent.HabitViewAllClicked)
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToHabitList), events)
-            collectJob.cancel()
         }
 
     @Test
@@ -558,22 +459,17 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should close the sheet and emit NavigateToAccount when SignInSignUpPromptClicked is dispatched`() =
+    fun `should close the sheet when SignInSignUpPromptClicked is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
             viewModel.onIntent(MainIntent.AccountIconClicked)
-            val events = mutableListOf<MainUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(MainIntent.SignInSignUpPromptClicked)
-            runCurrent()
 
             // Assert
-            assertEquals(listOf(MainUiEvent.NavigateToAccount), events)
             assertTrue(!viewModel.uiState.value.isAccountSheetVisible)
-            collectJob.cancel()
         }
 
     @Test
@@ -655,6 +551,27 @@ class MainViewModelTest {
             assertTrue(!state.isSigningOut)
             assertTrue(state.isSignOutConfirmVisible)
             assertTrue(state.isAccountSheetVisible)
+            assertEquals(AuthErrorUiState.UNKNOWN, state.userMessage)
+        }
+
+    @Test
+    fun `should clear userMessage when UserMessageShown is dispatched`() =
+        runTest {
+            // Arrange
+            val authRepository =
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
+            authRepository.signOutError = AuthError.Unknown
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(MainIntent.UserMessageShown)
+
+            // Assert
+            assertEquals(null, viewModel.uiState.value.userMessage)
         }
 
     @Test
