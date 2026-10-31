@@ -17,7 +17,7 @@ import pl.luczka.todaywas.data.util.remoteCall
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
-import java.time.Instant
+import java.time.Clock
 import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
@@ -27,6 +27,7 @@ class JournalRepositoryImpl @Inject constructor(
     private val remoteDataSource: RemoteJournalDataSource,
     private val authRepository: AuthRepository,
     private val syncScheduler: SyncScheduler,
+    private val clock: Clock = Clock.systemUTC(),
 ) : JournalRepository {
 
     // Guards against two concurrent syncWithRemote() calls racing each other - writes no longer
@@ -41,7 +42,7 @@ class JournalRepositoryImpl @Inject constructor(
         date: LocalDate,
         text: String,
     ): Result<Unit> {
-        val now = Instant.now().toEpochMilli()
+        val now = clock.instant().toEpochMilli()
         val entity = JournalEntryEntity(
             id = UUID.randomUUID().toString(),
             date = date.toString(),
@@ -58,13 +59,13 @@ class JournalRepositoryImpl @Inject constructor(
         id: String,
         text: String,
     ): Result<Unit> {
-        val result = local.updateEntry(id, text, Instant.now().toEpochMilli())
+        val result = local.updateEntry(id, text, clock.instant().toEpochMilli())
         if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
 
     override suspend fun deleteEntry(id: String): Result<Unit> {
-        val result = local.deleteEntry(id, Instant.now().toEpochMilli())
+        val result = local.deleteEntry(id, clock.instant().toEpochMilli())
         if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
@@ -84,7 +85,7 @@ class JournalRepositoryImpl @Inject constructor(
                 val toApply = remote.filter { it.id in decision.applyIds }
                 local.applyRemoteSnapshot(toApply.toEntity())
 
-                val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
+                val cutoff = clock.instant().minus(TOMBSTONE_GC_WINDOW)
                 local.purgeDeletedBefore(cutoff.toEpochMilli())
                 remoteDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
             }
