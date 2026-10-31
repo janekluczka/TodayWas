@@ -11,6 +11,7 @@ data class CreateHabitUiState(
     val scaleSteps: Int,
     val isSaving: Boolean,
     val saveError: Boolean,
+    val pendingNavigation: CreateHabitNavigation? = null,
 ) {
     // A 2-step habit is a plain yes/no; more steps make it a scale. There's no separate
     // "type" the user picks — the step count alone decides it.

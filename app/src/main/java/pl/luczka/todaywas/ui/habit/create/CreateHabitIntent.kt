@@ -16,5 +16,5 @@ sealed interface CreateHabitIntent {
 
     data object SaveClicked : CreateHabitIntent
 
-    data object CancelClicked : CreateHabitIntent
+    data object NavigationHandled : CreateHabitIntent
 }
