@@ -7,4 +7,5 @@ import pl.luczka.todaywas.ui.onboarding.AllSetReason
 data class OnboardingAllSetUiState(
     val reason: AllSetReason,
     val email: String? = null,
+    val pendingNavigation: OnboardingAllSetNavigation? = null,
 )

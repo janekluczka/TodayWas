@@ -80,10 +80,24 @@ Conventions the tree above doesn't spell out:
 
 ## Architecture & Kotlin Conventions
 
-MVI per screen: a ViewModel exposes `uiState: StateFlow<XxxUiState>`, a single
+Baseline Android guidance comes from the `android-guidelines` skill (agent-toolkit `android`
+plugin, official developer.android.com recommendations). This file only adds project facts and the
+deliberate deviations listed under "Android guideline overrides" below.
+
+MVI per screen: a ViewModel exposes `uiState: StateFlow<XxxUiState>` and a single
 `fun onIntent(intent: XxxIntent)` dispatching a sealed `XxxIntent` to private `onXxx()` handler
-methods (no per-action public methods), and one-shot effects via `val events: Flow<XxxUiEvent>`
-backed by a buffered `Channel` — never a single-purpose `Flow<Unit>`.
+methods (no per-action public methods). When the state derives from data streams, build it with
+`combine(...).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)`.
+
+No ViewModel→UI event streams (`Channel`/`SharedFlow`). Model outcomes as state instead:
+
+- Navigation-only taps (open a detail, cancel, back with no logic) never reach the ViewModel —
+  the screen calls its navigation lambda directly.
+- Navigation that follows logic (saved, deleted, expired) is a `pendingNavigation: XxxNavigation?`
+  field in the UI state; the screen reacts in `LaunchedEffect(uiState.pendingNavigation)` and then
+  sends `XxxIntent.NavigationHandled`, which clears it.
+- One-off messages are a `userMessage` field shown in a snackbar and cleared by
+  `XxxIntent.UserMessageShown`.
 
 Never expose a `domain.model` type through `UiState`/`Intent`/`Event` — always map to a `ui.model`
 type first, in its own dedicated `*Mapper.kt` file (e.g. `JournalEntryMapper.kt`,
@@ -105,6 +119,20 @@ ships `@PreviewLightDark` preview(s) (use `@PreviewParameter` for multiple state
 copy-pasted previews), wrapped in `DsTheme` (from `:core:designsystem`'s `theme/` package) — the
 same theme the real app renders with, since the theme lives in the design system module, not `:app`.
 
+## Android guideline overrides
+
+Deliberate deviations from the `android-guidelines` baseline — follow these over it.
+
+- UI actions: a single `onIntent(Intent)` entry point per ViewModel (MVI) instead of per-action
+  methods — one dispatch surface per screen.
+- Domain layer: mandatory, one use case per action, and ViewModels go through use cases rather
+  than calling repositories directly — keeps the 24h edit rule (FR-006) and similar business rules
+  in one testable place.
+- Use cases depend on repositories only, never on other use cases (official guidance allows
+  use-case chains) — shared logic goes into a combinator use case built on the repository.
+- Design-system components use the `Ds` prefix (`DsButton`, `DsTopBar`) to keep them apart from the
+  Material3 components they wrap.
+
 ## Coding Style & Naming Conventions
 
 Kotlin, ktlint-enforced (official style, with project overrides in `@.editorconfig`:
@@ -120,8 +148,13 @@ fix these — check by hand):
 
 - A call with more than one named argument: one argument per line, opening paren on the same line
   as the call.
-- Composable functions: `modifier: Modifier = Modifier` is always the last parameter; a modifier
-  chain of more than one call wraps one call per line.
+- Composable functions: `modifier: Modifier = Modifier` is the first optional parameter (after the
+  required ones, before other optional ones and a trailing content lambda), per the Compose API
+  guidelines and lint's `ModifierParameter`; a modifier chain of more than one call wraps one call
+  per line.
+- `@Immutable`/`@Stable` only where value-equality skipping is wanted and `equals()` is cheap —
+  strong skipping is on by default, so don't annotate every UI state class by habit, and be
+  careful with models holding large lists.
 - Prefer collapsing `val x = when (...) { ... }` directly into the assignment over a separate
   mutable variable.
 

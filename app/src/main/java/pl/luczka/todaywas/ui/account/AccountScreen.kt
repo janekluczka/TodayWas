@@ -53,14 +53,17 @@ fun AccountScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                AccountUiEvent.NavigatedBack -> onBack()
-                is AccountUiEvent.ShowError -> snackbarHostState.showSnackbar(
-                    errorMessages.getValue(event.error),
-                )
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            AccountNavigation.Back -> onBack()
+        }
+        viewModel.onIntent(AccountIntent.NavigationHandled)
+    }
+
+    uiState.userMessage?.let { userMessage ->
+        LaunchedEffect(userMessage) {
+            snackbarHostState.showSnackbar(errorMessages.getValue(userMessage))
+            viewModel.onIntent(AccountIntent.UserMessageShown)
         }
     }
 
@@ -140,7 +143,7 @@ private fun SignedOutContent(
             onPasswordChanged = { onIntent(AccountIntent.SignInPasswordChanged(it)) },
             onSubmitClicked = { onIntent(AccountIntent.SignInSubmitClicked) },
             onGoogleIdTokenReceived = { onIntent(AccountIntent.SignInGoogleIdTokenReceived(it)) },
-            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed) },
+            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
             onSignUpLinkClicked = { onIntent(AccountIntent.SignUpLinkClicked) },
         )
         AccountStep.SIGN_UP -> SignUpFormContent(
@@ -152,7 +155,7 @@ private fun SignedOutContent(
             onGoogleIdTokenReceived = {
                 onIntent(AccountIntent.SignUpGoogleIdTokenReceived(it))
             },
-            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed) },
+            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
             onSignInLinkClicked = { onIntent(AccountIntent.SignInLinkClicked) },
         )
         AccountStep.SUCCESS -> AccountSuccessContent(onIntent)

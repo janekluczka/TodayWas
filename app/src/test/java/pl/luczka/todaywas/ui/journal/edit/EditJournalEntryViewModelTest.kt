@@ -2,7 +2,6 @@ package pl.luczka.todaywas.ui.journal.edit
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -40,7 +39,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZoneOffset
 import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -57,7 +55,7 @@ class EditJournalEntryViewModelTest {
 
     private fun viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
-        clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneOffset.UTC),
+        clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneId.systemDefault()),
         authRepository: AuthRepository = FakeAuthRepository(
             initialState = AuthState.SignedIn(userId = "1", email = "person@example.com"),
         ),
@@ -78,7 +76,7 @@ class EditJournalEntryViewModelTest {
     private class MutableClock(
         private var current: Instant,
     ) : Clock() {
-        override fun getZone(): ZoneId = ZoneOffset.UTC
+        override fun getZone(): ZoneId = ZoneId.systemDefault()
 
         override fun withZone(zone: ZoneId): Clock = this
 
@@ -142,15 +140,13 @@ class EditJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should update the entry and emit Saved when SaveClicked succeeds`() =
+    fun `should update the entry and set Saved when SaveClicked succeeds`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.TextChanged("Edited text."))
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.SaveClicked)
@@ -161,20 +157,17 @@ class EditJournalEntryViewModelTest {
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.updateEntryCallCount)
             assertEquals("Edited text.", repository.lastUpdatedText)
-            assertEquals(listOf(EditJournalEntryUiEvent.Saved), events)
-            collectJob.cancel()
+            assertEquals(EditJournalEntryNavigation.Saved, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should set saveError and not emit an event when SaveClicked fails generically`() =
+    fun `should set saveError and not navigate when SaveClicked fails generically`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             repository.updateEntryResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             runCurrent()
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.SaveClicked)
@@ -183,20 +176,17 @@ class EditJournalEntryViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.saveError)
-            assertTrue(events.isEmpty())
-            collectJob.cancel()
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should emit Discarded without saveError when SaveClicked fails with an expired window`() =
+    fun `should discard without saveError when SaveClicked fails with an expired window`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             repository.updateEntryResult = Result.failure(EditWindowExpiredException())
             val viewModel = viewModel(repository)
             runCurrent()
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.SaveClicked)
@@ -205,27 +195,23 @@ class EditJournalEntryViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
-            assertEquals(listOf(EditJournalEntryUiEvent.Discarded), events)
-            collectJob.cancel()
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should emit Discarded directly when BackClicked with unchanged text`() =
+    fun `should discard directly when BackClicked with unchanged text`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
             runCurrent()
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.BackClicked)
             runCurrent()
 
             // Assert
-            assertEquals(listOf(EditJournalEntryUiEvent.Discarded), events)
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
             assertFalse(viewModel.uiState.value.isDiscardConfirmVisible)
-            collectJob.cancel()
         }
 
     @Test
@@ -235,16 +221,13 @@ class EditJournalEntryViewModelTest {
             val viewModel = viewModel()
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.TextChanged("Edited text."))
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.BackClicked)
 
             // Assert
             assertTrue(viewModel.uiState.value.isDiscardConfirmVisible)
-            assertTrue(events.isEmpty())
-            collectJob.cancel()
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -264,23 +247,20 @@ class EditJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should emit Discarded when DiscardConfirmed is dispatched`() =
+    fun `should discard when DiscardConfirmed is dispatched`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.TextChanged("Edited text."))
             viewModel.onIntent(EditJournalEntryIntent.BackClicked)
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.DiscardConfirmed)
             runCurrent()
 
             // Assert
-            assertEquals(listOf(EditJournalEntryUiEvent.Discarded), events)
-            collectJob.cancel()
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -514,7 +494,7 @@ class EditJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should discard the result and emit Discarded when the edit window closes during a refine`() =
+    fun `should discard the result and discard when the edit window closes during a refine`() =
         runTest {
             // Arrange
             val clock = MutableClock(createdAt.plus(Duration.ofHours(1)))
@@ -527,8 +507,6 @@ class EditJournalEntryViewModelTest {
             viewModel.onIntent(
                 EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
             )
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
             clock.advanceTo(createdAt.plus(Duration.ofHours(25)))
 
             // Act
@@ -536,14 +514,13 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(listOf(EditJournalEntryUiEvent.Discarded), events)
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
             assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
             assertNull(viewModel.uiState.value.helpMeRefine.refinedText)
-            collectJob.cancel()
         }
 
     @Test
-    fun `should discard the result and emit Discarded when the edit window closes during a generate`() =
+    fun `should discard the result and discard when the edit window closes during a generate`() =
         runTest {
             // Arrange
             val clock = MutableClock(createdAt.plus(Duration.ofHours(1)))
@@ -556,8 +533,6 @@ class EditJournalEntryViewModelTest {
             viewModel.onIntent(
                 EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
             )
-            val events = mutableListOf<EditJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
             clock.advanceTo(createdAt.plus(Duration.ofHours(25)))
 
             // Act
@@ -565,9 +540,8 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(listOf(EditJournalEntryUiEvent.Discarded), events)
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
             assertFalse(viewModel.uiState.value.helpMeStart.isVisible)
             assertNull(viewModel.uiState.value.helpMeStart.generatedText)
-            collectJob.cancel()
         }
 }

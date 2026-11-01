@@ -1,6 +1,7 @@
 package pl.luczka.todaywas.ui.main
 
 import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.FabActionUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
@@ -17,4 +18,6 @@ data class MainUiState(
     val isAccountSheetVisible: Boolean,
     val isSignOutConfirmVisible: Boolean,
     val isSigningOut: Boolean,
+    // An error to show once in a snackbar; cleared by MainIntent.UserMessageShown.
+    val userMessage: AuthErrorUiState? = null,
 )

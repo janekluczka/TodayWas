@@ -2,7 +2,6 @@ package pl.luczka.todaywas.ui.journal.create
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -127,14 +126,12 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should clear isSaving and emit Saved when SaveClicked succeeds`() =
+    fun `should clear isSaving and set Saved when SaveClicked succeeds`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository()
             val viewModel = viewModel(repository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
-            val events = mutableListOf<AddJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.SaveClicked)
@@ -144,20 +141,17 @@ class AddJournalEntryViewModelTest {
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.addEntryCallCount)
-            assertEquals(listOf(AddJournalEntryUiEvent.Saved), events)
-            collectJob.cancel()
+            assertEquals(AddJournalEntryNavigation.Saved, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should set saveError and not emit Saved when SaveClicked fails`() =
+    fun `should set saveError and not navigate when SaveClicked fails`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository()
             repository.addEntryResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
-            val events = mutableListOf<AddJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.SaveClicked)
@@ -166,25 +160,7 @@ class AddJournalEntryViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.saveError)
-            assertTrue(events.isEmpty())
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `should emit Cancelled when CancelClicked is dispatched`() =
-        runTest {
-            // Arrange
-            val viewModel = viewModel()
-            val events = mutableListOf<AddJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(AddJournalEntryIntent.CancelClicked)
-            runCurrent()
-
-            // Assert
-            assertEquals(listOf(AddJournalEntryUiEvent.Cancelled), events)
-            collectJob.cancel()
+            assertEquals(null, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -217,14 +193,12 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should hide helpMeStart and emit NavigateToSignIn when SignInClicked is dispatched`() =
+    fun `should hide helpMeStart and navigate to sign-in when SignInClicked is dispatched`() =
         runTest {
             // Arrange
             val viewModel =
                 viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            val events = mutableListOf<AddJournalEntryUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.SignInClicked)
@@ -232,8 +206,7 @@ class AddJournalEntryViewModelTest {
 
             // Assert
             assertFalse(viewModel.uiState.value.helpMeStart.isVisible)
-            assertEquals(listOf(AddJournalEntryUiEvent.NavigateToSignIn), events)
-            collectJob.cancel()
+            assertEquals(AddJournalEntryNavigation.SignIn, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test

@@ -24,6 +24,7 @@ import pl.luczka.todaywas.core.designsystem.components.buttons.DsTextButton
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsTextField
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
 
 @Composable
 fun SignInFormContent(
@@ -32,7 +33,7 @@ fun SignInFormContent(
     onPasswordChanged: (String) -> Unit,
     onSubmitClicked: () -> Unit,
     onGoogleIdTokenReceived: (String) -> Unit,
-    onGoogleSignInFailed: () -> Unit,
+    onGoogleSignInFailed: (AuthErrorUiState) -> Unit,
     onSignUpLinkClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

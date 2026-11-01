@@ -72,14 +72,13 @@ fun EditJournalEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                EditJournalEntryUiEvent.Saved -> onSaved()
-                EditJournalEntryUiEvent.Discarded -> onDiscarded()
-                EditJournalEntryUiEvent.NavigateToSignIn -> onNavigateToSignIn()
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            EditJournalEntryNavigation.Saved -> onSaved()
+            EditJournalEntryNavigation.Discarded -> onDiscarded()
+            EditJournalEntryNavigation.SignIn -> onNavigateToSignIn()
         }
+        viewModel.onIntent(EditJournalEntryIntent.NavigationHandled)
     }
 
     BackHandler(enabled = true) { viewModel.onIntent(EditJournalEntryIntent.BackClicked) }

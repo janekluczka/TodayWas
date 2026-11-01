@@ -34,18 +34,17 @@ fun OnboardingChoiceScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                OnboardingChoiceUiEvent.NavigateToAccountSetup -> onNavigateToAccountSetup()
-                is OnboardingChoiceUiEvent.Finished -> onFinished(event.reason)
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (val navigation = uiState.pendingNavigation ?: return@LaunchedEffect) {
+            is OnboardingChoiceNavigation.Finished -> onFinished(navigation.reason)
         }
+        viewModel.onIntent(OnboardingChoiceIntent.NavigationHandled)
     }
 
     OnboardingChoiceScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        onSignInSignUpClicked = onNavigateToAccountSetup,
     )
 }
 
@@ -53,6 +52,7 @@ fun OnboardingChoiceScreen(
 private fun OnboardingChoiceScreenContent(
     uiState: OnboardingChoiceUiState,
     onIntent: (OnboardingChoiceIntent) -> Unit,
+    onSignInSignUpClicked: () -> Unit,
 ) {
     DsScaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -89,7 +89,7 @@ private fun OnboardingChoiceScreenContent(
             )
             DsTextButton(
                 text = stringResource(R.string.onboarding_account_signin_signup_cta),
-                onClick = { onIntent(OnboardingChoiceIntent.SignInSignUpClicked) },
+                onClick = onSignInSignUpClicked,
                 enabled = !uiState.isSaving,
                 modifier = Modifier.padding(top = DsSpacing.space200),
             )
@@ -115,6 +115,7 @@ private fun OnboardingChoiceScreenPreview(
         OnboardingChoiceScreenContent(
             uiState = state,
             onIntent = {},
+            onSignInSignUpClicked = {},
         )
     }
 }

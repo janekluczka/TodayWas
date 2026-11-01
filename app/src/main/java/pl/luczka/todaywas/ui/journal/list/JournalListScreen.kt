@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,18 +51,11 @@ fun JournalListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is JournalListUiEvent.NavigateToDetail -> onEntryClicked(event.id)
-            }
-        }
-    }
-
     JournalListScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
         onBack = onBack,
+        onEntryClicked = onEntryClicked,
     )
 }
 
@@ -72,6 +64,7 @@ private fun JournalListScreenContent(
     uiState: JournalListUiState,
     onIntent: (JournalListIntent) -> Unit,
     onBack: () -> Unit,
+    onEntryClicked: (String) -> Unit,
 ) {
     DsScaffold(
         topBar = {
@@ -126,10 +119,10 @@ private fun JournalListScreenContent(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(uiState.entries) { entry ->
+                    items(uiState.entries, key = { it.id }) { entry ->
                         JournalEntryRow(
                             entry = entry,
-                            onClick = { onIntent(JournalListIntent.EntryClicked(entry)) },
+                            onClick = { onEntryClicked(entry.id) },
                         )
                     }
                 }
@@ -209,6 +202,7 @@ private fun JournalListScreenPreview(
             uiState = state,
             onIntent = {},
             onBack = {},
+            onEntryClicked = {},
         )
     }
 }

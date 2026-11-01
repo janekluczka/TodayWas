@@ -11,6 +11,7 @@ data class LogHabitCheckInsUiState(
     val rows: List<HabitCheckInRowUiState>,
     val isSaving: Boolean,
     val saveError: Boolean,
+    val pendingNavigation: LogHabitCheckInsNavigation? = null,
 )
 
 sealed interface HabitCheckInRowUiState {

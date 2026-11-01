@@ -4,12 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.AiAssistException
@@ -58,9 +55,6 @@ class AddJournalEntryViewModel @Inject constructor(
     )
     val uiState: StateFlow<AddJournalEntryUiState> = _uiState.asStateFlow()
 
-    private val eventChannel = Channel<AddJournalEntryUiEvent>(Channel.BUFFERED)
-    val events: Flow<AddJournalEntryUiEvent> = eventChannel.receiveAsFlow()
-
     // Tracks the in-flight generate/regenerate call so a stale response can never land after the
     // dialog session it belongs to has already been reset (dismissed, reopened, or accepted).
     private var generateJob: Job? = null
@@ -97,7 +91,8 @@ class AddJournalEntryViewModel @Inject constructor(
             is AddJournalEntryIntent.SlotSelected -> onSlotSelected(intent.slot)
             is AddJournalEntryIntent.TextChanged -> onTextChanged(intent.text)
             AddJournalEntryIntent.SaveClicked -> onSaveClicked()
-            AddJournalEntryIntent.CancelClicked -> onCancelClicked()
+            AddJournalEntryIntent.NavigationHandled ->
+                _uiState.update { it.copy(pendingNavigation = null) }
             AddJournalEntryIntent.HelpMeStartClicked -> onHelpMeStartClicked()
             AddJournalEntryIntent.HelpMeStartDismissed -> onHelpMeStartDismissed()
             AddJournalEntryIntent.SignInClicked -> onSignInClicked()
@@ -132,10 +127,6 @@ class AddJournalEntryViewModel @Inject constructor(
         _uiState.update { it.copy(text = text) }
     }
 
-    private fun onCancelClicked() {
-        eventChannel.trySend(AddJournalEntryUiEvent.Cancelled)
-    }
-
     private fun onSaveClicked() {
         if (_uiState.value.isSaving) return
         val state = _uiState.value
@@ -148,8 +139,12 @@ class AddJournalEntryViewModel @Inject constructor(
             }
             val result = addJournalEntry(state.selectedSlot.toDomain(), state.text)
             if (result.isSuccess) {
-                _uiState.update { it.copy(isSaving = false) }
-                eventChannel.trySend(AddJournalEntryUiEvent.Saved)
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        pendingNavigation = AddJournalEntryNavigation.Saved,
+                    )
+                }
             } else {
                 _uiState.update {
                     it.copy(
@@ -191,7 +186,7 @@ class AddJournalEntryViewModel @Inject constructor(
                 helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
             )
         }
-        eventChannel.trySend(AddJournalEntryUiEvent.NavigateToSignIn)
+        _uiState.update { it.copy(pendingNavigation = AddJournalEntryNavigation.SignIn) }
     }
 
     private fun onHelpMeStartToneSelected(tone: JournalPromptToneUiState) {

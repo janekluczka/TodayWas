@@ -3,12 +3,9 @@ package pl.luczka.todaywas.ui.habit.create
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.HabitType
@@ -31,16 +28,14 @@ class CreateHabitViewModel @Inject constructor(
     )
     val uiState: StateFlow<CreateHabitUiState> = _uiState.asStateFlow()
 
-    private val eventChannel = Channel<CreateHabitUiEvent>(Channel.BUFFERED)
-    val events: Flow<CreateHabitUiEvent> = eventChannel.receiveAsFlow()
-
     fun onIntent(intent: CreateHabitIntent) {
         when (intent) {
             is CreateHabitIntent.NameChanged -> onNameChanged(intent.name)
             is CreateHabitIntent.DescriptionChanged -> onDescriptionChanged(intent.description)
             is CreateHabitIntent.ScaleStepsChanged -> onScaleStepsChanged(intent.steps)
             CreateHabitIntent.SaveClicked -> onSaveClicked()
-            CreateHabitIntent.CancelClicked -> onCancelClicked()
+            CreateHabitIntent.NavigationHandled ->
+                _uiState.update { it.copy(pendingNavigation = null) }
         }
     }
 
@@ -54,10 +49,6 @@ class CreateHabitViewModel @Inject constructor(
 
     private fun onScaleStepsChanged(steps: Int) {
         _uiState.update { it.copy(scaleSteps = steps.coerceIn(HabitScaleStepsRange)) }
-    }
-
-    private fun onCancelClicked() {
-        eventChannel.trySend(CreateHabitUiEvent.Cancelled)
     }
 
     private fun onSaveClicked() {
@@ -78,8 +69,9 @@ class CreateHabitViewModel @Inject constructor(
                 scaleMax = if (state.isBinary) null else state.scaleSteps,
             )
             if (result.isSuccess) {
-                _uiState.update { it.copy(isSaving = false) }
-                eventChannel.trySend(CreateHabitUiEvent.Saved)
+                _uiState.update {
+                    it.copy(isSaving = false, pendingNavigation = CreateHabitNavigation.Saved)
+                }
             } else {
                 _uiState.update {
                     it.copy(

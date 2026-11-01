@@ -69,6 +69,36 @@ private const val MAIN_SECTION_CAP = 5
 
 private val EMPTY_SECTION_HEIGHT = 96.dp
 
+// The screen's navigation-only actions, called directly from the UI rather than routed through
+// the ViewModel, since none of them carries any logic.
+private class MainNavigation(
+    val onAddEntry: () -> Unit,
+    val onJournalEntry: (JournalEntryUiState) -> Unit,
+    val onJournalList: () -> Unit,
+    val onCreateHabit: () -> Unit,
+    val onLogCheckIns: () -> Unit,
+    val onHabit: (String) -> Unit,
+    val onHabitList: () -> Unit,
+    val onAccount: () -> Unit,
+) {
+    fun open(action: FabActionUiState) = when (action) {
+        FabActionUiState.ADD_JOURNAL_ENTRY -> onAddEntry()
+        FabActionUiState.CREATE_HABIT -> onCreateHabit()
+        FabActionUiState.LOG_HABIT_CHECK_INS -> onLogCheckIns()
+    }
+}
+
+private val PreviewMainNavigation = MainNavigation(
+    onAddEntry = {},
+    onJournalEntry = {},
+    onJournalList = {},
+    onCreateHabit = {},
+    onLogCheckIns = {},
+    onHabit = {},
+    onHabitList = {},
+    onAccount = {},
+)
+
 @Composable
 fun MainScreen(
     onAddEntryClicked: () -> Unit,
@@ -85,27 +115,26 @@ fun MainScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                MainUiEvent.NavigateToAddEntry -> onAddEntryClicked()
-                is MainUiEvent.NavigateToJournalDetail -> onJournalEntryClicked(event.entry)
-                MainUiEvent.NavigateToJournalList -> onJournalListClicked()
-                MainUiEvent.NavigateToCreateHabit -> onCreateHabitClicked()
-                MainUiEvent.NavigateToLogHabitCheckIns -> onLogCheckInsClicked()
-                is MainUiEvent.NavigateToHabitDetail -> onHabitClicked(event.habitId)
-                MainUiEvent.NavigateToHabitList -> onHabitListClicked()
-                MainUiEvent.NavigateToAccount -> onAccountClicked()
-                is MainUiEvent.ShowError -> snackbarHostState.showSnackbar(
-                    errorMessages.getValue(event.error),
-                )
-            }
+    uiState.userMessage?.let { userMessage ->
+        LaunchedEffect(userMessage) {
+            snackbarHostState.showSnackbar(errorMessages.getValue(userMessage))
+            viewModel.onIntent(MainIntent.UserMessageShown)
         }
     }
 
     MainScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        navigation = MainNavigation(
+            onAddEntry = onAddEntryClicked,
+            onJournalEntry = onJournalEntryClicked,
+            onJournalList = onJournalListClicked,
+            onCreateHabit = onCreateHabitClicked,
+            onLogCheckIns = onLogCheckInsClicked,
+            onHabit = onHabitClicked,
+            onHabitList = onHabitListClicked,
+            onAccount = onAccountClicked,
+        ),
         snackbarHostState = snackbarHostState,
     )
 }
@@ -114,6 +143,7 @@ fun MainScreen(
 private fun MainScreenContent(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
+    navigation: MainNavigation,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val bothEmpty = !uiState.isLoading &&
@@ -138,13 +168,13 @@ private fun MainScreenContent(
         },
         // The empty state already surfaces its own "add journal"/"create habit" CTAs inline, so
         // the FAB would be a redundant, floating duplicate of the same actions.
-        floatingActionButton = { if (!bothEmpty) MainFab(uiState, onIntent) },
+        floatingActionButton = { if (!bothEmpty) MainFab(uiState, onIntent, navigation) },
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         if (bothEmpty) {
             MainEmptyState(
-                onIntent = onIntent,
+                navigation = navigation,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
@@ -161,14 +191,14 @@ private fun MainScreenContent(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState()),
             ) {
-                JournalSection(uiState = uiState, onIntent = onIntent)
-                HabitSection(uiState = uiState, onIntent = onIntent)
+                JournalSection(uiState = uiState, navigation = navigation)
+                HabitSection(uiState = uiState, navigation = navigation)
             }
         }
     }
 
     if (uiState.isAccountSheetVisible) {
-        AccountBottomSheet(uiState, onIntent)
+        AccountBottomSheet(uiState, onIntent, navigation)
     }
 
     if (uiState.isSignOutConfirmVisible) {
@@ -178,7 +208,7 @@ private fun MainScreenContent(
 
 @Composable
 private fun MainEmptyState(
-    onIntent: (MainIntent) -> Unit,
+    navigation: MainNavigation,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -197,16 +227,14 @@ private fun MainEmptyState(
         )
         DsButton(
             text = stringResource(R.string.main_fab_add_journal),
-            onClick = {
-                onIntent(MainIntent.FabActionClicked(FabActionUiState.ADD_JOURNAL_ENTRY))
-            },
+            onClick = navigation.onAddEntry,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = DsSpacing.space600),
         )
         DsButton(
             text = stringResource(R.string.main_fab_create_habit),
-            onClick = { onIntent(MainIntent.FabActionClicked(FabActionUiState.CREATE_HABIT)) },
+            onClick = navigation.onCreateHabit,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = DsSpacing.space200),
@@ -219,6 +247,7 @@ private fun MainEmptyState(
 private fun AccountBottomSheet(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
+    navigation: MainNavigation,
 ) {
     DsModalBottomSheet(onDismissRequest = { onIntent(MainIntent.AccountSheetDismissed) }) {
         when (val authState = uiState.authState) {
@@ -267,7 +296,10 @@ private fun AccountBottomSheet(
                                     R.string.onboarding_account_signin_signup_cta,
                                 ),
                                 leadingIcon = Icons.Default.Person,
-                                onClick = { onIntent(MainIntent.SignInSignUpPromptClicked) },
+                                onClick = {
+                                    onIntent(MainIntent.SignInSignUpPromptClicked)
+                                    navigation.onAccount()
+                                },
                             )
                         },
                     ),
@@ -328,6 +360,7 @@ private fun SignOutConfirmDialog(onIntent: (MainIntent) -> Unit) {
 private fun MainFab(
     uiState: MainUiState,
     onIntent: (MainIntent) -> Unit,
+    navigation: MainNavigation,
 ) {
     Column(
         horizontalAlignment = Alignment.End,
@@ -337,7 +370,10 @@ private fun MainFab(
             for (action in FabActionUiState.entries) {
                 DsExtendedFloatingActionButton(
                     text = stringResource(action.labelRes),
-                    onClick = { onIntent(MainIntent.FabActionClicked(action)) },
+                    onClick = {
+                        onIntent(MainIntent.FabActionClicked)
+                        navigation.open(action)
+                    },
                     enabled = action !in uiState.disabledFabActions,
                 )
             }
@@ -381,13 +417,13 @@ private fun SectionHeader(
 @Composable
 private fun JournalSection(
     uiState: MainUiState,
-    onIntent: (MainIntent) -> Unit,
+    navigation: MainNavigation,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.padding(top = DsSpacing.space600)) {
         SectionHeader(
             title = stringResource(R.string.main_journal_section_title),
-            onArrowClicked = { onIntent(MainIntent.JournalViewAllClicked) },
+            onArrowClicked = navigation.onJournalList,
             arrowContentDescription = stringResource(R.string.main_journal_view_all_cta),
             modifier = Modifier.padding(
                 start = DsSpacing.space600,
@@ -410,7 +446,7 @@ private fun JournalSection(
                 itemContent = { entry ->
                     JournalEntryRow(
                         entry = entry,
-                        onClick = { onIntent(MainIntent.JournalEntryClicked(entry)) },
+                        onClick = { navigation.onJournalEntry(entry) },
                     )
                 },
                 modifier = Modifier.padding(horizontal = DsSpacing.space600),
@@ -427,13 +463,13 @@ private fun JournalEmptyContent() {
 @Composable
 private fun HabitSection(
     uiState: MainUiState,
-    onIntent: (MainIntent) -> Unit,
+    navigation: MainNavigation,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.padding(top = DsSpacing.space600)) {
         SectionHeader(
             title = stringResource(R.string.main_habit_section_title),
-            onArrowClicked = { onIntent(MainIntent.HabitViewAllClicked) },
+            onArrowClicked = navigation.onHabitList,
             arrowContentDescription = stringResource(R.string.main_habit_view_all_cta),
             modifier = Modifier.padding(
                 start = DsSpacing.space600,
@@ -459,7 +495,7 @@ private fun HabitSection(
                 itemContent = { habit ->
                     HabitRow(
                         habit = habit,
-                        onClick = { onIntent(MainIntent.HabitClicked(habit)) },
+                        onClick = { navigation.onHabit(habit.id) },
                     )
                 },
                 modifier = Modifier.padding(
@@ -604,6 +640,7 @@ private fun MainScreenPreview(
         MainScreenContent(
             uiState = state,
             onIntent = {},
+            navigation = PreviewMainNavigation,
         )
     }
 }

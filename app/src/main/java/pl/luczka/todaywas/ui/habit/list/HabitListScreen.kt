@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,18 +47,11 @@ fun HabitListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is HabitListUiEvent.NavigateToDetail -> onHabitClicked(event.habitId)
-            }
-        }
-    }
-
     HabitListScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
         onBack = onBack,
+        onHabitClicked = onHabitClicked,
     )
 }
 
@@ -68,6 +60,7 @@ private fun HabitListScreenContent(
     uiState: HabitListUiState,
     onIntent: (HabitListIntent) -> Unit,
     onBack: () -> Unit,
+    onHabitClicked: (String) -> Unit,
 ) {
     DsScaffold(
         topBar = {
@@ -110,10 +103,10 @@ private fun HabitListScreenContent(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(uiState.habits) { habit ->
+                    items(uiState.habits, key = { it.id }) { habit ->
                         HabitRow(
                             habit = habit,
-                            onClick = { onIntent(HabitListIntent.HabitClicked(habit)) },
+                            onClick = { onHabitClicked(habit.id) },
                         )
                     }
                 }
@@ -195,6 +188,7 @@ private fun HabitListScreenPreview(
             uiState = state,
             onIntent = {},
             onBack = {},
+            onHabitClicked = {},
         )
     }
 }

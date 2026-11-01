@@ -20,4 +20,5 @@ data class EditJournalEntryUiState(
     // One entry per JournalStarterPromptTone, same randomly-picked-once-per-VM variant scheme as
     // Add Journal Entry -- see EditJournalEntryViewModel.
     val starterPrompts: List<JournalStarterPromptUiState> = emptyList(),
+    val pendingNavigation: EditJournalEntryNavigation? = null,
 )

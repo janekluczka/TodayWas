@@ -63,19 +63,18 @@ fun AddJournalEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                AddJournalEntryUiEvent.Saved -> onSaved()
-                AddJournalEntryUiEvent.Cancelled -> onCancelled()
-                AddJournalEntryUiEvent.NavigateToSignIn -> onNavigateToSignIn()
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            AddJournalEntryNavigation.Saved -> onSaved()
+            AddJournalEntryNavigation.SignIn -> onNavigateToSignIn()
         }
+        viewModel.onIntent(AddJournalEntryIntent.NavigationHandled)
     }
 
     AddJournalEntryScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        onCancel = onCancelled,
     )
 }
 
@@ -83,6 +82,7 @@ fun AddJournalEntryScreen(
 private fun AddJournalEntryScreenContent(
     uiState: AddJournalEntryUiState,
     onIntent: (AddJournalEntryIntent) -> Unit,
+    onCancel: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = stringResource(R.string.journal_add_entry_error)
@@ -97,7 +97,7 @@ private fun AddJournalEntryScreenContent(
             DsTopBar(
                 title = uiState.selectedSlot.title(),
                 navigationIcon = {
-                    DsIconButton(onClick = { onIntent(AddJournalEntryIntent.CancelClicked) }) {
+                    DsIconButton(onClick = onCancel) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
@@ -519,6 +519,7 @@ private fun AddJournalEntryScreenPreview(
         AddJournalEntryScreenContent(
             uiState = state,
             onIntent = {},
+            onCancel = {},
         )
     }
 }

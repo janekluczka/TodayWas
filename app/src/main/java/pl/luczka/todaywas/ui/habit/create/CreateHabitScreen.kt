@@ -38,18 +38,17 @@ fun CreateHabitScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                CreateHabitUiEvent.Saved -> onSaved()
-                CreateHabitUiEvent.Cancelled -> onCancelled()
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            CreateHabitNavigation.Saved -> onSaved()
         }
+        viewModel.onIntent(CreateHabitIntent.NavigationHandled)
     }
 
     CreateHabitScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        onCancel = onCancelled,
     )
 }
 
@@ -59,6 +58,7 @@ private fun CreateHabitUiState.isSaveEnabled(): Boolean = !isSaving && name.isNo
 private fun CreateHabitScreenContent(
     uiState: CreateHabitUiState,
     onIntent: (CreateHabitIntent) -> Unit,
+    onCancel: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = stringResource(R.string.habit_create_error)
@@ -73,7 +73,7 @@ private fun CreateHabitScreenContent(
             DsTopBar(
                 title = stringResource(R.string.habit_create_title),
                 navigationIcon = {
-                    DsIconButton(onClick = { onIntent(CreateHabitIntent.CancelClicked) }) {
+                    DsIconButton(onClick = onCancel) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
@@ -180,6 +180,7 @@ private fun CreateHabitScreenPreview() {
                 saveError = false,
             ),
             onIntent = {},
+            onCancel = {},
         )
     }
 }

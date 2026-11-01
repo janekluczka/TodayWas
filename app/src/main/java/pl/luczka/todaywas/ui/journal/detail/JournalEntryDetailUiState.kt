@@ -11,4 +11,5 @@ data class JournalEntryDetailUiState(
     val isDeleteDialogVisible: Boolean = false,
     val isDeleting: Boolean = false,
     val deleteError: Boolean = false,
+    val pendingNavigation: JournalEntryDetailNavigation? = null,
 )

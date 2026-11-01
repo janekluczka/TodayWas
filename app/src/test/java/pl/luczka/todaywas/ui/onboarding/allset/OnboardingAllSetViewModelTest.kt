@@ -2,10 +2,8 @@ package pl.luczka.todaywas.ui.onboarding.allset
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -51,6 +49,7 @@ class OnboardingAllSetViewModelTest {
             val state = viewModel.uiState.value
             assertEquals(AllSetReason.NO_ACCOUNT, state.reason)
             assertNull(state.email)
+            assertNull(state.pendingNavigation)
         }
 
     @Test
@@ -69,54 +68,45 @@ class OnboardingAllSetViewModelTest {
         }
 
     @Test
-    fun `should emit Finished when GetStartedClicked`() =
+    fun `should set Finished when GetStartedClicked`() =
         runTest {
             // Arrange
             val viewModel = viewModel(AllSetReason.NO_ACCOUNT)
-            val events = mutableListOf<OnboardingAllSetUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingAllSetIntent.GetStartedClicked)
-            runCurrent()
 
             // Assert
-            assertEquals(listOf(OnboardingAllSetUiEvent.Finished), events)
-            collectJob.cancel()
+            assertEquals(OnboardingAllSetNavigation.Finished, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should emit Finished once the auto-advance delay elapses`() =
+    fun `should set Finished once the auto-advance delay elapses`() =
         runTest {
             // Arrange
             val viewModel = viewModel(AllSetReason.NO_ACCOUNT)
-            val events = mutableListOf<OnboardingAllSetUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             testDispatcher.scheduler.advanceTimeBy(5_001)
             testDispatcher.scheduler.runCurrent()
 
             // Assert
-            assertEquals(listOf(OnboardingAllSetUiEvent.Finished), events)
-            collectJob.cancel()
+            assertEquals(OnboardingAllSetNavigation.Finished, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should emit Finished only once when GetStartedClicked fires before the auto-advance delay elapses`() =
+    fun `should not navigate again when the auto-advance delay elapses after a handled GetStartedClicked`() =
         runTest {
             // Arrange
             val viewModel = viewModel(AllSetReason.NO_ACCOUNT)
-            val events = mutableListOf<OnboardingAllSetUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+            viewModel.onIntent(OnboardingAllSetIntent.GetStartedClicked)
+            viewModel.onIntent(OnboardingAllSetIntent.NavigationHandled)
 
             // Act
-            viewModel.onIntent(OnboardingAllSetIntent.GetStartedClicked)
             testDispatcher.scheduler.advanceTimeBy(5_001)
             testDispatcher.scheduler.runCurrent()
 
             // Assert
-            assertEquals(listOf(OnboardingAllSetUiEvent.Finished), events)
-            collectJob.cancel()
+            assertNull(viewModel.uiState.value.pendingNavigation)
         }
 }

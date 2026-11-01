@@ -48,15 +48,18 @@ fun OnboardingAccountSetupScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                OnboardingAccountSetupUiEvent.NavigateBack -> onBack()
-                is OnboardingAccountSetupUiEvent.Finished -> onFinished(event.reason)
-                is OnboardingAccountSetupUiEvent.ShowError -> snackbarHostState.showSnackbar(
-                    errorMessages.getValue(event.error),
-                )
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (val navigation = uiState.pendingNavigation ?: return@LaunchedEffect) {
+            OnboardingAccountSetupNavigation.Back -> onBack()
+            is OnboardingAccountSetupNavigation.Finished -> onFinished(navigation.reason)
+        }
+        viewModel.onIntent(OnboardingAccountSetupIntent.NavigationHandled)
+    }
+
+    uiState.userMessage?.let { userMessage ->
+        LaunchedEffect(userMessage) {
+            snackbarHostState.showSnackbar(errorMessages.getValue(userMessage))
+            viewModel.onIntent(OnboardingAccountSetupIntent.UserMessageShown)
         }
     }
 
@@ -109,7 +112,7 @@ private fun OnboardingAccountSetupScreenContent(
                             onIntent(OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived(it))
                         },
                         onGoogleSignInFailed = {
-                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed)
+                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
                         },
                         onSignUpLinkClicked = {
                             onIntent(OnboardingAccountSetupIntent.SignUpLinkClicked)
@@ -134,7 +137,7 @@ private fun OnboardingAccountSetupScreenContent(
                             onIntent(OnboardingAccountSetupIntent.SignUpGoogleIdTokenReceived(it))
                         },
                         onGoogleSignInFailed = {
-                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed)
+                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
                         },
                         onSignInLinkClicked = {
                             onIntent(OnboardingAccountSetupIntent.SignInLinkClicked)
