@@ -1,23 +1,19 @@
 root = true
 
 [*.{kt,kts}]
+# Based on the Android Kotlin style guide; the settings below adjust it to the project's layout.
+ktlint_code_style = android_studio
 # Matches Android Studio/IntelliJ's default Kotlin line-length setting.
 max_line_length = 100
-# Composable functions are PascalCase by official Jetpack Compose convention;
-# ktlint's default rule doesn't know about @Composable and flags them.
-ktlint_standard_function-naming = disabled
-# Project style: a blank line after the opening brace, before the first member,
-# reads better than a member immediately abutting the declaration line.
-ktlint_standard_no-empty-first-line-in-class-body = disabled
-# Allow `class Foo @Inject constructor(...)` on one line instead of forcing the
-# annotation and `constructor` keyword onto their own lines.
-ktlint_standard_annotation = disabled
-# Project style: `val x = call(` stays on one line with the call's arguments
-# wrapped below it, rather than forcing `val x =` / newline / indented call.
-ktlint_standard_multiline-expression-wrapping = disabled
-# Project style: a function with a multi-line parameter list can still start
-# its expression body on the same line as the closing `) : Type =`.
-ktlint_standard_function-signature = disabled
+# The android_studio style disallows trailing commas by default; keep them for cleaner diffs.
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+# One parameter per line for functions with 2+ parameters and for every class header with
+# parameters, instead of collapsing signatures that happen to fit on one line.
+ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 2
+ktlint_class_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 1
+# Composable functions are PascalCase by official Jetpack Compose convention.
+ktlint_function_naming_ignore_when_annotated_with = Composable
 
 [**/src/test/**/*.kt]
 # Descriptive `should [outcome] when [scenario]` backtick test names (see lessons.md) routinely
@@ -25,3 +21,5 @@ ktlint_standard_function-signature = disabled
 # it shorter without truncating the name. Relaxed here rather than compromising on test-name
 # clarity; production code still holds the line at 100 above.
 max_line_length = 140
+# Tests keep `= runTest {` on its own line below the signature, as the existing tests are written.
+ktlint_function_signature_body_expression_wrapping = multiline

@@ -1,5 +1,6 @@
 package pl.luczka.todaywas.ui.journal.create
 
+import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -36,7 +37,6 @@ import pl.luczka.todaywas.ui.journal.edit.MAX_REFINE_TEXT_LENGTH
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddJournalEntryViewModelTest {

@@ -1,5 +1,6 @@
 package pl.luczka.todaywas.data.repository
 
+import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -8,19 +9,17 @@ import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
 import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 import pl.luczka.todaywas.domain.model.OnboardingState
 import pl.luczka.todaywas.domain.repository.OnboardingRepository
-import javax.inject.Inject
 
 class OnboardingRepositoryImpl @Inject constructor(
     private val dao: UserPreferencesDao,
 ) : OnboardingRepository {
 
-    override fun observeState(): Flow<OnboardingState> =
-        dao.observe().map { entity ->
-            OnboardingState(
-                completed = entity?.onboardingCompleted ?: false,
-                hasSyncedLocalData = entity?.hasSyncedLocalData ?: false,
-            )
-        }
+    override fun observeState(): Flow<OnboardingState> = dao.observe().map { entity ->
+        OnboardingState(
+            completed = entity?.onboardingCompleted ?: false,
+            hasSyncedLocalData = entity?.hasSyncedLocalData ?: false,
+        )
+    }
 
     override suspend fun completeOnboarding(): Result<Unit> {
         val entity = dao.observe().first()?.copy(

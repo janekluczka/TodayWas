@@ -1,11 +1,11 @@
 package pl.luczka.todaywas.domain.usecase
 
+import java.time.LocalDate
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
-import java.time.LocalDate
 
 class DeleteHabitCheckInUseCaseTest {
 

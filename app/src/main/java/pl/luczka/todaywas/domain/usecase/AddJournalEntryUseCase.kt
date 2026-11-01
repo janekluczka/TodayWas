@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.domain.usecase
 
-import pl.luczka.todaywas.domain.model.JournalDateSlot
-import pl.luczka.todaywas.domain.repository.JournalRepository
 import java.time.LocalDate
 import javax.inject.Inject
+import pl.luczka.todaywas.domain.model.JournalDateSlot
+import pl.luczka.todaywas.domain.repository.JournalRepository
 
 class AddJournalEntryUseCase @Inject constructor(
     private val repository: JournalRepository,

@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.ui.mapper
 
+import java.time.Instant
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
@@ -10,8 +12,6 @@ import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
-import java.time.Instant
-import java.time.LocalDate
 
 class HabitMapperTest {
 
@@ -46,8 +46,7 @@ class HabitMapperTest {
         updatedAt = Instant.EPOCH,
     )
 
-    private fun HabitCheckInBoard.sorted(sort: HabitSortUiState) =
-        toSortedHabitUiStates(today, sort)
+    private fun HabitCheckInBoard.sorted(sort: HabitSortUiState) = toSortedHabitUiStates(today, sort)
 
     @Test
     fun `should return NotLogged when no check-in exists for today`() {

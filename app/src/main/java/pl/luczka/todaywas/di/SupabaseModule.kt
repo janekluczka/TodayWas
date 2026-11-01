@@ -9,8 +9,8 @@ import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
-import pl.luczka.todaywas.BuildConfig
 import javax.inject.Singleton
+import pl.luczka.todaywas.BuildConfig
 
 @Module
 @InstallIn(SingletonComponent::class)

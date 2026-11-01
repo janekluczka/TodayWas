@@ -23,15 +23,15 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.theme.DsColor
-import pl.luczka.todaywas.core.designsystem.theme.DsTheme
-import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsColor
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 enum class DsContributionLevel {
     NONE,
@@ -338,7 +338,7 @@ private class DsContributionGridPreviewProvider :
 @Composable
 private fun DsContributionGridPreview(
     @PreviewParameter(DsContributionGridPreviewProvider::class) cells:
-        List<DsContributionCellUiState>,
+    List<DsContributionCellUiState>,
 ) {
     DsTheme {
         DsContributionGrid(cells = cells)

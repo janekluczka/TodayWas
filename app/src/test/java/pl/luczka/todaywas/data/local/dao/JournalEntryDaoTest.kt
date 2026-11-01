@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.test.core.app.ApplicationProvider
+import java.util.UUID
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -15,7 +16,6 @@ import org.robolectric.RobolectricTestRunner
 import pl.luczka.todaywas.data.local.database.TodayWasDatabase
 import pl.luczka.todaywas.data.local.database.todayWasDatabaseCallbacks
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
-import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
 class JournalEntryDaoTest {

@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.LocalDate
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
@@ -52,7 +53,6 @@ import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import java.time.LocalDate
 
 @Composable
 fun AddJournalEntryScreen(
@@ -513,7 +513,7 @@ private class AddJournalEntryScreenPreviewStateProvider :
 @Composable
 private fun AddJournalEntryScreenPreview(
     @PreviewParameter(AddJournalEntryScreenPreviewStateProvider::class) state:
-        AddJournalEntryUiState,
+    AddJournalEntryUiState,
 ) {
     DsTheme {
         AddJournalEntryScreenContent(
@@ -539,7 +539,7 @@ private class HelpMeStartBottomSheetPreviewStateProvider :
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
             generatedText =
-                "I made real progress today, and it feels good to see it come together...",
+            "I made real progress today, and it feels good to see it come together...",
             remainingToday = 7,
         ),
         HelpMeStartUiState(
@@ -547,7 +547,7 @@ private class HelpMeStartBottomSheetPreviewStateProvider :
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
             generatedText =
-                "I made real progress today, and it feels good to see it come together...",
+            "I made real progress today, and it feels good to see it come together...",
             remainingToday = 0,
         ),
         HelpMeStartUiState(

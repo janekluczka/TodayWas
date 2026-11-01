@@ -1,12 +1,12 @@
 package pl.luczka.todaywas.data.mapper
 
+import java.time.Instant
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.util.SyncMeta
 import pl.luczka.todaywas.domain.model.JournalEntry
-import java.time.Instant
-import java.time.LocalDate
 
 fun JournalEntryEntity.toDomain(): JournalEntry = JournalEntry(
     id = id,

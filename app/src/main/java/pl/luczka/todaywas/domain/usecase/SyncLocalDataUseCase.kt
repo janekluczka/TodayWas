@@ -1,8 +1,8 @@
 package pl.luczka.todaywas.domain.usecase
 
+import javax.inject.Inject
 import pl.luczka.todaywas.domain.repository.HabitRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
-import javax.inject.Inject
 
 class SyncLocalDataUseCase @Inject constructor(
     private val journalRepository: JournalRepository,

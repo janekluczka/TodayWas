@@ -1,8 +1,8 @@
 package pl.luczka.todaywas.data.util
 
 import androidx.room.withTransaction
-import pl.luczka.todaywas.data.local.database.TodayWasDatabase
 import javax.inject.Inject
+import pl.luczka.todaywas.data.local.database.TodayWasDatabase
 
 class RoomTransactionRunner @Inject constructor(
     private val database: TodayWasDatabase,

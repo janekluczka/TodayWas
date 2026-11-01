@@ -34,15 +34,16 @@ private fun errorBody(errorCode: String) = """{"error_code":"$errorCode","error_
 
 class AuthRepositoryImplTest {
 
-    private fun repository(engine: MockEngine) = AuthRepositoryImpl(
-        createSupabaseClient(
-            supabaseUrl = "https://example.supabase.co",
-            supabaseKey = "test-key",
-        ) {
-            httpEngine = engine
-            install(Auth) { minimalConfig() }
-        },
-    )
+    private fun repository(engine: MockEngine) =
+        AuthRepositoryImpl(
+            createSupabaseClient(
+                supabaseUrl = "https://example.supabase.co",
+                supabaseKey = "test-key",
+            ) {
+                httpEngine = engine
+                install(Auth) { minimalConfig() }
+            },
+        )
 
     @Test
     fun `should return success when signInWithEmail succeeds`() =

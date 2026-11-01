@@ -26,12 +26,13 @@ import pl.luczka.todaywas.data.util.RoomTransactionRunner
 @RunWith(RobolectricTestRunner::class)
 class LocalHabitDataSourceIntegrationTest {
 
-    private fun buildDatabase(context: Context): TodayWasDatabase = Room
-        .databaseBuilder(context, TodayWasDatabase::class.java, "test-todaywas-${System.nanoTime()}.db")
-        .allowMainThreadQueries()
-        .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
-        .addCallback(todayWasDatabaseCallbacks())
-        .build()
+    private fun buildDatabase(context: Context): TodayWasDatabase =
+        Room
+            .databaseBuilder(context, TodayWasDatabase::class.java, "test-todaywas-${System.nanoTime()}.db")
+            .allowMainThreadQueries()
+            .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+            .addCallback(todayWasDatabaseCallbacks())
+            .build()
 
     private class RecordingHabitDao(
         private val real: HabitDao,
@@ -64,97 +65,99 @@ class LocalHabitDataSourceIntegrationTest {
     }
 
     @Test
-    fun `should soft-delete check-ins before the habit and succeed when deleteHabitAndCheckIns is called`() = runTest {
-        // Arrange
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val db = buildDatabase(context)
-        db.habitDao().insert(
-            HabitEntity(
-                id = "habit-1",
-                name = "Beers",
-                description = null,
-                type = "BINARY",
-                scaleMin = null,
-                scaleMax = null,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
-            ),
-        )
-        db.habitCheckInDao().insertOne(
-            HabitCheckInEntity(
-                id = "check-in-1",
-                habitId = "habit-1",
-                date = "2026-07-27",
-                value = 1,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
-            ),
-        )
-        val callOrderLog = mutableListOf<String>()
-        val dataSource = LocalHabitDataSourceImpl(
-            habitDao = RecordingHabitDao(db.habitDao(), callOrderLog),
-            habitCheckInDao = RecordingHabitCheckInDao(db.habitCheckInDao(), callOrderLog),
-            transactionRunner = RoomTransactionRunner(db),
-        )
+    fun `should soft-delete check-ins before the habit and succeed when deleteHabitAndCheckIns is called`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val db = buildDatabase(context)
+            db.habitDao().insert(
+                HabitEntity(
+                    id = "habit-1",
+                    name = "Beers",
+                    description = null,
+                    type = "BINARY",
+                    scaleMin = null,
+                    scaleMax = null,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
+            )
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "habit-1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
+            )
+            val callOrderLog = mutableListOf<String>()
+            val dataSource = LocalHabitDataSourceImpl(
+                habitDao = RecordingHabitDao(db.habitDao(), callOrderLog),
+                habitCheckInDao = RecordingHabitCheckInDao(db.habitCheckInDao(), callOrderLog),
+                transactionRunner = RoomTransactionRunner(db),
+            )
 
-        // Act
-        val result = dataSource.deleteHabitAndCheckIns("habit-1", 2_000L)
-        val habit = db.habitDao().getAllIncludingDeleted().single { it.id == "habit-1" }
-        val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single { it.id == "check-in-1" }
-        db.close()
+            // Act
+            val result = dataSource.deleteHabitAndCheckIns("habit-1", 2_000L)
+            val habit = db.habitDao().getAllIncludingDeleted().single { it.id == "habit-1" }
+            val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single { it.id == "check-in-1" }
+            db.close()
 
-        // Assert
-        assertTrue(result.isSuccess)
-        assertEquals(listOf("check-in", "habit"), callOrderLog)
-        assertEquals(2_000L, habit.deletedAt)
-        assertEquals(2_000L, checkIn.deletedAt)
-    }
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals(listOf("check-in", "habit"), callOrderLog)
+            assertEquals(2_000L, habit.deletedAt)
+            assertEquals(2_000L, checkIn.deletedAt)
+        }
 
     @Test
-    fun `should roll back both deletes and leave nothing partially deleted when the habit soft-delete fails mid-transaction`() = runTest {
-        // Arrange
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val db = buildDatabase(context)
-        db.habitDao().insert(
-            HabitEntity(
-                id = "habit-1",
-                name = "Beers",
-                description = null,
-                type = "BINARY",
-                scaleMin = null,
-                scaleMax = null,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
-            ),
-        )
-        db.habitCheckInDao().insertOne(
-            HabitCheckInEntity(
-                id = "check-in-1",
-                habitId = "habit-1",
-                date = "2026-07-27",
-                value = 1,
-                createdAt = 1_000L,
-                updatedAt = 1_000L,
-            ),
-        )
-        val callOrderLog = mutableListOf<String>()
-        val dataSource = LocalHabitDataSourceImpl(
-            habitDao = RecordingHabitDao(db.habitDao(), callOrderLog, throwOnSoftDelete = true),
-            habitCheckInDao = RecordingHabitCheckInDao(db.habitCheckInDao(), callOrderLog),
-            transactionRunner = RoomTransactionRunner(db),
-        )
+    fun `should roll back both deletes and leave nothing partially deleted when the habit soft-delete fails mid-transaction`() =
+        runTest {
+            // Arrange
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val db = buildDatabase(context)
+            db.habitDao().insert(
+                HabitEntity(
+                    id = "habit-1",
+                    name = "Beers",
+                    description = null,
+                    type = "BINARY",
+                    scaleMin = null,
+                    scaleMax = null,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
+            )
+            db.habitCheckInDao().insertOne(
+                HabitCheckInEntity(
+                    id = "check-in-1",
+                    habitId = "habit-1",
+                    date = "2026-07-27",
+                    value = 1,
+                    createdAt = 1_000L,
+                    updatedAt = 1_000L,
+                ),
+            )
+            val callOrderLog = mutableListOf<String>()
+            val dataSource = LocalHabitDataSourceImpl(
+                habitDao = RecordingHabitDao(db.habitDao(), callOrderLog, throwOnSoftDelete = true),
+                habitCheckInDao = RecordingHabitCheckInDao(db.habitCheckInDao(), callOrderLog),
+                transactionRunner = RoomTransactionRunner(db),
+            )
 
-        // Act
-        val result = dataSource.deleteHabitAndCheckIns("habit-1", 2_000L)
-        val habit = db.habitDao().getAllIncludingDeleted().single { it.id == "habit-1" }
-        val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single { it.id == "check-in-1" }
-        db.close()
+            // Act
+            val result = dataSource.deleteHabitAndCheckIns("habit-1", 2_000L)
+            val habit = db.habitDao().getAllIncludingDeleted().single { it.id == "habit-1" }
+            val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single { it.id == "check-in-1" }
+            db.close()
 
-        // Assert: safeDbCall retries once, so both the attempt and its retry run the same
-        // transaction, each rolling back cleanly on the same failure.
-        assertTrue(result.isFailure)
-        assertEquals(listOf("check-in", "habit", "check-in", "habit"), callOrderLog)
-        assertNull(habit.deletedAt)
-        assertNull(checkIn.deletedAt)
-    }
+            // Assert: safeDbCall retries once, so both the attempt and its retry run the same
+            // transaction, each rolling back cleanly on the same failure.
+            assertTrue(result.isFailure)
+            assertEquals(listOf("check-in", "habit", "check-in", "habit"), callOrderLog)
+            assertNull(habit.deletedAt)
+            assertNull(checkIn.deletedAt)
+        }
 }

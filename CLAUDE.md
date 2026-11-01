@@ -135,23 +135,21 @@ Deliberate deviations from the `android-guidelines` baseline — follow these ov
 
 ## Coding Style & Naming Conventions
 
-Kotlin, ktlint-enforced (official style, with project overrides in `@.editorconfig`:
-`@Composable` functions stay PascalCase, a blank line is allowed after a class's opening brace,
-`class Foo @Inject constructor(...)` stays on one line, `val x = call(` keeps its args wrapped
-below rather than after a line break, and a multi-line parameter list can still share its closing
-`) : Type =` with the expression). Compile target is Java 17 (`@app/build.gradle.kts`). Dependency
+Kotlin, ktlint-enforced with the `android_studio` code style (`@.editorconfig`). Settings on top
+of that style: trailing commas allowed, functions with 2+ parameters and every class header with
+parameters forced to one parameter per line, `@Composable` functions stay PascalCase, and test
+sources allow 140-column lines. `ktlintFormat` is the source of truth for layout — run it and
+accept its output; change `.editorconfig` settings deliberately rather than disabling rules to
+dodge one result. Compile target is Java 17 (`@app/build.gradle.kts`). Dependency
 versions live in `@gradle/libs.versions.toml` — add new dependencies there, not as inline version
 strings.
 
-Additional project style, not ktlint-enforced but followed by convention (`ktlintFormat` does not
-fix these — check by hand):
+Layout (line breaks, wrapping, signatures) is the formatter's job only — don't add hand-checked
+layout rules. Code conventions beyond the formatter:
 
-- A call with more than one named argument: one argument per line, opening paren on the same line
-  as the call.
 - Composable functions: `modifier: Modifier = Modifier` is the first optional parameter (after the
   required ones, before other optional ones and a trailing content lambda), per the Compose API
-  guidelines and lint's `ModifierParameter`; a modifier chain of more than one call wraps one call
-  per line.
+  guidelines and lint's `ModifierParameter`.
 - `@Immutable`/`@Stable` only where value-equality skipping is wanted and `equals()` is cheap —
   strong skipping is on by default, so don't annotate every UI state class by habit, and be
   careful with models holding large lists.

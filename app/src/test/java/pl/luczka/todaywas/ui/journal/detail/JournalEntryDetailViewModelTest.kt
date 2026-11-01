@@ -1,5 +1,10 @@
 package pl.luczka.todaywas.ui.journal.detail
 
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -18,11 +23,6 @@ import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalEntryDetailViewModelTest {

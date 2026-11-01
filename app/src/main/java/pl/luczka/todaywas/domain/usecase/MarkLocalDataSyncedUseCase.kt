@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.domain.usecase
 
-import pl.luczka.todaywas.domain.repository.OnboardingRepository
 import javax.inject.Inject
+import pl.luczka.todaywas.domain.repository.OnboardingRepository
 
 class MarkLocalDataSyncedUseCase @Inject constructor(
     private val repository: OnboardingRepository,

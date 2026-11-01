@@ -9,18 +9,19 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
+import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import pl.luczka.todaywas.domain.model.AiAssistError
-import java.io.IOException
 
 class AiAssistErrorMapperTest {
 
-    private fun fakeResponse(status: HttpStatusCode): HttpResponse = runBlocking {
-        val client = HttpClient(MockEngine { respond("", status) })
-        client.get("https://example.com")
-    }
+    private fun fakeResponse(status: HttpStatusCode): HttpResponse =
+        runBlocking {
+            val client = HttpClient(MockEngine { respond("", status) })
+            client.get("https://example.com")
+        }
 
     @Test
     fun `should map to NotSignedIn when throwable is UnauthorizedRestException`() {

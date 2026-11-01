@@ -1,5 +1,10 @@
 package pl.luczka.todaywas.domain.usecase
 
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -7,11 +12,6 @@ import org.junit.Test
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.repository.FakeHabitRepository
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 
 class SaveHabitCheckInsUseCaseTest {
 
@@ -19,14 +19,15 @@ class SaveHabitCheckInsUseCaseTest {
     private val clock = Clock.fixed(now, ZoneId.systemDefault())
     private val date = LocalDate.of(2026, 8, 2)
 
-    private fun checkIn(createdAt: Instant) = HabitCheckIn(
-        id = "c1",
-        habitId = "h1",
-        date = date,
-        value = 1,
-        createdAt = createdAt,
-        updatedAt = createdAt,
-    )
+    private fun checkIn(createdAt: Instant) =
+        HabitCheckIn(
+            id = "c1",
+            habitId = "h1",
+            date = date,
+            value = 1,
+            createdAt = createdAt,
+            updatedAt = createdAt,
+        )
 
     @Test
     fun `should add a check-in when the date has none stored`() =

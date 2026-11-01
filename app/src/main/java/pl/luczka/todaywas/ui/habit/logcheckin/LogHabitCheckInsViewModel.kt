@@ -3,6 +3,8 @@ package pl.luczka.todaywas.ui.habit.logcheckin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,8 +15,6 @@ import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
-import java.time.LocalDate
-import javax.inject.Inject
 
 @HiltViewModel
 class LogHabitCheckInsViewModel @Inject constructor(

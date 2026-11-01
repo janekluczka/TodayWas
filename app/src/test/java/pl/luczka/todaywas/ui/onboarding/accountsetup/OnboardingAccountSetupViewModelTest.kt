@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.ui.onboarding.accountsetup
 
+import java.time.Instant
+import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -37,8 +39,6 @@ import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
-import java.time.Instant
-import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OnboardingAccountSetupViewModelTest {
@@ -494,11 +494,12 @@ class OnboardingAccountSetupViewModelTest {
             )
         }
 
-    private fun entry() = JournalEntry(
-        id = "1",
-        date = LocalDate.of(2026, 8, 1),
-        text = "text",
-        createdAt = Instant.EPOCH,
-        updatedAt = Instant.EPOCH,
-    )
+    private fun entry() =
+        JournalEntry(
+            id = "1",
+            date = LocalDate.of(2026, 8, 1),
+            text = "text",
+            createdAt = Instant.EPOCH,
+            updatedAt = Instant.EPOCH,
+        )
 }

@@ -3,6 +3,9 @@ package pl.luczka.todaywas.ui.habit.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Clock
+import java.time.LocalDate
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,9 +15,6 @@ import kotlinx.coroutines.flow.update
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.ui.model.HabitSortUiState
-import java.time.Clock
-import java.time.LocalDate
-import javax.inject.Inject
 
 @HiltViewModel
 class HabitListViewModel @Inject constructor(

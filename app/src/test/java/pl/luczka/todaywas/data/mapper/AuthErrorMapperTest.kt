@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.data.mapper
 
 import io.github.jan.supabase.auth.exception.AuthErrorCode
+import java.io.IOException
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import pl.luczka.todaywas.domain.model.AuthError
-import java.io.IOException
 
 class AuthErrorMapperTest {
 

@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.data.local.api
 
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.data.local.dao.JournalEntryDao
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.util.safeDbCall
-import javax.inject.Inject
 
 class LocalJournalDataSourceImpl @Inject constructor(
     private val dao: JournalEntryDao,

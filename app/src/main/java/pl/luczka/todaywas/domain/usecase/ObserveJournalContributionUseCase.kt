@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.domain.usecase
 
+import java.time.Clock
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -9,8 +11,6 @@ import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.availableWindows
 import pl.luczka.todaywas.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.util.JournalContributionCalculator
-import java.time.Clock
-import javax.inject.Inject
 
 class ObserveJournalContributionUseCase @Inject constructor(
     private val repository: JournalRepository,

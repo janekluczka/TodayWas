@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.data.mapper
 
+import java.time.Instant
 import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.data.remote.dto.HabitRemoteDto
 import pl.luczka.todaywas.data.util.SyncMeta
 import pl.luczka.todaywas.domain.model.Habit
-import java.time.Instant
 
 fun Habit.toRemoteDto(userId: String): HabitRemoteDto = HabitRemoteDto(
     id = id,

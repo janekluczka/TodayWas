@@ -6,6 +6,9 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,9 +33,6 @@ import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import java.time.Clock
-import java.time.Instant
-import java.time.LocalDate
 
 private data class HabitDetailViewModelState(
     val isLoading: Boolean = true,
@@ -281,8 +281,6 @@ class HabitDetailViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            @Assisted habitId: String,
-        ): HabitDetailViewModel
+        fun create(@Assisted habitId: String): HabitDetailViewModel
     }
 }

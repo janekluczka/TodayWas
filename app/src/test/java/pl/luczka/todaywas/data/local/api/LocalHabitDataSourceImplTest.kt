@@ -1,5 +1,6 @@
 package pl.luczka.todaywas.data.local.api
 
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -12,7 +13,6 @@ import pl.luczka.todaywas.data.local.dao.HabitDao
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.data.util.FakeTransactionRunner
-import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LocalHabitDataSourceImplTest {
@@ -38,26 +38,29 @@ class LocalHabitDataSourceImplTest {
         var upsertCallCount = 0
             private set
 
-        override fun observeAll(): Flow<List<HabitEntity>> = flowOf(
+        override fun observeAll(): Flow<List<HabitEntity>> =
+            flowOf(
+                entities.values
+                    .filter {
+                        it.deletedAt ==
+                            null
+                    }.toList(),
+            )
+
+        override suspend fun getAll(): List<HabitEntity> =
             entities.values
                 .filter {
                     it.deletedAt ==
                         null
-                }.toList(),
-        )
-
-        override suspend fun getAll(): List<HabitEntity> = entities.values
-            .filter {
-                it.deletedAt ==
-                    null
-            }.toList()
+                }.toList()
 
         override suspend fun getAllIncludingDeleted(): List<HabitEntity> = entities.values.toList()
 
-        override suspend fun getById(id: String): HabitEntity? = entities[id]?.takeIf {
-            it.deletedAt ==
-                null
-        }
+        override suspend fun getById(id: String): HabitEntity? =
+            entities[id]?.takeIf {
+                it.deletedAt ==
+                    null
+            }
 
         override suspend fun insert(entity: HabitEntity) {
             insertCallCount++
@@ -108,17 +111,18 @@ class LocalHabitDataSourceImplTest {
         var upsertAllCallCount = 0
             private set
 
-        override fun observeAll(): Flow<List<HabitCheckInEntity>> =
-            flowOf(entities.values.filter { it.deletedAt == null }.toList())
+        override fun observeAll(): Flow<List<HabitCheckInEntity>> = flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
-        override suspend fun getAll(): List<HabitCheckInEntity> = entities.values
-            .filter {
-                it.deletedAt ==
-                    null
-            }.toList()
+        override suspend fun getAll(): List<HabitCheckInEntity> =
+            entities.values
+                .filter {
+                    it.deletedAt ==
+                        null
+                }.toList()
 
-        override suspend fun getAllIncludingDeleted(): List<HabitCheckInEntity> = entities.values
-            .toList()
+        override suspend fun getAllIncludingDeleted(): List<HabitCheckInEntity> =
+            entities.values
+                .toList()
 
         override suspend fun getByHabitId(habitId: String): List<HabitCheckInEntity> =
             entities.values.filter { it.habitId == habitId && it.deletedAt == null }
@@ -128,9 +132,10 @@ class LocalHabitDataSourceImplTest {
             date: String,
         ): HabitCheckInEntity? = entities[habitId to date]?.takeIf { it.deletedAt == null }
 
-        override suspend fun insertOne(entity: HabitCheckInEntity): Unit = throw UnsupportedOperationException(
-            "not used by the data source",
-        )
+        override suspend fun insertOne(entity: HabitCheckInEntity): Unit =
+            throw UnsupportedOperationException(
+                "not used by the data source",
+            )
 
         override suspend fun insertAll(entities: List<HabitCheckInEntity>) {
             insertAllCallCount++
@@ -140,9 +145,10 @@ class LocalHabitDataSourceImplTest {
             entities.forEach { this.entities[it.habitId to it.date] = it }
         }
 
-        override suspend fun upsertOne(entity: HabitCheckInEntity): Unit = throw UnsupportedOperationException(
-            "not used by the data source",
-        )
+        override suspend fun upsertOne(entity: HabitCheckInEntity): Unit =
+            throw UnsupportedOperationException(
+                "not used by the data source",
+            )
 
         override suspend fun upsertAll(entities: List<HabitCheckInEntity>) {
             upsertAllCallCount++

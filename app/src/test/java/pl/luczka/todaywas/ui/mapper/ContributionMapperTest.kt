@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.ui.mapper
 
+import java.time.Instant
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -10,8 +12,6 @@ import pl.luczka.todaywas.domain.model.ContributionGrid
 import pl.luczka.todaywas.domain.model.ContributionLevel
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.ui.model.ContributionGridType
-import java.time.Instant
-import java.time.LocalDate
 
 class ContributionMapperTest {
 
@@ -172,13 +172,15 @@ class ContributionMapperTest {
         }
     }
 
-    private fun hasGapBefore(cell: DsContributionCellUiState): Boolean = when (cell) {
-        is DsContributionCellUiState.Level -> cell.hasGapBefore
-        is DsContributionCellUiState.Blank -> cell.hasGapBefore
-    }
+    private fun hasGapBefore(cell: DsContributionCellUiState): Boolean =
+        when (cell) {
+            is DsContributionCellUiState.Level -> cell.hasGapBefore
+            is DsContributionCellUiState.Blank -> cell.hasGapBefore
+        }
 
-    private fun dateOf(cell: DsContributionCellUiState): LocalDate? = when (cell) {
-        is DsContributionCellUiState.Level -> cell.date
-        is DsContributionCellUiState.Blank -> null
-    }
+    private fun dateOf(cell: DsContributionCellUiState): LocalDate? =
+        when (cell) {
+            is DsContributionCellUiState.Level -> cell.date
+            is DsContributionCellUiState.Blank -> null
+        }
 }

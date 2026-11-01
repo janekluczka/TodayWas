@@ -1,5 +1,6 @@
 package pl.luczka.todaywas.ui.mapper
 
+import java.time.LocalDate
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
@@ -10,7 +11,6 @@ import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
-import java.time.LocalDate
 
 // Sorts on domain data (Habit + HabitCheckIn) before mapping to HabitUiState, so the UI model
 // never needs to carry createdAt/lastCheckInDate purely for ordering purposes.
@@ -53,7 +53,7 @@ fun Habit.toUiState(
         todayCheckIn == null -> HabitCheckInStatusUiState.NotLogged
         type == HabitType.BINARY -> HabitCheckInStatusUiState.LoggedBinary(
             done =
-                todayCheckIn.value == 1,
+            todayCheckIn.value == 1,
         )
         else -> HabitCheckInStatusUiState.LoggedScale(value = todayCheckIn.value)
     },

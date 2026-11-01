@@ -88,7 +88,7 @@ private class DataSyncReviewContentPreviewProvider :
 @Composable
 private fun DataSyncReviewContentPreview(
     @PreviewParameter(DataSyncReviewContentPreviewProvider::class) state:
-        DataSyncReviewPreviewState,
+    DataSyncReviewPreviewState,
 ) {
     DsTheme {
         DataSyncReviewContent(
