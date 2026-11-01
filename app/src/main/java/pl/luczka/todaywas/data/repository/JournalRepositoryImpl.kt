@@ -1,5 +1,9 @@
 package pl.luczka.todaywas.data.repository
 
+import java.time.Clock
+import java.time.LocalDate
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -17,10 +21,6 @@ import pl.luczka.todaywas.data.util.remoteCall
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
-import java.time.Clock
-import java.time.LocalDate
-import java.util.UUID
-import javax.inject.Inject
 
 class JournalRepositoryImpl @Inject constructor(
     private val local: LocalJournalDataSource,

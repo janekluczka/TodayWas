@@ -7,9 +7,9 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import pl.luczka.todaywas.data.worker.SyncWorker
 import java.time.Duration
 import javax.inject.Inject
+import pl.luczka.todaywas.data.worker.SyncWorker
 
 private const val SYNC_WORK_NAME = "sync-local-data"
 

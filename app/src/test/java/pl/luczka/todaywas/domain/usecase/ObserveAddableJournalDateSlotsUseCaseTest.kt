@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.domain.usecase
 
+import java.time.Instant
+import java.time.LocalDate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -7,18 +9,17 @@ import org.junit.Test
 import pl.luczka.todaywas.domain.model.JournalDateSlot
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.repository.FakeJournalRepository
-import java.time.Instant
-import java.time.LocalDate
 
 class ObserveAddableJournalDateSlotsUseCaseTest {
 
-    private fun entryFor(date: LocalDate) = JournalEntry(
-        id = "1",
-        date = date,
-        text = "text",
-        createdAt = Instant.EPOCH,
-        updatedAt = Instant.EPOCH,
-    )
+    private fun entryFor(date: LocalDate) =
+        JournalEntry(
+            id = "1",
+            date = date,
+            text = "text",
+            createdAt = Instant.EPOCH,
+            updatedAt = Instant.EPOCH,
+        )
 
     @Test
     fun `should make both slots addable when neither today nor yesterday is logged`() =

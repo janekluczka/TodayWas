@@ -3,6 +3,8 @@ package pl.luczka.todaywas.ui.journal.create
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlin.random.Random
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,8 +27,6 @@ import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class AddJournalEntryViewModel @Inject constructor(
@@ -336,17 +336,16 @@ class AddJournalEntryViewModel @Inject constructor(
     }
 
     // Preserves remainingToday, mirroring HelpMeStartUiState's resetForNewSession.
-    private fun HelpMeRefineUiState.resetForNewSession(
-        isVisible: Boolean,
-    ): HelpMeRefineUiState = copy(
-        isVisible = isVisible,
-        step = HelpMeRefineStep.INPUT,
-        selectedTone = null,
-        thoughts = "",
-        refinedText = null,
-        isGenerating = false,
-        error = null,
-    )
+    private fun HelpMeRefineUiState.resetForNewSession(isVisible: Boolean): HelpMeRefineUiState =
+        copy(
+            isVisible = isVisible,
+            step = HelpMeRefineStep.INPUT,
+            selectedTone = null,
+            thoughts = "",
+            refinedText = null,
+            isGenerating = false,
+            error = null,
+        )
 
     private fun HelpMeRefineUiState.applyResult(
         result: Result<AiPromptResult>,

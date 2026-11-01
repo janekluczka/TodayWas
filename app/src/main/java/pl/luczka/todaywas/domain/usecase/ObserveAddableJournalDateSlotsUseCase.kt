@@ -1,23 +1,22 @@
 package pl.luczka.todaywas.domain.usecase
 
+import java.time.LocalDate
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.domain.model.JournalDateSlot
 import pl.luczka.todaywas.domain.repository.JournalRepository
-import java.time.LocalDate
-import javax.inject.Inject
 
 class ObserveAddableJournalDateSlotsUseCase @Inject constructor(
     private val repository: JournalRepository,
 ) {
 
-    operator fun invoke(): Flow<List<JournalDateSlot>> =
-        repository
-            .observeEntries()
-            .map { entries ->
-                val loggedDates = entries.map { it.date }.toSet()
-                JournalDateSlot.entries.filter { it.toDate() !in loggedDates }
-            }
+    operator fun invoke(): Flow<List<JournalDateSlot>> = repository
+        .observeEntries()
+        .map { entries ->
+            val loggedDates = entries.map { it.date }.toSet()
+            JournalDateSlot.entries.filter { it.toDate() !in loggedDates }
+        }
 
     private fun JournalDateSlot.toDate(): LocalDate = when (this) {
         JournalDateSlot.TODAY -> LocalDate.now()

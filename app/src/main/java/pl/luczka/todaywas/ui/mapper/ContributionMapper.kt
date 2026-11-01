@@ -1,5 +1,8 @@
 package pl.luczka.todaywas.ui.mapper
 
+import java.time.Instant
+import java.time.LocalDate
+import java.time.YearMonth
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
 import pl.luczka.todaywas.domain.model.ContributionGrid
@@ -7,9 +10,6 @@ import pl.luczka.todaywas.domain.model.ContributionLevel
 import pl.luczka.todaywas.domain.model.dateRange
 import pl.luczka.todaywas.ui.model.ContributionGridType
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import java.time.Instant
-import java.time.LocalDate
-import java.time.YearMonth
 
 fun ContributionGrid.toUiState(
     now: Instant,

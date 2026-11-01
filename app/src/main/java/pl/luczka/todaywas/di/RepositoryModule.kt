@@ -4,6 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSourceImpl
 import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
@@ -24,7 +25,6 @@ import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.HabitRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.repository.OnboardingRepository
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)

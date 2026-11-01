@@ -1,5 +1,11 @@
 package pl.luczka.todaywas.ui.journal.edit
 
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -34,12 +40,6 @@ import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.ui.journal.create.STARTER_PROMPT_VARIANT_COUNT
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EditJournalEntryViewModelTest {

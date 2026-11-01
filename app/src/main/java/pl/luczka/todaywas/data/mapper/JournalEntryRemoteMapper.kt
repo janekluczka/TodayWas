@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.data.mapper
 
+import java.time.Instant
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
 import pl.luczka.todaywas.data.util.SyncMeta
 import pl.luczka.todaywas.domain.model.JournalEntry
-import java.time.Instant
 
 fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEntryRemoteDto(
     id = id,
@@ -18,9 +18,8 @@ fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEnt
 
 // Collapses the toDomain().toRemoteDto(userId) hop callers would otherwise need when pushing
 // local entities straight to remote.
-fun JournalEntryEntity.toRemoteDto(
-    userId: String,
-): JournalEntryRemoteDto = toDomain().toRemoteDto(userId)
+fun JournalEntryEntity.toRemoteDto(userId: String): JournalEntryRemoteDto =
+    toDomain().toRemoteDto(userId)
 
 fun List<JournalEntryEntity>.toRemoteDto(userId: String): List<JournalEntryRemoteDto> = map {
     it.toRemoteDto(userId)

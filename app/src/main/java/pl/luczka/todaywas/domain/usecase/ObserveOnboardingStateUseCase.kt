@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.domain.usecase
 
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.domain.model.OnboardingState
 import pl.luczka.todaywas.domain.repository.OnboardingRepository
-import javax.inject.Inject
 
 class ObserveOnboardingStateUseCase @Inject constructor(
     private val repository: OnboardingRepository,

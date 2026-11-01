@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.domain.repository
 
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
-import java.time.LocalDate
 
 interface HabitRepository : Syncable {
 

@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.domain.usecase
 
-import pl.luczka.todaywas.domain.util.EditWindow
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
+import pl.luczka.todaywas.domain.util.EditWindow
 
 class GetFreshLoggableDatesUseCase @Inject constructor(
     private val clock: Clock,

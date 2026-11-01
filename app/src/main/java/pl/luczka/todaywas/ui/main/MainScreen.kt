@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.Instant
+import java.time.LocalDate
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
@@ -61,8 +63,6 @@ import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.ui.model.HabitUiState
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import java.time.Instant
-import java.time.LocalDate
 
 // Each section shows at most this many items on Main before falling back to a "View all" row.
 private const val MAIN_SECTION_CAP = 5
@@ -551,8 +551,8 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     date = LocalDate.now().minusDays(1),
                     formattedDate = "Jul 26, 2026",
                     text =
-                        "A long entry that should get truncated in the list preview once it " +
-                            "wraps past two lines of text.",
+                    "A long entry that should get truncated in the list preview once it " +
+                        "wraps past two lines of text.",
                     createdAt = Instant.now(),
                 ),
             ),

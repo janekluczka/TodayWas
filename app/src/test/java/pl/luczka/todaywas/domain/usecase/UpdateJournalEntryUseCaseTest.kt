@@ -1,5 +1,10 @@
 package pl.luczka.todaywas.domain.usecase
 
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -8,11 +13,6 @@ import pl.luczka.todaywas.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.model.JournalEntryNotFoundException
 import pl.luczka.todaywas.domain.repository.FakeJournalRepository
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 
 class UpdateJournalEntryUseCaseTest {
 

@@ -1,5 +1,9 @@
 package pl.luczka.todaywas.ui.habit.logcheckin
 
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -23,10 +27,6 @@ import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
 import pl.luczka.todaywas.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import java.time.Clock
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LogHabitCheckInsViewModelTest {
@@ -62,17 +62,18 @@ class LogHabitCheckInsViewModelTest {
     )
 
     // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
-    private fun TestScope.viewModel(repository: FakeHabitRepository) = LogHabitCheckInsViewModel(
-        observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
-        logHabitCheckIns = LogHabitCheckInsUseCase(repository),
-        getFreshLoggableDates = GetFreshLoggableDatesUseCase(
-            Clock.fixed(Instant.now(), ZoneId.systemDefault()),
-        ),
-    ).also { viewModel ->
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.uiState.collect {}
+    private fun TestScope.viewModel(repository: FakeHabitRepository) =
+        LogHabitCheckInsViewModel(
+            observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(repository),
+            logHabitCheckIns = LogHabitCheckInsUseCase(repository),
+            getFreshLoggableDates = GetFreshLoggableDatesUseCase(
+                Clock.fixed(Instant.now(), ZoneId.systemDefault()),
+            ),
+        ).also { viewModel ->
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.uiState.collect {}
+            }
         }
-    }
 
     @Before
     fun setUp() {

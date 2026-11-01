@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.data.repository
 
+import java.time.Instant
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -16,8 +18,6 @@ import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.FakeAuthRepository
-import java.time.Instant
-import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalRepositoryImplTest {
@@ -50,18 +50,20 @@ class JournalRepositoryImplTest {
         var purgeDeletedBeforeCallCount = 0
             private set
 
-        override fun observeEntries(): Flow<List<JournalEntryEntity>> = flowOf(
-            entities.values
-                .filter {
-                    it.deletedAt ==
-                        null
-                }.toList(),
-        )
+        override fun observeEntries(): Flow<List<JournalEntryEntity>> =
+            flowOf(
+                entities.values
+                    .filter {
+                        it.deletedAt ==
+                            null
+                    }.toList(),
+            )
 
-        override suspend fun getEntry(id: String): JournalEntryEntity? = entities[id]?.takeIf {
-            it.deletedAt ==
-                null
-        }
+        override suspend fun getEntry(id: String): JournalEntryEntity? =
+            entities[id]?.takeIf {
+                it.deletedAt ==
+                    null
+            }
 
         override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> {
             if (shouldFailInsert) return Result.failure(RuntimeException("simulated write failure"))
@@ -91,8 +93,9 @@ class JournalRepositoryImplTest {
             return Result.success(existing?.copy(deletedAt = deletedAt))
         }
 
-        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = entities.values
-            .toList()
+        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> =
+            entities.values
+                .toList()
 
         override suspend fun applyRemoteSnapshot(toApply: List<JournalEntryEntity>) {
             applyRemoteSnapshotCallCount++
