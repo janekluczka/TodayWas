@@ -87,9 +87,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
             entry<MainKey> {
                 MainScreen(
                     onAddEntryClick = { backStack.add(AddJournalEntryKey) },
-                    onJournalEntryClick = { entry ->
-                        backStack.add(JournalEntryDetailKey(id = entry.id))
-                    },
+                    onJournalEntryClick = { entry -> backStack.add(JournalEntryDetailKey(id = entry.id)) },
                     onJournalListClick = { backStack.add(JournalListKey) },
                     onCreateHabitClick = { backStack.add(CreateHabitKey) },
                     onLogCheckInsClick = { backStack.add(LogHabitCheckInsKey) },
@@ -98,11 +96,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                     onAccountClick = { backStack.add(AccountKey) },
                 )
             }
-            entry<AccountKey> {
-                AccountScreen(
-                    onBack = { backStack.removeLastOrNull() },
-                )
-            }
+            entry<AccountKey> { AccountScreen(onBack = { backStack.removeLastOrNull() }) }
             entry<JournalListKey> {
                 JournalListScreen(
                     onBack = { backStack.removeLastOrNull() },
@@ -150,10 +144,7 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                 )
             }
             entry<HabitDetailKey> { key ->
-                HabitDetailScreen(
-                    habitId = key.habitId,
-                    onBack = { backStack.removeLastOrNull() },
-                )
+                HabitDetailScreen(habitId = key.habitId, onBack = { backStack.removeLastOrNull() })
             }
         },
     )

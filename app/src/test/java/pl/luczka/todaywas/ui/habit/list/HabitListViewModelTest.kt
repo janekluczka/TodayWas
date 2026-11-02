@@ -29,10 +29,7 @@ import pl.luczka.todaywas.ui.model.HabitSortUiState
 class HabitListViewModelTest {
 
     private val today = LocalDate.of(2026, 6, 15)
-    private val clock = Clock.fixed(
-        today.atStartOfDay(ZoneId.systemDefault()).toInstant(),
-        ZoneId.systemDefault(),
-    )
+    private val clock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault())
 
     private fun habit(
         id: String,
@@ -66,9 +63,7 @@ class HabitListViewModelTest {
         habits: List<Habit> = emptyList(),
         checkIns: List<HabitCheckIn> = emptyList(),
     ) = HabitListViewModel(
-        observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(
-            FakeHabitRepository(habits, checkIns),
-        ),
+        observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(FakeHabitRepository(habits, checkIns)),
         clock = clock,
     ).also { viewModel ->
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {

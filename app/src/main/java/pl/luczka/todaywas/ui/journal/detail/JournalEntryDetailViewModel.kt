@@ -25,19 +25,14 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
-        JournalEntryDetailUiState(
-            isLoading = true,
-            entry = null,
-            isEditable = false,
-        ),
+        JournalEntryDetailUiState(isLoading = true, entry = null, isEditable = false),
     )
     val uiState: StateFlow<JournalEntryDetailUiState> = _uiState.asStateFlow()
 
     fun onIntent(intent: JournalEntryDetailIntent) {
         when (intent) {
             JournalEntryDetailIntent.ScreenEntered -> onScreenEntered()
-            JournalEntryDetailIntent.NavigationHandled ->
-                _uiState.update { it.copy(pendingNavigation = null) }
+            JournalEntryDetailIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
             JournalEntryDetailIntent.DeleteClicked -> onDeleteClicked()
             JournalEntryDetailIntent.DeleteConfirmed -> onDeleteConfirmed()
             JournalEntryDetailIntent.DeleteDismissed -> onDeleteDismissed()
@@ -52,11 +47,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
             val entry = getJournalEntry(id) ?: return@launch
             _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    entry = entry.toUiState(),
-                    isEditable = isEditable(entry.createdAt),
-                )
+                it.copy(isLoading = false, entry = entry.toUiState(), isEditable = isEditable(entry.createdAt))
             }
         }
     }
@@ -77,13 +68,9 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
             _uiState.update { it.copy(isDeleting = true, deleteError = false) }
             val result = deleteJournalEntry(entry.id)
             if (result.isSuccess) {
-                _uiState.update {
-                    it.copy(pendingNavigation = JournalEntryDetailNavigation.EntryDeleted)
-                }
+                _uiState.update { it.copy(pendingNavigation = JournalEntryDetailNavigation.EntryDeleted) }
             } else {
-                _uiState.update {
-                    it.copy(isDeleting = false, deleteError = true, isDeleteDialogVisible = false)
-                }
+                _uiState.update { it.copy(isDeleting = false, deleteError = true, isDeleteDialogVisible = false) }
             }
         }
     }

@@ -74,11 +74,7 @@ fun AddJournalEntryScreen(
         viewModel.onIntent(AddJournalEntryIntent.NavigationHandled)
     }
 
-    AddJournalEntryScreenContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-        onCancel = onCancel,
-    )
+    AddJournalEntryScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onCancel = onCancel)
 }
 
 @Composable
@@ -120,15 +116,8 @@ private fun AddJournalEntryScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            JournalDateStrip(
-                uiState = uiState,
-                onIntent = onIntent,
-            )
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            JournalDateStrip(uiState = uiState, onIntent = onIntent)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -146,16 +135,10 @@ private fun AddJournalEntryScreenContent(
                     StarterPromptList(
                         starterPrompts = uiState.starterPrompts,
                         onPromptClick = { onIntent(AddJournalEntryIntent.TextChanged(it)) },
-                        onHelpMeStartClick = {
-                            onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-                        },
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .fillMaxWidth(),
+                        onHelpMeStartClick = { onIntent(AddJournalEntryIntent.HelpMeStartClicked) },
+                        modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(),
                     )
-                } else if (uiState.authState is AuthStateUi.SignedIn &&
-                    uiState.text.length <= MAX_REFINE_TEXT_LENGTH
-                ) {
+                } else if (uiState.authState is AuthStateUi.SignedIn && uiState.text.length <= MAX_REFINE_TEXT_LENGTH) {
                     DsAssistChip(
                         text = stringResource(R.string.journal_help_me_refine_cta),
                         leadingIcon = Icons.Filled.AutoAwesome,
@@ -173,14 +156,10 @@ private fun AddJournalEntryScreenContent(
             onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeStartDismissed) },
             onSignInClick = { onIntent(AddJournalEntryIntent.SignInClicked) },
             onToneSelect = { onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(it)) },
-            onThoughtsChange = {
-                onIntent(AddJournalEntryIntent.HelpMeStartThoughtsChanged(it))
-            },
+            onThoughtsChange = { onIntent(AddJournalEntryIntent.HelpMeStartThoughtsChanged(it)) },
             onGenerateClick = { onIntent(AddJournalEntryIntent.GenerateClicked) },
             onRegenerateClick = { onIntent(AddJournalEntryIntent.RegenerateClicked) },
-            onUseGeneratedTextClick = {
-                onIntent(AddJournalEntryIntent.UseGeneratedTextClicked)
-            },
+            onUseGeneratedTextClick = { onIntent(AddJournalEntryIntent.UseGeneratedTextClicked) },
         )
     }
 
@@ -189,9 +168,7 @@ private fun AddJournalEntryScreenContent(
             uiState = uiState.helpMeRefine,
             onDismissRequest = { onIntent(AddJournalEntryIntent.HelpMeRefineDismissed) },
             onToneSelect = { onIntent(AddJournalEntryIntent.HelpMeRefineToneSelected(it)) },
-            onThoughtsChange = {
-                onIntent(AddJournalEntryIntent.HelpMeRefineThoughtsChanged(it))
-            },
+            onThoughtsChange = { onIntent(AddJournalEntryIntent.HelpMeRefineThoughtsChanged(it)) },
             onRefineClick = { onIntent(AddJournalEntryIntent.RefineClicked) },
             onRegenerateClick = { onIntent(AddJournalEntryIntent.RegenerateRefineClicked) },
             onUseRefinedTextClick = { onIntent(AddJournalEntryIntent.UseRefinedTextClicked) },
@@ -205,14 +182,13 @@ private fun JournalDateSlotUiState.title(): String = when (this) {
     JournalDateSlotUiState.YESTERDAY -> stringResource(R.string.journal_add_entry_title_yesterday)
 }
 
-// The entry point for "help me start" plus three hardcoded, randomly-varied starter lines (one
-// per tone — see AddJournalEntryViewModel for how the variant is picked), overlaid at the bottom
-// of the (full-screen) writing area only while it's empty, disappearing the moment the user types
-// anything. Chips show the actual line that gets inserted, not a generic tone label, so tapping
-// one is never a surprise. "Help me refine" (Journal Entry Detail) is the equivalent entry point
-// once there's already text to work with. The AI chip is shown regardless of sign-in state —
-// tapping it while signed out opens the sheet with a sign-in explainer instead of the tone
-// picker, so the feature stays discoverable either way.
+// The entry point for "help me start" plus three hardcoded, randomly-varied starter lines (one per tone — see
+// AddJournalEntryViewModel for how the variant is picked), overlaid at the bottom of the (full-screen) writing area
+// only while it's empty, disappearing the moment the user types anything. Chips show the actual line that gets
+// inserted, not a generic tone label, so tapping one is never a surprise. "Help me refine" (Journal Entry Detail) is
+// the equivalent entry point once there's already text to work with. The AI chip is shown regardless of sign-in state —
+// tapping it while signed out opens the sheet with a sign-in explainer instead of the tone picker, so the feature stays
+// discoverable either way.
 @Composable
 fun StarterPromptList(
     starterPrompts: List<JournalStarterPromptUiState>,
@@ -223,11 +199,7 @@ fun StarterPromptList(
     Column(modifier = modifier) {
         for (prompt in starterPrompts) {
             val text = prompt.resolvedText()
-            DsAssistChip(
-                text = text,
-                leadingIcon = prompt.tone.icon(),
-                onClick = { onPromptClick(text) },
-            )
+            DsAssistChip(text = text, leadingIcon = prompt.tone.icon(), onClick = { onPromptClick(text) })
         }
         DsAssistChip(
             text = stringResource(R.string.journal_help_me_start_cta),
@@ -292,10 +264,7 @@ private fun JournalDateStrip(
 
     DsDateStrip(
         selectedDate = selectedDate,
-        isSelectable = { date ->
-            date.toSlot(today, yesterday)?.let { it in uiState.availableSlots }
-                ?: false
-        },
+        isSelectable = { date -> date.toSlot(today, yesterday)?.let { it in uiState.availableSlots } ?: false },
         onDateSelect = { date ->
             date.toSlot(today, yesterday)?.let { onIntent(AddJournalEntryIntent.SlotSelected(it)) }
         },
@@ -334,16 +303,11 @@ fun HelpMeStartBottomSheet(
         errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
 
-    DsModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        modifier = modifier,
-    ) {
+    DsModalBottomSheet(onDismissRequest = onDismissRequest, modifier = modifier) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(DsSpacing.space600),
+                modifier = Modifier.fillMaxWidth().padding(DsSpacing.space600),
             ) {
                 when (uiState.step) {
                     HelpMeStartStep.SIGNED_OUT -> {
@@ -351,11 +315,7 @@ fun HelpMeStartBottomSheet(
                             text = stringResource(R.string.journal_help_me_start_signed_out_title),
                             style = MaterialTheme.typography.titleMedium,
                         )
-                        DsText(
-                            text = stringResource(
-                                R.string.journal_help_me_start_signed_out_message,
-                            ),
-                        )
+                        DsText(text = stringResource(R.string.journal_help_me_start_signed_out_message))
                         DsButton(
                             text = stringResource(R.string.onboarding_account_signin_signup_cta),
                             onClick = onSignInClick,
@@ -367,28 +327,22 @@ fun HelpMeStartBottomSheet(
                             text = stringResource(R.string.journal_help_me_start_dialog_title),
                             style = MaterialTheme.typography.titleMedium,
                         )
-                        val toneLabels =
-                            JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
+                        val toneLabels = JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
                         DsChoiceFlowRow(
                             items = JournalPromptToneUiState.entries.toList(),
                             selectedItem = uiState.selectedTone,
-                            onItemSelect = { tone ->
-                                tone?.let(onToneSelect)
-                            },
+                            onItemSelect = { tone -> tone?.let(onToneSelect) },
                             enabled = !uiState.isGenerating,
                             allowDeselect = false,
                             label = { toneLabels.getValue(it) },
                         )
-                        // Same borderless, containerless field as the entry's own body — the tone
-                        // picker aside, this sheet should feel like an extension of that writing
-                        // surface, not a separate form. minLines reserves space up front so typing
-                        // a second line doesn't reflow the sheet around it.
+                        // Same borderless, containerless field as the entry's own body — the tone picker aside, this
+                        // sheet should feel like an extension of that writing surface, not a separate form. minLines
+                        // reserves space up front so typing a second line doesn't reflow the sheet around it.
                         DsPlainTextField(
                             value = uiState.thoughts,
                             onValueChange = onThoughtsChange,
-                            placeholder = stringResource(
-                                R.string.journal_help_me_start_thoughts_label,
-                            ),
+                            placeholder = stringResource(R.string.journal_help_me_start_thoughts_label),
                             enabled = !uiState.isGenerating,
                             minLines = 3,
                             modifier = Modifier.fillMaxWidth(),
@@ -416,9 +370,7 @@ fun HelpMeStartBottomSheet(
                         uiState.generatedText?.let { DsText(text = it) }
                         Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
                             DsFilledTonalButtonWithLoading(
-                                text = stringResource(
-                                    R.string.journal_help_me_start_regenerate_cta,
-                                ),
+                                text = stringResource(R.string.journal_help_me_start_regenerate_cta),
                                 onClick = onRegenerateClick,
                                 enabled = (uiState.remainingToday ?: 1) > 0,
                                 loading = uiState.isGenerating,
@@ -434,10 +386,7 @@ fun HelpMeStartBottomSheet(
                     }
                 }
             }
-            DsSnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
+            DsSnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
 }
@@ -453,21 +402,11 @@ fun aiAssistToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
 
 @Composable
 fun aiAssistErrorMessage(error: AiAssistErrorUiState): String = when (error) {
-    AiAssistErrorUiState.INVALID_REQUEST -> stringResource(
-        R.string.journal_ai_assist_error_invalid_request,
-    )
-    AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(
-        R.string.journal_ai_assist_error_upstream_failed,
-    )
-    AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(
-        R.string.journal_ai_assist_error_not_signed_in,
-    )
-    AiAssistErrorUiState.DAILY_LIMIT_REACHED -> stringResource(
-        R.string.journal_ai_assist_error_daily_limit_reached,
-    )
-    AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(
-        R.string.journal_ai_assist_error_network_unavailable,
-    )
+    AiAssistErrorUiState.INVALID_REQUEST -> stringResource(R.string.journal_ai_assist_error_invalid_request)
+    AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(R.string.journal_ai_assist_error_upstream_failed)
+    AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(R.string.journal_ai_assist_error_not_signed_in)
+    AiAssistErrorUiState.DAILY_LIMIT_REACHED -> stringResource(R.string.journal_ai_assist_error_daily_limit_reached)
+    AiAssistErrorUiState.NETWORK_UNAVAILABLE -> stringResource(R.string.journal_ai_assist_error_network_unavailable)
     AiAssistErrorUiState.UNKNOWN -> stringResource(R.string.journal_ai_assist_error_unknown)
 }
 
@@ -530,25 +469,19 @@ private class HelpMeStartBottomSheetPreviewStateProvider : PreviewParameterProvi
     override val values = sequenceOf(
         HelpMeStartUiState(isVisible = true, step = HelpMeStartStep.SIGNED_OUT),
         HelpMeStartUiState(isVisible = true),
-        HelpMeStartUiState(
-            isVisible = true,
-            selectedTone = JournalPromptToneUiState.GOOD,
-            isGenerating = true,
-        ),
+        HelpMeStartUiState(isVisible = true, selectedTone = JournalPromptToneUiState.GOOD, isGenerating = true),
         HelpMeStartUiState(
             isVisible = true,
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            generatedText =
-                "I made real progress today, and it feels good to see it come together...",
+            generatedText = "I made real progress today, and it feels good to see it come together...",
             remainingToday = 7,
         ),
         HelpMeStartUiState(
             isVisible = true,
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            generatedText =
-                "I made real progress today, and it feels good to see it come together...",
+            generatedText = "I made real progress today, and it feels good to see it come together...",
             remainingToday = 0,
         ),
         HelpMeStartUiState(

@@ -28,22 +28,17 @@ fun DsPlainTextField(
     placeholder: String? = null,
     enabled: Boolean = true,
     minLines: Int = 1,
-    // When true, the tappable/editable area fills the caller's full allocated bounds instead of
-    // sizing to minLines — for a "the whole screen is the writing surface" field (the journal
-    // body) where tapping anywhere below the last line should still place the cursor and start
-    // typing. Leave false for a compact field sized to its content, like a short optional-notes
-    // field inside a sheet.
+    // When true, the tappable/editable area fills the caller's full allocated bounds instead of sizing to minLines —
+    // for a "the whole screen is the writing surface" field (the journal body) where tapping anywhere below the last
+    // line should still place the cursor and start typing. Leave false for a compact field sized to its content, like a
+    // short optional-notes field inside a sheet.
     fillAvailableSpace: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
 ) {
     val contentColor = LocalContentColor.current
     Box(modifier = modifier) {
         if (value.isEmpty() && placeholder != null) {
-            DsText(
-                text = placeholder,
-                style = textStyle,
-                color = contentColor.copy(alpha = 0.6f),
-            )
+            DsText(text = placeholder, style = textStyle, color = contentColor.copy(alpha = 0.6f))
         }
         BasicTextField(
             value = value,

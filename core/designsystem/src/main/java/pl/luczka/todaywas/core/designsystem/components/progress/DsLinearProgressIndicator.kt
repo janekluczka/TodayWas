@@ -16,18 +16,9 @@ fun DsLinearProgressIndicator(
     trackColor: Color = ProgressIndicatorDefaults.linearTrackColor,
 ) {
     if (progress != null) {
-        LinearProgressIndicator(
-            progress = progress,
-            color = color,
-            trackColor = trackColor,
-            modifier = modifier,
-        )
+        LinearProgressIndicator(progress = progress, color = color, trackColor = trackColor, modifier = modifier)
     } else {
-        LinearProgressIndicator(
-            color = color,
-            trackColor = trackColor,
-            modifier = modifier,
-        )
+        LinearProgressIndicator(color = color, trackColor = trackColor, modifier = modifier)
     }
 }
 

@@ -15,11 +15,7 @@ fun DsFloatingActionButton(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    FloatingActionButton(
-        onClick = onClick,
-        content = content,
-        modifier = modifier,
-    )
+    FloatingActionButton(onClick = onClick, content = content, modifier = modifier)
 }
 
 @PreviewLightDark
@@ -27,10 +23,7 @@ fun DsFloatingActionButton(
 private fun DsFloatingActionButtonPreview() {
     DsTheme {
         DsFloatingActionButton(onClick = {}) {
-            DsIcon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add",
-            )
+            DsIcon(imageVector = Icons.Default.Add, contentDescription = "Add")
         }
     }
 }

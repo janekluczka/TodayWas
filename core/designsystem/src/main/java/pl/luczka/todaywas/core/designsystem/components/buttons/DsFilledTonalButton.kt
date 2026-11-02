@@ -13,9 +13,8 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
-// A secondary-emphasis text button (e.g. "Regenerate" next to a primary "Accept") — lower
-// visual weight than DsButton's filled container but still a solid tonal background, unlike
-// DsTextButton's bare-label M3 TextButton.
+// A secondary-emphasis text button (e.g. "Regenerate" next to a primary "Accept") — lower visual weight than DsButton's
+// filled container but still a solid tonal background, unlike DsTextButton's bare-label M3 TextButton.
 @Composable
 fun DsFilledTonalButton(
     text: String,

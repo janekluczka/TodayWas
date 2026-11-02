@@ -22,23 +22,19 @@ class OnboardingRepositoryImpl @Inject constructor(
     }
 
     override suspend fun completeOnboarding(): Result<Unit> {
-        val entity = dao.observe().first()?.copy(
-            onboardingCompleted = true,
-        ) ?: UserPreferencesEntity(
+        val entity = dao.observe().first()?.copy(onboardingCompleted = true) ?: UserPreferencesEntity(
             onboardingCompleted = true,
         )
         return upsertWithRetry(entity)
     }
 
     override suspend fun markLocalDataSynced(): Result<Unit> {
-        val entity =
-            dao.observe().first()?.copy(hasSyncedLocalData = true) ?: return Result.success(Unit)
+        val entity = dao.observe().first()?.copy(hasSyncedLocalData = true) ?: return Result.success(Unit)
         return upsertWithRetry(entity)
     }
 
     override suspend fun resetSyncFlag(): Result<Unit> {
-        val entity =
-            dao.observe().first()?.copy(hasSyncedLocalData = false) ?: return Result.success(Unit)
+        val entity = dao.observe().first()?.copy(hasSyncedLocalData = false) ?: return Result.success(Unit)
         return upsertWithRetry(entity)
     }
 

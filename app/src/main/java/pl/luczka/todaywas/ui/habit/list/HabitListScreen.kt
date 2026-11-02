@@ -78,11 +78,7 @@ private fun HabitListScreenContent(
         },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             SortChipRow(
                 selected = uiState.selectedSort,
                 onSortSelect = { onIntent(HabitListIntent.SortSelected(it)) },
@@ -91,10 +87,7 @@ private fun HabitListScreenContent(
             if (!uiState.isLoading && uiState.habits.isEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(horizontal = DsSpacing.space400),
+                    modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = DsSpacing.space400),
                 ) {
                     DsText(
                         text = stringResource(R.string.main_habit_empty_state),
@@ -104,10 +97,7 @@ private fun HabitListScreenContent(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(uiState.habits, key = { it.id }) { habit ->
-                        HabitRow(
-                            habit = habit,
-                            onClick = { onHabitClick(habit.id) },
-                        )
+                        HabitRow(habit = habit, onClick = { onHabitClick(habit.id) })
                     }
                 }
             }
@@ -123,10 +113,7 @@ private fun SortChipRow(
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        contentPadding = PaddingValues(
-            horizontal = DsSpacing.space400,
-            vertical = DsSpacing.space200,
-        ),
+        contentPadding = PaddingValues(horizontal = DsSpacing.space400, vertical = DsSpacing.space200),
         modifier = modifier,
     ) {
         items(HabitSortUiState.entries) { sort ->

@@ -56,13 +56,8 @@ fun GoogleSignInLaunchButton(
                             .setFilterByAuthorizedAccounts(false)
                             .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
                             .build()
-                        val request = GetCredentialRequest
-                            .Builder()
-                            .addCredentialOption(googleIdOption)
-                            .build()
-                        val result = CredentialManager
-                            .create(context)
-                            .getCredential(context, request)
+                        val request = GetCredentialRequest.Builder().addCredentialOption(googleIdOption).build()
+                        val result = CredentialManager.create(context).getCredential(context, request)
                         val credential = GoogleIdTokenCredential.createFrom(result.credential.data)
                         onIdTokenReceive(credential.idToken)
                     } catch (ignored: GetCredentialCancellationException) {

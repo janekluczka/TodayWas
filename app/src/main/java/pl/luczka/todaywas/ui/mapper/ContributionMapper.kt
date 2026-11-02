@@ -44,12 +44,11 @@ private fun ContributionGrid.toContinuousCells(
         }.toList()
 }
 
-// Months own their own contiguous block of columns rather than one continuously-padded window:
-// each column is built from the current position through the end of its calendar week, the
-// window, OR the current month — whichever comes first. This means a month boundary that falls
-// mid-week splits that calendar week into two side-by-side partial columns (one per month) instead
-// of one shared week showing days from both months, and the window's own start/end similarly
-// truncate the very first/last column instead of spilling into out-of-window placeholder days.
+// Months own their own contiguous block of columns rather than one continuously-padded window: each column is built
+// from the current position through the end of its calendar week, the window, OR the current month — whichever comes
+// first. This means a month boundary that falls mid-week splits that calendar week into two side-by-side partial
+// columns (one per month) instead of one shared week showing days from both months, and the window's own start/end
+// similarly truncate the very first/last column instead of spilling into out-of-window placeholder days.
 private fun ContributionGrid.toByMonthCells(
     startDate: LocalDate,
     endDate: LocalDate,

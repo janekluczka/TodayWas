@@ -146,9 +146,7 @@ private fun MainScreenContent(
     navigation: MainNavigation,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-    val bothEmpty = !uiState.isLoading &&
-        uiState.journalEntries.isEmpty() &&
-        uiState.habits.isEmpty()
+    val bothEmpty = !uiState.isLoading && uiState.journalEntries.isEmpty() && uiState.habits.isEmpty()
 
     DsScaffold(
         topBar = {
@@ -158,9 +156,7 @@ private fun MainScreenContent(
                     DsIconButton(onClick = { onIntent(MainIntent.AccountIconClicked) }) {
                         DsIcon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = stringResource(
-                                R.string.content_description_account,
-                            ),
+                            contentDescription = stringResource(R.string.content_description_account),
                         )
                     }
                 },
@@ -173,24 +169,13 @@ private fun MainScreenContent(
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         if (bothEmpty) {
-            MainEmptyState(
-                navigation = navigation,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-            )
+            MainEmptyState(navigation = navigation, modifier = Modifier.fillMaxSize().padding(innerPadding))
         } else {
-            // Each section is capped (DsSectionedList never shows more than MAIN_SECTION_CAP
-            // rows) and doesn't stretch to fill extra space, so sections are stacked at their
-            // natural content height rather than weighted — a weighted split left dead space
-            // between a short section and the next one instead of making it look "bigger".
-            // Scrollable as a safety net in case combined content ever exceeds screen height.
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState()),
-            ) {
+            // Each section is capped (DsSectionedList never shows more than MAIN_SECTION_CAP rows) and doesn't stretch
+            // to fill extra space, so sections are stacked at their natural content height rather than weighted — a
+            // weighted split left dead space between a short section and the next one instead of making it look
+            // "bigger". Scrollable as a safety net in case combined content ever exceeds screen height.
+            Column(modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())) {
                 JournalSection(uiState = uiState, navigation = navigation)
                 HabitSection(uiState = uiState, navigation = navigation)
             }
@@ -216,10 +201,7 @@ private fun MainEmptyState(
         verticalArrangement = Arrangement.Center,
         modifier = modifier.padding(DsSpacing.space600),
     ) {
-        DsText(
-            text = stringResource(R.string.main_empty_state_title),
-            style = MaterialTheme.typography.headlineSmall,
-        )
+        DsText(text = stringResource(R.string.main_empty_state_title), style = MaterialTheme.typography.headlineSmall)
         DsText(
             text = stringResource(R.string.main_empty_state_description),
             style = MaterialTheme.typography.bodyLarge,
@@ -228,16 +210,12 @@ private fun MainEmptyState(
         DsButton(
             text = stringResource(R.string.main_fab_add_journal),
             onClick = navigation.onAddEntry,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = DsSpacing.space600),
+            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
         )
         DsButton(
             text = stringResource(R.string.main_fab_create_habit),
             onClick = navigation.onCreateHabit,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = DsSpacing.space200),
+            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
         )
     }
 }
@@ -251,9 +229,7 @@ private fun AccountBottomSheet(
 ) {
     DsModalBottomSheet(onDismissRequest = { onIntent(MainIntent.AccountSheetDismissed) }) {
         when (val authState = uiState.authState) {
-            AuthStateUi.Loading -> DsLoadingIndicator(
-                modifier = Modifier.padding(DsSpacing.space600),
-            )
+            AuthStateUi.Loading -> DsLoadingIndicator(modifier = Modifier.padding(DsSpacing.space600))
             is AuthStateUi.SignedIn -> {
                 AccountSectionList(
                     title = stringResource(R.string.account_section_title),
@@ -261,8 +237,7 @@ private fun AccountBottomSheet(
                     rows = listOf(
                         {
                             DsListItem(
-                                text = authState.email
-                                    ?: stringResource(R.string.preferences_signed_in_no_email),
+                                text = authState.email ?: stringResource(R.string.preferences_signed_in_no_email),
                                 leadingIcon = Icons.Default.Person,
                             )
                         },
@@ -292,9 +267,7 @@ private fun AccountBottomSheet(
                     rows = listOf(
                         {
                             DsListItem(
-                                text = stringResource(
-                                    R.string.onboarding_account_signin_signup_cta,
-                                ),
+                                text = stringResource(R.string.onboarding_account_signin_signup_cta),
                                 leadingIcon = Icons.Default.Person,
                                 onClick = {
                                     onIntent(MainIntent.SignInSignUpPromptClicked)
@@ -309,9 +282,8 @@ private fun AccountBottomSheet(
     }
 }
 
-// One DsSectionedList per state (signed-in: identity + sign out together; signed-out: the
-// sign-in/sign-up prompt alone) so every row in the sheet shares a single card/divider treatment
-// instead of each row getting its own separate card.
+// One DsSectionedList per state (signed-in: identity + sign out together; signed-out: the sign-in/sign-up prompt alone)
+// so every row in the sheet shares a single card/divider treatment instead of each row getting its own separate card.
 @Composable
 private fun AccountSectionList(
     rows: List<@Composable () -> Unit>,
@@ -362,10 +334,7 @@ private fun MainFab(
     onIntent: (MainIntent) -> Unit,
     navigation: MainNavigation,
 ) {
-    Column(
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-    ) {
+    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
         if (uiState.fabExpanded) {
             for (action in FabActionUiState.entries) {
                 DsExtendedFloatingActionButton(
@@ -378,9 +347,7 @@ private fun MainFab(
                 )
             }
         }
-        DsFloatingActionButton(
-            onClick = { onIntent(MainIntent.FabToggled) },
-        ) {
+        DsFloatingActionButton(onClick = { onIntent(MainIntent.FabToggled) }) {
             DsIcon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.content_description_add),
@@ -396,15 +363,8 @@ private fun SectionHeader(
     arrowContentDescription: String,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        DsText(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.weight(1f),
-        )
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
+        DsText(text = title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
         DsIconButton(onClick = onArrowClick) {
             DsIcon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -444,10 +404,7 @@ private fun JournalSection(
                 items = uiState.journalEntries.take(MAIN_SECTION_CAP),
                 isLoading = false,
                 itemContent = { entry ->
-                    JournalEntryRow(
-                        entry = entry,
-                        onClick = { navigation.onJournalEntry(entry) },
-                    )
+                    JournalEntryRow(entry = entry, onClick = { navigation.onJournalEntry(entry) })
                 },
                 modifier = Modifier.padding(horizontal = DsSpacing.space600),
             )
@@ -483,25 +440,14 @@ private fun HabitSection(
                 items = emptyList<HabitUiState>(),
                 isLoading = true,
                 itemContent = {},
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space200,
-                ),
+                modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
             )
             uiState.habits.isEmpty() -> HabitEmptyContent()
             else -> DsSectionedList(
                 items = uiState.habits.take(MAIN_SECTION_CAP),
                 isLoading = false,
-                itemContent = { habit ->
-                    HabitRow(
-                        habit = habit,
-                        onClick = { navigation.onHabit(habit.id) },
-                    )
-                },
-                modifier = Modifier.padding(
-                    horizontal = DsSpacing.space600,
-                    vertical = DsSpacing.space200,
-                ),
+                itemContent = { habit -> HabitRow(habit = habit, onClick = { navigation.onHabit(habit.id) }) },
+                modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
             )
         }
     }
@@ -512,31 +458,22 @@ private fun HabitEmptyContent() {
     EmptySectionContent(text = stringResource(R.string.main_habit_empty_state))
 }
 
-// Shared by both sections' empty state: no CTA (the FAB already covers that action), just a
-// muted, centered message reserving a modest fixed height so the section doesn't collapse to a
-// single cramped line of text.
+// Shared by both sections' empty state: no CTA (the FAB already covers that action), just a muted, centered message
+// reserving a modest fixed height so the section doesn't collapse to a single cramped line of text.
 @Composable
 private fun EmptySectionContent(text: String) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(EMPTY_SECTION_HEIGHT)
-            .padding(horizontal = DsSpacing.space600),
+        modifier = Modifier.fillMaxWidth().height(EMPTY_SECTION_HEIGHT).padding(horizontal = DsSpacing.space600),
     ) {
-        DsText(
-            text = text,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        DsText(text = text, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiState> {
     override val values = sequenceOf(
         previewMainUiState(isLoading = true),
-        previewMainUiState(
-            disabledFabActions = setOf(FabActionUiState.LOG_HABIT_CHECK_INS),
-        ),
+        previewMainUiState(disabledFabActions = setOf(FabActionUiState.LOG_HABIT_CHECK_INS)),
         previewMainUiState(
             journalEntries = listOf(
                 JournalEntryUiState(
@@ -550,9 +487,8 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     id = "2",
                     date = LocalDate.now().minusDays(1),
                     formattedDate = "Jul 26, 2026",
-                    text =
-                        "A long entry that should get truncated in the list preview once it " +
-                            "wraps past two lines of text.",
+                    text = "A long entry that should get truncated in the list preview once it " +
+                        "wraps past two lines of text.",
                     createdAt = Instant.now(),
                 ),
             ),
@@ -591,14 +527,8 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                 )
             },
         ),
-        previewMainUiState(
-            authState = AuthStateUi.Loading,
-            isAccountSheetVisible = true,
-        ),
-        previewMainUiState(
-            authState = AuthStateUi.SignedOut,
-            isAccountSheetVisible = true,
-        ),
+        previewMainUiState(authState = AuthStateUi.Loading, isAccountSheetVisible = true),
+        previewMainUiState(authState = AuthStateUi.SignedOut, isAccountSheetVisible = true),
         previewMainUiState(
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
             isAccountSheetVisible = true,

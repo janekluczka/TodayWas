@@ -19,9 +19,6 @@ fun JournalEntryRow(
 ) {
     DsText(
         text = entry.formattedDate,
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(DsSpacing.space400),
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick).padding(DsSpacing.space400),
     )
 }

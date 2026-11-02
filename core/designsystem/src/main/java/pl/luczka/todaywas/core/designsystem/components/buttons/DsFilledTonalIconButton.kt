@@ -13,9 +13,8 @@ import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
-// A filled-container icon button, for controls that need to read clearly as tappable on their own
-// (e.g. stepper +/- buttons) -- unlike DsIconButton's borderless M3 IconButton, meant for app bars
-// and rows where a bare icon is enough.
+// A filled-container icon button, for controls that need to read clearly as tappable on their own (e.g. stepper +/-
+// buttons) -- unlike DsIconButton's borderless M3 IconButton, meant for app bars and rows where a bare icon is enough.
 @Composable
 fun DsFilledTonalIconButton(
     onClick: () -> Unit,
@@ -24,13 +23,7 @@ fun DsFilledTonalIconButton(
     colors: IconButtonColors = IconButtonDefaults.filledTonalIconButtonColors(),
     content: @Composable () -> Unit,
 ) {
-    FilledTonalIconButton(
-        onClick = onClick,
-        enabled = enabled,
-        colors = colors,
-        content = content,
-        modifier = modifier,
-    )
+    FilledTonalIconButton(onClick = onClick, enabled = enabled, colors = colors, content = content, modifier = modifier)
 }
 
 @PreviewLightDark
@@ -44,10 +37,7 @@ private fun DsFilledTonalIconButtonPreview(
             onClick = {},
             enabled = enabled,
         ) {
-            DsIcon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Increase",
-            )
+            DsIcon(imageVector = Icons.Default.Add, contentDescription = "Increase")
         }
     }
 }

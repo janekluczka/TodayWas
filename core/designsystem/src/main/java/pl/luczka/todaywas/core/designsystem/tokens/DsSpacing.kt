@@ -9,9 +9,8 @@ import androidx.compose.ui.unit.dp
  * = 2x, ...) rather than a semantic size name (e.g. "small"/"medium"), so a call site never goes
  * stale if a step's underlying dp value is retuned later.
  *
- * The scale is intentionally sparse: only steps a component or screen actually needs get a token,
- * so gaps like `space500` (20dp) or `space700` (28dp) are skipped rather than filled in for
- * completeness.
+ * The scale is intentionally sparse: only steps a component or screen actually needs get a token, so gaps like
+ * `space500` (20dp) or `space700` (28dp) are skipped rather than filled in for completeness.
  */
 object DsSpacing {
     val space100 = 4.dp

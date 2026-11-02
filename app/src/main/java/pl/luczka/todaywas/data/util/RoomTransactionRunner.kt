@@ -8,7 +8,5 @@ class RoomTransactionRunner @Inject constructor(
     private val database: TodayWasDatabase,
 ) : TransactionRunner {
 
-    override suspend fun <T> runInTransaction(block: suspend () -> T): T = database.withTransaction(
-        block,
-    )
+    override suspend fun <T> runInTransaction(block: suspend () -> T): T = database.withTransaction(block)
 }

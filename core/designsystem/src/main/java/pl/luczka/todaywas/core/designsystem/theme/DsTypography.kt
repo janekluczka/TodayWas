@@ -38,10 +38,9 @@ private val LexendFontFamily = FontFamily(
     ),
 )
 
-// Full Material3 type scale (baseline M3 sizes/line-heights), all on LexendFontFamily. Headlines
-// and titles lean SemiBold/Medium rather than M3's default Regular/Medium split — Lexend's calmer
-// geometry reads a little light at the default weights, so a touch more weight keeps hierarchy
-// legible without looking heavy-handed.
+// Full Material3 type scale (baseline M3 sizes/line-heights), all on LexendFontFamily. Headlines and titles lean
+// SemiBold/Medium rather than M3's default Regular/Medium split — Lexend's calmer geometry reads a little light at the
+// default weights, so a touch more weight keeps hierarchy legible without looking heavy-handed.
 val DsTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = LexendFontFamily,

@@ -23,14 +23,9 @@ class WorkManagerSyncScheduler @Inject constructor(
     override fun scheduleSync() {
         val request = OneTimeWorkRequestBuilder<SyncWorker>()
             .setConstraints(
-                Constraints
-                    .Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build(),
-            ).setBackoffCriteria(
-                BackoffPolicy.EXPONENTIAL,
-                Duration.ofMillis(WorkRequest.MIN_BACKOFF_MILLIS),
-            ).build()
+                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+            ).setBackoffCriteria(BackoffPolicy.EXPONENTIAL, Duration.ofMillis(WorkRequest.MIN_BACKOFF_MILLIS))
+            .build()
         workManager.enqueueUniqueWork(SYNC_WORK_NAME, ExistingWorkPolicy.KEEP, request)
     }
 }

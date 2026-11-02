@@ -15,12 +15,7 @@ fun DsCheckbox(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    Checkbox(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        enabled = enabled,
-        modifier = modifier,
-    )
+    Checkbox(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled, modifier = modifier)
 }
 
 @PreviewLightDark

@@ -37,40 +37,38 @@ class LogHabitCheckInsViewModel @Inject constructor(
     private val pendingValuesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
     private val saveState = MutableStateFlow(SaveState())
 
-    val uiState: StateFlow<LogHabitCheckInsUiState> =
-        combine(
-            observeHabitCheckInBoard(),
-            selectedDateFlow,
-            pendingValuesFlow,
-            saveState,
-        ) { board, selectedDate, pendingValues, save ->
-            LogHabitCheckInsUiState(
-                selectableDates = selectableDates,
-                selectedDate = selectedDate,
-                rows = board.toRows(selectedDate, pendingValues),
-                isSaving = save.isSaving,
-                saveError = save.saveError,
-                pendingNavigation = save.pendingNavigation,
-            )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = LogHabitCheckInsUiState(
-                selectableDates = selectableDates,
-                selectedDate = selectableDates.last(),
-                rows = emptyList(),
-                isSaving = false,
-                saveError = false,
-            ),
+    val uiState: StateFlow<LogHabitCheckInsUiState> = combine(
+        observeHabitCheckInBoard(),
+        selectedDateFlow,
+        pendingValuesFlow,
+        saveState,
+    ) { board, selectedDate, pendingValues, save ->
+        LogHabitCheckInsUiState(
+            selectableDates = selectableDates,
+            selectedDate = selectedDate,
+            rows = board.toRows(selectedDate, pendingValues),
+            isSaving = save.isSaving,
+            saveError = save.saveError,
+            pendingNavigation = save.pendingNavigation,
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = LogHabitCheckInsUiState(
+            selectableDates = selectableDates,
+            selectedDate = selectableDates.last(),
+            rows = emptyList(),
+            isSaving = false,
+            saveError = false,
+        ),
+    )
 
     fun onIntent(intent: LogHabitCheckInsIntent) {
         when (intent) {
             is LogHabitCheckInsIntent.DateSelected -> onDateSelected(intent.date)
             is LogHabitCheckInsIntent.ValueChanged -> onValueChanged(intent.habitId, intent.value)
             LogHabitCheckInsIntent.SaveClicked -> onSaveClicked()
-            LogHabitCheckInsIntent.NavigationHandled ->
-                saveState.update { it.copy(pendingNavigation = null) }
+            LogHabitCheckInsIntent.NavigationHandled -> saveState.update { it.copy(pendingNavigation = null) }
         }
     }
 
@@ -96,9 +94,7 @@ class LogHabitCheckInsViewModel @Inject constructor(
             val result = logHabitCheckIns(date, values)
             if (result.isSuccess) {
                 pendingValuesFlow.value = emptyMap()
-                saveState.update {
-                    it.copy(isSaving = false, pendingNavigation = LogHabitCheckInsNavigation.Saved)
-                }
+                saveState.update { it.copy(isSaving = false, pendingNavigation = LogHabitCheckInsNavigation.Saved) }
             } else {
                 saveState.update { it.copy(isSaving = false, saveError = true) }
             }

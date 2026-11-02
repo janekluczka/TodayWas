@@ -30,20 +30,12 @@ class LocalJournalDataSourceImplTest {
             private set
 
         override fun observeAll(): Flow<List<JournalEntryEntity>> =
-            flowOf(
-                entities.values
-                    .filter { it.deletedAt == null }
-                    .toList(),
-            )
+            flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
         override suspend fun getAll(): List<JournalEntryEntity> =
-            entities.values
-                .filter { it.deletedAt == null }
-                .toList()
+            entities.values.filter { it.deletedAt == null }.toList()
 
-        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> =
-            entities.values
-                .toList()
+        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = entities.values.toList()
 
         override suspend fun getById(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
@@ -84,10 +76,7 @@ class LocalJournalDataSourceImplTest {
         }
 
         override suspend fun purgeDeletedBefore(cutoff: Long) {
-            entities.values
-                .filter {
-                    it.deletedAt != null && it.deletedAt < cutoff
-                }.forEach { entities.remove(it.id) }
+            entities.values.filter { it.deletedAt != null && it.deletedAt < cutoff }.forEach { entities.remove(it.id) }
         }
 
         override suspend fun clearAll() {
@@ -101,14 +90,13 @@ class LocalJournalDataSourceImplTest {
             // Arrange
             val dao = FakeDao(failuresBeforeSuccess = 1)
             val dataSource = dataSource(dao)
-            val entity =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-07-27",
-                    text = "Today was good.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val entity = JournalEntryEntity(
+                id = "1",
+                date = "2026-07-27",
+                text = "Today was good.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
 
             // Act
             val result = dataSource.insertEntry(entity)
@@ -124,14 +112,13 @@ class LocalJournalDataSourceImplTest {
             // Arrange
             val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE)
             val dataSource = dataSource(dao)
-            val entity =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-07-27",
-                    text = "Today was good.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val entity = JournalEntryEntity(
+                id = "1",
+                date = "2026-07-27",
+                text = "Today was good.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
 
             // Act
             val result = dataSource.insertEntry(entity)
@@ -145,14 +132,13 @@ class LocalJournalDataSourceImplTest {
     fun `should succeed after one retry when updateEntry's first write fails`() =
         runTest {
             // Arrange
-            val entity =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-07-27",
-                    text = "Original.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val entity = JournalEntryEntity(
+                id = "1",
+                date = "2026-07-27",
+                text = "Original.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
             val dao = FakeDao(failuresBeforeSuccess = 1, entities = mutableMapOf("1" to entity))
             val dataSource = dataSource(dao)
 
@@ -169,20 +155,14 @@ class LocalJournalDataSourceImplTest {
     fun `should return failure when updateEntry's retry also fails`() =
         runTest {
             // Arrange
-            val entity =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-07-27",
-                    text = "Original.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
-            val dao = FakeDao(
-                failuresBeforeSuccess = Int.MAX_VALUE,
-                entities = mutableMapOf(
-                    "1" to entity,
-                ),
+            val entity = JournalEntryEntity(
+                id = "1",
+                date = "2026-07-27",
+                text = "Original.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
+            val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE, entities = mutableMapOf("1" to entity))
             val dataSource = dataSource(dao)
 
             // Act
@@ -212,14 +192,13 @@ class LocalJournalDataSourceImplTest {
     fun `should soft-delete and return the entry when deleteEntry finds it`() =
         runTest {
             // Arrange
-            val entity =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-07-27",
-                    text = "Today was good.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val entity = JournalEntryEntity(
+                id = "1",
+                date = "2026-07-27",
+                text = "Today was good.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val dataSource = dataSource(dao)
 
@@ -253,14 +232,13 @@ class LocalJournalDataSourceImplTest {
             // Arrange
             val dao = FakeDao()
             val dataSource = dataSource(dao)
-            val entity =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-07-27",
-                    text = "Today was good.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val entity = JournalEntryEntity(
+                id = "1",
+                date = "2026-07-27",
+                text = "Today was good.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
 
             // Act
             dataSource.applyRemoteSnapshot(listOf(entity))
@@ -274,15 +252,14 @@ class LocalJournalDataSourceImplTest {
     fun `should remove tombstoned rows older than cutoff when purgeDeletedBefore is called`() =
         runTest {
             // Arrange
-            val agedOut =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-01-01",
-                    text = "Long gone.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                    deletedAt = 500L,
-                )
+            val agedOut = JournalEntryEntity(
+                id = "1",
+                date = "2026-01-01",
+                text = "Long gone.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+                deletedAt = 500L,
+            )
             val dao = FakeDao(entities = mutableMapOf("1" to agedOut))
             val dataSource = dataSource(dao)
 
@@ -297,14 +274,13 @@ class LocalJournalDataSourceImplTest {
     fun `should empty the DAO when clearAll is called`() =
         runTest {
             // Arrange
-            val entity =
-                JournalEntryEntity(
-                    id = "1",
-                    date = "2026-07-27",
-                    text = "Today was good.",
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val entity = JournalEntryEntity(
+                id = "1",
+                date = "2026-07-27",
+                text = "Today was good.",
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
             val dao = FakeDao(entities = mutableMapOf("1" to entity))
             val dataSource = dataSource(dao)
 

@@ -25,9 +25,7 @@ class OnboardingChoiceViewModelTest {
 
     private class FakeOnboardingRepository : OnboardingRepository {
 
-        private val stateFlow = MutableStateFlow(
-            OnboardingState(completed = false, hasSyncedLocalData = false),
-        )
+        private val stateFlow = MutableStateFlow(OnboardingState(completed = false, hasSyncedLocalData = false))
 
         var completeOnboardingResult: Result<Unit> = Result.success(Unit)
         var completeOnboardingCallCount = 0

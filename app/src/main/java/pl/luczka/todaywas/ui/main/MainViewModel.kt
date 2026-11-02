@@ -54,51 +54,44 @@ class MainViewModel @Inject constructor(
 
     private val screenState = MutableStateFlow(ScreenState())
 
-    val uiState: StateFlow<MainUiState> =
-        combine(
-            observeJournalEntries(),
-            observeAddableJournalDateSlots(),
-            observeHabitCheckInBoard(),
-            observeAuthState(),
-            screenState,
-        ) { entries, addableSlots, board, authState, screen ->
-            val habits = board.toSortedHabitUiStates(
-                today = LocalDate.now(clock),
-                sort = HabitSortUiState.RECENTLY_CHECKED_IN,
-            )
-            MainUiState(
-                isLoading = false,
-                journalEntries = entries.map { it.toUiState() },
-                habits = habits,
-                disabledFabActions = toDisabledFabActions(
-                    addableSlots.map { it.toUiState() },
-                    habits,
-                ),
-                fabExpanded = screen.fabExpanded,
-                authState = authState.toUiState(),
-                isAccountSheetVisible = screen.isAccountSheetVisible,
-                isSignOutConfirmVisible = screen.isSignOutConfirmVisible,
-                isSigningOut = screen.isSigningOut,
-                userMessage = screen.userMessage,
-            )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = MainUiState(
-                isLoading = true,
-                journalEntries = emptyList(),
-                habits = emptyList(),
-                disabledFabActions = setOf(
-                    FabActionUiState.ADD_JOURNAL_ENTRY,
-                    FabActionUiState.LOG_HABIT_CHECK_INS,
-                ),
-                fabExpanded = false,
-                authState = AuthStateUi.Loading,
-                isAccountSheetVisible = false,
-                isSignOutConfirmVisible = false,
-                isSigningOut = false,
-            ),
+    val uiState: StateFlow<MainUiState> = combine(
+        observeJournalEntries(),
+        observeAddableJournalDateSlots(),
+        observeHabitCheckInBoard(),
+        observeAuthState(),
+        screenState,
+    ) { entries, addableSlots, board, authState, screen ->
+        val habits = board.toSortedHabitUiStates(
+            today = LocalDate.now(clock),
+            sort = HabitSortUiState.RECENTLY_CHECKED_IN,
         )
+        MainUiState(
+            isLoading = false,
+            journalEntries = entries.map { it.toUiState() },
+            habits = habits,
+            disabledFabActions = toDisabledFabActions(addableSlots.map { it.toUiState() }, habits),
+            fabExpanded = screen.fabExpanded,
+            authState = authState.toUiState(),
+            isAccountSheetVisible = screen.isAccountSheetVisible,
+            isSignOutConfirmVisible = screen.isSignOutConfirmVisible,
+            isSigningOut = screen.isSigningOut,
+            userMessage = screen.userMessage,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = MainUiState(
+            isLoading = true,
+            journalEntries = emptyList(),
+            habits = emptyList(),
+            disabledFabActions = setOf(FabActionUiState.ADD_JOURNAL_ENTRY, FabActionUiState.LOG_HABIT_CHECK_INS),
+            fabExpanded = false,
+            authState = AuthStateUi.Loading,
+            isAccountSheetVisible = false,
+            isSignOutConfirmVisible = false,
+            isSigningOut = false,
+        ),
+    )
 
     init {
         // Basic reinstall/new-device restore: silently refresh local data from remote once, when
@@ -115,17 +108,12 @@ class MainViewModel @Inject constructor(
         when (intent) {
             MainIntent.FabActionClicked -> screenState.update { it.copy(fabExpanded = false) }
             MainIntent.FabToggled -> screenState.update { it.copy(fabExpanded = !it.fabExpanded) }
-            MainIntent.AccountIconClicked ->
-                screenState.update { it.copy(isAccountSheetVisible = true) }
-            MainIntent.AccountSheetDismissed ->
-                screenState.update { it.copy(isAccountSheetVisible = false) }
-            MainIntent.SignInSignUpPromptClicked ->
-                screenState.update { it.copy(isAccountSheetVisible = false) }
-            MainIntent.SignOutClicked ->
-                screenState.update { it.copy(isSignOutConfirmVisible = true) }
+            MainIntent.AccountIconClicked -> screenState.update { it.copy(isAccountSheetVisible = true) }
+            MainIntent.AccountSheetDismissed -> screenState.update { it.copy(isAccountSheetVisible = false) }
+            MainIntent.SignInSignUpPromptClicked -> screenState.update { it.copy(isAccountSheetVisible = false) }
+            MainIntent.SignOutClicked -> screenState.update { it.copy(isSignOutConfirmVisible = true) }
             MainIntent.SignOutConfirmed -> onSignOutConfirmed()
-            MainIntent.SignOutCancelled ->
-                screenState.update { it.copy(isSignOutConfirmVisible = false) }
+            MainIntent.SignOutCancelled -> screenState.update { it.copy(isSignOutConfirmVisible = false) }
             MainIntent.UserMessageShown -> screenState.update { it.copy(userMessage = null) }
         }
     }
@@ -137,17 +125,11 @@ class MainViewModel @Inject constructor(
             val result = signOut()
             if (result.isSuccess) {
                 screenState.update {
-                    it.copy(
-                        isSigningOut = false,
-                        isSignOutConfirmVisible = false,
-                        isAccountSheetVisible = false,
-                    )
+                    it.copy(isSigningOut = false, isSignOutConfirmVisible = false, isAccountSheetVisible = false)
                 }
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
-                screenState.update {
-                    it.copy(isSigningOut = false, userMessage = error.toUiState())
-                }
+                screenState.update { it.copy(isSigningOut = false, userMessage = error.toUiState()) }
             }
         }
     }

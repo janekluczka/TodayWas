@@ -20,9 +20,7 @@ class LocalHabitDataSourceImpl @Inject constructor(
 
     override fun observeCheckIns(): Flow<List<HabitCheckInEntity>> = habitCheckInDao.observeAll()
 
-    override suspend fun insertHabit(entity: HabitEntity): Result<Unit> = safeDbCall {
-        habitDao.insert(entity)
-    }
+    override suspend fun insertHabit(entity: HabitEntity): Result<Unit> = safeDbCall { habitDao.insert(entity) }
 
     override suspend fun insertCheckIns(entities: List<HabitCheckInEntity>): Result<Unit> =
         safeDbCall { habitCheckInDao.insertAll(entities) }
@@ -34,9 +32,7 @@ class LocalHabitDataSourceImpl @Inject constructor(
         updatedAt: Long,
     ): Result<HabitCheckInEntity> {
         val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
-            ?: return Result.failure(
-                NoSuchElementException("Check-in for habit $habitId on $date not found"),
-            )
+            ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
         val entity = existing.copy(value = value, updatedAt = updatedAt)
         return safeDbCall { habitCheckInDao.update(entity) }.map { entity }
     }
@@ -47,9 +43,8 @@ class LocalHabitDataSourceImpl @Inject constructor(
     ): Result<Pair<HabitEntity?, List<HabitCheckInEntity>>> {
         val existingHabit = habitDao.getById(habitId)
         val existingCheckIns = habitCheckInDao.getByHabitId(habitId)
-        // Transactional so a habit is never left with only some of its check-ins deleted (or
-        // vice versa) if the second delete fails - safeDbCall's retry re-runs the whole
-        // transaction, not just the failed half.
+        // Transactional so a habit is never left with only some of its check-ins deleted (or vice versa) if the second
+        // delete fails - safeDbCall's retry re-runs the whole transaction, not just the failed half.
         val result = safeDbCall {
             transactionRunner.runInTransaction {
                 habitCheckInDao.softDeleteByHabitId(habitId, deletedAt)
@@ -57,8 +52,7 @@ class LocalHabitDataSourceImpl @Inject constructor(
             }
         }
         return result.map {
-            existingHabit?.copy(deletedAt = deletedAt) to
-                existingCheckIns.map { it.copy(deletedAt = deletedAt) }
+            existingHabit?.copy(deletedAt = deletedAt) to existingCheckIns.map { it.copy(deletedAt = deletedAt) }
         }
     }
 
@@ -68,16 +62,13 @@ class LocalHabitDataSourceImpl @Inject constructor(
         deletedAt: Long,
     ): Result<HabitCheckInEntity> {
         val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
-            ?: return Result.failure(
-                NoSuchElementException("Check-in for habit $habitId on $date not found"),
-            )
+            ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
         return safeDbCall {
             habitCheckInDao.softDeleteById(existing.id, deletedAt)
         }.map { existing.copy(deletedAt = deletedAt) }
     }
 
-    override suspend fun getAllHabitsIncludingDeleted(): List<HabitEntity> = habitDao
-        .getAllIncludingDeleted()
+    override suspend fun getAllHabitsIncludingDeleted(): List<HabitEntity> = habitDao.getAllIncludingDeleted()
 
     override suspend fun getAllCheckInsIncludingDeleted(): List<HabitCheckInEntity> =
         habitCheckInDao.getAllIncludingDeleted()

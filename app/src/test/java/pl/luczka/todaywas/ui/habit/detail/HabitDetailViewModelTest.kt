@@ -69,11 +69,7 @@ class HabitDetailViewModelTest {
     private fun levelFor(
         cells: List<DsContributionCellUiState>,
         date: LocalDate,
-    ): DsContributionLevel? =
-        cells
-            .filterIsInstance<DsContributionCellUiState.Level>()
-            .find { it.date == date }
-            ?.level
+    ): DsContributionLevel? = cells.filterIsInstance<DsContributionCellUiState.Level>().find { it.date == date }?.level
 
     @Before
     fun setUp() {
@@ -469,14 +465,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = "1",
-                        habitId = "1",
-                        date = today,
-                        value = 1,
-                        createdAt = now,
-                        updatedAt = now,
-                    ),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -498,14 +487,7 @@ class HabitDetailViewModelTest {
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit),
                 initialCheckIns = listOf(
-                    HabitCheckIn(
-                        id = "1",
-                        habitId = "1",
-                        date = today,
-                        value = 1,
-                        createdAt = now,
-                        updatedAt = now,
-                    ),
+                    HabitCheckIn(id = "1", habitId = "1", date = today, value = 1, createdAt = now, updatedAt = now),
                 ),
             )
             val viewModel = viewModel(repository)
@@ -597,10 +579,7 @@ class HabitDetailViewModelTest {
             // Assert
             assertEquals(1, repository.deleteHabitCallCount)
             assertEquals("1", repository.lastDeletedHabitId)
-            assertEquals(
-                HabitDetailNavigation.HabitDeleted,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(HabitDetailNavigation.HabitDeleted, viewModel.uiState.value.pendingNavigation)
             stateCollectJob.cancel()
         }
 

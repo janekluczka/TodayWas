@@ -43,20 +43,14 @@ private fun DsTopBarPreview(
             navigationIcon = {
                 if (withAction) {
                     DsIconButton(onClick = {}) {
-                        DsIcon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
+                        DsIcon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             },
             actions = {
                 if (withAction) {
                     DsIconButton(onClick = {}) {
-                        DsIcon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Change focus",
-                        )
+                        DsIcon(imageVector = Icons.Default.Edit, contentDescription = "Change focus")
                     }
                 }
             },

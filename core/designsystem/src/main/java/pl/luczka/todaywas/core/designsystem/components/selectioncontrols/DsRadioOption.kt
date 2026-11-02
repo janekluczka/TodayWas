@@ -23,20 +23,10 @@ fun DsRadioOption(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .selectable(
-                selected = selected,
-                onClick = onClick,
-            ).padding(vertical = DsSpacing.space200),
+        modifier = modifier.selectable(selected = selected, onClick = onClick).padding(vertical = DsSpacing.space200),
     ) {
-        RadioButton(
-            selected = selected,
-            onClick = onClick,
-        )
-        DsText(
-            text = text,
-            modifier = Modifier.padding(start = DsSpacing.space200),
-        )
+        RadioButton(selected = selected, onClick = onClick)
+        DsText(text = text, modifier = Modifier.padding(start = DsSpacing.space200))
     }
 }
 

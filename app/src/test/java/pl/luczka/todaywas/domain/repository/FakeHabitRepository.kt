@@ -83,9 +83,7 @@ class FakeHabitRepository(
     override fun observeCheckIns(): Flow<List<HabitCheckIn>> = checkInsFlow
 
     override fun observeCheckIns(habitId: String): Flow<List<HabitCheckIn>> =
-        checkInsFlow.map { list ->
-            list.filter { it.habitId == habitId }
-        }
+        checkInsFlow.map { list -> list.filter { it.habitId == habitId } }
 
     override suspend fun addCheckIns(
         date: LocalDate,

@@ -18,10 +18,9 @@ fun DsCard(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
-        // DsTheme's background and surface are the same color (see DsColor/DsTheme) — Card's own
-        // default containerColor is colorScheme.surface, which would render invisible against the
-        // screen background. surfaceVariant is deliberately a different tone in both light and
-        // dark, so a card actually reads as a raised, bounded surface.
+        // DsTheme's background and surface are the same color (see DsColor/DsTheme) — Card's own default containerColor
+        // is colorScheme.surface, which would render invisible against the screen background. surfaceVariant is
+        // deliberately a different tone in both light and dark, so a card actually reads as a raised, bounded surface.
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         modifier = modifier,
         content = content,
@@ -33,10 +32,7 @@ fun DsCard(
 private fun DsCardPreview() {
     DsTheme {
         DsCard {
-            DsText(
-                text = "Card content",
-                modifier = Modifier.padding(DsSpacing.space400),
-            )
+            DsText(text = "Card content", modifier = Modifier.padding(DsSpacing.space400))
         }
     }
 }

@@ -56,11 +56,7 @@ fun LogHabitCheckInsScreen(
         viewModel.onIntent(LogHabitCheckInsIntent.NavigationHandled)
     }
 
-    LogHabitCheckInsScreenContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-        onCancel = onCancel,
-    )
+    LogHabitCheckInsScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onCancel = onCancel)
 }
 
 private fun LogHabitCheckInsUiState.hasPendingInput(): Boolean =
@@ -105,11 +101,7 @@ private fun LogHabitCheckInsScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             DsDateStrip(
                 selectedDate = uiState.selectedDate,
                 isSelectable = { it in uiState.selectableDates },
@@ -122,10 +114,7 @@ private fun LogHabitCheckInsScreenContent(
                         onIntent = onIntent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                horizontal = DsSpacing.space600,
-                                vertical = DsSpacing.space200,
-                            ),
+                            .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
                     )
                 }
             }
@@ -147,10 +136,8 @@ private fun HabitCheckInRow(
         { value -> value.toString() }
     }
     val isDarkTheme = isSystemInDarkTheme()
-    val doneChipContainerColor =
-        if (isDarkTheme) DsColor.green20 else DsColor.green90
-    val doneChipLabelColor =
-        if (isDarkTheme) DsColor.green80 else DsColor.green40
+    val doneChipContainerColor = if (isDarkTheme) DsColor.green20 else DsColor.green90
+    val doneChipLabelColor = if (isDarkTheme) DsColor.green80 else DsColor.green40
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -158,11 +145,7 @@ private fun HabitCheckInRow(
         ) {
             DsText(text = row.name)
             if (row is HabitCheckInRowUiState.AlreadyLogged) {
-                DsChip(
-                    text = doneLabel,
-                    containerColor = doneChipContainerColor,
-                    labelColor = doneChipLabelColor,
-                )
+                DsChip(text = doneLabel, containerColor = doneChipContainerColor, labelColor = doneChipLabelColor)
             }
         }
         when (row) {
@@ -170,15 +153,9 @@ private fun HabitCheckInRow(
                 DsSegmentedRow(
                     items = row.range.toList(),
                     selectedItem = row.value,
-                    onItemSelect = {
-                        onIntent(
-                            LogHabitCheckInsIntent.ValueChanged(row.habitId, it),
-                        )
-                    },
+                    onItemSelect = { onIntent(LogHabitCheckInsIntent.ValueChanged(row.habitId, it)) },
                     label = label,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = DsSpacing.space200),
+                    modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
                 )
             }
             is HabitCheckInRowUiState.AlreadyLogged -> {
@@ -188,9 +165,7 @@ private fun HabitCheckInRow(
                     onItemSelect = {},
                     enabled = false,
                     label = label,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = DsSpacing.space200),
+                    modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
                 )
             }
         }

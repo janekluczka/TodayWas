@@ -10,9 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 fun todayWasDatabaseCallbacks(): RoomDatabase.Callback = object : RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
-        db.execSQL(
-            "CREATE UNIQUE INDEX index_journal_entries_date ON journal_entries(date) WHERE deletedAt IS NULL",
-        )
+        db.execSQL("CREATE UNIQUE INDEX index_journal_entries_date ON journal_entries(date) WHERE deletedAt IS NULL")
         db.execSQL(
             "CREATE UNIQUE INDEX index_habit_check_ins_habitId_date ON habit_check_ins(habitId, date) WHERE deletedAt IS NULL",
         )

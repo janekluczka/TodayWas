@@ -15,12 +15,7 @@ fun DsSwitch(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    Switch(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        enabled = enabled,
-        modifier = modifier,
-    )
+    Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled, modifier = modifier)
 }
 
 @PreviewLightDark

@@ -28,9 +28,7 @@ class TodayWasDatabaseTest {
                 .build()
 
             // Act
-            db1.userPreferencesDao().upsert(
-                UserPreferencesEntity(onboardingCompleted = true),
-            )
+            db1.userPreferencesDao().upsert(UserPreferencesEntity(onboardingCompleted = true))
             db1.close()
             val db2 = Room
                 .databaseBuilder(context, TodayWasDatabase::class.java, dbName)

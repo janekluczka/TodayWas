@@ -60,9 +60,7 @@ class AccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            observeAuthState().collect { state ->
-                _uiState.update { it.copy(authState = state.toUiState()) }
-            }
+            observeAuthState().collect { state -> _uiState.update { it.copy(authState = state.toUiState()) } }
         }
         viewModelScope.launch {
             observeOnboardingState().collect { state ->
@@ -77,32 +75,16 @@ class AccountViewModel @Inject constructor(
             is AccountIntent.SignInEmailChanged -> onSignInEmailChanged(intent.value)
             is AccountIntent.SignInPasswordChanged -> onSignInPasswordChanged(intent.value)
             AccountIntent.SignInSubmitClicked -> onSignInSubmitClicked()
-            is AccountIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(
-                intent.idToken,
-            )
+            is AccountIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(intent.idToken)
             is AccountIntent.GoogleSignInFailed -> onGoogleSignInFailed(intent.error)
-            AccountIntent.SignUpLinkClicked -> _uiState.update {
-                it.copy(
-                    step = AccountStep.SIGN_UP,
-                )
-            }
-            AccountIntent.SignInLinkClicked -> _uiState.update {
-                it.copy(
-                    step = AccountStep.SIGN_IN,
-                )
-            }
+            AccountIntent.SignUpLinkClicked -> _uiState.update { it.copy(step = AccountStep.SIGN_UP) }
+            AccountIntent.SignInLinkClicked -> _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
             is AccountIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
             is AccountIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
-            is AccountIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(
-                intent.value,
-            )
+            is AccountIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(intent.value)
             AccountIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
-            is AccountIntent.SignUpGoogleIdTokenReceived -> onSignUpGoogleIdTokenReceived(
-                intent.idToken,
-            )
-            AccountIntent.ContinueClicked -> _uiState.update {
-                it.copy(pendingNavigation = AccountNavigation.Back)
-            }
+            is AccountIntent.SignUpGoogleIdTokenReceived -> onSignUpGoogleIdTokenReceived(intent.idToken)
+            AccountIntent.ContinueClicked -> _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
             AccountIntent.SignOutClicked -> onSignOutClicked()
             AccountIntent.SyncConfirmClicked -> onSyncConfirmClicked()
             AccountIntent.SyncSkipClicked -> onSyncSkipClicked()
@@ -121,17 +103,11 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignInEmailChanged(value: String) {
-        _uiState.update {
-            it.copy(
-                signInForm = it.signInForm.copy(email = value, emailError = false),
-            )
-        }
+        _uiState.update { it.copy(signInForm = it.signInForm.copy(email = value, emailError = false)) }
     }
 
     private fun onSignInPasswordChanged(value: String) {
-        _uiState.update {
-            it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false))
-        }
+        _uiState.update { it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false)) }
     }
 
     private fun onSignInSubmitClicked() {
@@ -142,12 +118,7 @@ class AccountViewModel @Inject constructor(
         val passwordValid = isValidPassword(form.password)
         if (!emailValid || !passwordValid) {
             _uiState.update {
-                it.copy(
-                    signInForm = it.signInForm.copy(
-                        emailError = !emailValid,
-                        passwordError = !passwordValid,
-                    ),
-                )
+                it.copy(signInForm = it.signInForm.copy(emailError = !emailValid, passwordError = !passwordValid))
             }
             return
         }
@@ -181,27 +152,16 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignUpEmailChanged(value: String) {
-        _uiState.update {
-            it.copy(
-                signUpForm = it.signUpForm.copy(email = value, emailError = false),
-            )
-        }
+        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(email = value, emailError = false)) }
     }
 
     private fun onSignUpPasswordChanged(value: String) {
-        _uiState.update {
-            it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false))
-        }
+        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false)) }
     }
 
     private fun onSignUpRepeatPasswordChanged(value: String) {
         _uiState.update {
-            it.copy(
-                signUpForm = it.signUpForm.copy(
-                    repeatPassword = value,
-                    repeatPasswordError = false,
-                ),
-            )
+            it.copy(signUpForm = it.signUpForm.copy(repeatPassword = value, repeatPasswordError = false))
         }
     }
 
@@ -256,9 +216,7 @@ class AccountViewModel @Inject constructor(
         val summary = getLocalDataSummary()
         if (shouldReviewLocalDataBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
             postSyncAction = whenDone
-            _uiState.update {
-                it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState())
-            }
+            _uiState.update { it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState()) }
         } else {
             viewModelScope.launch { syncLocalData() }
             finishPostSyncAction(whenDone)
@@ -292,21 +250,14 @@ class AccountViewModel @Inject constructor(
             val summary = getLocalDataSummary()
             if (!summary.isEmpty) {
                 postSyncAction = PostSyncAction.RETURN_HOME
-                _uiState.update {
-                    it.copy(
-                        step = AccountStep.DATA_SYNC_REVIEW,
-                        dataSyncSummary = summary.toUiState(),
-                    )
-                }
+                _uiState.update { it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState()) }
             }
         }
     }
 
     private fun finishPostSyncAction(action: PostSyncAction) {
         when (action) {
-            PostSyncAction.NAVIGATE_BACK -> _uiState.update {
-                it.copy(pendingNavigation = AccountNavigation.Back)
-            }
+            PostSyncAction.NAVIGATE_BACK -> _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
             PostSyncAction.SHOW_SUCCESS -> _uiState.update { it.copy(step = AccountStep.SUCCESS) }
             PostSyncAction.RETURN_HOME -> _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
         }

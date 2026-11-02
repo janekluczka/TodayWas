@@ -67,9 +67,7 @@ fun EditJournalEntryScreen(
     onDiscardComplete: () -> Unit,
     onNavigateToSignIn: () -> Unit,
     viewModel: EditJournalEntryViewModel =
-        hiltViewModel<EditJournalEntryViewModel, EditJournalEntryViewModel.Factory> { factory ->
-            factory.create(id)
-        },
+        hiltViewModel<EditJournalEntryViewModel, EditJournalEntryViewModel.Factory> { factory -> factory.create(id) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -87,10 +85,7 @@ fun EditJournalEntryScreen(
 
     BackHandler(enabled = true) { viewModel.onIntent(EditJournalEntryIntent.BackClicked) }
 
-    EditJournalEntryScreenContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-    )
+    EditJournalEntryScreenContent(uiState = uiState, onIntent = viewModel::onIntent)
 }
 
 @Composable
@@ -109,8 +104,7 @@ private fun EditJournalEntryScreenContent(
     DsScaffold(
         topBar = {
             DsTopBar(
-                title = uiState.entry?.formattedDate
-                    ?: stringResource(R.string.journal_edit_entry_title),
+                title = uiState.entry?.formattedDate ?: stringResource(R.string.journal_edit_entry_title),
                 navigationIcon = {
                     DsIconButton(onClick = { onIntent(EditJournalEntryIntent.BackClicked) }) {
                         DsIcon(
@@ -132,11 +126,7 @@ private fun EditJournalEntryScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -154,22 +144,15 @@ private fun EditJournalEntryScreenContent(
                     StarterPromptList(
                         starterPrompts = uiState.starterPrompts,
                         onPromptClick = { onIntent(EditJournalEntryIntent.TextChanged(it)) },
-                        onHelpMeStartClick = {
-                            onIntent(EditJournalEntryIntent.HelpMeStartClicked)
-                        },
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .fillMaxWidth(),
+                        onHelpMeStartClick = { onIntent(EditJournalEntryIntent.HelpMeStartClicked) },
+                        modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(),
                     )
-                } else if (uiState.authState is AuthStateUi.SignedIn &&
-                    uiState.text.length <= MAX_REFINE_TEXT_LENGTH
-                ) {
+                } else if (uiState.authState is AuthStateUi.SignedIn && uiState.text.length <= MAX_REFINE_TEXT_LENGTH) {
                     DsAssistChip(
                         text = stringResource(R.string.journal_help_me_refine_cta),
                         leadingIcon = Icons.Filled.AutoAwesome,
                         onClick = { onIntent(EditJournalEntryIntent.HelpMeRefineClicked) },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd),
+                        modifier = Modifier.align(Alignment.BottomEnd),
                     )
                 }
             }
@@ -182,14 +165,10 @@ private fun EditJournalEntryScreenContent(
             onDismissRequest = { onIntent(EditJournalEntryIntent.HelpMeStartDismissed) },
             onSignInClick = { onIntent(EditJournalEntryIntent.SignInClicked) },
             onToneSelect = { onIntent(EditJournalEntryIntent.HelpMeStartToneSelected(it)) },
-            onThoughtsChange = {
-                onIntent(EditJournalEntryIntent.HelpMeStartThoughtsChanged(it))
-            },
+            onThoughtsChange = { onIntent(EditJournalEntryIntent.HelpMeStartThoughtsChanged(it)) },
             onGenerateClick = { onIntent(EditJournalEntryIntent.GenerateClicked) },
             onRegenerateClick = { onIntent(EditJournalEntryIntent.RegenerateClicked) },
-            onUseGeneratedTextClick = {
-                onIntent(EditJournalEntryIntent.UseGeneratedTextClicked)
-            },
+            onUseGeneratedTextClick = { onIntent(EditJournalEntryIntent.UseGeneratedTextClicked) },
         )
     }
 
@@ -198,9 +177,7 @@ private fun EditJournalEntryScreenContent(
             uiState = uiState.helpMeRefine,
             onDismissRequest = { onIntent(EditJournalEntryIntent.HelpMeRefineDismissed) },
             onToneSelect = { onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(it)) },
-            onThoughtsChange = {
-                onIntent(EditJournalEntryIntent.HelpMeRefineThoughtsChanged(it))
-            },
+            onThoughtsChange = { onIntent(EditJournalEntryIntent.HelpMeRefineThoughtsChanged(it)) },
             onRefineClick = { onIntent(EditJournalEntryIntent.RefineClicked) },
             onRegenerateClick = { onIntent(EditJournalEntryIntent.RegenerateRefineClicked) },
             onUseRefinedTextClick = { onIntent(EditJournalEntryIntent.UseRefinedTextClicked) },
@@ -222,9 +199,7 @@ private fun DiscardChangesDialog(onIntent: (EditJournalEntryIntent) -> Unit) {
             DsTextButton(
                 text = stringResource(R.string.journal_edit_discard_confirm_cta),
                 onClick = { onIntent(EditJournalEntryIntent.DiscardConfirmed) },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
             )
         },
         dismissButton = {
@@ -257,16 +232,11 @@ fun HelpMeRefineBottomSheet(
         errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
 
-    DsModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        modifier = modifier,
-    ) {
+    DsModalBottomSheet(onDismissRequest = onDismissRequest, modifier = modifier) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(DsSpacing.space600),
+                modifier = Modifier.fillMaxWidth().padding(DsSpacing.space600),
             ) {
                 when (uiState.step) {
                     HelpMeRefineStep.INPUT -> {
@@ -274,14 +244,11 @@ fun HelpMeRefineBottomSheet(
                             text = stringResource(R.string.journal_help_me_refine_dialog_title),
                             style = MaterialTheme.typography.titleMedium,
                         )
-                        val toneLabels =
-                            JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
+                        val toneLabels = JournalPromptToneUiState.entries.associateWith { aiAssistToneLabel(it) }
                         DsChoiceFlowRow(
                             items = JournalPromptToneUiState.entries.toList(),
                             selectedItem = uiState.selectedTone,
-                            onItemSelect = { tone ->
-                                tone?.let(onToneSelect)
-                            },
+                            onItemSelect = { tone -> tone?.let(onToneSelect) },
                             enabled = !uiState.isGenerating,
                             allowDeselect = false,
                             label = { toneLabels.getValue(it) },
@@ -289,9 +256,7 @@ fun HelpMeRefineBottomSheet(
                         DsPlainTextField(
                             value = uiState.thoughts,
                             onValueChange = onThoughtsChange,
-                            placeholder = stringResource(
-                                R.string.journal_help_me_refine_thoughts_label,
-                            ),
+                            placeholder = stringResource(R.string.journal_help_me_refine_thoughts_label),
                             enabled = !uiState.isGenerating,
                             minLines = 3,
                             modifier = Modifier.fillMaxWidth(),
@@ -317,9 +282,7 @@ fun HelpMeRefineBottomSheet(
                         uiState.refinedText?.let { DsText(text = it) }
                         Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
                             DsFilledTonalButtonWithLoading(
-                                text = stringResource(
-                                    R.string.journal_help_me_start_regenerate_cta,
-                                ),
+                                text = stringResource(R.string.journal_help_me_start_regenerate_cta),
                                 onClick = onRegenerateClick,
                                 enabled = (uiState.remainingToday ?: 1) > 0,
                                 loading = uiState.isGenerating,
@@ -335,10 +298,7 @@ fun HelpMeRefineBottomSheet(
                     }
                 }
             }
-            DsSnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
+            DsSnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
 }
@@ -416,25 +376,19 @@ private fun EditJournalEntryScreenPreview(
 private class HelpMeRefineBottomSheetPreviewStateProvider : PreviewParameterProvider<HelpMeRefineUiState> {
     override val values = sequenceOf(
         HelpMeRefineUiState(isVisible = true),
-        HelpMeRefineUiState(
-            isVisible = true,
-            selectedTone = JournalPromptToneUiState.GOOD,
-            isGenerating = true,
-        ),
+        HelpMeRefineUiState(isVisible = true, selectedTone = JournalPromptToneUiState.GOOD, isGenerating = true),
         HelpMeRefineUiState(
             isVisible = true,
             step = HelpMeRefineStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            refinedText =
-                "Today went well overall, and I got a few things done that I'm proud of...",
+            refinedText = "Today went well overall, and I got a few things done that I'm proud of...",
             remainingToday = 7,
         ),
         HelpMeRefineUiState(
             isVisible = true,
             step = HelpMeRefineStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
-            refinedText =
-                "Today went well overall, and I got a few things done that I'm proud of...",
+            refinedText = "Today went well overall, and I got a few things done that I'm proud of...",
             remainingToday = 0,
         ),
         HelpMeRefineUiState(

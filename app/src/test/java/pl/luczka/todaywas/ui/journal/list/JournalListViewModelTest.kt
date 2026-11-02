@@ -32,13 +32,7 @@ class JournalListViewModelTest {
     private fun entry(
         id: String,
         date: LocalDate,
-    ) = JournalEntry(
-        id = id,
-        date = date,
-        text = "entry-$id",
-        createdAt = Instant.now(),
-        updatedAt = Instant.now(),
-    )
+    ) = JournalEntry(id = id, date = date, text = "entry-$id", createdAt = Instant.now(), updatedAt = Instant.now())
 
     // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
     private fun TestScope.viewModel(entries: List<JournalEntry> = emptyList()): JournalListViewModel {
@@ -80,11 +74,7 @@ class JournalListViewModelTest {
         runTest {
             // Arrange
             val today = LocalDate.of(2026, 6, 15)
-            val entries = listOf(
-                entry("1", today.minusDays(5)),
-                entry("2", today),
-                entry("3", today.minusDays(1)),
-            )
+            val entries = listOf(entry("1", today.minusDays(5)), entry("2", today), entry("3", today.minusDays(1)))
 
             // Act
             val viewModel = viewModel(entries)
@@ -102,11 +92,7 @@ class JournalListViewModelTest {
         runTest {
             // Arrange
             val today = LocalDate.of(2026, 6, 15)
-            val entries = listOf(
-                entry("1", today.minusDays(5)),
-                entry("2", today),
-                entry("3", today.minusDays(1)),
-            )
+            val entries = listOf(entry("1", today.minusDays(5)), entry("2", today), entry("3", today.minusDays(1)))
             val viewModel = viewModel(entries)
 
             // Act

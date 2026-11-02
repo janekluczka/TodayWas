@@ -16,14 +16,13 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
-// Standard M3 disabled-container/content alpha (matches Button's own disabled treatment) — an
-// unavailable FAB action stays visible but reads as unavailable, rather than disappearing from the
-// menu entirely. That disabled container color is translucent by design (it's the same "disabled"
-// tint every M3 component uses), so on its own it reads fine over the screen background but goes
-// murky over busy content (list rows, cards) sitting behind the FAB menu. A same-shaped backdrop in
-// the app background color sits behind the button — matchParentSize (not a modifier merged into
-// the button itself) so it's guaranteed to exactly match the button's own resolved size rather than
-// depending on how the button's internal Surface happens to size itself.
+// Standard M3 disabled-container/content alpha (matches Button's own disabled treatment) — an unavailable FAB action
+// stays visible but reads as unavailable, rather than disappearing from the menu entirely. That disabled container
+// color is translucent by design (it's the same "disabled" tint every M3 component uses), so on its own it reads fine
+// over the screen background but goes murky over busy content (list rows, cards) sitting behind the FAB menu. A
+// same-shaped backdrop in the app background color sits behind the button — matchParentSize (not a modifier merged into
+// the button itself) so it's guaranteed to exactly match the button's own resolved size rather than depending on how
+// the button's internal Surface happens to size itself.
 @Composable
 fun DsExtendedFloatingActionButton(
     text: String,
@@ -57,12 +56,7 @@ fun DsExtendedFloatingActionButton(
     }
     Box(modifier = modifier) {
         if (!enabled) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(shape)
-                    .background(MaterialTheme.colorScheme.background),
-            )
+            Box(modifier = Modifier.matchParentSize().clip(shape).background(MaterialTheme.colorScheme.background))
         }
         ExtendedFloatingActionButton(
             onClick = { if (enabled) onClick() },

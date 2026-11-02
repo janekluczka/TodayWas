@@ -45,10 +45,7 @@ fun OnboardingAllSetScreen(
         viewModel.onIntent(OnboardingAllSetIntent.NavigationHandled)
     }
 
-    OnboardingAllSetScreenContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-    )
+    OnboardingAllSetScreenContent(uiState = uiState, onIntent = viewModel::onIntent)
 }
 
 @Composable
@@ -60,10 +57,7 @@ private fun OnboardingAllSetScreenContent(
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(DsSpacing.space600),
+            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(DsSpacing.space600),
         ) {
             DsText(
                 text = stringResource(R.string.onboarding_all_set_title),
@@ -77,9 +71,7 @@ private fun OnboardingAllSetScreenContent(
             DsButton(
                 text = stringResource(R.string.onboarding_all_set_cta),
                 onClick = { onIntent(OnboardingAllSetIntent.GetStartedClicked) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = DsSpacing.space600),
+                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
             )
         }
     }
@@ -95,9 +87,7 @@ private fun allSetMessage(
         R.string.onboarding_all_set_signed_in_format,
         email ?: stringResource(R.string.preferences_signed_in_no_email),
     )
-    AllSetReason.ACCOUNT_CREATED -> stringResource(
-        R.string.onboarding_all_set_account_created_message,
-    )
+    AllSetReason.ACCOUNT_CREATED -> stringResource(R.string.onboarding_all_set_account_created_message)
 }
 
 private class OnboardingAllSetUiStatePreviewProvider : PreviewParameterProvider<OnboardingAllSetUiState> {

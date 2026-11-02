@@ -89,62 +89,34 @@ private fun OnboardingAccountSetupScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(DsSpacing.space600),
-            ) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            Column(modifier = Modifier.fillMaxSize().padding(DsSpacing.space600)) {
                 when (uiState.accountSubStep) {
                     AccountSubStep.SIGN_IN -> SignInFormContent(
                         state = uiState.signInForm,
-                        onEmailChange = {
-                            onIntent(OnboardingAccountSetupIntent.SignInEmailChanged(it))
-                        },
-                        onPasswordChange = {
-                            onIntent(OnboardingAccountSetupIntent.SignInPasswordChanged(it))
-                        },
-                        onSubmitClick = {
-                            onIntent(OnboardingAccountSetupIntent.SignInSubmitClicked)
-                        },
+                        onEmailChange = { onIntent(OnboardingAccountSetupIntent.SignInEmailChanged(it)) },
+                        onPasswordChange = { onIntent(OnboardingAccountSetupIntent.SignInPasswordChanged(it)) },
+                        onSubmitClick = { onIntent(OnboardingAccountSetupIntent.SignInSubmitClicked) },
                         onGoogleIdTokenReceive = {
                             onIntent(OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived(it))
                         },
-                        onGoogleSignInFailure = {
-                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
-                        },
-                        onSignUpLinkClick = {
-                            onIntent(OnboardingAccountSetupIntent.SignUpLinkClicked)
-                        },
+                        onGoogleSignInFailure = { onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it)) },
+                        onSignUpLinkClick = { onIntent(OnboardingAccountSetupIntent.SignUpLinkClicked) },
                         modifier = Modifier.padding(top = AUTH_FORM_TOP_CLEARANCE),
                     )
                     AccountSubStep.SIGN_UP -> SignUpFormContent(
                         state = uiState.signUpForm,
-                        onEmailChange = {
-                            onIntent(OnboardingAccountSetupIntent.SignUpEmailChanged(it))
-                        },
-                        onPasswordChange = {
-                            onIntent(OnboardingAccountSetupIntent.SignUpPasswordChanged(it))
-                        },
+                        onEmailChange = { onIntent(OnboardingAccountSetupIntent.SignUpEmailChanged(it)) },
+                        onPasswordChange = { onIntent(OnboardingAccountSetupIntent.SignUpPasswordChanged(it)) },
                         onRepeatPasswordChange = {
                             onIntent(OnboardingAccountSetupIntent.SignUpRepeatPasswordChanged(it))
                         },
-                        onSubmitClick = {
-                            onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
-                        },
+                        onSubmitClick = { onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked) },
                         onGoogleIdTokenReceive = {
                             onIntent(OnboardingAccountSetupIntent.SignUpGoogleIdTokenReceived(it))
                         },
-                        onGoogleSignInFailure = {
-                            onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
-                        },
-                        onSignInLinkClick = {
-                            onIntent(OnboardingAccountSetupIntent.SignInLinkClicked)
-                        },
+                        onGoogleSignInFailure = { onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it)) },
+                        onSignInLinkClick = { onIntent(OnboardingAccountSetupIntent.SignInLinkClicked) },
                         modifier = Modifier.padding(top = AUTH_FORM_TOP_CLEARANCE),
                     )
                     AccountSubStep.DATA_SYNC_REVIEW -> {
@@ -153,28 +125,21 @@ private fun OnboardingAccountSetupScreenContent(
                             DataSyncReviewContent(
                                 summary = summary,
                                 isSyncing = uiState.isSyncing,
-                                onConfirmClick = {
-                                    onIntent(OnboardingAccountSetupIntent.SyncConfirmClicked)
-                                },
-                                onSkipClick = {
-                                    onIntent(OnboardingAccountSetupIntent.SyncSkipClicked)
-                                },
+                                onConfirmClick = { onIntent(OnboardingAccountSetupIntent.SyncConfirmClicked) },
+                                onSkipClick = { onIntent(OnboardingAccountSetupIntent.SyncSkipClicked) },
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
                     }
                 }
             }
-            // Floats where a topbar's navigation icon normally sits, without the AppBar
-            // surface/elevation — a sibling overlay rather than nested in the padded content,
-            // so it sits flush at the true top-left instead of indented by the content's own
-            // space600 padding.
+            // Floats where a topbar's navigation icon normally sits, without the AppBar surface/elevation — a sibling
+            // overlay rather than nested in the padded content, so it sits flush at the true top-left instead of
+            // indented by the content's own space600 padding.
             if (uiState.accountSubStep in AUTH_FORM_SUBSTEPS) {
                 DsIconButton(
                     onClick = { onIntent(OnboardingAccountSetupIntent.StepBack) },
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(DsSpacing.space300),
+                    modifier = Modifier.align(Alignment.TopStart).padding(DsSpacing.space300),
                 ) {
                     DsIcon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -189,21 +154,11 @@ private fun OnboardingAccountSetupScreenContent(
 private class OnboardingAccountSetupUiStatePreviewProvider :
     PreviewParameterProvider<OnboardingAccountSetupUiState> {
     override val values = sequenceOf(
-        OnboardingAccountSetupUiState(
-            accountSubStep = AccountSubStep.SIGN_IN,
-            signInForm = SignInFormUiState(),
-        ),
-        OnboardingAccountSetupUiState(
-            accountSubStep = AccountSubStep.SIGN_UP,
-            signUpForm = SignUpFormUiState(),
-        ),
+        OnboardingAccountSetupUiState(accountSubStep = AccountSubStep.SIGN_IN, signInForm = SignInFormUiState()),
+        OnboardingAccountSetupUiState(accountSubStep = AccountSubStep.SIGN_UP, signUpForm = SignUpFormUiState()),
         OnboardingAccountSetupUiState(
             accountSubStep = AccountSubStep.DATA_SYNC_REVIEW,
-            dataSyncSummary = LocalDataSummaryUi(
-                journalEntryCount = 12,
-                habitCount = 3,
-                checkInCount = 40,
-            ),
+            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
         ),
     )
 }

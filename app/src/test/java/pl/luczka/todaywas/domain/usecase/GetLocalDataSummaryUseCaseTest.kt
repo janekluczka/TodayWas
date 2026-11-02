@@ -60,11 +60,7 @@ class GetLocalDataSummaryUseCaseTest {
                 updatedAt = Instant.EPOCH,
             )
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry))
-            val habitRepository =
-                FakeHabitRepository(
-                    initialHabits = listOf(habit),
-                    initialCheckIns = listOf(checkIn),
-                )
+            val habitRepository = FakeHabitRepository(initialHabits = listOf(habit), initialCheckIns = listOf(checkIn))
             val useCase = GetLocalDataSummaryUseCase(journalRepository, habitRepository)
 
             // Act

@@ -56,10 +56,9 @@ import pl.luczka.todaywas.ui.model.HabitTypeUiState
 fun HabitDetailScreen(
     habitId: String,
     onBack: () -> Unit,
-    viewModel: HabitDetailViewModel =
-        hiltViewModel<HabitDetailViewModel, HabitDetailViewModel.Factory> { factory ->
-            factory.create(habitId)
-        },
+    viewModel: HabitDetailViewModel = hiltViewModel<HabitDetailViewModel, HabitDetailViewModel.Factory> { factory ->
+        factory.create(habitId)
+    },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -71,11 +70,7 @@ fun HabitDetailScreen(
         viewModel.onIntent(HabitDetailIntent.NavigationHandled)
     }
 
-    HabitDetailScreenContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-        onBack = onBack,
-    )
+    HabitDetailScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onBack = onBack)
 }
 
 @Composable
@@ -89,8 +84,7 @@ private fun HabitDetailScreenContent(
     val expiredErrorMessage = stringResource(R.string.habit_detail_edit_window_expired_error)
     LaunchedEffect(uiState.saveError) {
         if (uiState.saveError) {
-            val message =
-                if (uiState.saveErrorIsWindowExpired) expiredErrorMessage else genericErrorMessage
+            val message = if (uiState.saveErrorIsWindowExpired) expiredErrorMessage else genericErrorMessage
             snackbarHostState.showSnackbar(message)
         }
     }
@@ -122,9 +116,7 @@ private fun HabitDetailScreenContent(
                     DsIconButton(onClick = { onIntent(HabitDetailIntent.DeleteHabitClicked) }) {
                         DsIcon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = stringResource(
-                                R.string.habit_detail_delete_action,
-                            ),
+                            contentDescription = stringResource(R.string.habit_detail_delete_action),
                         )
                     }
                 },
@@ -133,14 +125,9 @@ private fun HabitDetailScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp
-            // content padding, so it scrolls edge-to-edge while resting at the same inset as the
-            // day panel below it.
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp content padding, so it
+            // scrolls edge-to-edge while resting at the same inset as the day panel below it.
             DsContributionGrid(
                 cells = uiState.contributionGrid.cells,
                 cellSize = DsContributionGridSize.LARGE,
@@ -148,17 +135,13 @@ private fun HabitDetailScreenContent(
                 showMonthLabels = true,
                 selectedDate = uiState.selectedDate,
                 onCellClick = { date -> onIntent(HabitDetailIntent.DaySelected(date)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = DsSpacing.space200, bottom = DsSpacing.space600),
+                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200, bottom = DsSpacing.space600),
             )
             DayDetailPanel(
                 day = uiState.selectedDay,
                 type = uiState.type,
                 onIntent = onIntent,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = DsSpacing.space400),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = DsSpacing.space400),
             )
         }
     }
@@ -178,10 +161,7 @@ private fun HabitDetailScreenContent(
     }
 
     if (uiState.isDeleteHabitDialogVisible) {
-        DeleteHabitDialog(
-            checkInCount = uiState.checkInCount,
-            onIntent = onIntent,
-        )
+        DeleteHabitDialog(checkInCount = uiState.checkInCount, onIntent = onIntent)
     }
 }
 
@@ -191,24 +171,20 @@ private fun valueLabel(
     type: HabitTypeUiState,
 ): String = when {
     value == null -> ""
-    type == HabitTypeUiState.BINARY && value == 1 -> stringResource(
-        R.string.habit_checkin_done_label,
-    )
+    type == HabitTypeUiState.BINARY && value == 1 -> stringResource(R.string.habit_checkin_done_label)
     type == HabitTypeUiState.BINARY -> stringResource(R.string.habit_checkin_not_done_label)
     else -> value.toString()
 }
 
-// Replaces the old full-history rows list: shows only the day currently selected in the grid
-// above, centered under it with plenty of whitespace to spare. A logged value gets a very large
-// display style since it's the one thing worth emphasizing here; "Not logged" is deliberately
-// plain (titleMedium) rather than matching that size — it's an absence, not a value to celebrate.
-// The status text sits over an invisible displayLarge copy of the "Not logged" label, so the box
-// it occupies is always exactly the same size regardless of which day is selected — without it,
-// switching between a big logged value and the small "Not logged" label would visibly resize the
-// panel and shift the buttons below it. Edit-or-Add/Delete are filled icon buttons, not text
-// buttons, so the pair reads as a compact action cluster under the centered date/value rather than
-// a left-aligned row. Neither action shows for an unlogged day outside the addable window
-// (today/yesterday) — see HabitDetailMapper.toSelectedDayUiState for the eligibility rule.
+// Replaces the old full-history rows list: shows only the day currently selected in the grid above, centered under it
+// with plenty of whitespace to spare. A logged value gets a very large display style since it's the one thing worth
+// emphasizing here; "Not logged" is deliberately plain (titleMedium) rather than matching that size — it's an absence,
+// not a value to celebrate. The status text sits over an invisible displayLarge copy of the "Not logged" label, so the
+// box it occupies is always exactly the same size regardless of which day is selected — without it, switching between a
+// big logged value and the small "Not logged" label would visibly resize the panel and shift the buttons below it.
+// Edit-or-Add/Delete are filled icon buttons, not text buttons, so the pair reads as a compact action cluster under the
+// centered date/value rather than a left-aligned row. Neither action shows for an unlogged day outside the addable
+// window (today/yesterday) — see HabitDetailMapper.toSelectedDayUiState for the eligibility rule.
 @Composable
 private fun DayDetailPanel(
     day: HabitDetailDayUiState,
@@ -232,17 +208,11 @@ private fun DayDetailPanel(
     } else {
         MaterialTheme.typography.titleMedium
     }
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier,
-    ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         DsText(text = dateLabel, style = MaterialTheme.typography.titleMedium)
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(
-                top = DsSpacing.space100,
-                bottom = DsSpacing.space400,
-            ),
+            modifier = Modifier.padding(top = DsSpacing.space100, bottom = DsSpacing.space400),
         ) {
             DsText(
                 text = stringResource(R.string.habit_checkin_not_logged_label),
@@ -254,9 +224,7 @@ private fun DayDetailPanel(
         if (day.eligibleForEdit || day.alreadyLogged) {
             Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
                 if (day.eligibleForEdit) {
-                    DsFilledTonalIconButton(
-                        onClick = { onIntent(HabitDetailIntent.EditRowClicked(day.date)) },
-                    ) {
+                    DsFilledTonalIconButton(onClick = { onIntent(HabitDetailIntent.EditRowClicked(day.date)) }) {
                         DsIcon(
                             imageVector = Icons.Filled.Edit,
                             contentDescription = stringResource(
@@ -279,9 +247,7 @@ private fun DayDetailPanel(
                     ) {
                         DsIcon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = stringResource(
-                                R.string.habit_detail_delete_checkin_action,
-                            ),
+                            contentDescription = stringResource(R.string.habit_detail_delete_checkin_action),
                         )
                     }
                 }
@@ -305,18 +271,13 @@ private fun EditRowSheetContent(
         { value -> value.toString() }
     }
     Column(modifier = Modifier.padding(horizontal = DsSpacing.space600)) {
-        DsText(
-            text = formattedDate,
-            modifier = Modifier.padding(bottom = DsSpacing.space400),
-        )
+        DsText(text = formattedDate, modifier = Modifier.padding(bottom = DsSpacing.space400))
         DsSegmentedRow(
             items = uiState.range.toList(),
             selectedItem = uiState.editingValue,
             onItemSelect = { onIntent(HabitDetailIntent.ValueChanged(it)) },
             label = label,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = DsSpacing.space600),
+            modifier = Modifier.fillMaxWidth().padding(bottom = DsSpacing.space600),
         )
     }
 }
@@ -329,21 +290,12 @@ private fun DeleteHabitDialog(
     DsAlertDialog(
         onDismissRequest = { onIntent(HabitDetailIntent.DeleteHabitDismissed) },
         title = { DsText(text = stringResource(R.string.habit_detail_delete_dialog_title)) },
-        text = {
-            DsText(
-                text = stringResource(
-                    R.string.habit_detail_delete_dialog_text_format,
-                    checkInCount,
-                ),
-            )
-        },
+        text = { DsText(text = stringResource(R.string.habit_detail_delete_dialog_text_format, checkInCount)) },
         confirmButton = {
             DsTextButton(
                 text = stringResource(R.string.habit_detail_delete_confirm_cta),
                 onClick = { onIntent(HabitDetailIntent.DeleteHabitConfirmed) },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
             )
         },
         dismissButton = {

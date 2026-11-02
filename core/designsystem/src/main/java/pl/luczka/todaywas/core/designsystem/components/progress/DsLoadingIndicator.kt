@@ -13,10 +13,7 @@ fun DsLoadingIndicator(
     modifier: Modifier = Modifier,
     color: Color = ProgressIndicatorDefaults.circularColor,
 ) {
-    CircularProgressIndicator(
-        color = color,
-        modifier = modifier,
-    )
+    CircularProgressIndicator(color = color, modifier = modifier)
 }
 
 @PreviewLightDark

@@ -19,11 +19,7 @@ fun DsNavigationRail(
     header: (@Composable ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    NavigationRail(
-        header = header,
-        modifier = modifier,
-        content = content,
-    )
+    NavigationRail(header = header, modifier = modifier, content = content)
 }
 
 @Composable

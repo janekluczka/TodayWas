@@ -82,11 +82,7 @@ private fun JournalListScreenContent(
         },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp
             // content padding via contentPadding, so it scrolls edge-to-edge while still resting
             // at the same inset as the rest of the screen's content.
@@ -95,9 +91,7 @@ private fun JournalListScreenContent(
                 cellSize = DsContributionGridSize.MEDIUM,
                 contentPadding = PaddingValues(horizontal = DsSpacing.space400),
                 showMonthLabels = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = DsSpacing.space200),
+                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
             )
             SortChipRow(
                 selected = uiState.selectedSort,
@@ -107,10 +101,7 @@ private fun JournalListScreenContent(
             if (!uiState.isLoading && uiState.entries.isEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(horizontal = DsSpacing.space400),
+                    modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = DsSpacing.space400),
                 ) {
                     DsText(
                         text = stringResource(R.string.main_journal_empty_state),
@@ -120,10 +111,7 @@ private fun JournalListScreenContent(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(uiState.entries, key = { it.id }) { entry ->
-                        JournalEntryRow(
-                            entry = entry,
-                            onClick = { onEntryClick(entry.id) },
-                        )
+                        JournalEntryRow(entry = entry, onClick = { onEntryClick(entry.id) })
                     }
                 }
             }
@@ -139,10 +127,7 @@ private fun SortChipRow(
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        contentPadding = PaddingValues(
-            horizontal = DsSpacing.space400,
-            vertical = DsSpacing.space200,
-        ),
+        contentPadding = PaddingValues(horizontal = DsSpacing.space400, vertical = DsSpacing.space200),
         modifier = modifier,
     ) {
         items(JournalSortUiState.entries) { sort ->
@@ -171,11 +156,7 @@ private class JournalListUiStatePreviewProvider : PreviewParameterProvider<Journ
     )
     override val values = sequenceOf(
         JournalListUiState(isLoading = true),
-        JournalListUiState(
-            isLoading = false,
-            entries = emptyList(),
-            contributionGrid = previewGrid,
-        ),
+        JournalListUiState(isLoading = false, entries = emptyList(), contributionGrid = previewGrid),
         JournalListUiState(
             isLoading = false,
             entries = (1..8).map {

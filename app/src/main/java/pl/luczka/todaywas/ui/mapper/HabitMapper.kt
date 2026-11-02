@@ -24,8 +24,7 @@ fun HabitCheckInBoard.toSortedHabitUiStates(
                 .groupBy { it.habitId }
                 .mapValues { (_, habitCheckIns) -> habitCheckIns.maxOf { it.date } }
             habits.sortedWith(
-                compareByDescending<Habit> { lastCheckInDateByHabitId[it.id] ?: LocalDate.MIN }
-                    .thenBy { it.createdAt },
+                compareByDescending<Habit> { lastCheckInDateByHabitId[it.id] ?: LocalDate.MIN }.thenBy { it.createdAt },
             )
         }
         HabitSortUiState.ALPHABETICAL -> habits.sortedBy { it.name }
@@ -34,9 +33,7 @@ fun HabitCheckInBoard.toSortedHabitUiStates(
     return sortedHabits.map { habit ->
         val habitCheckIns = checkIns.filter { it.habitId == habit.id }
         val todayCheckIn = habitCheckIns.find { it.date == today }
-        val todayLevel = HabitContributionCalculator
-            .levelForDate(habitCheckIns, today)
-            ?.toUiState()
+        val todayLevel = HabitContributionCalculator.levelForDate(habitCheckIns, today)?.toUiState()
             ?: DsContributionLevel.NONE
         habit.toUiState(todayCheckIn, todayLevel)
     }
@@ -51,10 +48,7 @@ fun Habit.toUiState(
     type = type.toUiState(),
     todayStatus = when {
         todayCheckIn == null -> HabitCheckInStatusUiState.NotLogged
-        type == HabitType.BINARY -> HabitCheckInStatusUiState.LoggedBinary(
-            done =
-                todayCheckIn.value == 1,
-        )
+        type == HabitType.BINARY -> HabitCheckInStatusUiState.LoggedBinary(done = todayCheckIn.value == 1)
         else -> HabitCheckInStatusUiState.LoggedScale(value = todayCheckIn.value)
     },
     todayLevel = todayLevel,

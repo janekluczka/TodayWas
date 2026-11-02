@@ -26,10 +26,7 @@ fun DataSyncReviewContent(
     onSkipClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-        modifier = modifier.fillMaxWidth(),
-    ) {
+    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400), modifier = modifier.fillMaxWidth()) {
         DsText(text = stringResource(R.string.data_sync_review_title))
         DsText(
             text = stringResource(
@@ -39,16 +36,8 @@ fun DataSyncReviewContent(
                     summary.journalEntryCount,
                     summary.journalEntryCount,
                 ),
-                pluralStringResource(
-                    R.plurals.data_sync_review_habits,
-                    summary.habitCount,
-                    summary.habitCount,
-                ),
-                pluralStringResource(
-                    R.plurals.data_sync_review_check_ins,
-                    summary.checkInCount,
-                    summary.checkInCount,
-                ),
+                pluralStringResource(R.plurals.data_sync_review_habits, summary.habitCount, summary.habitCount),
+                pluralStringResource(R.plurals.data_sync_review_check_ins, summary.checkInCount, summary.checkInCount),
             ),
         )
         DsButtonWithLoading(

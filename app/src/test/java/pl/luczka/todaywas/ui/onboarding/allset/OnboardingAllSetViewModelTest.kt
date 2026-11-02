@@ -24,10 +24,7 @@ class OnboardingAllSetViewModelTest {
     private fun viewModel(
         reason: AllSetReason,
         authRepository: FakeAuthRepository = FakeAuthRepository(),
-    ) = OnboardingAllSetViewModel(
-        reason = reason,
-        observeAuthState = ObserveAuthStateUseCase(authRepository),
-    )
+    ) = OnboardingAllSetViewModel(reason = reason, observeAuthState = ObserveAuthStateUseCase(authRepository))
 
     @Before
     fun setUp() {
@@ -77,10 +74,7 @@ class OnboardingAllSetViewModelTest {
             viewModel.onIntent(OnboardingAllSetIntent.GetStartedClicked)
 
             // Assert
-            assertEquals(
-                OnboardingAllSetNavigation.Finished,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(OnboardingAllSetNavigation.Finished, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -94,10 +88,7 @@ class OnboardingAllSetViewModelTest {
             testDispatcher.scheduler.runCurrent()
 
             // Assert
-            assertEquals(
-                OnboardingAllSetNavigation.Finished,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(OnboardingAllSetNavigation.Finished, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test

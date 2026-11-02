@@ -18,21 +18,13 @@ fun DsIcon(
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
 ) {
-    Icon(
-        imageVector = imageVector,
-        contentDescription = contentDescription,
-        tint = tint,
-        modifier = modifier,
-    )
+    Icon(imageVector = imageVector, contentDescription = contentDescription, tint = tint, modifier = modifier)
 }
 
 @PreviewLightDark
 @Composable
 private fun DsIconPreview() {
     DsTheme {
-        DsIcon(
-            imageVector = Icons.Default.Edit,
-            contentDescription = "Change focus",
-        )
+        DsIcon(imageVector = Icons.Default.Edit, contentDescription = "Change focus")
     }
 }
