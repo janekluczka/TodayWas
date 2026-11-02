@@ -9,3 +9,6 @@
 
 # style: reflow code and comments to the 120-column limit
 ea8c1075f0d62af5794780a966d3b2ae281b7173
+
+# style: put arguments of named calls one per line
+9cedaf5e9023f54823bc0cbc6544a74ec13ff794
