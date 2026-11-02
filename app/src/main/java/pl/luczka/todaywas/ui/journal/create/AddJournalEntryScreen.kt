@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.LocalDate
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
@@ -52,7 +53,6 @@ import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import java.time.LocalDate
 
 @Composable
 fun AddJournalEntryScreen(
@@ -281,9 +281,7 @@ private fun JournalDateStrip(
 ) {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
-    val selectedDate = if (uiState.selectedSlot ==
-        JournalDateSlotUiState.TODAY
-    ) {
+    val selectedDate = if (uiState.selectedSlot == JournalDateSlotUiState.TODAY) {
         today
     } else {
         yesterday
@@ -472,8 +470,7 @@ private val previewStarterPrompts = JournalStarterPromptTone.entries.map { tone 
     JournalStarterPromptUiState(tone = tone, variant = 0)
 }
 
-private class AddJournalEntryScreenPreviewStateProvider :
-    PreviewParameterProvider<AddJournalEntryUiState> {
+private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<AddJournalEntryUiState> {
     override val values = sequenceOf(
         AddJournalEntryUiState(
             availableSlots = listOf(JournalDateSlotUiState.TODAY),
@@ -512,8 +509,8 @@ private class AddJournalEntryScreenPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun AddJournalEntryScreenPreview(
-    @PreviewParameter(AddJournalEntryScreenPreviewStateProvider::class) state:
-        AddJournalEntryUiState,
+    @PreviewParameter(AddJournalEntryScreenPreviewStateProvider::class)
+    state: AddJournalEntryUiState,
 ) {
     DsTheme {
         AddJournalEntryScreenContent(
@@ -524,8 +521,7 @@ private fun AddJournalEntryScreenPreview(
     }
 }
 
-private class HelpMeStartBottomSheetPreviewStateProvider :
-    PreviewParameterProvider<HelpMeStartUiState> {
+private class HelpMeStartBottomSheetPreviewStateProvider : PreviewParameterProvider<HelpMeStartUiState> {
     override val values = sequenceOf(
         HelpMeStartUiState(isVisible = true, step = HelpMeStartStep.SIGNED_OUT),
         HelpMeStartUiState(isVisible = true),
@@ -561,7 +557,8 @@ private class HelpMeStartBottomSheetPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun HelpMeStartBottomSheetPreview(
-    @PreviewParameter(HelpMeStartBottomSheetPreviewStateProvider::class) state: HelpMeStartUiState,
+    @PreviewParameter(HelpMeStartBottomSheetPreviewStateProvider::class)
+    state: HelpMeStartUiState,
 ) {
     DsTheme {
         HelpMeStartBottomSheet(

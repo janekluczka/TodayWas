@@ -26,15 +26,16 @@ import pl.luczka.todaywas.domain.model.JournalPromptTone
 
 class AiAssistRepositoryImplTest {
 
-    private fun repository(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) = AiAssistRepositoryImpl(
-        createSupabaseClient(
-            supabaseUrl = "https://example.supabase.co",
-            supabaseKey = "test-key",
-        ) {
-            httpEngine = MockEngine(handler)
-            install(Functions)
-        },
-    )
+    private fun repository(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
+        AiAssistRepositoryImpl(
+            createSupabaseClient(
+                supabaseUrl = "https://example.supabase.co",
+                supabaseKey = "test-key",
+            ) {
+                httpEngine = MockEngine(handler)
+                install(Functions)
+            },
+        )
 
     @Test
     fun `should return the generated text when generateJournalStarterPrompt succeeds`() =

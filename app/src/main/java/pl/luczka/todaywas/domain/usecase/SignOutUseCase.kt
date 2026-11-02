@@ -1,12 +1,12 @@
 package pl.luczka.todaywas.domain.usecase
 
+import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.HabitRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.repository.OnboardingRepository
-import javax.inject.Inject
 
 class SignOutUseCase @Inject constructor(
     private val authRepository: AuthRepository,

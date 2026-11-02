@@ -38,8 +38,7 @@ fun DsButtonWithLoading(
     }
 }
 
-private class DsButtonWithLoadingPreviewStateProvider :
-    PreviewParameterProvider<Pair<Boolean, Boolean>> {
+private class DsButtonWithLoadingPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
     override val values = sequenceOf(
         true to false,
         false to false,
@@ -50,7 +49,8 @@ private class DsButtonWithLoadingPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun DsButtonWithLoadingPreview(
-    @PreviewParameter(DsButtonWithLoadingPreviewStateProvider::class) state: Pair<Boolean, Boolean>,
+    @PreviewParameter(DsButtonWithLoadingPreviewStateProvider::class)
+    state: Pair<Boolean, Boolean>,
 ) {
     val (enabled, loading) = state
     DsTheme {

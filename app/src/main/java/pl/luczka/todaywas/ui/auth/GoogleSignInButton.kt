@@ -60,8 +60,7 @@ fun GoogleSignInButton(
     }
 }
 
-private class GoogleSignInButtonPreviewStateProvider :
-    PreviewParameterProvider<Pair<Boolean, Boolean>> {
+private class GoogleSignInButtonPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
     override val values = sequenceOf(
         true to false,
         false to false,
@@ -72,7 +71,8 @@ private class GoogleSignInButtonPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun GoogleSignInButtonPreview(
-    @PreviewParameter(GoogleSignInButtonPreviewStateProvider::class) state: Pair<Boolean, Boolean>,
+    @PreviewParameter(GoogleSignInButtonPreviewStateProvider::class)
+    state: Pair<Boolean, Boolean>,
 ) {
     val (enabled, loading) = state
     DsTheme {

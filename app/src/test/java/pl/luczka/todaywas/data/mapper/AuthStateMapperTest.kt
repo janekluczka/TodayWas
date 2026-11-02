@@ -4,10 +4,10 @@ import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.auth.user.UserSession
+import java.io.IOException
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import pl.luczka.todaywas.domain.model.AuthState
-import java.io.IOException
 
 class AuthStateMapperTest {
 

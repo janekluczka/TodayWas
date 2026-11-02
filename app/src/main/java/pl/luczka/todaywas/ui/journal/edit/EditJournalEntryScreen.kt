@@ -27,6 +27,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.Instant
+import java.time.LocalDate
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
@@ -56,8 +58,6 @@ import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import java.time.Instant
-import java.time.LocalDate
 
 @Composable
 fun EditJournalEntryScreen(
@@ -209,9 +209,7 @@ private fun EditJournalEntryScreenContent(
 }
 
 @Composable
-private fun DiscardChangesDialog(
-    onIntent: (EditJournalEntryIntent) -> Unit,
-) {
+private fun DiscardChangesDialog(onIntent: (EditJournalEntryIntent) -> Unit) {
     DsAlertDialog(
         onDismissRequest = { onIntent(EditJournalEntryIntent.DiscardDismissed) },
         title = { DsText(text = stringResource(R.string.journal_edit_discard_dialog_title)) },
@@ -351,8 +349,7 @@ private val previewEntry = JournalEntryUiState(
     createdAt = Instant.now(),
 )
 
-private class EditJournalEntryScreenPreviewStateProvider :
-    PreviewParameterProvider<EditJournalEntryUiState> {
+private class EditJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<EditJournalEntryUiState> {
     override val values = sequenceOf(
         EditJournalEntryUiState(
             isLoading = false,
@@ -399,8 +396,8 @@ private class EditJournalEntryScreenPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun EditJournalEntryScreenPreview(
-    @PreviewParameter(EditJournalEntryScreenPreviewStateProvider::class) state:
-        EditJournalEntryUiState,
+    @PreviewParameter(EditJournalEntryScreenPreviewStateProvider::class)
+    state: EditJournalEntryUiState,
 ) {
     DsTheme {
         EditJournalEntryScreenContent(
@@ -410,8 +407,7 @@ private fun EditJournalEntryScreenPreview(
     }
 }
 
-private class HelpMeRefineBottomSheetPreviewStateProvider :
-    PreviewParameterProvider<HelpMeRefineUiState> {
+private class HelpMeRefineBottomSheetPreviewStateProvider : PreviewParameterProvider<HelpMeRefineUiState> {
     override val values = sequenceOf(
         HelpMeRefineUiState(isVisible = true),
         HelpMeRefineUiState(
@@ -446,8 +442,8 @@ private class HelpMeRefineBottomSheetPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun HelpMeRefineBottomSheetPreview(
-    @PreviewParameter(HelpMeRefineBottomSheetPreviewStateProvider::class) state:
-        HelpMeRefineUiState,
+    @PreviewParameter(HelpMeRefineBottomSheetPreviewStateProvider::class)
+    state: HelpMeRefineUiState,
 ) {
     DsTheme {
         HelpMeRefineBottomSheet(

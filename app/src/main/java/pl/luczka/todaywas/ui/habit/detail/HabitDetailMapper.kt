@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.ui.habit.detail
 
+import java.time.Instant
+import java.time.LocalDate
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
-import java.time.Instant
-import java.time.LocalDate
 
 // Today/yesterday are addable even unlogged (existing == null but selectedDate is one of
 // freshLoggableDates) — every other unlogged date is view-only, no action. A logged date is

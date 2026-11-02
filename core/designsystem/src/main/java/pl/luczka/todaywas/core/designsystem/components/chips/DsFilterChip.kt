@@ -29,7 +29,8 @@ fun DsFilterChip(
 @PreviewLightDark
 @Composable
 private fun DsFilterChipPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    selected: Boolean,
 ) {
     DsTheme {
         DsFilterChip(

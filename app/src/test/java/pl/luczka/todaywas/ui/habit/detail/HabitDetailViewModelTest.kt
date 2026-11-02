@@ -1,5 +1,10 @@
 package pl.luczka.todaywas.ui.habit.detail
 
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -27,11 +32,6 @@ import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HabitDetailViewModelTest {
@@ -69,10 +69,11 @@ class HabitDetailViewModelTest {
     private fun levelFor(
         cells: List<DsContributionCellUiState>,
         date: LocalDate,
-    ): DsContributionLevel? = cells
-        .filterIsInstance<DsContributionCellUiState.Level>()
-        .find { it.date == date }
-        ?.level
+    ): DsContributionLevel? =
+        cells
+            .filterIsInstance<DsContributionCellUiState.Level>()
+            .find { it.date == date }
+            ?.level
 
     @Before
     fun setUp() {

@@ -97,8 +97,7 @@ private fun OnboardingChoiceScreenContent(
     }
 }
 
-private class OnboardingChoiceUiStatePreviewProvider :
-    PreviewParameterProvider<OnboardingChoiceUiState> {
+private class OnboardingChoiceUiStatePreviewProvider : PreviewParameterProvider<OnboardingChoiceUiState> {
     override val values = sequenceOf(
         OnboardingChoiceUiState(),
         OnboardingChoiceUiState(isSaving = true),
@@ -109,7 +108,8 @@ private class OnboardingChoiceUiStatePreviewProvider :
 @PreviewLightDark
 @Composable
 private fun OnboardingChoiceScreenPreview(
-    @PreviewParameter(OnboardingChoiceUiStatePreviewProvider::class) state: OnboardingChoiceUiState,
+    @PreviewParameter(OnboardingChoiceUiStatePreviewProvider::class)
+    state: OnboardingChoiceUiState,
 ) {
     DsTheme {
         OnboardingChoiceScreenContent(

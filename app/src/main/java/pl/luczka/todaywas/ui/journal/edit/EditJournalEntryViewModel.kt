@@ -6,6 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlin.random.Random
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,6 @@ import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import kotlin.random.Random
 
 @HiltViewModel(assistedFactory = EditJournalEntryViewModel.Factory::class)
 class EditJournalEntryViewModel @AssistedInject constructor(
@@ -343,9 +343,7 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         error = null,
     )
 
-    private fun HelpMeStartUiState.applyResult(
-        result: Result<AiPromptResult>,
-    ): HelpMeStartUiState = result.fold(
+    private fun HelpMeStartUiState.applyResult(result: Result<AiPromptResult>): HelpMeStartUiState = result.fold(
         onSuccess = { prompt ->
             copy(
                 step = HelpMeStartStep.PREVIEW,
@@ -372,9 +370,7 @@ class EditJournalEntryViewModel @AssistedInject constructor(
     )
 
     // Preserves remainingToday, mirroring HelpMeStartUiState's resetForNewSession.
-    private fun HelpMeRefineUiState.resetForNewSession(
-        isVisible: Boolean,
-    ): HelpMeRefineUiState = copy(
+    private fun HelpMeRefineUiState.resetForNewSession(isVisible: Boolean): HelpMeRefineUiState = copy(
         isVisible = isVisible,
         step = HelpMeRefineStep.INPUT,
         selectedTone = null,
@@ -384,9 +380,7 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         error = null,
     )
 
-    private fun HelpMeRefineUiState.applyResult(
-        result: Result<AiPromptResult>,
-    ): HelpMeRefineUiState = result.fold(
+    private fun HelpMeRefineUiState.applyResult(result: Result<AiPromptResult>): HelpMeRefineUiState = result.fold(
         onSuccess = { prompt ->
             copy(
                 step = HelpMeRefineStep.PREVIEW,
@@ -414,8 +408,6 @@ class EditJournalEntryViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            @Assisted id: String,
-        ): EditJournalEntryViewModel
+        fun create(@Assisted id: String): EditJournalEntryViewModel
     }
 }

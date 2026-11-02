@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.di
 
+import javax.inject.Singleton
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import pl.luczka.todaywas.data.repository.HabitRepositoryImpl
 import pl.luczka.todaywas.data.repository.JournalRepositoryImpl
-import javax.inject.Singleton
 
 class RepositoryModuleScopeTest {
 

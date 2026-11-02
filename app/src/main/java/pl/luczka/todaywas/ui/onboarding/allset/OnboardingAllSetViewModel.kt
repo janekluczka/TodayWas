@@ -60,8 +60,6 @@ class OnboardingAllSetViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            @Assisted reason: AllSetReason,
-        ): OnboardingAllSetViewModel
+        fun create(@Assisted reason: AllSetReason): OnboardingAllSetViewModel
     }
 }

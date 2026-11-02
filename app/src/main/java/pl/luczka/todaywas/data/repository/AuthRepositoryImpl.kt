@@ -5,6 +5,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.IDToken
+import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -13,7 +14,6 @@ import pl.luczka.todaywas.data.mapper.toAuthState
 import pl.luczka.todaywas.domain.model.AuthException
 import pl.luczka.todaywas.domain.model.AuthState
 import pl.luczka.todaywas.domain.repository.AuthRepository
-import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,

@@ -1,5 +1,9 @@
 package pl.luczka.todaywas.data.repository
 
+import java.time.Clock
+import java.time.LocalDate
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
@@ -22,10 +26,6 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.HabitRepository
-import java.time.Clock
-import java.time.LocalDate
-import java.util.UUID
-import javax.inject.Inject
 
 class HabitRepositoryImpl @Inject constructor(
     private val local: LocalHabitDataSource,

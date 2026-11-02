@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.data.local.api
 
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.entity.HabitEntity
-import java.time.LocalDate
 
 interface LocalHabitDataSource {
 

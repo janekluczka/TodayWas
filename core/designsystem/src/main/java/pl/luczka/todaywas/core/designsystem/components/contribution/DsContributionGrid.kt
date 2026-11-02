@@ -23,15 +23,15 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.theme.DsColor
-import pl.luczka.todaywas.core.designsystem.theme.DsTheme
-import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
+import pl.luczka.todaywas.core.designsystem.components.text.DsText
+import pl.luczka.todaywas.core.designsystem.theme.DsColor
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 enum class DsContributionLevel {
     NONE,
@@ -117,11 +117,10 @@ internal fun contributionLevelColors(): Map<DsContributionLevel, Color> =
 
 // All 7 cells in one week share the same hasGapBefore value (set uniformly by the mapper), so
 // callers only need to check the first cell to decide whether the whole week needs a margin.
-internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean =
-    when (val cell = first()) {
-        is DsContributionCellUiState.Level -> cell.hasGapBefore
-        is DsContributionCellUiState.Blank -> cell.hasGapBefore
-    }
+internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean = when (val cell = first()) {
+    is DsContributionCellUiState.Level -> cell.hasGapBefore
+    is DsContributionCellUiState.Blank -> cell.hasGapBefore
+}
 
 // Pure rendering only — spacing between cells is the week container's job (a verticalArrangement),
 // and spacing between weeks is the outer LazyRow's job (horizontalArrangement) — a cell never
@@ -282,8 +281,7 @@ private fun MonthYearLabel(
     }
 }
 
-private class DsContributionGridPreviewProvider :
-    PreviewParameterProvider<List<DsContributionCellUiState>> {
+private class DsContributionGridPreviewProvider : PreviewParameterProvider<List<DsContributionCellUiState>> {
     private val today = LocalDate.now()
 
     override val values = sequenceOf(
@@ -337,8 +335,8 @@ private class DsContributionGridPreviewProvider :
 @PreviewLightDark
 @Composable
 private fun DsContributionGridPreview(
-    @PreviewParameter(DsContributionGridPreviewProvider::class) cells:
-        List<DsContributionCellUiState>,
+    @PreviewParameter(DsContributionGridPreviewProvider::class)
+    cells: List<DsContributionCellUiState>,
 ) {
     DsTheme {
         DsContributionGrid(cells = cells)

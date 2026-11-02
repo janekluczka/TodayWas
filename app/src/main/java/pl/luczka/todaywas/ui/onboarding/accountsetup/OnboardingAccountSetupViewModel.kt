@@ -3,6 +3,7 @@ package pl.luczka.todaywas.ui.onboarding.accountsetup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +30,6 @@ import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
-import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingAccountSetupViewModel @Inject constructor(

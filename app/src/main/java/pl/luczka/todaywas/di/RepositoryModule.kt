@@ -4,6 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSourceImpl
 import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
@@ -24,7 +25,6 @@ import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.HabitRepository
 import pl.luczka.todaywas.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.repository.OnboardingRepository
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -48,23 +48,17 @@ abstract class RepositoryModule {
     abstract fun bindAiAssistRepository(impl: AiAssistRepositoryImpl): AiAssistRepository
 
     @Binds
-    abstract fun bindRemoteJournalDataSource(
-        impl: RemoteJournalDataSourceImpl,
-    ): RemoteJournalDataSource
+    abstract fun bindRemoteJournalDataSource(impl: RemoteJournalDataSourceImpl): RemoteJournalDataSource
 
     @Binds
     abstract fun bindRemoteHabitDataSource(impl: RemoteHabitDataSourceImpl): RemoteHabitDataSource
 
     @Binds
-    abstract fun bindRemoteHabitCheckInDataSource(
-        impl: RemoteHabitCheckInDataSourceImpl,
-    ): RemoteHabitCheckInDataSource
+    abstract fun bindRemoteHabitCheckInDataSource(impl: RemoteHabitCheckInDataSourceImpl): RemoteHabitCheckInDataSource
 
     @Binds
     abstract fun bindLocalHabitDataSource(impl: LocalHabitDataSourceImpl): LocalHabitDataSource
 
     @Binds
-    abstract fun bindLocalJournalDataSource(
-        impl: LocalJournalDataSourceImpl,
-    ): LocalJournalDataSource
+    abstract fun bindLocalJournalDataSource(impl: LocalJournalDataSourceImpl): LocalJournalDataSource
 }

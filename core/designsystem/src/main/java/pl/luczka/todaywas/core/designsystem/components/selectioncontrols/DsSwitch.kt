@@ -26,7 +26,8 @@ fun DsSwitch(
 @PreviewLightDark
 @Composable
 private fun DsSwitchPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) checked: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    checked: Boolean,
 ) {
     DsTheme {
         DsSwitch(

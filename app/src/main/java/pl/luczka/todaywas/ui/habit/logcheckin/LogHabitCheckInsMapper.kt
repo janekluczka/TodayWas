@@ -1,11 +1,11 @@
 package pl.luczka.todaywas.ui.habit.logcheckin
 
+import java.time.LocalDate
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.ui.mapper.toUiState
-import java.time.LocalDate
 
 fun HabitCheckInBoard.toRows(
     selectedDate: LocalDate,
@@ -28,14 +28,13 @@ private fun Habit.toAlreadyLoggedRow(checkIn: HabitCheckIn): HabitCheckInRowUiSt
         value = checkIn.value,
     )
 
-private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable =
-    HabitCheckInRowUiState.Editable(
-        habitId = id,
-        name = name,
-        range = habitRange(),
-        type = type.toUiState(),
-        value = pendingValue,
-    )
+private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable = HabitCheckInRowUiState.Editable(
+    habitId = id,
+    name = name,
+    range = habitRange(),
+    type = type.toUiState(),
+    value = pendingValue,
+)
 
 private fun Habit.habitRange(): IntRange = if (type == HabitType.BINARY) {
     0..1

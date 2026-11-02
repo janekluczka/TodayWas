@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.domain.util
 
+import java.time.Duration
+import java.time.Instant
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.Duration
-import java.time.Instant
 
 class EditWindowTest {
 

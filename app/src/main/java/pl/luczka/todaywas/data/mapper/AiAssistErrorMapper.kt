@@ -3,8 +3,8 @@ package pl.luczka.todaywas.data.mapper
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.exceptions.UnauthorizedRestException
-import pl.luczka.todaywas.domain.model.AiAssistError
 import java.io.IOException
+import pl.luczka.todaywas.domain.model.AiAssistError
 
 private const val HTTP_TOO_MANY_REQUESTS = 429
 

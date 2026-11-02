@@ -29,7 +29,8 @@ fun DsIconButton(
 @PreviewLightDark
 @Composable
 private fun DsIconButtonPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    enabled: Boolean,
 ) {
     DsTheme {
         DsIconButton(

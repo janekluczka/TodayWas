@@ -78,9 +78,7 @@ fun <T> DsSectionedList(
                         isLast = index == SKELETON_ROW_COUNT - 1,
                     )
                     SectionItem(shape = shape) { SkeletonRow() }
-                    if (index <
-                        SKELETON_ROW_COUNT - 1
-                    ) {
+                    if (index < SKELETON_ROW_COUNT - 1) {
                         DsHorizontalDivider(color = Color.Transparent)
                     }
                 }
@@ -89,9 +87,7 @@ fun <T> DsSectionedList(
                     SectionItem(shape = itemShape(isFirst = index == 0, isLast = isLast)) {
                         itemContent(item)
                     }
-                    if (index < items.lastIndex ||
-                        hasViewAll
-                    ) {
+                    if (index < items.lastIndex || hasViewAll) {
                         DsHorizontalDivider(color = Color.Transparent)
                     }
                 }
@@ -205,15 +201,15 @@ private enum class DsSectionedListPreviewState {
     LOADING,
 }
 
-private class DsSectionedListPreviewProvider :
-    PreviewParameterProvider<DsSectionedListPreviewState> {
+private class DsSectionedListPreviewProvider : PreviewParameterProvider<DsSectionedListPreviewState> {
     override val values = DsSectionedListPreviewState.entries.asSequence()
 }
 
 @PreviewLightDark
 @Composable
 private fun DsSectionedListPreview(
-    @PreviewParameter(DsSectionedListPreviewProvider::class) state: DsSectionedListPreviewState,
+    @PreviewParameter(DsSectionedListPreviewProvider::class)
+    state: DsSectionedListPreviewState,
 ) {
     DsTheme {
         when (state) {

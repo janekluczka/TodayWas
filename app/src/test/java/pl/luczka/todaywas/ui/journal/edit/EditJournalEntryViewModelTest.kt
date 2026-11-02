@@ -1,5 +1,11 @@
 package pl.luczka.todaywas.ui.journal.edit
 
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -34,12 +40,6 @@ import pl.luczka.todaywas.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.ui.journal.create.STARTER_PROMPT_VARIANT_COUNT
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EditJournalEntryViewModelTest {
@@ -157,7 +157,10 @@ class EditJournalEntryViewModelTest {
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.updateEntryCallCount)
             assertEquals("Edited text.", repository.lastUpdatedText)
-            assertEquals(EditJournalEntryNavigation.Saved, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                EditJournalEntryNavigation.Saved,
+                viewModel.uiState.value.pendingNavigation,
+            )
         }
 
     @Test
@@ -195,7 +198,10 @@ class EditJournalEntryViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
-            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                EditJournalEntryNavigation.Discarded,
+                viewModel.uiState.value.pendingNavigation,
+            )
         }
 
     @Test
@@ -210,7 +216,10 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                EditJournalEntryNavigation.Discarded,
+                viewModel.uiState.value.pendingNavigation,
+            )
             assertFalse(viewModel.uiState.value.isDiscardConfirmVisible)
         }
 
@@ -260,7 +269,10 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                EditJournalEntryNavigation.Discarded,
+                viewModel.uiState.value.pendingNavigation,
+            )
         }
 
     @Test
@@ -514,7 +526,10 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                EditJournalEntryNavigation.Discarded,
+                viewModel.uiState.value.pendingNavigation,
+            )
             assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
             assertNull(viewModel.uiState.value.helpMeRefine.refinedText)
         }
@@ -540,7 +555,10 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                EditJournalEntryNavigation.Discarded,
+                viewModel.uiState.value.pendingNavigation,
+            )
             assertFalse(viewModel.uiState.value.helpMeStart.isVisible)
             assertNull(viewModel.uiState.value.helpMeStart.generatedText)
         }

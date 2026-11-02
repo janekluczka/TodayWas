@@ -43,7 +43,8 @@ fun DsRadioOption(
 @PreviewLightDark
 @Composable
 private fun DsRadioOptionPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    selected: Boolean,
 ) {
     DsTheme {
         DsRadioOption(

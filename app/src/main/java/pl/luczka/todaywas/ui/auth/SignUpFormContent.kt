@@ -138,7 +138,8 @@ private class SignUpFormUiStatePreviewProvider : PreviewParameterProvider<SignUp
 @PreviewLightDark
 @Composable
 private fun SignUpFormContentPreview(
-    @PreviewParameter(SignUpFormUiStatePreviewProvider::class) state: SignUpFormUiState,
+    @PreviewParameter(SignUpFormUiStatePreviewProvider::class)
+    state: SignUpFormUiState,
 ) {
     DsTheme {
         SignUpFormContent(

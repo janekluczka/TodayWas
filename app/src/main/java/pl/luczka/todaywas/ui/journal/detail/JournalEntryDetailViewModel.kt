@@ -90,8 +90,6 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            @Assisted id: String,
-        ): JournalEntryDetailViewModel
+        fun create(@Assisted id: String): JournalEntryDetailViewModel
     }
 }

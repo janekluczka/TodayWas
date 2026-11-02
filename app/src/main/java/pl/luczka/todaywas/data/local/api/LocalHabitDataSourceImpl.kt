@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.data.local.api
 
+import java.time.LocalDate
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.data.local.dao.HabitCheckInDao
 import pl.luczka.todaywas.data.local.dao.HabitDao
@@ -7,8 +9,6 @@ import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.data.util.TransactionRunner
 import pl.luczka.todaywas.data.util.safeDbCall
-import java.time.LocalDate
-import javax.inject.Inject
 
 class LocalHabitDataSourceImpl @Inject constructor(
     private val habitDao: HabitDao,

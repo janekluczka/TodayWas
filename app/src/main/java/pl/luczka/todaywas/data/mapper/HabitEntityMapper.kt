@@ -1,12 +1,12 @@
 package pl.luczka.todaywas.data.mapper
 
+import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.data.util.SyncMeta
 import pl.luczka.todaywas.domain.model.Habit
 import pl.luczka.todaywas.domain.model.HabitType
-import java.time.Instant
 
 fun HabitEntity.toDomain(): Habit = Habit(
     id = id,

@@ -1,8 +1,8 @@
 package pl.luczka.todaywas.data.util
 
+import java.time.Instant
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.time.Instant
 
 class SyncMergeTest {
 

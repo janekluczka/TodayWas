@@ -43,7 +43,8 @@ private class DsChipSelectedPreviewProvider : PreviewParameterProvider<Boolean> 
 @PreviewLightDark
 @Composable
 private fun DsChipPreview(
-    @PreviewParameter(DsChipSelectedPreviewProvider::class) selected: Boolean,
+    @PreviewParameter(DsChipSelectedPreviewProvider::class)
+    selected: Boolean,
 ) {
     DsTheme {
         DsChip(text = "Done", selected = selected)

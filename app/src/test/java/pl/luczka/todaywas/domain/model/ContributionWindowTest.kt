@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.domain.model
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
 class ContributionWindowTest {
 

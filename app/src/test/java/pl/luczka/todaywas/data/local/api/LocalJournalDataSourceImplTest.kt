@@ -30,21 +30,22 @@ class LocalJournalDataSourceImplTest {
             private set
 
         override fun observeAll(): Flow<List<JournalEntryEntity>> =
-            flowOf(entities.values.filter { it.deletedAt == null }.toList())
+            flowOf(
+                entities.values
+                    .filter { it.deletedAt == null }
+                    .toList(),
+            )
 
-        override suspend fun getAll(): List<JournalEntryEntity> = entities.values
-            .filter {
-                it.deletedAt ==
-                    null
-            }.toList()
+        override suspend fun getAll(): List<JournalEntryEntity> =
+            entities.values
+                .filter { it.deletedAt == null }
+                .toList()
 
-        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = entities.values
-            .toList()
+        override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> =
+            entities.values
+                .toList()
 
-        override suspend fun getById(id: String): JournalEntryEntity? = entities[id]?.takeIf {
-            it.deletedAt ==
-                null
-        }
+        override suspend fun getById(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insert(entity: JournalEntryEntity) {
             insertCallCount++
