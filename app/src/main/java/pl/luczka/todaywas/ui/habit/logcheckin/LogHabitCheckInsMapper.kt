@@ -28,14 +28,13 @@ private fun Habit.toAlreadyLoggedRow(checkIn: HabitCheckIn): HabitCheckInRowUiSt
         value = checkIn.value,
     )
 
-private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable =
-    HabitCheckInRowUiState.Editable(
-        habitId = id,
-        name = name,
-        range = habitRange(),
-        type = type.toUiState(),
-        value = pendingValue,
-    )
+private fun Habit.toEditableRow(pendingValue: Int?): HabitCheckInRowUiState.Editable = HabitCheckInRowUiState.Editable(
+    habitId = id,
+    name = name,
+    range = habitRange(),
+    type = type.toUiState(),
+    value = pendingValue,
+)
 
 private fun Habit.habitRange(): IntRange = if (type == HabitType.BINARY) {
     0..1

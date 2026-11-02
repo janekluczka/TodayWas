@@ -139,7 +139,7 @@ Kotlin, ktlint-enforced (engine pinned in `@gradle/libs.versions.toml`) with the
 code style (`@.editorconfig`). Settings on top of that style: trailing commas allowed, functions
 with 2+ parameters and every class header with parameters forced to one parameter per line,
 chains of 4+ calls one call per line, `@Composable` functions stay PascalCase, and backtick test
-names exempt from the 100-column limit. Lines are never wrapped at a binary operator — when
+names exempt from the 120-column limit. Lines are never wrapped at a binary operator — when
 `ktlintCheck` reports an overlong line it can't fix, restructure it (extract a variable, split a
 chain) instead of splitting a comparison like `a ==` / `b` across lines. `ktlintFormat` is the source of truth for layout — run
 it and accept its output; change `.editorconfig` settings deliberately rather than disabling rules

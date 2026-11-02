@@ -349,8 +349,7 @@ private val previewEntry = JournalEntryUiState(
     createdAt = Instant.now(),
 )
 
-private class EditJournalEntryScreenPreviewStateProvider :
-    PreviewParameterProvider<EditJournalEntryUiState> {
+private class EditJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<EditJournalEntryUiState> {
     override val values = sequenceOf(
         EditJournalEntryUiState(
             isLoading = false,
@@ -408,8 +407,7 @@ private fun EditJournalEntryScreenPreview(
     }
 }
 
-private class HelpMeRefineBottomSheetPreviewStateProvider :
-    PreviewParameterProvider<HelpMeRefineUiState> {
+private class HelpMeRefineBottomSheetPreviewStateProvider : PreviewParameterProvider<HelpMeRefineUiState> {
     override val values = sequenceOf(
         HelpMeRefineUiState(isVisible = true),
         HelpMeRefineUiState(

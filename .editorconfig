@@ -3,8 +3,8 @@ root = true
 [*.{kt,kts}]
 # Based on the Android Kotlin style guide; the settings below adjust it to the project's layout.
 ktlint_code_style = android_studio
-# Matches Android Studio/IntelliJ's default Kotlin line-length setting.
-max_line_length = 100
+# Wider than the android_studio default of 100; Android Studio picks this up as its right margin.
+max_line_length = 120
 # Backtick test names (`should [outcome] when [scenario]`, see lessons.md) can't be wrapped
 # shorter without truncating them, so they don't count towards the line length.
 ktlint_ignore_back_ticked_identifier = true

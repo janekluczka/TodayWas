@@ -60,8 +60,7 @@ fun GoogleSignInButton(
     }
 }
 
-private class GoogleSignInButtonPreviewStateProvider :
-    PreviewParameterProvider<Pair<Boolean, Boolean>> {
+private class GoogleSignInButtonPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
     override val values = sequenceOf(
         true to false,
         false to false,

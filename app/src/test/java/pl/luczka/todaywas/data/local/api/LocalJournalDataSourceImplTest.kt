@@ -45,8 +45,7 @@ class LocalJournalDataSourceImplTest {
             entities.values
                 .toList()
 
-        override suspend fun getById(id: String): JournalEntryEntity? =
-            entities[id]?.takeIf { it.deletedAt == null }
+        override suspend fun getById(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insert(entity: JournalEntryEntity) {
             insertCallCount++

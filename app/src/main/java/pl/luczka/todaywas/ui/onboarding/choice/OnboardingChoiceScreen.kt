@@ -97,8 +97,7 @@ private fun OnboardingChoiceScreenContent(
     }
 }
 
-private class OnboardingChoiceUiStatePreviewProvider :
-    PreviewParameterProvider<OnboardingChoiceUiState> {
+private class OnboardingChoiceUiStatePreviewProvider : PreviewParameterProvider<OnboardingChoiceUiState> {
     override val values = sequenceOf(
         OnboardingChoiceUiState(),
         OnboardingChoiceUiState(isSaving = true),

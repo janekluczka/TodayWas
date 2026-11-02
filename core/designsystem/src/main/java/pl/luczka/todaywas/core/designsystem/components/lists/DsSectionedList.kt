@@ -201,8 +201,7 @@ private enum class DsSectionedListPreviewState {
     LOADING,
 }
 
-private class DsSectionedListPreviewProvider :
-    PreviewParameterProvider<DsSectionedListPreviewState> {
+private class DsSectionedListPreviewProvider : PreviewParameterProvider<DsSectionedListPreviewState> {
     override val values = DsSectionedListPreviewState.entries.asSequence()
 }
 

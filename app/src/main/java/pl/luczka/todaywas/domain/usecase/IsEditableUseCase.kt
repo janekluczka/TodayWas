@@ -8,6 +8,5 @@ import pl.luczka.todaywas.domain.util.EditWindow
 class IsEditableUseCase @Inject constructor(
     private val clock: Clock,
 ) {
-    operator fun invoke(createdAt: Instant): Boolean =
-        EditWindow.isEditable(createdAt, clock.instant())
+    operator fun invoke(createdAt: Instant): Boolean = EditWindow.isEditable(createdAt, clock.instant())
 }

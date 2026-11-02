@@ -117,11 +117,10 @@ internal fun contributionLevelColors(): Map<DsContributionLevel, Color> =
 
 // All 7 cells in one week share the same hasGapBefore value (set uniformly by the mapper), so
 // callers only need to check the first cell to decide whether the whole week needs a margin.
-internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean =
-    when (val cell = first()) {
-        is DsContributionCellUiState.Level -> cell.hasGapBefore
-        is DsContributionCellUiState.Blank -> cell.hasGapBefore
-    }
+internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean = when (val cell = first()) {
+    is DsContributionCellUiState.Level -> cell.hasGapBefore
+    is DsContributionCellUiState.Blank -> cell.hasGapBefore
+}
 
 // Pure rendering only — spacing between cells is the week container's job (a verticalArrangement),
 // and spacing between weeks is the outer LazyRow's job (horizontalArrangement) — a cell never
@@ -282,8 +281,7 @@ private fun MonthYearLabel(
     }
 }
 
-private class DsContributionGridPreviewProvider :
-    PreviewParameterProvider<List<DsContributionCellUiState>> {
+private class DsContributionGridPreviewProvider : PreviewParameterProvider<List<DsContributionCellUiState>> {
     private val today = LocalDate.now()
 
     override val values = sequenceOf(

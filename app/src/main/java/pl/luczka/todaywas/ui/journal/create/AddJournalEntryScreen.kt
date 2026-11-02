@@ -470,8 +470,7 @@ private val previewStarterPrompts = JournalStarterPromptTone.entries.map { tone 
     JournalStarterPromptUiState(tone = tone, variant = 0)
 }
 
-private class AddJournalEntryScreenPreviewStateProvider :
-    PreviewParameterProvider<AddJournalEntryUiState> {
+private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<AddJournalEntryUiState> {
     override val values = sequenceOf(
         AddJournalEntryUiState(
             availableSlots = listOf(JournalDateSlotUiState.TODAY),
@@ -522,8 +521,7 @@ private fun AddJournalEntryScreenPreview(
     }
 }
 
-private class HelpMeStartBottomSheetPreviewStateProvider :
-    PreviewParameterProvider<HelpMeStartUiState> {
+private class HelpMeStartBottomSheetPreviewStateProvider : PreviewParameterProvider<HelpMeStartUiState> {
     override val values = sequenceOf(
         HelpMeStartUiState(isVisible = true, step = HelpMeStartStep.SIGNED_OUT),
         HelpMeStartUiState(isVisible = true),

@@ -30,8 +30,7 @@ private const val SUCCESS_SESSION_BODY = """
 }
 """
 
-private fun errorBody(errorCode: String) =
-    """{"error_code":"$errorCode","error_description":"failed"}"""
+private fun errorBody(errorCode: String) = """{"error_code":"$errorCode","error_description":"failed"}"""
 
 class AuthRepositoryImplTest {
 

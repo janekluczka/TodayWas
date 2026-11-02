@@ -98,8 +98,7 @@ private fun allSetMessage(
     )
 }
 
-private class OnboardingAllSetUiStatePreviewProvider :
-    PreviewParameterProvider<OnboardingAllSetUiState> {
+private class OnboardingAllSetUiStatePreviewProvider : PreviewParameterProvider<OnboardingAllSetUiState> {
     override val values = sequenceOf(
         OnboardingAllSetUiState(reason = AllSetReason.NO_ACCOUNT),
         OnboardingAllSetUiState(reason = AllSetReason.SIGNED_IN, email = "person@example.com"),

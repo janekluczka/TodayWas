@@ -21,8 +21,7 @@ fun Habit.toRemoteDto(userId: String): HabitRemoteDto = HabitRemoteDto(
 
 fun HabitEntity.toRemoteDto(userId: String): HabitRemoteDto = toDomain().toRemoteDto(userId)
 
-fun List<HabitEntity>.toRemoteDto(userId: String): List<HabitRemoteDto> =
-    map { it.toRemoteDto(userId) }
+fun List<HabitEntity>.toRemoteDto(userId: String): List<HabitRemoteDto> = map { it.toRemoteDto(userId) }
 
 fun HabitRemoteDto.toEntity(): HabitEntity = HabitEntity(
     id = id,

@@ -38,8 +38,7 @@ fun DsButtonWithLoading(
     }
 }
 
-private class DsButtonWithLoadingPreviewStateProvider :
-    PreviewParameterProvider<Pair<Boolean, Boolean>> {
+private class DsButtonWithLoadingPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
     override val values = sequenceOf(
         true to false,
         false to false,

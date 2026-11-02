@@ -70,8 +70,7 @@ private data class DataSyncReviewPreviewState(
     val isSyncing: Boolean,
 )
 
-private class DataSyncReviewContentPreviewProvider :
-    PreviewParameterProvider<DataSyncReviewPreviewState> {
+private class DataSyncReviewContentPreviewProvider : PreviewParameterProvider<DataSyncReviewPreviewState> {
     override val values = sequenceOf(
         DataSyncReviewPreviewState(
             summary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),

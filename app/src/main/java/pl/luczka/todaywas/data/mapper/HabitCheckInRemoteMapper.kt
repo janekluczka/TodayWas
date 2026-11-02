@@ -17,11 +17,9 @@ fun HabitCheckIn.toRemoteDto(userId: String): HabitCheckInRemoteDto = HabitCheck
     deletedAt = deletedAt?.toString(),
 )
 
-fun HabitCheckInEntity.toRemoteDto(userId: String): HabitCheckInRemoteDto =
-    toDomain().toRemoteDto(userId)
+fun HabitCheckInEntity.toRemoteDto(userId: String): HabitCheckInRemoteDto = toDomain().toRemoteDto(userId)
 
-fun List<HabitCheckInEntity>.toRemoteDto(userId: String): List<HabitCheckInRemoteDto> =
-    map { it.toRemoteDto(userId) }
+fun List<HabitCheckInEntity>.toRemoteDto(userId: String): List<HabitCheckInRemoteDto> = map { it.toRemoteDto(userId) }
 
 fun HabitCheckInRemoteDto.toEntity(): HabitCheckInEntity = HabitCheckInEntity(
     id = id,

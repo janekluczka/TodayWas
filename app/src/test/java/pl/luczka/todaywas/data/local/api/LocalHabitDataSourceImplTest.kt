@@ -52,8 +52,7 @@ class LocalHabitDataSourceImplTest {
 
         override suspend fun getAllIncludingDeleted(): List<HabitEntity> = entities.values.toList()
 
-        override suspend fun getById(id: String): HabitEntity? =
-            entities[id]?.takeIf { it.deletedAt == null }
+        override suspend fun getById(id: String): HabitEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insert(entity: HabitEntity) {
             insertCallCount++

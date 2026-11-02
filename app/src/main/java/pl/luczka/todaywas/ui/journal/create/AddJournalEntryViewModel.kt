@@ -245,9 +245,7 @@ class AddJournalEntryViewModel @Inject constructor(
         error = null,
     )
 
-    private fun HelpMeStartUiState.applyResult(
-        result: Result<AiPromptResult>,
-    ): HelpMeStartUiState = result.fold(
+    private fun HelpMeStartUiState.applyResult(result: Result<AiPromptResult>): HelpMeStartUiState = result.fold(
         onSuccess = { prompt ->
             copy(
                 step = HelpMeStartStep.PREVIEW,
@@ -336,20 +334,17 @@ class AddJournalEntryViewModel @Inject constructor(
     }
 
     // Preserves remainingToday, mirroring HelpMeStartUiState's resetForNewSession.
-    private fun HelpMeRefineUiState.resetForNewSession(isVisible: Boolean): HelpMeRefineUiState =
-        copy(
-            isVisible = isVisible,
-            step = HelpMeRefineStep.INPUT,
-            selectedTone = null,
-            thoughts = "",
-            refinedText = null,
-            isGenerating = false,
-            error = null,
-        )
+    private fun HelpMeRefineUiState.resetForNewSession(isVisible: Boolean): HelpMeRefineUiState = copy(
+        isVisible = isVisible,
+        step = HelpMeRefineStep.INPUT,
+        selectedTone = null,
+        thoughts = "",
+        refinedText = null,
+        isGenerating = false,
+        error = null,
+    )
 
-    private fun HelpMeRefineUiState.applyResult(
-        result: Result<AiPromptResult>,
-    ): HelpMeRefineUiState = result.fold(
+    private fun HelpMeRefineUiState.applyResult(result: Result<AiPromptResult>): HelpMeRefineUiState = result.fold(
         onSuccess = { prompt ->
             copy(
                 step = HelpMeRefineStep.PREVIEW,

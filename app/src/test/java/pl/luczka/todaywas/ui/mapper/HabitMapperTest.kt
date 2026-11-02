@@ -46,8 +46,7 @@ class HabitMapperTest {
         updatedAt = Instant.EPOCH,
     )
 
-    private fun HabitCheckInBoard.sorted(sort: HabitSortUiState) =
-        toSortedHabitUiStates(today, sort)
+    private fun HabitCheckInBoard.sorted(sort: HabitSortUiState) = toSortedHabitUiStates(today, sort)
 
     @Test
     fun `should return NotLogged when no check-in exists for today`() {

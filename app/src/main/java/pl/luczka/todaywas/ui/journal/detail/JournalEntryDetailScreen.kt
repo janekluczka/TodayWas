@@ -166,8 +166,7 @@ private fun DeleteEntryDialog(onIntent: (JournalEntryDetailIntent) -> Unit) {
     )
 }
 
-private class JournalEntryDetailScreenPreviewStateProvider :
-    PreviewParameterProvider<JournalEntryDetailUiState> {
+private class JournalEntryDetailScreenPreviewStateProvider : PreviewParameterProvider<JournalEntryDetailUiState> {
     override val values = sequenceOf(
         JournalEntryDetailUiState(
             isLoading = false,

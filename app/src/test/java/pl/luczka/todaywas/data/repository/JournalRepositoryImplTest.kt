@@ -57,8 +57,7 @@ class JournalRepositoryImplTest {
                     .toList(),
             )
 
-        override suspend fun getEntry(id: String): JournalEntryEntity? =
-            entities[id]?.takeIf { it.deletedAt == null }
+        override suspend fun getEntry(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> {
             if (shouldFailInsert) return Result.failure(RuntimeException("simulated write failure"))
