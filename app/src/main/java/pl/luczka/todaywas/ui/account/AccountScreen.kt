@@ -281,7 +281,8 @@ private class AccountUiStatePreviewProvider : PreviewParameterProvider<AccountUi
 @PreviewLightDark
 @Composable
 private fun AccountScreenPreview(
-    @PreviewParameter(AccountUiStatePreviewProvider::class) state: AccountUiState,
+    @PreviewParameter(AccountUiStatePreviewProvider::class)
+    state: AccountUiState,
 ) {
     DsTheme {
         AccountScreenContent(

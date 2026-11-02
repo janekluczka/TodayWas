@@ -38,7 +38,8 @@ fun DsButton(
 @PreviewLightDark
 @Composable
 private fun DsButtonPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    enabled: Boolean,
 ) {
     DsTheme {
         DsButton(

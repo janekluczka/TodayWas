@@ -109,7 +109,8 @@ private class OnboardingChoiceUiStatePreviewProvider :
 @PreviewLightDark
 @Composable
 private fun OnboardingChoiceScreenPreview(
-    @PreviewParameter(OnboardingChoiceUiStatePreviewProvider::class) state: OnboardingChoiceUiState,
+    @PreviewParameter(OnboardingChoiceUiStatePreviewProvider::class)
+    state: OnboardingChoiceUiState,
 ) {
     DsTheme {
         OnboardingChoiceScreenContent(

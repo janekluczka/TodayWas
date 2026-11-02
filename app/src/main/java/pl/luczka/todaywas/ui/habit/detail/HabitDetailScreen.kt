@@ -440,7 +440,8 @@ private class HabitDetailScreenPreviewStateProvider : PreviewParameterProvider<H
 @PreviewLightDark
 @Composable
 private fun HabitDetailScreenPreview(
-    @PreviewParameter(HabitDetailScreenPreviewStateProvider::class) state: HabitDetailUiState,
+    @PreviewParameter(HabitDetailScreenPreviewStateProvider::class)
+    state: HabitDetailUiState,
 ) {
     DsTheme {
         HabitDetailScreenContent(

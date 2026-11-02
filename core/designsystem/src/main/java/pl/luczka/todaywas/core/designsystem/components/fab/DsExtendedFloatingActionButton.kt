@@ -79,7 +79,8 @@ fun DsExtendedFloatingActionButton(
 @PreviewLightDark
 @Composable
 private fun DsExtendedFloatingActionButtonPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    enabled: Boolean,
 ) {
     DsTheme {
         DsExtendedFloatingActionButton(

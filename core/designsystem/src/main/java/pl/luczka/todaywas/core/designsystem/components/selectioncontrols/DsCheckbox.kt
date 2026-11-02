@@ -26,7 +26,8 @@ fun DsCheckbox(
 @PreviewLightDark
 @Composable
 private fun DsCheckboxPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) checked: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    checked: Boolean,
 ) {
     DsTheme {
         DsCheckbox(

@@ -103,7 +103,8 @@ private class DsCardVariantPreviewProvider : PreviewParameterProvider<DsCardVari
 @PreviewLightDark
 @Composable
 private fun DsSelectableCardPreview(
-    @PreviewParameter(DsCardVariantPreviewProvider::class) variant: DsCardVariant,
+    @PreviewParameter(DsCardVariantPreviewProvider::class)
+    variant: DsCardVariant,
 ) {
     DsTheme {
         DsSelectableCard(

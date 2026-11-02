@@ -36,7 +36,8 @@ fun DsFilledTonalIconButton(
 @PreviewLightDark
 @Composable
 private fun DsFilledTonalIconButtonPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    enabled: Boolean,
 ) {
     DsTheme {
         DsFilledTonalIconButton(

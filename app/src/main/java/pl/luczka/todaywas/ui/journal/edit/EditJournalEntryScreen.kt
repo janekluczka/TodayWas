@@ -397,8 +397,8 @@ private class EditJournalEntryScreenPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun EditJournalEntryScreenPreview(
-    @PreviewParameter(EditJournalEntryScreenPreviewStateProvider::class) state:
-    EditJournalEntryUiState,
+    @PreviewParameter(EditJournalEntryScreenPreviewStateProvider::class)
+    state: EditJournalEntryUiState,
 ) {
     DsTheme {
         EditJournalEntryScreenContent(
@@ -444,8 +444,8 @@ private class HelpMeRefineBottomSheetPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun HelpMeRefineBottomSheetPreview(
-    @PreviewParameter(HelpMeRefineBottomSheetPreviewStateProvider::class) state:
-    HelpMeRefineUiState,
+    @PreviewParameter(HelpMeRefineBottomSheetPreviewStateProvider::class)
+    state: HelpMeRefineUiState,
 ) {
     DsTheme {
         HelpMeRefineBottomSheet(

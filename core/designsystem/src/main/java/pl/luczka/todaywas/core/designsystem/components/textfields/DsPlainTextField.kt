@@ -64,7 +64,8 @@ private class DsPlainTextFieldPreviewProvider : PreviewParameterProvider<String>
 @PreviewLightDark
 @Composable
 private fun DsPlainTextFieldPreview(
-    @PreviewParameter(DsPlainTextFieldPreviewProvider::class) value: String,
+    @PreviewParameter(DsPlainTextFieldPreviewProvider::class)
+    value: String,
 ) {
     DsTheme {
         DsPlainTextField(

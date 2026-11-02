@@ -337,8 +337,8 @@ private class DsContributionGridPreviewProvider :
 @PreviewLightDark
 @Composable
 private fun DsContributionGridPreview(
-    @PreviewParameter(DsContributionGridPreviewProvider::class) cells:
-    List<DsContributionCellUiState>,
+    @PreviewParameter(DsContributionGridPreviewProvider::class)
+    cells: List<DsContributionCellUiState>,
 ) {
     DsTheme {
         DsContributionGrid(cells = cells)

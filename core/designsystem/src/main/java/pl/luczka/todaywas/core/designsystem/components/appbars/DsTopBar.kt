@@ -34,7 +34,8 @@ fun DsTopBar(
 @PreviewLightDark
 @Composable
 private fun DsTopBarPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) withAction: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    withAction: Boolean,
 ) {
     DsTheme {
         DsTopBar(

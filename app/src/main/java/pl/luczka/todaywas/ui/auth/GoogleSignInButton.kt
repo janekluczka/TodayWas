@@ -72,7 +72,8 @@ private class GoogleSignInButtonPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun GoogleSignInButtonPreview(
-    @PreviewParameter(GoogleSignInButtonPreviewStateProvider::class) state: Pair<Boolean, Boolean>,
+    @PreviewParameter(GoogleSignInButtonPreviewStateProvider::class)
+    state: Pair<Boolean, Boolean>,
 ) {
     val (enabled, loading) = state
     DsTheme {

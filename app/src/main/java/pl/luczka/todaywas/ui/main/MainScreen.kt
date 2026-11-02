@@ -634,7 +634,8 @@ private fun previewMainUiState(
 @PreviewLightDark
 @Composable
 private fun MainScreenPreview(
-    @PreviewParameter(MainScreenPreviewStateProvider::class) state: MainUiState,
+    @PreviewParameter(MainScreenPreviewStateProvider::class)
+    state: MainUiState,
 ) {
     DsTheme {
         MainScreenContent(

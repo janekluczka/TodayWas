@@ -209,7 +209,8 @@ private class DsSectionedListPreviewProvider :
 @PreviewLightDark
 @Composable
 private fun DsSectionedListPreview(
-    @PreviewParameter(DsSectionedListPreviewProvider::class) state: DsSectionedListPreviewState,
+    @PreviewParameter(DsSectionedListPreviewProvider::class)
+    state: DsSectionedListPreviewState,
 ) {
     DsTheme {
         when (state) {

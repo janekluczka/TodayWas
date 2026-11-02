@@ -66,7 +66,8 @@ fun DsBottomSheet(
 @PreviewLightDark
 @Composable
 private fun DsBottomSheetPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) isSaving: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    isSaving: Boolean,
 ) {
     DsTheme {
         DsBottomSheet(

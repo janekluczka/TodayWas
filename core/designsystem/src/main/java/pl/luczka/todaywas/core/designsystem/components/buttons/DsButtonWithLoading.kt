@@ -50,7 +50,8 @@ private class DsButtonWithLoadingPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun DsButtonWithLoadingPreview(
-    @PreviewParameter(DsButtonWithLoadingPreviewStateProvider::class) state: Pair<Boolean, Boolean>,
+    @PreviewParameter(DsButtonWithLoadingPreviewStateProvider::class)
+    state: Pair<Boolean, Boolean>,
 ) {
     val (enabled, loading) = state
     DsTheme {

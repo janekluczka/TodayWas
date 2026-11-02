@@ -181,7 +181,8 @@ private class HabitListUiStatePreviewProvider : PreviewParameterProvider<HabitLi
 @PreviewLightDark
 @Composable
 private fun HabitListScreenPreview(
-    @PreviewParameter(HabitListUiStatePreviewProvider::class) state: HabitListUiState,
+    @PreviewParameter(HabitListUiStatePreviewProvider::class)
+    state: HabitListUiState,
 ) {
     DsTheme {
         HabitListScreenContent(

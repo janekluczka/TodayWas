@@ -195,7 +195,8 @@ private class JournalListUiStatePreviewProvider : PreviewParameterProvider<Journ
 @PreviewLightDark
 @Composable
 private fun JournalListScreenPreview(
-    @PreviewParameter(JournalListUiStatePreviewProvider::class) state: JournalListUiState,
+    @PreviewParameter(JournalListUiStatePreviewProvider::class)
+    state: JournalListUiState,
 ) {
     DsTheme {
         JournalListScreenContent(

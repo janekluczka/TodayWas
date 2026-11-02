@@ -110,7 +110,8 @@ private class OnboardingAllSetUiStatePreviewProvider :
 @PreviewLightDark
 @Composable
 private fun OnboardingAllSetScreenPreview(
-    @PreviewParameter(OnboardingAllSetUiStatePreviewProvider::class) state: OnboardingAllSetUiState,
+    @PreviewParameter(OnboardingAllSetUiStatePreviewProvider::class)
+    state: OnboardingAllSetUiState,
 ) {
     DsTheme {
         OnboardingAllSetScreenContent(

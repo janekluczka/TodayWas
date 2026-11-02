@@ -41,7 +41,8 @@ fun DsFilledTonalButton(
 @PreviewLightDark
 @Composable
 private fun DsFilledTonalButtonPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean,
+    @PreviewParameter(BooleanPreviewParameterProvider::class)
+    enabled: Boolean,
 ) {
     DsTheme {
         DsFilledTonalButton(

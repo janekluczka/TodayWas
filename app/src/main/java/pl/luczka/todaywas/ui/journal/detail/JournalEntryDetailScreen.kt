@@ -197,8 +197,8 @@ private class JournalEntryDetailScreenPreviewStateProvider :
 @PreviewLightDark
 @Composable
 private fun JournalEntryDetailScreenPreview(
-    @PreviewParameter(JournalEntryDetailScreenPreviewStateProvider::class) state:
-    JournalEntryDetailUiState,
+    @PreviewParameter(JournalEntryDetailScreenPreviewStateProvider::class)
+    state: JournalEntryDetailUiState,
 ) {
     DsTheme {
         JournalEntryDetailScreenContent(
