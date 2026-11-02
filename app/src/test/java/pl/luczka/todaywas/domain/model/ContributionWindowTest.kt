@@ -45,10 +45,7 @@ class ContributionWindowTest {
         val windows = availableWindows(earliestDataDate = earliestDataDate, now = now)
 
         // Assert
-        assertEquals(
-            listOf(ContributionWindow.RollingTwelveMonths, ContributionWindow.CalendarYear(2026)),
-            windows,
-        )
+        assertEquals(listOf(ContributionWindow.RollingTwelveMonths, ContributionWindow.CalendarYear(2026)), windows)
     }
 
     @Test
@@ -60,10 +57,7 @@ class ContributionWindowTest {
         val windows = availableWindows(earliestDataDate = earliestDataDate, now = now)
 
         // Assert
-        assertEquals(
-            listOf(ContributionWindow.RollingTwelveMonths, ContributionWindow.CalendarYear(2026)),
-            windows,
-        )
+        assertEquals(listOf(ContributionWindow.RollingTwelveMonths, ContributionWindow.CalendarYear(2026)), windows)
     }
 
     @Test

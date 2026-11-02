@@ -17,11 +17,10 @@ data class SyncMergeDecision(
 // How long a tombstoned row survives before GC hard-deletes it, both locally and remotely.
 val TOMBSTONE_GC_WINDOW: Duration = Duration.ofDays(30)
 
-// Decides, per row, whether the local or remote copy wins - pushIds are local rows to upsert
-// remotely, applyIds are remote rows to upsert locally. Tombstone supremacy is enforced here
-// independently of the server-side trigger: a local device's own stale, unsynced edit must not
-// resurrect a row that's already deleted remotely, even if its local updatedAt is numerically
-// newer than the tombstone's server timestamp (see plan.md's Critical Implementation Details).
+// Decides, per row, whether the local or remote copy wins - pushIds are local rows to upsert remotely, applyIds are
+// remote rows to upsert locally. Tombstone supremacy is enforced here independently of the server-side trigger: a local
+// device's own stale, unsynced edit must not resurrect a row that's already deleted remotely, even if its local
+// updatedAt is numerically newer than the tombstone's server timestamp (see plan.md's Critical Implementation Details).
 fun mergeForSync(
     local: List<SyncMeta>,
     remote: List<SyncMeta>,

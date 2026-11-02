@@ -21,11 +21,10 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
-// A shared clickable/selectable card for small repeated-choice UI (segmented rows, date strips,
-// and similar pickers) so they all render through one place and stay visually consistent.
-// Disabled colors always follow Material3's standard disabled-content convention (onSurface at
-// 12%/38% alpha) regardless of `variant`, matching how M3's own chips/buttons render disabled
-// state — a faint container tint only when the disabled item is also the selected one.
+// A shared clickable/selectable card for small repeated-choice UI (segmented rows, date strips, and similar pickers) so
+// they all render through one place and stay visually consistent. Disabled colors always follow Material3's standard
+// disabled-content convention (onSurface at 12%/38% alpha) regardless of `variant`, matching how M3's own chips/buttons
+// render disabled state — a faint container tint only when the disabled item is also the selected one.
 @Composable
 fun DsSelectableCard(
     onClick: () -> Unit,
@@ -40,14 +39,11 @@ fun DsSelectableCard(
     when {
         !enabled -> {
             val isSelectedVariant = variant != DsCardVariant.NEUTRAL
-            containerColor =
-                if (isSelectedVariant) {
-                    MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.12f,
-                    )
-                } else {
-                    Color.Transparent
-                }
+            containerColor = if (isSelectedVariant) {
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            } else {
+                Color.Transparent
+            }
             contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         }
         variant == DsCardVariant.PRIMARY -> {
@@ -81,9 +77,7 @@ fun DsSelectableCard(
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = DsSpacing.space200),
+            modifier = Modifier.fillMaxWidth().padding(vertical = DsSpacing.space200),
             content = content,
         )
     }

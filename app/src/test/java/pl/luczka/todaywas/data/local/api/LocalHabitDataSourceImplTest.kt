@@ -39,16 +39,9 @@ class LocalHabitDataSourceImplTest {
             private set
 
         override fun observeAll(): Flow<List<HabitEntity>> =
-            flowOf(
-                entities.values
-                    .filter { it.deletedAt == null }
-                    .toList(),
-            )
+            flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
-        override suspend fun getAll(): List<HabitEntity> =
-            entities.values
-                .filter { it.deletedAt == null }
-                .toList()
+        override suspend fun getAll(): List<HabitEntity> = entities.values.filter { it.deletedAt == null }.toList()
 
         override suspend fun getAllIncludingDeleted(): List<HabitEntity> = entities.values.toList()
 
@@ -76,10 +69,7 @@ class LocalHabitDataSourceImplTest {
         }
 
         override suspend fun purgeDeletedBefore(cutoff: Long) {
-            entities.values
-                .filter {
-                    it.deletedAt != null && it.deletedAt < cutoff
-                }.forEach { entities.remove(it.id) }
+            entities.values.filter { it.deletedAt != null && it.deletedAt < cutoff }.forEach { entities.remove(it.id) }
         }
 
         override suspend fun clearAll() {
@@ -104,20 +94,12 @@ class LocalHabitDataSourceImplTest {
             private set
 
         override fun observeAll(): Flow<List<HabitCheckInEntity>> =
-            flowOf(
-                entities.values
-                    .filter { it.deletedAt == null }
-                    .toList(),
-            )
+            flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
         override suspend fun getAll(): List<HabitCheckInEntity> =
-            entities.values
-                .filter { it.deletedAt == null }
-                .toList()
+            entities.values.filter { it.deletedAt == null }.toList()
 
-        override suspend fun getAllIncludingDeleted(): List<HabitCheckInEntity> =
-            entities.values
-                .toList()
+        override suspend fun getAllIncludingDeleted(): List<HabitCheckInEntity> = entities.values.toList()
 
         override suspend fun getByHabitId(habitId: String): List<HabitCheckInEntity> =
             entities.values.filter { it.habitId == habitId && it.deletedAt == null }
@@ -128,9 +110,7 @@ class LocalHabitDataSourceImplTest {
         ): HabitCheckInEntity? = entities[habitId to date]?.takeIf { it.deletedAt == null }
 
         override suspend fun insertOne(entity: HabitCheckInEntity): Unit =
-            throw UnsupportedOperationException(
-                "not used by the data source",
-            )
+            throw UnsupportedOperationException("not used by the data source")
 
         override suspend fun insertAll(entities: List<HabitCheckInEntity>) {
             insertAllCallCount++
@@ -141,9 +121,7 @@ class LocalHabitDataSourceImplTest {
         }
 
         override suspend fun upsertOne(entity: HabitCheckInEntity): Unit =
-            throw UnsupportedOperationException(
-                "not used by the data source",
-            )
+            throw UnsupportedOperationException("not used by the data source")
 
         override suspend fun upsertAll(entities: List<HabitCheckInEntity>) {
             upsertAllCallCount++
@@ -164,8 +142,7 @@ class LocalHabitDataSourceImplTest {
         ) {
             softDeleteByIdCallCount++
             entities.entries.find { it.value.id == id }?.let {
-                entities[it.key] =
-                    it.value.copy(deletedAt = deletedAt)
+                entities[it.key] = it.value.copy(deletedAt = deletedAt)
             }
         }
 
@@ -246,15 +223,14 @@ class LocalHabitDataSourceImplTest {
             // Arrange
             val checkInDao = FakeHabitCheckInDao(failuresBeforeSuccess = 1)
             val dataSource = dataSource(FakeHabitDao(failuresBeforeSuccess = 0), checkInDao)
-            val checkIn =
-                HabitCheckInEntity(
-                    id = "check-in-1",
-                    habitId = "1",
-                    date = "2026-07-27",
-                    value = 1,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val checkIn = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
 
             // Act
             val result = dataSource.insertCheckIns(listOf(checkIn))
@@ -270,15 +246,14 @@ class LocalHabitDataSourceImplTest {
             // Arrange
             val checkInDao = FakeHabitCheckInDao(failuresBeforeSuccess = Int.MAX_VALUE)
             val dataSource = dataSource(FakeHabitDao(failuresBeforeSuccess = 0), checkInDao)
-            val checkIn =
-                HabitCheckInEntity(
-                    id = "check-in-1",
-                    habitId = "1",
-                    date = "2026-07-27",
-                    value = 1,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val checkIn = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
 
             // Act
             val result = dataSource.insertCheckIns(listOf(checkIn))
@@ -292,15 +267,14 @@ class LocalHabitDataSourceImplTest {
     fun `should succeed after one retry when updateCheckIn's first write fails`() =
         runTest {
             // Arrange
-            val existing =
-                HabitCheckInEntity(
-                    id = "check-in-1",
-                    habitId = "1",
-                    date = "2026-07-27",
-                    value = 1,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val existing = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = 1,
                 entities = mutableMapOf(("1" to "2026-07-27") to existing),
@@ -325,15 +299,14 @@ class LocalHabitDataSourceImplTest {
     fun `should return failure when updateCheckIn's retry also fails`() =
         runTest {
             // Arrange
-            val existing =
-                HabitCheckInEntity(
-                    id = "check-in-1",
-                    habitId = "1",
-                    date = "2026-07-27",
-                    value = 1,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val existing = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
             val checkInDao = FakeHabitCheckInDao(
                 failuresBeforeSuccess = Int.MAX_VALUE,
                 entities = mutableMapOf(("1" to "2026-07-27") to existing),
@@ -387,26 +360,16 @@ class LocalHabitDataSourceImplTest {
                 createdAt = 1_000L,
                 updatedAt = 1_000L,
             )
-            val habitDao = FakeHabitDao(
-                failuresBeforeSuccess = 0,
-                entities = mutableMapOf(
-                    "1" to habit,
-                ),
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
+            val checkIn = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
             )
-            val checkIn =
-                HabitCheckInEntity(
-                    id = "check-in-1",
-                    habitId = "1",
-                    date = "2026-07-27",
-                    value = 1,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
-            val checkInDao = FakeHabitCheckInDao(
-                entities = mutableMapOf(
-                    ("1" to "2026-07-27") to checkIn,
-                ),
-            )
+            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to checkIn))
             val dataSource = dataSource(habitDao, checkInDao)
 
             // Act
@@ -425,38 +388,29 @@ class LocalHabitDataSourceImplTest {
     fun `should remove only the matching check-in when deleteCheckIn is called`() =
         runTest {
             // Arrange
-            val target =
-                HabitCheckInEntity(
-                    id = "check-in-1",
-                    habitId = "1",
-                    date = "2026-07-27",
-                    value = 1,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
-            val other =
-                HabitCheckInEntity(
-                    id = "check-in-2",
-                    habitId = "1",
-                    date = "2026-07-26",
-                    value = 0,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val target = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
+            val other = HabitCheckInEntity(
+                id = "check-in-2",
+                habitId = "1",
+                date = "2026-07-26",
+                value = 0,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
             val checkInDao = FakeHabitCheckInDao(
-                entities = mutableMapOf(
-                    ("1" to "2026-07-27") to target,
-                    ("1" to "2026-07-26") to other,
-                ),
+                entities = mutableMapOf(("1" to "2026-07-27") to target, ("1" to "2026-07-26") to other),
             )
             val dataSource = dataSource(FakeHabitDao(failuresBeforeSuccess = 0), checkInDao)
 
             // Act
-            val result = dataSource.deleteCheckIn(
-                habitId = "1",
-                date = LocalDate.of(2026, 7, 27),
-                deletedAt = 2_000L,
-            )
+            val result = dataSource.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), deletedAt = 2_000L)
 
             // Assert
             assertTrue(result.isSuccess)
@@ -472,11 +426,7 @@ class LocalHabitDataSourceImplTest {
             val dataSource = dataSource(FakeHabitDao(failuresBeforeSuccess = 0), checkInDao)
 
             // Act
-            val result = dataSource.deleteCheckIn(
-                habitId = "1",
-                date = LocalDate.of(2026, 7, 27),
-                deletedAt = 2_000L,
-            )
+            val result = dataSource.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), deletedAt = 2_000L)
 
             // Assert
             assertTrue(result.isFailure)
@@ -500,21 +450,17 @@ class LocalHabitDataSourceImplTest {
                 createdAt = 1_000L,
                 updatedAt = 1_000L,
             )
-            val checkIn =
-                HabitCheckInEntity(
-                    id = "check-in-1",
-                    habitId = "1",
-                    date = "2026-07-27",
-                    value = 1,
-                    createdAt = 1_000L,
-                    updatedAt = 1_000L,
-                )
+            val checkIn = HabitCheckInEntity(
+                id = "check-in-1",
+                habitId = "1",
+                date = "2026-07-27",
+                value = 1,
+                createdAt = 1_000L,
+                updatedAt = 1_000L,
+            )
 
             // Act
-            dataSource.applyRemoteSnapshot(
-                habitsToApply = listOf(habit),
-                checkInsToApply = listOf(checkIn),
-            )
+            dataSource.applyRemoteSnapshot(habitsToApply = listOf(habit), checkInsToApply = listOf(checkIn))
 
             // Assert
             assertEquals(1, habitDao.upsertCallCount)
@@ -547,17 +493,8 @@ class LocalHabitDataSourceImplTest {
                 updatedAt = 1_000L,
                 deletedAt = 500L,
             )
-            val habitDao = FakeHabitDao(
-                failuresBeforeSuccess = 0,
-                entities = mutableMapOf(
-                    "1" to agedOutHabit,
-                ),
-            )
-            val checkInDao = FakeHabitCheckInDao(
-                entities = mutableMapOf(
-                    ("1" to "2026-07-27") to agedOutCheckIn,
-                ),
-            )
+            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to agedOutHabit))
+            val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to agedOutCheckIn))
             val dataSource = dataSource(habitDao, checkInDao)
 
             // Act

@@ -47,11 +47,7 @@ fun CreateHabitScreen(
         viewModel.onIntent(CreateHabitIntent.NavigationHandled)
     }
 
-    CreateHabitScreenContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-        onCancel = onCancel,
-    )
+    CreateHabitScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onCancel = onCancel)
 }
 
 private fun CreateHabitUiState.isSaveEnabled(): Boolean = !isSaving && name.isNotBlank()
@@ -95,19 +91,12 @@ private fun CreateHabitScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = DsSpacing.space600),
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = DsSpacing.space600)) {
             DsTextField(
                 value = uiState.name,
                 onValueChange = { onIntent(CreateHabitIntent.NameChanged(it)) },
                 label = stringResource(R.string.habit_create_name_label),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = DsSpacing.space400),
+                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space400),
             )
             DsText(
                 text = stringResource(R.string.habit_create_scale_steps_label),
@@ -117,9 +106,7 @@ private fun CreateHabitScreenContent(
                 value = uiState.scaleSteps,
                 range = HabitScaleStepsRange,
                 onValueChange = { onIntent(CreateHabitIntent.ScaleStepsChanged(it)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = DsSpacing.space100),
+                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space100),
                 decreaseContentDescription = stringResource(R.string.content_description_decrease),
                 increaseContentDescription = stringResource(R.string.content_description_increase),
             )
@@ -127,18 +114,13 @@ private fun CreateHabitScreenContent(
                 text = stringResource(R.string.habit_create_preview_title),
                 modifier = Modifier.padding(top = DsSpacing.space400),
             )
-            CheckInInputPreview(
-                uiState = uiState,
-                modifier = Modifier.padding(top = DsSpacing.space200),
-            )
+            CheckInInputPreview(uiState = uiState, modifier = Modifier.padding(top = DsSpacing.space200))
             DsTextField(
                 value = uiState.description,
                 onValueChange = { onIntent(CreateHabitIntent.DescriptionChanged(it)) },
                 label = stringResource(R.string.habit_create_description_label),
                 minLines = 2,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = DsSpacing.space400),
+                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space400),
             )
         }
     }

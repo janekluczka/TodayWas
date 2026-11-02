@@ -18,20 +18,12 @@ class HabitDetailMapperTest {
         date: LocalDate,
         value: Int,
         createdAt: Instant,
-    ) = HabitCheckIn(
-        id = "1",
-        habitId = "1",
-        date = date,
-        value = value,
-        createdAt = createdAt,
-        updatedAt = createdAt,
-    )
+    ) = HabitCheckIn(id = "1", habitId = "1", date = date, value = value, createdAt = createdAt, updatedAt = createdAt)
 
     @Test
     fun `should return eligibleForEdit true and alreadyLogged false when today is not yet logged`() {
         // Act
-        val day = emptyList<HabitCheckIn>()
-            .toSelectedDayUiState(today, freshLoggableDates, isEditable = { true })
+        val day = emptyList<HabitCheckIn>().toSelectedDayUiState(today, freshLoggableDates, isEditable = { true })
 
         // Assert
         assertEquals(today, day.date)
@@ -73,8 +65,7 @@ class HabitDetailMapperTest {
         val oldDate = today.minusDays(10)
 
         // Act
-        val day = emptyList<HabitCheckIn>()
-            .toSelectedDayUiState(oldDate, freshLoggableDates, isEditable = { true })
+        val day = emptyList<HabitCheckIn>().toSelectedDayUiState(oldDate, freshLoggableDates, isEditable = { true })
 
         // Assert
         assertFalse(day.alreadyLogged)
@@ -84,8 +75,7 @@ class HabitDetailMapperTest {
     @Test
     fun `should return eligibleForEdit true and alreadyLogged false when yesterday is not yet logged`() {
         // Act
-        val day = emptyList<HabitCheckIn>()
-            .toSelectedDayUiState(yesterday, freshLoggableDates, isEditable = { true })
+        val day = emptyList<HabitCheckIn>().toSelectedDayUiState(yesterday, freshLoggableDates, isEditable = { true })
 
         // Assert
         assertFalse(day.alreadyLogged)

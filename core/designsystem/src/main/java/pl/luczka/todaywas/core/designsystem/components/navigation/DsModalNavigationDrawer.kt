@@ -37,12 +37,7 @@ private fun DsModalNavigationDrawerPreview() {
     DsTheme {
         DsModalNavigationDrawer(
             drawerState = rememberDrawerState(DrawerValue.Open),
-            drawerContent = {
-                DsText(
-                    text = "Drawer content",
-                    modifier = Modifier.padding(DsSpacing.space400),
-                )
-            },
+            drawerContent = { DsText(text = "Drawer content", modifier = Modifier.padding(DsSpacing.space400)) },
         ) {
             DsText(text = "Screen content")
         }

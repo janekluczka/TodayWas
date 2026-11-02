@@ -6,10 +6,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-// Fixed brand palette on every device — no Material You dynamic color. Dynamic color would pull
-// the scheme from the user's wallpaper, making DsColor's calm/cool palette meaningless (and making
-// the contribution-grid intensity comparisons in DsContributionGrid look inconsistent next to
-// whatever ColorScheme.primary happened to be that day).
+// Fixed brand palette on every device — no Material You dynamic color. Dynamic color would pull the scheme from the
+// user's wallpaper, making DsColor's calm/cool palette meaningless (and making the contribution-grid intensity
+// comparisons in DsContributionGrid look inconsistent next to whatever ColorScheme.primary happened to be that day).
 //
 // Role → tone mapping follows the standard M3 pattern: light uses tone 40/90/10 for
 // color/container/on-container, dark uses 80/30/90 — see DsColor.kt for the raw swatches.
@@ -41,10 +40,9 @@ private val DarkColorScheme = darkColorScheme(
     inverseSurface = DsColor.neutral90,
     inverseOnSurface = DsColor.neutral20,
     inversePrimary = DsColor.teal40,
-    // Elevation-tier roles (AlertDialog, ModalBottomSheet, Menu, ... all default to one of
-    // these) left unset here would silently fall back to M3's baseline Purple swatches instead
-    // of our palette — see DsModalBottomSheet/DsBottomSheet for where that surfaced as visibly
-    // purple dialogs. surfaceTint follows primary, same as M3's own convention.
+    // Elevation-tier roles (AlertDialog, ModalBottomSheet, Menu, ... all default to one of these) left unset here would
+    // silently fall back to M3's baseline Purple swatches instead of our palette — see DsModalBottomSheet/DsBottomSheet
+    // for where that surfaced as visibly purple dialogs. surfaceTint follows primary, same as M3's own convention.
     surfaceTint = DsColor.teal80,
     surfaceDim = DsColor.neutral6,
     surfaceBright = DsColor.neutral20,
@@ -101,9 +99,5 @@ fun DsTheme(
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = DsTypography,
-        content = content,
-    )
+    MaterialTheme(colorScheme = colorScheme, typography = DsTypography, content = content)
 }

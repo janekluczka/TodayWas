@@ -14,10 +14,7 @@ fun DsSnackbarHost(
     hostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    SnackbarHost(
-        hostState = hostState,
-        modifier = modifier,
-    )
+    SnackbarHost(hostState = hostState, modifier = modifier)
 }
 
 @PreviewLightDark

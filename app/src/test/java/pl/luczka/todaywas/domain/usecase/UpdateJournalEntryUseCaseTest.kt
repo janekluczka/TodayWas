@@ -64,10 +64,7 @@ class UpdateJournalEntryUseCaseTest {
     fun `should return failure and never call the repository when past the 24h boundary`() =
         runTest {
             // Arrange
-            val clock = Clock.fixed(
-                createdAt.plus(Duration.ofHours(24).plusSeconds(1)),
-                ZoneId.systemDefault(),
-            )
+            val clock = Clock.fixed(createdAt.plus(Duration.ofHours(24).plusSeconds(1)), ZoneId.systemDefault())
             val repository = FakeJournalRepository(listOf(storedEntry))
             val useCase = UpdateJournalEntryUseCase(repository, clock)
 

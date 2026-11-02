@@ -24,18 +24,17 @@ class HabitListViewModel @Inject constructor(
 
     private val selectedSort = MutableStateFlow(HabitSortUiState.RECENTLY_CHECKED_IN)
 
-    val uiState: StateFlow<HabitListUiState> =
-        combine(observeHabitCheckInBoard(), selectedSort) { board, sort ->
-            HabitListUiState(
-                isLoading = false,
-                habits = board.toSortedHabitUiStates(LocalDate.now(clock), sort),
-                selectedSort = sort,
-            )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = HabitListUiState(),
+    val uiState: StateFlow<HabitListUiState> = combine(observeHabitCheckInBoard(), selectedSort) { board, sort ->
+        HabitListUiState(
+            isLoading = false,
+            habits = board.toSortedHabitUiStates(LocalDate.now(clock), sort),
+            selectedSort = sort,
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = HabitListUiState(),
+    )
 
     fun onIntent(intent: HabitListIntent) {
         when (intent) {

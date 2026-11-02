@@ -33,13 +33,8 @@ fun DsScaffold(
 @Composable
 private fun DsScaffoldPreview() {
     DsTheme {
-        DsScaffold(
-            topBar = { DsTopBar(title = "TodayWas") },
-        ) { innerPadding ->
-            DsText(
-                text = "No entries yet",
-                modifier = Modifier.padding(innerPadding),
-            )
+        DsScaffold(topBar = { DsTopBar(title = "TodayWas") }) { innerPadding ->
+            DsText(text = "No entries yet", modifier = Modifier.padding(innerPadding))
         }
     }
 }

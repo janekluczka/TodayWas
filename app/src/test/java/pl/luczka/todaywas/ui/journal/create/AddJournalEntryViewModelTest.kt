@@ -77,10 +77,7 @@ class AddJournalEntryViewModelTest {
             val state = viewModel.uiState.value
 
             // Assert
-            assertEquals(
-                listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY),
-                state.availableSlots,
-            )
+            assertEquals(listOf(JournalDateSlotUiState.TODAY, JournalDateSlotUiState.YESTERDAY), state.availableSlots)
             assertEquals(JournalDateSlotUiState.TODAY, state.selectedSlot)
         }
 
@@ -92,10 +89,7 @@ class AddJournalEntryViewModelTest {
 
             // Assert
             val prompts = viewModel.uiState.value.starterPrompts
-            assertEquals(
-                JournalStarterPromptTone.entries.toSet(),
-                prompts.map { it.tone }.toSet(),
-            )
+            assertEquals(JournalStarterPromptTone.entries.toSet(), prompts.map { it.tone }.toSet())
             assertTrue(prompts.all { it.variant in 0 until STARTER_PROMPT_VARIANT_COUNT })
         }
 
@@ -167,8 +161,7 @@ class AddJournalEntryViewModelTest {
     fun `should open helpMeStart at SIGNED_OUT step when HelpMeStartClicked is dispatched while signed out`() =
         runTest {
             // Arrange
-            val viewModel =
-                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
@@ -196,8 +189,7 @@ class AddJournalEntryViewModelTest {
     fun `should hide helpMeStart and navigate to sign-in when SignInClicked is dispatched`() =
         runTest {
             // Arrange
-            val viewModel =
-                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
 
             // Act
@@ -206,10 +198,7 @@ class AddJournalEntryViewModelTest {
 
             // Assert
             assertFalse(viewModel.uiState.value.helpMeStart.isVisible)
-            assertEquals(
-                AddJournalEntryNavigation.SignIn,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(AddJournalEntryNavigation.SignIn, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -220,9 +209,7 @@ class AddJournalEntryViewModelTest {
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
 
             // Act
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Assert
             assertEquals(
@@ -239,9 +226,7 @@ class AddJournalEntryViewModelTest {
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
 
             // Act
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartThoughtsChanged("made progress on a hard bug"),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartThoughtsChanged("made progress on a hard bug"))
 
             // Assert
             assertEquals(
@@ -259,9 +244,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "Generated prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -284,9 +267,7 @@ class AddJournalEntryViewModelTest {
             val aiAssistRepository = FakeAiAssistRepository()
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -302,13 +283,10 @@ class AddJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.generateResult =
-                Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
+            aiAssistRepository.generateResult = Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -327,13 +305,10 @@ class AddJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.generateResult =
-                Result.failure(AiAssistException(AiAssistError.DailyLimitReached))
+            aiAssistRepository.generateResult = Result.failure(AiAssistException(AiAssistError.DailyLimitReached))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
@@ -354,9 +329,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             aiAssistRepository.generateResult =
@@ -381,13 +354,10 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
-            aiAssistRepository.generateResult =
-                Result.failure(AiAssistException(AiAssistError.UpstreamFailed))
+            aiAssistRepository.generateResult = Result.failure(AiAssistException(AiAssistError.UpstreamFailed))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.RegenerateClicked)
@@ -409,9 +379,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "Last prompt.", remainingToday = 0))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             val callCountAfterFirstGenerate = aiAssistRepository.generateCallCount
@@ -434,9 +402,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             aiAssistRepository.generateResult =
@@ -465,9 +431,7 @@ class AddJournalEntryViewModelTest {
                 Result.success(AiPromptResult(text = "First prompt.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.GenerateClicked)
             runCurrent()
             aiAssistRepository.generateResult =
@@ -496,8 +460,7 @@ class AddJournalEntryViewModelTest {
     fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while signed out`() =
         runTest {
             // Arrange
-            val viewModel =
-                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
 
             // Act
@@ -525,9 +488,7 @@ class AddJournalEntryViewModelTest {
         runTest {
             // Arrange
             val viewModel = viewModel()
-            viewModel.onIntent(
-                AddJournalEntryIntent.TextChanged("a".repeat(MAX_REFINE_TEXT_LENGTH + 1)),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.TextChanged("a".repeat(MAX_REFINE_TEXT_LENGTH + 1)))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
@@ -555,17 +516,12 @@ class AddJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult =
-                Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeRefineThoughtsChanged("make it shorter"),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineThoughtsChanged("make it shorter"))
 
             // Act
             viewModel.onIntent(AddJournalEntryIntent.RefineClicked)
@@ -590,9 +546,7 @@ class AddJournalEntryViewModelTest {
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.RefineClicked)
             runCurrent()
             val callCountAtZero = aiAssistRepository.refineCallCount
@@ -611,14 +565,11 @@ class AddJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult =
-                Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             viewModel.onIntent(AddJournalEntryIntent.TextChanged("Today was good."))
             viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(AddJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(AddJournalEntryIntent.RefineClicked)
             runCurrent()
 

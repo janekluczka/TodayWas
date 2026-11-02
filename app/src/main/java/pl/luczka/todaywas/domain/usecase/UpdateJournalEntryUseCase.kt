@@ -17,8 +17,7 @@ class UpdateJournalEntryUseCase @Inject constructor(
         id: String,
         text: String,
     ): Result<Unit> {
-        val stored = repository.getEntry(id)
-            ?: return Result.failure(JournalEntryNotFoundException(id))
+        val stored = repository.getEntry(id) ?: return Result.failure(JournalEntryNotFoundException(id))
         if (!EditWindow.isEditable(stored.createdAt, clock.instant())) {
             return Result.failure(EditWindowExpiredException())
         }

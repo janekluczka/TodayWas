@@ -21,12 +21,7 @@ fun DsDropdownMenu(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        modifier = modifier,
-        content = content,
-    )
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = modifier, content = content)
 }
 
 @Composable
@@ -36,12 +31,7 @@ fun DsDropdownMenuItem(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    DropdownMenuItem(
-        text = { DsText(text = text) },
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier,
-    )
+    DropdownMenuItem(text = { DsText(text = text) }, onClick = onClick, enabled = enabled, modifier = modifier)
 }
 
 @PreviewLightDark

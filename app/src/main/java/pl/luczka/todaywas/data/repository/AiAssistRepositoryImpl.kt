@@ -21,14 +21,13 @@ import pl.luczka.todaywas.domain.repository.AiAssistRepository
 
 private const val FUNCTION_NAME = "ai-proxy"
 
-// The ai-proxy function's upstream OpenRouter free-tier model plus Deno cold start regularly
-// takes 10-20s (observed via get_logs(service: "edge-function") during manual verification) —
-// well past supabase-kt's default ~10s client timeout, which caused a real 200 response to be
-// misreported as an error. Both requestTimeoutMillis AND socketTimeoutMillis must be raised: the
-// underlying engine's socket-read timeout is a separate setting from Ktor's request timeout, and
-// leaving it at its default throws a socket-timeout HttpRequestException well before this
-// duration elapses even with requestTimeoutMillis alone raised. Scoped to this call only, not the
-// whole SupabaseClient, so unrelated Auth/Postgrest calls keep failing fast when genuinely offline.
+// The ai-proxy function's upstream OpenRouter free-tier model plus Deno cold start regularly takes 10-20s (observed via
+// get_logs(service: "edge-function") during manual verification) — well past supabase-kt's default ~10s client timeout,
+// which caused a real 200 response to be misreported as an error. Both requestTimeoutMillis AND socketTimeoutMillis
+// must be raised: the underlying engine's socket-read timeout is a separate setting from Ktor's request timeout, and
+// leaving it at its default throws a socket-timeout HttpRequestException well before this duration elapses even with
+// requestTimeoutMillis alone raised. Scoped to this call only, not the whole SupabaseClient, so unrelated
+// Auth/Postgrest calls keep failing fast when genuinely offline.
 private const val FUNCTION_TIMEOUT_MS = 30_000L
 
 class AiAssistRepositoryImpl @Inject constructor(
@@ -38,17 +37,13 @@ class AiAssistRepositoryImpl @Inject constructor(
     override suspend fun generateJournalStarterPrompt(
         tone: JournalPromptTone,
         thoughts: String?,
-    ): Result<AiPromptResult> = invokeAiProxy(
-        AiPromptRequestDto(tone = tone.level, thoughts = thoughts),
-    )
+    ): Result<AiPromptResult> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, thoughts = thoughts))
 
     override suspend fun refineJournalEntry(
         text: String,
         tone: JournalPromptTone,
         thoughts: String?,
-    ): Result<AiPromptResult> = invokeAiProxy(
-        AiPromptRequestDto(tone = tone.level, text = text, thoughts = thoughts),
-    )
+    ): Result<AiPromptResult> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, text = text, thoughts = thoughts))
 
     private suspend fun invokeAiProxy(request: AiPromptRequestDto): Result<AiPromptResult> = try {
         val response = supabase.functions.invoke(function = FUNCTION_NAME) {

@@ -18,12 +18,7 @@ fun DsIconButton(
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    IconButton(
-        onClick = onClick,
-        enabled = enabled,
-        content = content,
-        modifier = modifier,
-    )
+    IconButton(onClick = onClick, enabled = enabled, content = content, modifier = modifier)
 }
 
 @PreviewLightDark
@@ -37,10 +32,7 @@ private fun DsIconButtonPreview(
             onClick = {},
             enabled = enabled,
         ) {
-            DsIcon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Change focus",
-            )
+            DsIcon(imageVector = Icons.Default.Edit, contentDescription = "Change focus")
         }
     }
 }

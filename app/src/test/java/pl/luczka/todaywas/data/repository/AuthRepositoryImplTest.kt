@@ -36,10 +36,7 @@ class AuthRepositoryImplTest {
 
     private fun repository(engine: MockEngine) =
         AuthRepositoryImpl(
-            createSupabaseClient(
-                supabaseUrl = "https://example.supabase.co",
-                supabaseKey = "test-key",
-            ) {
+            createSupabaseClient(supabaseUrl = "https://example.supabase.co", supabaseKey = "test-key") {
                 httpEngine = engine
                 install(Auth) { minimalConfig() }
             },
@@ -49,14 +46,9 @@ class AuthRepositoryImplTest {
     fun `should return success when signInWithEmail succeeds`() =
         runTest {
             // Arrange
-            val engine =
-                MockEngine {
-                    respond(
-                        SUCCESS_SESSION_BODY,
-                        HttpStatusCode.OK,
-                        headersOf(HttpHeaders.ContentType, "application/json"),
-                    )
-                }
+            val engine = MockEngine {
+                respond(SUCCESS_SESSION_BODY, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+            }
             val repository = repository(engine)
 
             // Act
@@ -92,14 +84,9 @@ class AuthRepositoryImplTest {
     fun `should return success when signUpWithEmail succeeds`() =
         runTest {
             // Arrange
-            val engine =
-                MockEngine {
-                    respond(
-                        SUCCESS_SESSION_BODY,
-                        HttpStatusCode.OK,
-                        headersOf(HttpHeaders.ContentType, "application/json"),
-                    )
-                }
+            val engine = MockEngine {
+                respond(SUCCESS_SESSION_BODY, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+            }
             val repository = repository(engine)
 
             // Act
@@ -165,11 +152,7 @@ class AuthRepositoryImplTest {
             // authCall's try block, not before the coroutine even starts.
             val engine = MockEngine {
                 delay(50)
-                respond(
-                    SUCCESS_SESSION_BODY,
-                    HttpStatusCode.OK,
-                    headersOf(HttpHeaders.ContentType, "application/json"),
-                )
+                respond(SUCCESS_SESSION_BODY, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
             }
             val repository = repository(engine)
             var caught: Throwable? = null

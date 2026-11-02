@@ -13,13 +13,7 @@ import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 class ObserveAddableJournalDateSlotsUseCaseTest {
 
     private fun entryFor(date: LocalDate) =
-        JournalEntry(
-            id = "1",
-            date = date,
-            text = "text",
-            createdAt = Instant.EPOCH,
-            updatedAt = Instant.EPOCH,
-        )
+        JournalEntry(id = "1", date = date, text = "text", createdAt = Instant.EPOCH, updatedAt = Instant.EPOCH)
 
     @Test
     fun `should make both slots addable when neither today nor yesterday is logged`() =
@@ -54,9 +48,7 @@ class ObserveAddableJournalDateSlotsUseCaseTest {
         runTest {
             // Arrange
             val useCase = ObserveAddableJournalDateSlotsUseCase(
-                FakeJournalRepository(
-                    listOf(entryFor(LocalDate.now()), entryFor(LocalDate.now().minusDays(1))),
-                ),
+                FakeJournalRepository(listOf(entryFor(LocalDate.now()), entryFor(LocalDate.now().minusDays(1)))),
             )
 
             // Act

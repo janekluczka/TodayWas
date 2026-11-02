@@ -45,9 +45,7 @@ class OnboardingAccountSetupViewModelTest {
 
     private class FakeOnboardingRepository : OnboardingRepository {
 
-        private val stateFlow = MutableStateFlow(
-            OnboardingState(completed = false, hasSyncedLocalData = false),
-        )
+        private val stateFlow = MutableStateFlow(OnboardingState(completed = false, hasSyncedLocalData = false))
 
         var completeOnboardingCallCount = 0
             private set
@@ -96,9 +94,7 @@ class OnboardingAccountSetupViewModelTest {
     private fun fillSignUpForm(viewModel: OnboardingAccountSetupViewModel) {
         viewModel.onIntent(OnboardingAccountSetupIntent.SignUpEmailChanged("person@example.com"))
         viewModel.onIntent(OnboardingAccountSetupIntent.SignUpPasswordChanged("password123"))
-        viewModel.onIntent(
-            OnboardingAccountSetupIntent.SignUpRepeatPasswordChanged("password123"),
-        )
+        viewModel.onIntent(OnboardingAccountSetupIntent.SignUpRepeatPasswordChanged("password123"))
     }
 
     @Before
@@ -176,10 +172,7 @@ class OnboardingAccountSetupViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                OnboardingAccountSetupNavigation.Back,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(OnboardingAccountSetupNavigation.Back, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -204,9 +197,7 @@ class OnboardingAccountSetupViewModelTest {
             val repository = FakeOnboardingRepository()
             val authRepository = FakeAuthRepository()
             val viewModel = viewModel(repository, authRepository)
-            viewModel.onIntent(
-                OnboardingAccountSetupIntent.SignInEmailChanged("person@example.com"),
-            )
+            viewModel.onIntent(OnboardingAccountSetupIntent.SignInEmailChanged("person@example.com"))
             viewModel.onIntent(OnboardingAccountSetupIntent.SignInPasswordChanged("password123"))
 
             // Act
@@ -247,9 +238,7 @@ class OnboardingAccountSetupViewModelTest {
             val authRepository = FakeAuthRepository()
             authRepository.signInError = AuthError.InvalidCredentials
             val viewModel = viewModel(authRepository = authRepository)
-            viewModel.onIntent(
-                OnboardingAccountSetupIntent.SignInEmailChanged("person@example.com"),
-            )
+            viewModel.onIntent(OnboardingAccountSetupIntent.SignInEmailChanged("person@example.com"))
             viewModel.onIntent(OnboardingAccountSetupIntent.SignInPasswordChanged("password123"))
 
             // Act
@@ -257,10 +246,7 @@ class OnboardingAccountSetupViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                AuthErrorUiState.INVALID_CREDENTIALS,
-                viewModel.uiState.value.userMessage,
-            )
+            assertEquals(AuthErrorUiState.INVALID_CREDENTIALS, viewModel.uiState.value.userMessage)
             assertFalse(viewModel.uiState.value.signInForm.isSubmitting)
         }
 
@@ -320,10 +306,7 @@ class OnboardingAccountSetupViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                AuthErrorUiState.EMAIL_ALREADY_REGISTERED,
-                viewModel.uiState.value.userMessage,
-            )
+            assertEquals(AuthErrorUiState.EMAIL_ALREADY_REGISTERED, viewModel.uiState.value.userMessage)
             assertFalse(viewModel.uiState.value.signUpForm.isSubmitting)
         }
 
@@ -334,16 +317,11 @@ class OnboardingAccountSetupViewModelTest {
             val viewModel = viewModel()
 
             // Act
-            viewModel.onIntent(
-                OnboardingAccountSetupIntent.GoogleSignInFailed(AuthErrorUiState.NO_GOOGLE_ACCOUNT),
-            )
+            viewModel.onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(AuthErrorUiState.NO_GOOGLE_ACCOUNT))
             runCurrent()
 
             // Assert
-            assertEquals(
-                AuthErrorUiState.NO_GOOGLE_ACCOUNT,
-                viewModel.uiState.value.userMessage,
-            )
+            assertEquals(AuthErrorUiState.NO_GOOGLE_ACCOUNT, viewModel.uiState.value.userMessage)
         }
 
     @Test
@@ -357,10 +335,7 @@ class OnboardingAccountSetupViewModelTest {
             authRepository.emit(AuthState.SignedIn(userId = "u1", email = "person@example.com"))
 
             // Assert
-            assertEquals(
-                AuthStateUi.SignedIn(email = "person@example.com"),
-                viewModel.uiState.value.authState,
-            )
+            assertEquals(AuthStateUi.SignedIn(email = "person@example.com"), viewModel.uiState.value.authState)
         }
 
     @Test
@@ -369,10 +344,7 @@ class OnboardingAccountSetupViewModelTest {
             // Arrange
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
-            val viewModel = viewModel(
-                authRepository = authRepository,
-                journalRepository = journalRepository,
-            )
+            val viewModel = viewModel(authRepository = authRepository, journalRepository = journalRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
 
@@ -412,11 +384,7 @@ class OnboardingAccountSetupViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(
-                onboardingRepository,
-                authRepository,
-                journalRepository = journalRepository,
-            )
+            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
@@ -441,14 +409,9 @@ class OnboardingAccountSetupViewModelTest {
             // Arrange
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
-            journalRepository.syncWithRemoteResult =
-                Result.failure(RuntimeException("network error"))
+            journalRepository.syncWithRemoteResult = Result.failure(RuntimeException("network error"))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(
-                onboardingRepository,
-                authRepository,
-                journalRepository = journalRepository,
-            )
+            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
@@ -459,10 +422,7 @@ class OnboardingAccountSetupViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                AuthErrorUiState.UNKNOWN,
-                viewModel.uiState.value.userMessage,
-            )
+            assertEquals(AuthErrorUiState.UNKNOWN, viewModel.uiState.value.userMessage)
             assertEquals(0, onboardingRepository.markLocalDataSyncedCallCount)
             assertEquals(0, onboardingRepository.completeOnboardingCallCount)
             assertEquals(AccountSubStep.DATA_SYNC_REVIEW, viewModel.uiState.value.accountSubStep)
@@ -477,11 +437,7 @@ class OnboardingAccountSetupViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(
-                onboardingRepository,
-                authRepository,
-                journalRepository = journalRepository,
-            )
+            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)

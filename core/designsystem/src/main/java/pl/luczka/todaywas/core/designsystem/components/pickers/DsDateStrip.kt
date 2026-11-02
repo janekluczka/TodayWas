@@ -24,14 +24,12 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
-// Cards are a fixed width, purely for calendar-strip context — many more days than are ever
-// selectable get rendered (however many fit the available width), all disabled except the ones
-// `isSelectable` accepts. This is what keeps the selected date visually centered even when it
-// sits at the edge of the "real" selectable window (e.g. YESTERDAY with nothing before it, or
-// day 7 of a 7-day habit backfill window) — flanking context days fill the space either side.
-// Page index is the date's epoch-day, so the pager never needs true infinite pages: today's
-// epoch-day is a small positive Int for any realistic date, and Int.MAX_VALUE pages comfortably
-// covers it.
+// Cards are a fixed width, purely for calendar-strip context — many more days than are ever selectable get rendered
+// (however many fit the available width), all disabled except the ones `isSelectable` accepts. This is what keeps the
+// selected date visually centered even when it sits at the edge of the "real" selectable window (e.g. YESTERDAY with
+// nothing before it, or day 7 of a 7-day habit backfill window) — flanking context days fill the space either side.
+// Page index is the date's epoch-day, so the pager never needs true infinite pages: today's epoch-day is a small
+// positive Int for any realistic date, and Int.MAX_VALUE pages comfortably covers it.
 private val DATE_STRIP_CARD_WIDTH = 56.dp
 private val DATE_STRIP_CARD_SPACING = DsSpacing.space200
 
@@ -88,10 +86,7 @@ private fun DateStripCard(
         modifier = modifier,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            DsText(
-                text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-                fontSize = 10.sp,
-            )
+            DsText(text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()), fontSize = 10.sp)
             DsText(text = date.dayOfMonth.toString())
         }
     }

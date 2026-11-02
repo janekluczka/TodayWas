@@ -13,10 +13,5 @@ class ObserveHabitCheckInBoardUseCase @Inject constructor(
     operator fun invoke(): Flow<HabitCheckInBoard> = combine(
         repository.observeHabits(),
         repository.observeCheckIns(),
-    ) { habits, checkIns ->
-        HabitCheckInBoard(
-            habits = habits,
-            checkIns = checkIns,
-        )
-    }
+    ) { habits, checkIns -> HabitCheckInBoard(habits = habits, checkIns = checkIns) }
 }

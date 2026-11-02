@@ -18,10 +18,7 @@ fun DsBadge(
     badgeContent: (@Composable RowScope.() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    BadgedBox(
-        badge = { Badge(content = badgeContent) },
-        modifier = modifier,
-    ) {
+    BadgedBox(badge = { Badge(content = badgeContent) }, modifier = modifier) {
         content()
     }
 }
@@ -31,10 +28,7 @@ fun DsBadge(
 private fun DsBadgePreview() {
     DsTheme {
         DsBadge(badgeContent = { DsText(text = "3") }) {
-            DsIcon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-            )
+            DsIcon(imageVector = Icons.Default.Add, contentDescription = null)
         }
     }
 }

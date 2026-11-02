@@ -20,9 +20,8 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
-// A single icon+label(+trailing) row meant for DsSectionedList — settings-style entries (account
-// identity, sign out, future preference items), not the richer, feature-specific rows like
-// JournalEntryRow/HabitRow.
+// A single icon+label(+trailing) row meant for DsSectionedList — settings-style entries (account identity, sign out,
+// future preference items), not the richer, feature-specific rows like JournalEntryRow/HabitRow.
 @Composable
 fun DsListItem(
     text: String,
@@ -35,10 +34,7 @@ fun DsListItem(
     val clickableModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .then(clickableModifier)
-            .padding(DsSpacing.space400),
+        modifier = modifier.fillMaxWidth().then(clickableModifier).padding(DsSpacing.space400),
     ) {
         if (leadingIcon != null) {
             DsIcon(imageVector = leadingIcon, contentDescription = null, tint = contentColor)
@@ -53,9 +49,6 @@ fun DsListItem(
 @Composable
 private fun DsListItemPreview() {
     DsTheme {
-        DsListItem(
-            text = "person@example.com",
-            leadingIcon = Icons.Default.Person,
-        )
+        DsListItem(text = "person@example.com", leadingIcon = Icons.Default.Person)
     }
 }

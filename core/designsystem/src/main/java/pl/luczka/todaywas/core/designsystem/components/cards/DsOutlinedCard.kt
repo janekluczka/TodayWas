@@ -15,10 +15,7 @@ fun DsOutlinedCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    OutlinedCard(
-        modifier = modifier,
-        content = content,
-    )
+    OutlinedCard(modifier = modifier, content = content)
 }
 
 @PreviewLightDark
@@ -26,10 +23,7 @@ fun DsOutlinedCard(
 private fun DsOutlinedCardPreview() {
     DsTheme {
         DsOutlinedCard {
-            DsText(
-                text = "Outlined card content",
-                modifier = Modifier.padding(DsSpacing.space400),
-            )
+            DsText(text = "Outlined card content", modifier = Modifier.padding(DsSpacing.space400))
         }
     }
 }

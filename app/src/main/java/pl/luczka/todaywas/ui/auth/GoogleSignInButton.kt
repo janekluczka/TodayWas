@@ -22,10 +22,9 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
-// A native-feeling outlined button (matches the app's own Material3 button shape/theme rather
-// than Google's fixed web button styling) with a monochrome "G" mark (res/drawable/ic_google_logo)
-// that inherits the button's content color, so it sits naturally alongside the app's other
-// buttons instead of reading as an embedded web widget.
+// A native-feeling outlined button (matches the app's own Material3 button shape/theme rather than Google's fixed web
+// button styling) with a monochrome "G" mark (res/drawable/ic_google_logo) that inherits the button's content color, so
+// it sits naturally alongside the app's other buttons instead of reading as an embedded web widget.
 //
 // Shows a spinner (same pattern as DsButtonWithLoading) rather than just disabling while
 // launching: the Credential Manager system sheet can take a second or more to slide up, and with
@@ -38,16 +37,9 @@ fun GoogleSignInButton(
     loading: Boolean = false,
     text: String = stringResource(R.string.auth_form_google_cta),
 ) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled && !loading,
-        modifier = modifier.animateContentSize(),
-    ) {
+    OutlinedButton(onClick = onClick, enabled = enabled && !loading, modifier = modifier.animateContentSize()) {
         if (loading) {
-            DsLoadingIndicator(
-                color = LocalContentColor.current,
-                modifier = Modifier.size(20.dp),
-            )
+            DsLoadingIndicator(color = LocalContentColor.current, modifier = Modifier.size(20.dp))
         } else {
             DsIcon(
                 imageVector = ImageVector.vectorResource(R.drawable.ic_google_logo),
@@ -61,11 +53,7 @@ fun GoogleSignInButton(
 }
 
 private class GoogleSignInButtonPreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
-    override val values = sequenceOf(
-        true to false,
-        false to false,
-        true to true,
-    )
+    override val values = sequenceOf(true to false, false to false, true to true)
 }
 
 @PreviewLightDark

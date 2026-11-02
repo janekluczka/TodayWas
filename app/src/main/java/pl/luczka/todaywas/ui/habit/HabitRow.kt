@@ -16,10 +16,7 @@ fun HabitRow(
     DsListItem(
         text = habit.name,
         trailingContent = {
-            DsContributionValueBadge(
-                level = habit.todayLevel,
-                valueText = habit.todayStatus.toValueText(),
-            )
+            DsContributionValueBadge(level = habit.todayLevel, valueText = habit.todayStatus.toValueText())
         },
         onClick = onClick,
     )

@@ -95,8 +95,7 @@ class HabitDetailViewModel @AssistedInject constructor(
 
     // Captured once at construction rather than re-derived on every emission, so the selection
     // doesn't silently jump to a new "today" if the screen is left open across midnight.
-    private val viewModelState =
-        MutableStateFlow(HabitDetailViewModelState(selectedDate = LocalDate.now(clock)))
+    private val viewModelState = MutableStateFlow(HabitDetailViewModelState(selectedDate = LocalDate.now(clock)))
 
     // Always the rolling 12-month window — no user-facing window switch.
     private val contributionGrid: Flow<ContributionGridUiState> = observeHabitContribution(
@@ -104,10 +103,7 @@ class HabitDetailViewModel @AssistedInject constructor(
         flowOf(ContributionWindow.RollingTwelveMonths),
     ).map { summary -> summary.grid.toUiState(clock.instant()) }
 
-    val uiState: StateFlow<HabitDetailUiState> = combine(
-        viewModelState,
-        contributionGrid,
-    ) { state, grid ->
+    val uiState: StateFlow<HabitDetailUiState> = combine(viewModelState, contributionGrid) { state, grid ->
         state.toUiState(getFreshLoggableDates(), isEditable::invoke, grid)
     }.stateIn(
         scope = viewModelScope,
@@ -150,8 +146,7 @@ class HabitDetailViewModel @AssistedInject constructor(
             is HabitDetailIntent.ValueChanged -> onValueChanged(intent.value)
             HabitDetailIntent.SaveClicked -> onSaveClicked()
             HabitDetailIntent.CancelEditClicked -> onCancelEditClicked()
-            HabitDetailIntent.NavigationHandled ->
-                viewModelState.update { it.copy(pendingNavigation = null) }
+            HabitDetailIntent.NavigationHandled -> viewModelState.update { it.copy(pendingNavigation = null) }
             HabitDetailIntent.DeleteHabitClicked -> onDeleteHabitClicked()
             HabitDetailIntent.DeleteHabitConfirmed -> onDeleteHabitConfirmed()
             HabitDetailIntent.DeleteHabitDismissed -> onDeleteHabitDismissed()
@@ -198,30 +193,14 @@ class HabitDetailViewModel @AssistedInject constructor(
             return
         }
         viewModelScope.launch {
-            viewModelState.update {
-                it.copy(
-                    isSaving = true,
-                    saveError = false,
-                    saveErrorIsWindowExpired = false,
-                )
-            }
+            viewModelState.update { it.copy(isSaving = true, saveError = false, saveErrorIsWindowExpired = false) }
             val result = saveHabitCheckIns(habitId, mapOf(date to value))
             if (result.isSuccess) {
-                viewModelState.update {
-                    it.copy(
-                        isSaving = false,
-                        editingDate = null,
-                        editingValue = null,
-                    )
-                }
+                viewModelState.update { it.copy(isSaving = false, editingDate = null, editingValue = null) }
             } else {
                 val windowExpired = result.exceptionOrNull() is EditWindowExpiredException
                 viewModelState.update {
-                    it.copy(
-                        isSaving = false,
-                        saveError = true,
-                        saveErrorIsWindowExpired = windowExpired,
-                    )
+                    it.copy(isSaving = false, saveError = true, saveErrorIsWindowExpired = windowExpired)
                 }
             }
         }
@@ -241,16 +220,10 @@ class HabitDetailViewModel @AssistedInject constructor(
             viewModelState.update { it.copy(isDeletingHabit = true, deleteHabitError = false) }
             val result = deleteHabit(habitId)
             if (result.isSuccess) {
-                viewModelState.update {
-                    it.copy(pendingNavigation = HabitDetailNavigation.HabitDeleted)
-                }
+                viewModelState.update { it.copy(pendingNavigation = HabitDetailNavigation.HabitDeleted) }
             } else {
                 viewModelState.update {
-                    it.copy(
-                        isDeletingHabit = false,
-                        deleteHabitError = true,
-                        isDeleteHabitDialogVisible = false,
-                    )
+                    it.copy(isDeletingHabit = false, deleteHabitError = true, isDeleteHabitDialogVisible = false)
                 }
             }
         }

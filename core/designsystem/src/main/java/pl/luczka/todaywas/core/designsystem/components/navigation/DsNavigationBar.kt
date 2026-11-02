@@ -18,10 +18,7 @@ fun DsNavigationBar(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
-    NavigationBar(
-        modifier = modifier,
-        content = content,
-    )
+    NavigationBar(modifier = modifier, content = content)
 }
 
 @Composable

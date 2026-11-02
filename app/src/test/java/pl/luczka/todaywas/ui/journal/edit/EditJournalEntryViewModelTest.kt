@@ -157,10 +157,7 @@ class EditJournalEntryViewModelTest {
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(1, repository.updateEntryCallCount)
             assertEquals("Edited text.", repository.lastUpdatedText)
-            assertEquals(
-                EditJournalEntryNavigation.Saved,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(EditJournalEntryNavigation.Saved, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -198,10 +195,7 @@ class EditJournalEntryViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertFalse(viewModel.uiState.value.saveError)
-            assertEquals(
-                EditJournalEntryNavigation.Discarded,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -216,10 +210,7 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                EditJournalEntryNavigation.Discarded,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
             assertFalse(viewModel.uiState.value.isDiscardConfirmVisible)
         }
 
@@ -269,18 +260,14 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                EditJournalEntryNavigation.Discarded,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
     fun `should open helpMeStart at SIGNED_OUT step when HelpMeStartClicked is dispatched while signed out`() =
         runTest {
             // Arrange
-            val viewModel =
-                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
             runCurrent()
 
             // Act
@@ -300,9 +287,7 @@ class EditJournalEntryViewModelTest {
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.GenerateClicked)
@@ -324,9 +309,7 @@ class EditJournalEntryViewModelTest {
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(EditJournalEntryIntent.GenerateClicked)
             runCurrent()
 
@@ -342,8 +325,7 @@ class EditJournalEntryViewModelTest {
     fun `should not make helpMeRefine visible when HelpMeRefineClicked is dispatched while signed out`() =
         runTest {
             // Arrange
-            val viewModel =
-                viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
+            val viewModel = viewModel(authRepository = FakeAuthRepository(initialState = AuthState.SignedOut))
             runCurrent()
 
             // Act
@@ -404,17 +386,12 @@ class EditJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult =
-                Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeRefineThoughtsChanged("make it shorter"),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineThoughtsChanged("make it shorter"))
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.RefineClicked)
@@ -434,14 +411,11 @@ class EditJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult =
-                Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
+            aiAssistRepository.refineResult = Result.failure(AiAssistException(AiAssistError.NetworkUnavailable))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
 
             // Act
             viewModel.onIntent(EditJournalEntryIntent.RefineClicked)
@@ -465,9 +439,7 @@ class EditJournalEntryViewModelTest {
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(EditJournalEntryIntent.RefineClicked)
             runCurrent()
             val callCountAtZero = aiAssistRepository.refineCallCount
@@ -486,14 +458,11 @@ class EditJournalEntryViewModelTest {
         runTest {
             // Arrange
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult =
-                Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
             viewModel.onIntent(EditJournalEntryIntent.RefineClicked)
             runCurrent()
 
@@ -511,14 +480,11 @@ class EditJournalEntryViewModelTest {
             // Arrange
             val clock = MutableClock(createdAt.plus(Duration.ofHours(1)))
             val aiAssistRepository = FakeAiAssistRepository()
-            aiAssistRepository.refineResult =
-                Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+            aiAssistRepository.refineResult = Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
             val viewModel = viewModel(clock = clock, aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(JournalPromptToneUiState.GOOD))
             clock.advanceTo(createdAt.plus(Duration.ofHours(25)))
 
             // Act
@@ -526,10 +492,7 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                EditJournalEntryNavigation.Discarded,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
             assertFalse(viewModel.uiState.value.helpMeRefine.isVisible)
             assertNull(viewModel.uiState.value.helpMeRefine.refinedText)
         }
@@ -545,9 +508,7 @@ class EditJournalEntryViewModelTest {
             val viewModel = viewModel(clock = clock, aiAssistRepository = aiAssistRepository)
             runCurrent()
             viewModel.onIntent(EditJournalEntryIntent.HelpMeStartClicked)
-            viewModel.onIntent(
-                EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD),
-            )
+            viewModel.onIntent(EditJournalEntryIntent.HelpMeStartToneSelected(JournalPromptToneUiState.GOOD))
             clock.advanceTo(createdAt.plus(Duration.ofHours(25)))
 
             // Act
@@ -555,10 +516,7 @@ class EditJournalEntryViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(
-                EditJournalEntryNavigation.Discarded,
-                viewModel.uiState.value.pendingNavigation,
-            )
+            assertEquals(EditJournalEntryNavigation.Discarded, viewModel.uiState.value.pendingNavigation)
             assertFalse(viewModel.uiState.value.helpMeStart.isVisible)
             assertNull(viewModel.uiState.value.helpMeStart.generatedText)
         }

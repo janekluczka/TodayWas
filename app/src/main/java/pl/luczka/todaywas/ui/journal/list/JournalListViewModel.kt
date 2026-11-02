@@ -29,27 +29,26 @@ class JournalListViewModel @Inject constructor(
     // needs no re-sort — only OLDEST_FIRST does.
     private val selectedSort = MutableStateFlow(JournalSortUiState.NEWEST_FIRST)
 
-    val uiState: StateFlow<JournalListUiState> =
-        combine(
-            observeJournalEntries(),
-            selectedSort,
-            observeJournalContribution(flowOf(ContributionWindow.RollingTwelveMonths)),
-        ) { entries, sort, summary ->
-            val uiEntries = entries.map { it.toUiState() }
-            JournalListUiState(
-                isLoading = false,
-                entries = when (sort) {
-                    JournalSortUiState.NEWEST_FIRST -> uiEntries.sortedByDescending { it.date }
-                    JournalSortUiState.OLDEST_FIRST -> uiEntries.sortedBy { it.date }
-                },
-                selectedSort = sort,
-                contributionGrid = summary.grid.toUiState(clock.instant()),
-            )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = JournalListUiState(),
+    val uiState: StateFlow<JournalListUiState> = combine(
+        observeJournalEntries(),
+        selectedSort,
+        observeJournalContribution(flowOf(ContributionWindow.RollingTwelveMonths)),
+    ) { entries, sort, summary ->
+        val uiEntries = entries.map { it.toUiState() }
+        JournalListUiState(
+            isLoading = false,
+            entries = when (sort) {
+                JournalSortUiState.NEWEST_FIRST -> uiEntries.sortedByDescending { it.date }
+                JournalSortUiState.OLDEST_FIRST -> uiEntries.sortedBy { it.date }
+            },
+            selectedSort = sort,
+            contributionGrid = summary.grid.toUiState(clock.instant()),
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = JournalListUiState(),
+    )
 
     fun onIntent(intent: JournalListIntent) {
         when (intent) {

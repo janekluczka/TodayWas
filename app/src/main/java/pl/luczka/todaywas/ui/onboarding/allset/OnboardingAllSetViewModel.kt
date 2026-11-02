@@ -46,8 +46,7 @@ class OnboardingAllSetViewModel @AssistedInject constructor(
     fun onIntent(intent: OnboardingAllSetIntent) {
         when (intent) {
             OnboardingAllSetIntent.GetStartedClicked -> finish()
-            OnboardingAllSetIntent.NavigationHandled ->
-                _uiState.update { it.copy(pendingNavigation = null) }
+            OnboardingAllSetIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
         }
     }
 

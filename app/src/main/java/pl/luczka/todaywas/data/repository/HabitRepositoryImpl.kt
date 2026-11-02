@@ -69,9 +69,7 @@ class HabitRepositoryImpl @Inject constructor(
 
     override fun observeCheckIns(habitId: String): Flow<List<HabitCheckIn>> = local
         .observeCheckIns()
-        .map { entities ->
-            entities.filter { it.habitId == habitId }.toDomain()
-        }
+        .map { entities -> entities.filter { it.habitId == habitId }.toDomain() }
 
     override suspend fun addCheckIns(
         date: LocalDate,
@@ -125,8 +123,7 @@ class HabitRepositoryImpl @Inject constructor(
             remoteCall {
                 val localHabits = local.getAllHabitsIncludingDeleted()
                 val remoteHabits = remoteHabitDataSource.fetchAll(userId).getOrThrow()
-                val habitDecision =
-                    mergeForSync(localHabits.toSyncMeta(), remoteHabits.toSyncMeta())
+                val habitDecision = mergeForSync(localHabits.toSyncMeta(), remoteHabits.toSyncMeta())
                 val habitsToPush = localHabits.filter { it.id in habitDecision.pushIds }
                 if (habitsToPush.isNotEmpty()) {
                     remoteHabitDataSource.upsert(habitsToPush.toRemoteDto(userId)).getOrThrow()
@@ -135,14 +132,10 @@ class HabitRepositoryImpl @Inject constructor(
 
                 val localCheckIns = local.getAllCheckInsIncludingDeleted()
                 val remoteCheckIns = remoteHabitCheckInDataSource.fetchAll(userId).getOrThrow()
-                val checkInDecision =
-                    mergeForSync(localCheckIns.toSyncMeta(), remoteCheckIns.toSyncMeta())
+                val checkInDecision = mergeForSync(localCheckIns.toSyncMeta(), remoteCheckIns.toSyncMeta())
                 val checkInsToPush = localCheckIns.filter { it.id in checkInDecision.pushIds }
                 if (checkInsToPush.isNotEmpty()) {
-                    remoteHabitCheckInDataSource
-                        .upsert(
-                            checkInsToPush.toRemoteDto(userId),
-                        ).getOrThrow()
+                    remoteHabitCheckInDataSource.upsert(checkInsToPush.toRemoteDto(userId)).getOrThrow()
                 }
                 val checkInsToApply = remoteCheckIns.filter { it.id in checkInDecision.applyIds }
 
@@ -150,15 +143,10 @@ class HabitRepositoryImpl @Inject constructor(
 
                 val cutoff = clock.instant().minus(TOMBSTONE_GC_WINDOW)
                 local.purgeDeletedBefore(cutoff.toEpochMilli())
-                // Check-ins must purge before habits: habit_check_ins.habit_id is now
-                // ON DELETE NO ACTION (see Phase 2), so deleting a habit row while any check-in
-                // still references it - even one with its own, more-recent tombstone - throws a
-                // foreign key violation rather than silently cascading.
-                remoteHabitCheckInDataSource
-                    .purgeDeletedBefore(
-                        userId,
-                        cutoff.toString(),
-                    ).getOrThrow()
+                // Check-ins must purge before habits: habit_check_ins.habit_id is now ON DELETE NO ACTION
+                // (see Phase 2), so deleting a habit row while any check-in still references it - even one with its
+                // own, more-recent tombstone - throws a foreign key violation rather than silently cascading.
+                remoteHabitCheckInDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
                 remoteHabitDataSource.purgeDeletedBefore(userId, cutoff.toString()).getOrThrow()
             }
         }

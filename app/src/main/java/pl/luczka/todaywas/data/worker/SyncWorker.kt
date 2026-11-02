@@ -18,7 +18,6 @@ class SyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result = if (syncLocalData().isSuccess) {
         Result.success()
     } else {
-        Result
-            .retry()
+        Result.retry()
     }
 }

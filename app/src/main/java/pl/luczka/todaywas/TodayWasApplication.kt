@@ -15,8 +15,5 @@ class TodayWasApplication :
     lateinit var hiltWorkerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
-        get() = Configuration
-            .Builder()
-            .setWorkerFactory(hiltWorkerFactory)
-            .build()
+        get() = Configuration.Builder().setWorkerFactory(hiltWorkerFactory).build()
 }

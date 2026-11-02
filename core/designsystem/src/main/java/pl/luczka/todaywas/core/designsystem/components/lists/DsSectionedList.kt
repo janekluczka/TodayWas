@@ -36,14 +36,12 @@ private const val SKELETON_ROW_COUNT = 3
 private val OUTER_CORNER_RADIUS = 12.dp
 private val INNER_CORNER_RADIUS = 4.dp
 
-// A titled section: up to a handful of rows in one bordered card, divided, with an optional
-// trailing "view all" row. Built for the small, caller-capped lists this ships with today (Main's
-// 5-item sections) — not a LazyColumn, so it isn't meant for long/unbounded lists; use one
-// directly for those instead.
+// A titled section: up to a handful of rows in one bordered card, divided, with an optional trailing "view all" row.
+// Built for the small, caller-capped lists this ships with today (Main's 5-item sections) — not a LazyColumn, so it
+// isn't meant for long/unbounded lists; use one directly for those instead.
 //
-// This component only ever renders a non-empty `items` list (or its loading skeleton) — it has no
-// concept of "empty". Callers branch around it entirely and show their own empty-state content
-// when their list is empty.
+// This component only ever renders a non-empty `items` list (or its loading skeleton) — it has no concept of "empty".
+// Callers branch around it entirely and show their own empty-state content when their list is empty.
 //
 // `title` is optional: omit it when the caller already renders its own header above this
 // component (e.g. a section that also shows other content, like a chart, under the same header).
@@ -73,10 +71,7 @@ fun <T> DsSectionedList(
         Column {
             when {
                 isLoading -> repeat(SKELETON_ROW_COUNT) { index ->
-                    val shape = itemShape(
-                        isFirst = index == 0,
-                        isLast = index == SKELETON_ROW_COUNT - 1,
-                    )
+                    val shape = itemShape(isFirst = index == 0, isLast = index == SKELETON_ROW_COUNT - 1)
                     SectionItem(shape = shape) { SkeletonRow() }
                     if (index < SKELETON_ROW_COUNT - 1) {
                         DsHorizontalDivider(color = Color.Transparent)
@@ -110,12 +105,7 @@ private fun itemShape(
 ): Shape {
     val top = if (isFirst) OUTER_CORNER_RADIUS else INNER_CORNER_RADIUS
     val bottom = if (isLast) OUTER_CORNER_RADIUS else INNER_CORNER_RADIUS
-    return RoundedCornerShape(
-        topStart = top,
-        topEnd = top,
-        bottomStart = bottom,
-        bottomEnd = bottom,
-    )
+    return RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom)
 }
 
 // Each item now paints its own background instead of sharing one outer DsCard, so the (now
@@ -125,12 +115,7 @@ private fun SectionItem(
     shape: Shape,
     content: @Composable () -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-    ) {
+    Box(modifier = Modifier.fillMaxWidth().clip(shape).background(MaterialTheme.colorScheme.surfaceVariant)) {
         content()
     }
 }
@@ -139,9 +124,7 @@ private fun SectionItem(
 private fun SkeletonRow() {
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(DsSpacing.space400),
+        modifier = Modifier.fillMaxWidth().padding(DsSpacing.space400),
     ) {
         SkeletonBar(widthFraction = 0.4f)
         SkeletonBar(widthFraction = 0.8f)
@@ -171,27 +154,16 @@ private fun ViewAllRow(
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(DsSpacing.space400),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(DsSpacing.space400),
     ) {
         DsText(text = label, color = MaterialTheme.colorScheme.primary)
-        DsIcon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-        )
+        DsIcon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
     }
 }
 
 @Composable
 private fun PreviewRow(text: String) {
-    DsText(
-        text = text,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(DsSpacing.space400),
-    )
+    DsText(text = text, modifier = Modifier.fillMaxWidth().padding(DsSpacing.space400))
 }
 
 private enum class DsSectionedListPreviewState {

@@ -22,16 +22,9 @@ fun DsFilledTonalButtonWithLoading(
     enabled: Boolean = true,
     loading: Boolean = false,
 ) {
-    FilledTonalButton(
-        onClick = onClick,
-        enabled = enabled && !loading,
-        modifier = modifier.animateContentSize(),
-    ) {
+    FilledTonalButton(onClick = onClick, enabled = enabled && !loading, modifier = modifier.animateContentSize()) {
         if (loading) {
-            DsLoadingIndicator(
-                color = LocalContentColor.current,
-                modifier = Modifier.size(20.dp),
-            )
+            DsLoadingIndicator(color = LocalContentColor.current, modifier = Modifier.size(20.dp))
         } else {
             DsText(text = text)
         }
@@ -40,11 +33,7 @@ fun DsFilledTonalButtonWithLoading(
 
 private class DsFilledTonalButtonWithLoadingPreviewStateProvider :
     PreviewParameterProvider<Pair<Boolean, Boolean>> {
-    override val values = sequenceOf(
-        true to false,
-        false to false,
-        true to true,
-    )
+    override val values = sequenceOf(true to false, false to false, true to true)
 }
 
 @PreviewLightDark

@@ -18,13 +18,12 @@ import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 private val BADGE_SIZE = 32.dp
 private val BADGE_CORNER_RADIUS = 6.dp
 
-// A standalone, single colored cell for showing one day's value outside a grid context (e.g. a
-// list row's trailing content) — reuses the exact same level->color lookup DsContributionGrid's
-// cells use, so a badge and the real grid always agree on what a given level looks like. The
-// level->color ramp spans from very light to very dark (and flips direction between light/dark
-// theme — see LightLevelColors/DarkLevelColors), so the label color can't be fixed: it's picked
-// per-badge from the resolved background's own luminance, the same way Material's tonal
-// containers pick a contrasting "on" color.
+// A standalone, single colored cell for showing one day's value outside a grid context (e.g. a list row's trailing
+// content) — reuses the exact same level->color lookup DsContributionGrid's cells use, so a badge and the real grid
+// always agree on what a given level looks like. The level->color ramp spans from very light to very dark (and flips
+// direction between light/dark theme — see LightLevelColors/DarkLevelColors), so the label color can't be fixed: it's
+// picked per-badge from the resolved background's own luminance, the same way Material's tonal containers pick a
+// contrasting "on" color.
 @Composable
 fun DsContributionValueBadge(
     level: DsContributionLevel,
@@ -39,10 +38,7 @@ fun DsContributionValueBadge(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(size)
-            .background(
-                color = backgroundColor,
-                shape = RoundedCornerShape(BADGE_CORNER_RADIUS),
-            ),
+            .background(color = backgroundColor, shape = RoundedCornerShape(BADGE_CORNER_RADIUS)),
     ) {
         DsText(text = valueText, color = labelColor)
     }

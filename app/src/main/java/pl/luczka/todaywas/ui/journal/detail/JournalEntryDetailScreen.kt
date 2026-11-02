@@ -87,8 +87,7 @@ private fun JournalEntryDetailScreenContent(
     DsScaffold(
         topBar = {
             DsTopBar(
-                title = uiState.entry?.formattedDate
-                    ?: stringResource(R.string.journal_detail_title),
+                title = uiState.entry?.formattedDate ?: stringResource(R.string.journal_detail_title),
                 navigationIcon = {
                     DsIconButton(onClick = onBack) {
                         DsIcon(
@@ -97,20 +96,13 @@ private fun JournalEntryDetailScreenContent(
                         )
                     }
                 },
-                actions = {
-                    JournalEntryDetailActions(uiState, onIntent, onEditClick)
-                },
+                actions = { JournalEntryDetailActions(uiState, onIntent, onEditClick) },
             )
         },
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(DsSpacing.space600),
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(DsSpacing.space600)) {
             if (uiState.entry != null) {
                 DsText(text = uiState.entry.text)
             }
@@ -154,9 +146,7 @@ private fun DeleteEntryDialog(onIntent: (JournalEntryDetailIntent) -> Unit) {
             DsTextButton(
                 text = stringResource(R.string.journal_detail_delete_confirm_cta),
                 onClick = { onIntent(JournalEntryDetailIntent.DeleteConfirmed) },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
             )
         },
         dismissButton = {

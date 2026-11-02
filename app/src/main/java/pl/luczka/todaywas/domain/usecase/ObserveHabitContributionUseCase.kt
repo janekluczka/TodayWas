@@ -20,8 +20,7 @@ class ObserveHabitContributionUseCase @Inject constructor(
         habitId: String,
         window: Flow<ContributionWindow>,
     ): Flow<ContributionSummary> = combine(repository.observeCheckIns(habitId), window) { c, w ->
-        c to
-            w
+        c to w
     }.distinctUntilChanged()
         .map { (c, w) ->
             val now = clock.instant()

@@ -6,3 +6,6 @@
 
 # style: raise the line limit to 120
 020eee91c404a50d2abeff036f7136581f6858df
+
+# style: reflow code and comments to the 120-column limit
+ea8c1075f0d62af5794780a966d3b2ae281b7173
