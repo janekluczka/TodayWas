@@ -324,7 +324,12 @@ class AccountViewModelTest {
     fun `should call signOut when SignOutClicked is dispatched`() =
         runTest {
             // Arrange
-            val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val repository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
             val viewModel = viewModel(repository)
 
             // Act
@@ -338,7 +343,12 @@ class AccountViewModelTest {
     fun `should clear synced local data when SignOutClicked succeeds`() =
         runTest {
             // Arrange
-            val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val repository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
             val onboardingRepository = FakeOnboardingRepository()
@@ -358,7 +368,12 @@ class AccountViewModelTest {
     fun `should not clear local data when SignOutClicked fails`() =
         runTest {
             // Arrange
-            val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val repository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
             repository.signOutError = AuthError.NetworkUnavailable
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
@@ -379,7 +394,12 @@ class AccountViewModelTest {
     fun `should show an error and clear isSigningOut when SignOutClicked fails`() =
         runTest {
             // Arrange
-            val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val repository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
             repository.signOutError = AuthError.NetworkUnavailable
             val viewModel = viewModel(repository)
 
@@ -396,7 +416,12 @@ class AccountViewModelTest {
     fun `should reset a stale SUCCESS step back to SIGN_IN when SignOutClicked is dispatched`() =
         runTest {
             // Arrange
-            val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val repository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
             val viewModel = viewModel(repository)
             viewModel.onIntent(AccountIntent.SignUpLinkClicked)
             fillSignUpForm(viewModel)
@@ -460,7 +485,10 @@ class AccountViewModelTest {
             val repository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository(
-                initialState = OnboardingState(completed = true, hasSyncedLocalData = true),
+                initialState = OnboardingState(
+                    completed = true,
+                    hasSyncedLocalData = true,
+                ),
             )
             val viewModel = viewModel(
                 repository,
@@ -594,7 +622,12 @@ class AccountViewModelTest {
     fun `should show DATA_SYNC_REVIEW when SyncLocalDataClicked is dispatched with unsynced local data`() =
         runTest {
             // Arrange
-            val repository = FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+            val repository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
             val viewModel = viewModel(

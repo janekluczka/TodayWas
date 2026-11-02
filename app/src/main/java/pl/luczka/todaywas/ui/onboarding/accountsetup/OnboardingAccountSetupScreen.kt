@@ -154,11 +154,21 @@ private fun OnboardingAccountSetupScreenContent(
 private class OnboardingAccountSetupUiStatePreviewProvider :
     PreviewParameterProvider<OnboardingAccountSetupUiState> {
     override val values = sequenceOf(
-        OnboardingAccountSetupUiState(accountSubStep = AccountSubStep.SIGN_IN, signInForm = SignInFormUiState()),
-        OnboardingAccountSetupUiState(accountSubStep = AccountSubStep.SIGN_UP, signUpForm = SignUpFormUiState()),
+        OnboardingAccountSetupUiState(
+            accountSubStep = AccountSubStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+        ),
+        OnboardingAccountSetupUiState(
+            accountSubStep = AccountSubStep.SIGN_UP,
+            signUpForm = SignUpFormUiState(),
+        ),
         OnboardingAccountSetupUiState(
             accountSubStep = AccountSubStep.DATA_SYNC_REVIEW,
-            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            dataSyncSummary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
         ),
     )
 }

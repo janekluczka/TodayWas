@@ -71,7 +71,10 @@ fun <T> DsSectionedList(
         Column {
             when {
                 isLoading -> repeat(SKELETON_ROW_COUNT) { index ->
-                    val shape = itemShape(isFirst = index == 0, isLast = index == SKELETON_ROW_COUNT - 1)
+                    val shape = itemShape(
+                        isFirst = index == 0,
+                        isLast = index == SKELETON_ROW_COUNT - 1,
+                    )
                     SectionItem(shape = shape) { SkeletonRow() }
                     if (index < SKELETON_ROW_COUNT - 1) {
                         DsHorizontalDivider(color = Color.Transparent)
@@ -79,7 +82,12 @@ fun <T> DsSectionedList(
                 }
                 else -> items.forEachIndexed { index, item ->
                     val isLast = index == items.lastIndex && !hasViewAll
-                    SectionItem(shape = itemShape(isFirst = index == 0, isLast = isLast)) {
+                    SectionItem(
+                        shape = itemShape(
+                            isFirst = index == 0,
+                            isLast = isLast,
+                        ),
+                    ) {
                         itemContent(item)
                     }
                     if (index < items.lastIndex || hasViewAll) {
@@ -88,8 +96,16 @@ fun <T> DsSectionedList(
                 }
             }
             if (!isLoading && onViewAllClick != null && viewAllLabel != null) {
-                SectionItem(shape = itemShape(isFirst = false, isLast = true)) {
-                    ViewAllRow(label = viewAllLabel, onClick = onViewAllClick)
+                SectionItem(
+                    shape = itemShape(
+                        isFirst = false,
+                        isLast = true,
+                    ),
+                ) {
+                    ViewAllRow(
+                        label = viewAllLabel,
+                        onClick = onViewAllClick,
+                    )
                 }
             }
         }
@@ -105,7 +121,12 @@ private fun itemShape(
 ): Shape {
     val top = if (isFirst) OUTER_CORNER_RADIUS else INNER_CORNER_RADIUS
     val bottom = if (isLast) OUTER_CORNER_RADIUS else INNER_CORNER_RADIUS
-    return RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom)
+    return RoundedCornerShape(
+        topStart = top,
+        topEnd = top,
+        bottomStart = bottom,
+        bottomEnd = bottom,
+    )
 }
 
 // Each item now paints its own background instead of sharing one outer DsCard, so the (now
@@ -156,14 +177,23 @@ private fun ViewAllRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(DsSpacing.space400),
     ) {
-        DsText(text = label, color = MaterialTheme.colorScheme.primary)
-        DsIcon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+        DsText(
+            text = label,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        DsIcon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+        )
     }
 }
 
 @Composable
 private fun PreviewRow(text: String) {
-    DsText(text = text, modifier = Modifier.fillMaxWidth().padding(DsSpacing.space400))
+    DsText(
+        text = text,
+        modifier = Modifier.fillMaxWidth().padding(DsSpacing.space400),
+    )
 }
 
 private enum class DsSectionedListPreviewState {

@@ -36,7 +36,10 @@ class AuthRepositoryImplTest {
 
     private fun repository(engine: MockEngine) =
         AuthRepositoryImpl(
-            createSupabaseClient(supabaseUrl = "https://example.supabase.co", supabaseKey = "test-key") {
+            createSupabaseClient(
+                supabaseUrl = "https://example.supabase.co",
+                supabaseKey = "test-key",
+            ) {
                 httpEngine = engine
                 install(Auth) { minimalConfig() }
             },

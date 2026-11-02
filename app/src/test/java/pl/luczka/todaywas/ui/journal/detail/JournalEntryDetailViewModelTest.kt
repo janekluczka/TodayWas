@@ -194,7 +194,10 @@ class JournalEntryDetailViewModelTest {
             // Arrange - entry is well past its 24h edit window, unlike editing's expiry tests
             val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneId.systemDefault())
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
-            val viewModel = viewModel(repository, clock = expiredClock)
+            val viewModel = viewModel(
+                repository,
+                clock = expiredClock,
+            )
             viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
             runCurrent()
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)

@@ -14,7 +14,11 @@ fun DsTabRow(
     modifier: Modifier = Modifier,
     tabs: @Composable () -> Unit,
 ) {
-    SecondaryTabRow(selectedTabIndex = selectedTabIndex, modifier = modifier, tabs = tabs)
+    SecondaryTabRow(
+        selectedTabIndex = selectedTabIndex,
+        modifier = modifier,
+        tabs = tabs,
+    )
 }
 
 @Composable
@@ -26,7 +30,14 @@ fun DsTab(
     text: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)? = null,
 ) {
-    Tab(selected = selected, onClick = onClick, enabled = enabled, text = text, icon = icon, modifier = modifier)
+    Tab(
+        selected = selected,
+        onClick = onClick,
+        enabled = enabled,
+        text = text,
+        icon = icon,
+        modifier = modifier,
+    )
 }
 
 @PreviewLightDark

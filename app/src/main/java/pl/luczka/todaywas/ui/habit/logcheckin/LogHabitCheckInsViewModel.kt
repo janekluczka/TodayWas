@@ -90,13 +90,28 @@ class LogHabitCheckInsViewModel @Inject constructor(
         if (values.isEmpty()) return
         val date = selectedDateFlow.value
         viewModelScope.launch {
-            saveState.update { it.copy(isSaving = true, saveError = false) }
+            saveState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                )
+            }
             val result = logHabitCheckIns(date, values)
             if (result.isSuccess) {
                 pendingValuesFlow.value = emptyMap()
-                saveState.update { it.copy(isSaving = false, pendingNavigation = LogHabitCheckInsNavigation.Saved) }
+                saveState.update {
+                    it.copy(
+                        isSaving = false,
+                        pendingNavigation = LogHabitCheckInsNavigation.Saved,
+                    )
+                }
             } else {
-                saveState.update { it.copy(isSaving = false, saveError = true) }
+                saveState.update {
+                    it.copy(
+                        isSaving = false,
+                        saveError = true,
+                    )
+                }
             }
         }
     }

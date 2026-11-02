@@ -74,7 +74,11 @@ fun AddJournalEntryScreen(
         viewModel.onIntent(AddJournalEntryIntent.NavigationHandled)
     }
 
-    AddJournalEntryScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onCancel = onCancel)
+    AddJournalEntryScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+        onCancel = onCancel,
+    )
 }
 
 @Composable
@@ -117,12 +121,18 @@ private fun AddJournalEntryScreenContent(
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            JournalDateStrip(uiState = uiState, onIntent = onIntent)
+            JournalDateStrip(
+                uiState = uiState,
+                onIntent = onIntent,
+            )
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space400),
+                    .padding(
+                        horizontal = DsSpacing.space600,
+                        vertical = DsSpacing.space400,
+                    ),
             ) {
                 DsPlainTextField(
                     value = uiState.text,
@@ -199,7 +209,11 @@ fun StarterPromptList(
     Column(modifier = modifier) {
         for (prompt in starterPrompts) {
             val text = prompt.resolvedText()
-            DsAssistChip(text = text, leadingIcon = prompt.tone.icon(), onClick = { onPromptClick(text) })
+            DsAssistChip(
+                text = text,
+                leadingIcon = prompt.tone.icon(),
+                onClick = { onPromptClick(text) },
+            )
         }
         DsAssistChip(
             text = stringResource(R.string.journal_help_me_start_cta),
@@ -303,7 +317,10 @@ fun HelpMeStartBottomSheet(
         errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
 
-    DsModalBottomSheet(onDismissRequest = onDismissRequest, modifier = modifier) {
+    DsModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+    ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
@@ -386,7 +403,10 @@ fun HelpMeStartBottomSheet(
                     }
                 }
             }
-            DsSnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
+            DsSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
         }
     }
 }
@@ -411,7 +431,10 @@ fun aiAssistErrorMessage(error: AiAssistErrorUiState): String = when (error) {
 }
 
 private val previewStarterPrompts = JournalStarterPromptTone.entries.map { tone ->
-    JournalStarterPromptUiState(tone = tone, variant = 0)
+    JournalStarterPromptUiState(
+        tone = tone,
+        variant = 0,
+    )
 }
 
 private class AddJournalEntryScreenPreviewStateProvider : PreviewParameterProvider<AddJournalEntryUiState> {
@@ -467,9 +490,16 @@ private fun AddJournalEntryScreenPreview(
 
 private class HelpMeStartBottomSheetPreviewStateProvider : PreviewParameterProvider<HelpMeStartUiState> {
     override val values = sequenceOf(
-        HelpMeStartUiState(isVisible = true, step = HelpMeStartStep.SIGNED_OUT),
+        HelpMeStartUiState(
+            isVisible = true,
+            step = HelpMeStartStep.SIGNED_OUT,
+        ),
         HelpMeStartUiState(isVisible = true),
-        HelpMeStartUiState(isVisible = true, selectedTone = JournalPromptToneUiState.GOOD, isGenerating = true),
+        HelpMeStartUiState(
+            isVisible = true,
+            selectedTone = JournalPromptToneUiState.GOOD,
+            isGenerating = true,
+        ),
         HelpMeStartUiState(
             isVisible = true,
             step = HelpMeStartStep.PREVIEW,

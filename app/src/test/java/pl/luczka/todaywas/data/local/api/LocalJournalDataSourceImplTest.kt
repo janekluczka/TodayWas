@@ -139,11 +139,18 @@ class LocalJournalDataSourceImplTest {
                 createdAt = 1_000L,
                 updatedAt = 1_000L,
             )
-            val dao = FakeDao(failuresBeforeSuccess = 1, entities = mutableMapOf("1" to entity))
+            val dao = FakeDao(
+                failuresBeforeSuccess = 1,
+                entities = mutableMapOf("1" to entity),
+            )
             val dataSource = dataSource(dao)
 
             // Act
-            val result = dataSource.updateEntry(id = "1", text = "Edited.", updatedAt = 2_000L)
+            val result = dataSource.updateEntry(
+                id = "1",
+                text = "Edited.",
+                updatedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -162,11 +169,18 @@ class LocalJournalDataSourceImplTest {
                 createdAt = 1_000L,
                 updatedAt = 1_000L,
             )
-            val dao = FakeDao(failuresBeforeSuccess = Int.MAX_VALUE, entities = mutableMapOf("1" to entity))
+            val dao = FakeDao(
+                failuresBeforeSuccess = Int.MAX_VALUE,
+                entities = mutableMapOf("1" to entity),
+            )
             val dataSource = dataSource(dao)
 
             // Act
-            val result = dataSource.updateEntry(id = "1", text = "Edited.", updatedAt = 2_000L)
+            val result = dataSource.updateEntry(
+                id = "1",
+                text = "Edited.",
+                updatedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isFailure)
@@ -181,7 +195,11 @@ class LocalJournalDataSourceImplTest {
             val dataSource = dataSource(dao)
 
             // Act
-            val result = dataSource.updateEntry(id = "1", text = "Edited.", updatedAt = 2_000L)
+            val result = dataSource.updateEntry(
+                id = "1",
+                text = "Edited.",
+                updatedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isFailure)
@@ -203,7 +221,10 @@ class LocalJournalDataSourceImplTest {
             val dataSource = dataSource(dao)
 
             // Act
-            val result = dataSource.deleteEntry(id = "1", deletedAt = 2_000L)
+            val result = dataSource.deleteEntry(
+                id = "1",
+                deletedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -219,7 +240,10 @@ class LocalJournalDataSourceImplTest {
             val dataSource = dataSource(dao)
 
             // Act
-            val result = dataSource.deleteEntry(id = "1", deletedAt = 2_000L)
+            val result = dataSource.deleteEntry(
+                id = "1",
+                deletedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isSuccess)

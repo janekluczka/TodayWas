@@ -105,7 +105,10 @@ fun SignInFormContent(
 private class SignInFormUiStatePreviewProvider : PreviewParameterProvider<SignInFormUiState> {
     override val values = sequenceOf(
         SignInFormUiState(),
-        SignInFormUiState(email = "not-an-email", emailError = true),
+        SignInFormUiState(
+            email = "not-an-email",
+            emailError = true,
+        ),
         SignInFormUiState(isSubmitting = true),
     )
 }

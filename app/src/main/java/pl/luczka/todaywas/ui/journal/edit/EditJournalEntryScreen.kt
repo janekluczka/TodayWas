@@ -85,7 +85,10 @@ fun EditJournalEntryScreen(
 
     BackHandler(enabled = true) { viewModel.onIntent(EditJournalEntryIntent.BackClicked) }
 
-    EditJournalEntryScreenContent(uiState = uiState, onIntent = viewModel::onIntent)
+    EditJournalEntryScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+    )
 }
 
 @Composable
@@ -131,7 +134,10 @@ private fun EditJournalEntryScreenContent(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space400),
+                    .padding(
+                        horizontal = DsSpacing.space600,
+                        vertical = DsSpacing.space400,
+                    ),
             ) {
                 DsPlainTextField(
                     value = uiState.text,
@@ -232,7 +238,10 @@ fun HelpMeRefineBottomSheet(
         errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
 
-    DsModalBottomSheet(onDismissRequest = onDismissRequest, modifier = modifier) {
+    DsModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+    ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
@@ -298,13 +307,19 @@ fun HelpMeRefineBottomSheet(
                     }
                 }
             }
-            DsSnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
+            DsSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
         }
     }
 }
 
 private val previewStarterPrompts = JournalStarterPromptTone.entries.map { tone ->
-    JournalStarterPromptUiState(tone = tone, variant = 0)
+    JournalStarterPromptUiState(
+        tone = tone,
+        variant = 0,
+    )
 }
 
 private val previewEntry = JournalEntryUiState(
@@ -376,7 +391,11 @@ private fun EditJournalEntryScreenPreview(
 private class HelpMeRefineBottomSheetPreviewStateProvider : PreviewParameterProvider<HelpMeRefineUiState> {
     override val values = sequenceOf(
         HelpMeRefineUiState(isVisible = true),
-        HelpMeRefineUiState(isVisible = true, selectedTone = JournalPromptToneUiState.GOOD, isGenerating = true),
+        HelpMeRefineUiState(
+            isVisible = true,
+            selectedTone = JournalPromptToneUiState.GOOD,
+            isGenerating = true,
+        ),
         HelpMeRefineUiState(
             isVisible = true,
             step = HelpMeRefineStep.PREVIEW,

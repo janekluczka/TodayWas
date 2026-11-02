@@ -28,7 +28,10 @@ class AiAssistRepositoryImplTest {
 
     private fun repository(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
         AiAssistRepositoryImpl(
-            createSupabaseClient(supabaseUrl = "https://example.supabase.co", supabaseKey = "test-key") {
+            createSupabaseClient(
+                supabaseUrl = "https://example.supabase.co",
+                supabaseKey = "test-key",
+            ) {
                 httpEngine = MockEngine(handler)
                 install(Functions)
             },
@@ -47,7 +50,10 @@ class AiAssistRepositoryImplTest {
             }
 
             // Act
-            val result = repository.generateJournalStarterPrompt(JournalPromptTone.GOOD, thoughts = null)
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -62,7 +68,10 @@ class AiAssistRepositoryImplTest {
             val repository = repository { respond("upstream failed", HttpStatusCode.BadGateway) }
 
             // Act
-            val result = repository.generateJournalStarterPrompt(JournalPromptTone.GOOD, thoughts = null)
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isFailure)
@@ -83,7 +92,10 @@ class AiAssistRepositoryImplTest {
             }
 
             // Act
-            val result = repository.generateJournalStarterPrompt(JournalPromptTone.GOOD, thoughts = null)
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isFailure)
@@ -104,7 +116,11 @@ class AiAssistRepositoryImplTest {
             }
 
             // Act
-            val result = repository.refineJournalEntry("Original text", JournalPromptTone.NEUTRAL, thoughts = null)
+            val result = repository.refineJournalEntry(
+                "Original text",
+                JournalPromptTone.NEUTRAL,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -126,7 +142,11 @@ class AiAssistRepositoryImplTest {
             }
 
             // Act
-            repository.refineJournalEntry("Original text", JournalPromptTone.NEUTRAL, thoughts = "make it shorter")
+            repository.refineJournalEntry(
+                "Original text",
+                JournalPromptTone.NEUTRAL,
+                thoughts = "make it shorter",
+            )
 
             // Assert
             assertTrue(capturedBody.orEmpty().contains("make it shorter"))
@@ -150,7 +170,10 @@ class AiAssistRepositoryImplTest {
             }
 
             // Act
-            repository.generateJournalStarterPrompt(JournalPromptTone.GOOD, thoughts = null)
+            repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
 
             // Assert
             assertEquals(30_000L, capturedRequestTimeoutMillis)
@@ -175,7 +198,10 @@ class AiAssistRepositoryImplTest {
             // Act
             val job = launch(start = CoroutineStart.UNDISPATCHED) {
                 try {
-                    repository.generateJournalStarterPrompt(JournalPromptTone.GOOD, thoughts = null)
+                    repository.generateJournalStarterPrompt(
+                        JournalPromptTone.GOOD,
+                        thoughts = null,
+                    )
                 } catch (e: CancellationException) {
                     caught = e
                     throw e

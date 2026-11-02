@@ -99,5 +99,9 @@ fun DsTheme(
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    MaterialTheme(colorScheme = colorScheme, typography = DsTypography, content = content)
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = DsTypography,
+        content = content,
+    )
 }

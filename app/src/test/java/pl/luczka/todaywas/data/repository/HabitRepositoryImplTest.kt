@@ -91,7 +91,10 @@ class HabitRepositoryImplTest {
         ): Result<HabitCheckInEntity> {
             val existing = checkIns[habitId to date.toString()]
                 ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
-            val updated = existing.copy(value = value, updatedAt = updatedAt)
+            val updated = existing.copy(
+                value = value,
+                updatedAt = updatedAt,
+            )
             checkIns[habitId to date.toString()] = updated
             return Result.success(updated)
         }
@@ -158,7 +161,11 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource()
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local = local,
+                authRepository = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             repository.createHabit(
@@ -180,7 +187,11 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource()
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local = local,
+                authRepository = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             repository.createHabit(
@@ -202,7 +213,11 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource(shouldFailInsertHabit = true)
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local = local,
+                authRepository = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             val result = repository.createHabit(
@@ -235,7 +250,11 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local = local,
+                authRepository = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             repository.deleteHabit("1")
@@ -261,7 +280,11 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to habit))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local = local,
+                authRepository = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             val result = repository.deleteHabit("1")
@@ -287,10 +310,17 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource(checkIns = mutableMapOf(("1" to "2026-07-27") to existing))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local = local,
+                authRepository = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
-            repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
+            repository.deleteCheckIn(
+                habitId = "1",
+                date = LocalDate.of(2026, 7, 27),
+            )
 
             // Assert
             assertEquals(1, syncScheduler.scheduleSyncCallCount)
@@ -311,10 +341,17 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource(checkIns = mutableMapOf(("1" to "2026-07-27") to existing))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local = local, authRepository = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local = local,
+                authRepository = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
-            val result = repository.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27))
+            val result = repository.deleteCheckIn(
+                habitId = "1",
+                date = LocalDate.of(2026, 7, 27),
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -436,7 +473,11 @@ class HabitRepositoryImplTest {
             val local = FakeLocalHabitDataSource(habits = mutableMapOf("1" to tombstoned))
             val remoteHabits = FakeRemoteHabitDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local = local, remoteHabitDataSource = remoteHabits, authRepository = auth)
+            val repository = repository(
+                local = local,
+                remoteHabitDataSource = remoteHabits,
+                authRepository = auth,
+            )
 
             // Act
             val result = repository.syncWithRemote()

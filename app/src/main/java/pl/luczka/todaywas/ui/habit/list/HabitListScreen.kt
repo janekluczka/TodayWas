@@ -96,8 +96,14 @@ private fun HabitListScreenContent(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(uiState.habits, key = { it.id }) { habit ->
-                        HabitRow(habit = habit, onClick = { onHabitClick(habit.id) })
+                    items(
+                        uiState.habits,
+                        key = { it.id },
+                    ) { habit ->
+                        HabitRow(
+                            habit = habit,
+                            onClick = { onHabitClick(habit.id) },
+                        )
                     }
                 }
             }
@@ -113,7 +119,10 @@ private fun SortChipRow(
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        contentPadding = PaddingValues(horizontal = DsSpacing.space400, vertical = DsSpacing.space200),
+        contentPadding = PaddingValues(
+            horizontal = DsSpacing.space400,
+            vertical = DsSpacing.space200,
+        ),
         modifier = modifier,
     ) {
         items(HabitSortUiState.entries) { sort ->
@@ -135,7 +144,10 @@ private fun HabitSortUiState.labelRes(): Int = when (this) {
 private class HabitListUiStatePreviewProvider : PreviewParameterProvider<HabitListUiState> {
     override val values = sequenceOf(
         HabitListUiState(isLoading = true),
-        HabitListUiState(isLoading = false, habits = emptyList()),
+        HabitListUiState(
+            isLoading = false,
+            habits = emptyList(),
+        ),
         HabitListUiState(
             isLoading = false,
             habits = listOf(

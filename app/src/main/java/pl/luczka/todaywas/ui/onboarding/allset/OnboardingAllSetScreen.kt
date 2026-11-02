@@ -45,7 +45,10 @@ fun OnboardingAllSetScreen(
         viewModel.onIntent(OnboardingAllSetIntent.NavigationHandled)
     }
 
-    OnboardingAllSetScreenContent(uiState = uiState, onIntent = viewModel::onIntent)
+    OnboardingAllSetScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+    )
 }
 
 @Composable
@@ -93,7 +96,10 @@ private fun allSetMessage(
 private class OnboardingAllSetUiStatePreviewProvider : PreviewParameterProvider<OnboardingAllSetUiState> {
     override val values = sequenceOf(
         OnboardingAllSetUiState(reason = AllSetReason.NO_ACCOUNT),
-        OnboardingAllSetUiState(reason = AllSetReason.SIGNED_IN, email = "person@example.com"),
+        OnboardingAllSetUiState(
+            reason = AllSetReason.SIGNED_IN,
+            email = "person@example.com",
+        ),
         OnboardingAllSetUiState(reason = AllSetReason.ACCOUNT_CREATED),
     )
 }

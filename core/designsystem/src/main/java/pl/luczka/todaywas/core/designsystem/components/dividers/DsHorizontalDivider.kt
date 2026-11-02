@@ -15,7 +15,11 @@ fun DsHorizontalDivider(
     thickness: Dp = DividerDefaults.Thickness,
     color: Color = DividerDefaults.color,
 ) {
-    HorizontalDivider(thickness = thickness, color = color, modifier = modifier)
+    HorizontalDivider(
+        thickness = thickness,
+        color = color,
+        modifier = modifier,
+    )
 }
 
 @PreviewLightDark

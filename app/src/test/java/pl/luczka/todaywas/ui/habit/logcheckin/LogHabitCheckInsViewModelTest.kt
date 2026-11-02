@@ -103,7 +103,14 @@ class LogHabitCheckInsViewModelTest {
     fun `should render as an editable row with a 0 to 1 range when a binary habit is unlogged`() =
         runTest {
             // Arrange
-            val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1", name = "Drink water")))
+            val repository = FakeHabitRepository(
+                initialHabits = listOf(
+                    habit(
+                        id = "1",
+                        name = "Drink water",
+                    ),
+                ),
+            )
             val viewModel = viewModel(repository)
 
             // Act
@@ -128,7 +135,14 @@ class LogHabitCheckInsViewModelTest {
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
-                initialHabits = listOf(habit(id = "1", type = HabitType.SCALE, scaleMin = 1, scaleMax = 5)),
+                initialHabits = listOf(
+                    habit(
+                        id = "1",
+                        type = HabitType.SCALE,
+                        scaleMin = 1,
+                        scaleMax = 5,
+                    ),
+                ),
             )
             val viewModel = viewModel(repository)
 
@@ -146,8 +160,19 @@ class LogHabitCheckInsViewModelTest {
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
-                initialHabits = listOf(habit(id = "1", type = HabitType.BINARY)),
-                initialCheckIns = listOf(checkIn(habitId = "1", date = LocalDate.now(), value = 1)),
+                initialHabits = listOf(
+                    habit(
+                        id = "1",
+                        type = HabitType.BINARY,
+                    ),
+                ),
+                initialCheckIns = listOf(
+                    checkIn(
+                        habitId = "1",
+                        date = LocalDate.now(),
+                        value = 1,
+                    ),
+                ),
             )
             val viewModel = viewModel(repository)
 
@@ -174,7 +199,13 @@ class LogHabitCheckInsViewModelTest {
             // Arrange
             val repository = FakeHabitRepository(
                 initialHabits = listOf(habit(id = "1"), habit(id = "2")),
-                initialCheckIns = listOf(checkIn(habitId = "1", date = LocalDate.now(), value = 1)),
+                initialCheckIns = listOf(
+                    checkIn(
+                        habitId = "1",
+                        date = LocalDate.now(),
+                        value = 1,
+                    ),
+                ),
             )
             val viewModel = viewModel(repository)
 
@@ -194,7 +225,12 @@ class LogHabitCheckInsViewModelTest {
             val viewModel = viewModel(repository)
 
             // Act
-            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
+            viewModel.onIntent(
+                LogHabitCheckInsIntent.ValueChanged(
+                    habitId = "1",
+                    value = 1,
+                ),
+            )
 
             // Assert
             val row = viewModel.uiState.value.rows
@@ -208,10 +244,20 @@ class LogHabitCheckInsViewModelTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
+            viewModel.onIntent(
+                LogHabitCheckInsIntent.ValueChanged(
+                    habitId = "1",
+                    value = 1,
+                ),
+            )
 
             // Act
-            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = null))
+            viewModel.onIntent(
+                LogHabitCheckInsIntent.ValueChanged(
+                    habitId = "1",
+                    value = null,
+                ),
+            )
 
             // Assert
             val row = viewModel.uiState.value.rows
@@ -226,7 +272,12 @@ class LogHabitCheckInsViewModelTest {
             val yesterday = LocalDate.now().minusDays(1)
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
+            viewModel.onIntent(
+                LogHabitCheckInsIntent.ValueChanged(
+                    habitId = "1",
+                    value = 1,
+                ),
+            )
 
             // Act
             viewModel.onIntent(LogHabitCheckInsIntent.DateSelected(yesterday))
@@ -244,7 +295,12 @@ class LogHabitCheckInsViewModelTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
+            viewModel.onIntent(
+                LogHabitCheckInsIntent.ValueChanged(
+                    habitId = "1",
+                    value = 1,
+                ),
+            )
 
             // Act
             viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
@@ -265,7 +321,12 @@ class LogHabitCheckInsViewModelTest {
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
             repository.addCheckInsResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
+            viewModel.onIntent(
+                LogHabitCheckInsIntent.ValueChanged(
+                    habitId = "1",
+                    value = 1,
+                ),
+            )
 
             // Act
             viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
@@ -283,7 +344,12 @@ class LogHabitCheckInsViewModelTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit(id = "1")))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(LogHabitCheckInsIntent.ValueChanged(habitId = "1", value = 1))
+            viewModel.onIntent(
+                LogHabitCheckInsIntent.ValueChanged(
+                    habitId = "1",
+                    value = 1,
+                ),
+            )
             viewModel.onIntent(LogHabitCheckInsIntent.SaveClicked)
             runCurrent()
 

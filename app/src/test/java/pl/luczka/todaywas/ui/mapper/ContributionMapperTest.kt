@@ -31,7 +31,10 @@ class ContributionMapperTest {
     @Test
     fun `should default to BY_MONTH when type is not specified`() {
         // Arrange
-        val grid = ContributionGrid(window = ContributionWindow.CalendarYear(2026), days = emptyMap())
+        val grid = ContributionGrid(
+            window = ContributionWindow.CalendarYear(2026),
+            days = emptyMap(),
+        )
 
         // Act
         val default = grid.toUiState(now)
@@ -44,7 +47,10 @@ class ContributionMapperTest {
     @Test
     fun `should never produce a Blank cell when mode is CONTINUOUS`() {
         // Arrange
-        val grid = ContributionGrid(window = ContributionWindow.CalendarYear(2026), days = emptyMap())
+        val grid = ContributionGrid(
+            window = ContributionWindow.CalendarYear(2026),
+            days = emptyMap(),
+        )
 
         // Act
         val cells = grid.toUiState(now, ContributionGridType.CONTINUOUS).cells
@@ -56,7 +62,10 @@ class ContributionMapperTest {
     @Test
     fun `should cover the whole window padded to full weeks when mode is CONTINUOUS`() {
         // Arrange
-        val grid = ContributionGrid(window = ContributionWindow.CalendarYear(2026), days = emptyMap())
+        val grid = ContributionGrid(
+            window = ContributionWindow.CalendarYear(2026),
+            days = emptyMap(),
+        )
 
         // Act
         val cells = grid.toUiState(now, ContributionGridType.CONTINUOUS).cells
@@ -74,7 +83,10 @@ class ContributionMapperTest {
     @Test
     fun `should have no gap before the first column when mode is BY_MONTH`() {
         // Arrange
-        val grid = ContributionGrid(window = ContributionWindow.CalendarYear(2026), days = emptyMap())
+        val grid = ContributionGrid(
+            window = ContributionWindow.CalendarYear(2026),
+            days = emptyMap(),
+        )
 
         // Act
         val firstColumn = chronologicalChunks(grid, ContributionGridType.BY_MONTH).first()
@@ -86,7 +98,10 @@ class ContributionMapperTest {
     @Test
     fun `should produce columns of exactly 7 cells when mode is BY_MONTH`() {
         // Arrange
-        val grid = ContributionGrid(window = ContributionWindow.CalendarYear(2026), days = emptyMap())
+        val grid = ContributionGrid(
+            window = ContributionWindow.CalendarYear(2026),
+            days = emptyMap(),
+        )
 
         // Act
         val chunks = chronologicalChunks(grid, ContributionGridType.BY_MONTH)
@@ -100,7 +115,10 @@ class ContributionMapperTest {
     @Test
     fun `should split a month starting mid-week into two truncated columns when mode is BY_MONTH`() {
         // Arrange
-        val grid = ContributionGrid(window = ContributionWindow.CalendarYear(2026), days = emptyMap())
+        val grid = ContributionGrid(
+            window = ContributionWindow.CalendarYear(2026),
+            days = emptyMap(),
+        )
 
         // Act August 1, 2026 is a Saturday: July's last column should show only Mon-Fri (Blank Sat/Sun); August's first
         // column should show only Sat-Sun (Blank Mon-Fri) and carry hasGapBefore on all 7 of its cells.

@@ -26,6 +26,8 @@ jobs:
               - 'app/**'
               - 'core/**'
               - 'config/**'
+              - 'ktlint-rules/**'
+              - '.editorconfig'
               - 'build.gradle.kts'
               - 'settings.gradle.kts'
               - 'gradle/**'
@@ -62,6 +64,8 @@ jobs:
         run: ./gradlew lintDebug
       - name: Unit tests
         run: ./gradlew testDebugUnitTest
+      - name: ktlint rule tests
+        run: ./gradlew :ktlint-rules:test
       - name: Debug build
         run: ./gradlew assembleDebug
 

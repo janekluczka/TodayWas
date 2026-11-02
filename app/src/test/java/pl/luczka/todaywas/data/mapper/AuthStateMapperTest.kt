@@ -55,13 +55,23 @@ class AuthStateMapperTest {
             refreshToken = "refresh",
             expiresIn = 3600,
             tokenType = "Bearer",
-            user = UserInfo(aud = "authenticated", id = "user-1", email = "person@example.com"),
+            user = UserInfo(
+                aud = "authenticated",
+                id = "user-1",
+                email = "person@example.com",
+            ),
         )
 
         // Act
         val result = SessionStatus.Authenticated(session).toAuthState()
 
         // Assert
-        assertEquals(AuthState.SignedIn(userId = "user-1", email = "person@example.com"), result)
+        assertEquals(
+            AuthState.SignedIn(
+                userId = "user-1",
+                email = "person@example.com",
+            ),
+            result,
+        )
     }
 }

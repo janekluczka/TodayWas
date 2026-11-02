@@ -56,7 +56,11 @@ fun LogHabitCheckInsScreen(
         viewModel.onIntent(LogHabitCheckInsIntent.NavigationHandled)
     }
 
-    LogHabitCheckInsScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onCancel = onCancel)
+    LogHabitCheckInsScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+        onCancel = onCancel,
+    )
 }
 
 private fun LogHabitCheckInsUiState.hasPendingInput(): Boolean =
@@ -108,13 +112,19 @@ private fun LogHabitCheckInsScreenContent(
                 onDateSelect = { onIntent(LogHabitCheckInsIntent.DateSelected(it)) },
             )
             LazyColumn(modifier = Modifier.weight(1f)) {
-                items(uiState.rows, key = { it.habitId }) { row ->
+                items(
+                    uiState.rows,
+                    key = { it.habitId },
+                ) { row ->
                     HabitCheckInRow(
                         row = row,
                         onIntent = onIntent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+                            .padding(
+                                horizontal = DsSpacing.space600,
+                                vertical = DsSpacing.space200,
+                            ),
                     )
                 }
             }
@@ -145,7 +155,11 @@ private fun HabitCheckInRow(
         ) {
             DsText(text = row.name)
             if (row is HabitCheckInRowUiState.AlreadyLogged) {
-                DsChip(text = doneLabel, containerColor = doneChipContainerColor, labelColor = doneChipLabelColor)
+                DsChip(
+                    text = doneLabel,
+                    containerColor = doneChipContainerColor,
+                    labelColor = doneChipLabelColor,
+                )
             }
         }
         when (row) {

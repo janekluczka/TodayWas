@@ -32,7 +32,13 @@ class JournalListViewModelTest {
     private fun entry(
         id: String,
         date: LocalDate,
-    ) = JournalEntry(id = id, date = date, text = "entry-$id", createdAt = Instant.now(), updatedAt = Instant.now())
+    ) = JournalEntry(
+        id = id,
+        date = date,
+        text = "entry-$id",
+        createdAt = Instant.now(),
+        updatedAt = Instant.now(),
+    )
 
     // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
     private fun TestScope.viewModel(entries: List<JournalEntry> = emptyList()): JournalListViewModel {

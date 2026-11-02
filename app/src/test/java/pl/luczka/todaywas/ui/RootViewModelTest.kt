@@ -51,7 +51,12 @@ class RootViewModelTest {
     fun `should resolve to OnboardingWelcomeKey when initial state is incomplete`() =
         runTest {
             // Arrange
-            val repository = FakeOnboardingRepository(OnboardingState(completed = false, hasSyncedLocalData = false))
+            val repository = FakeOnboardingRepository(
+                OnboardingState(
+                    completed = false,
+                    hasSyncedLocalData = false,
+                ),
+            )
 
             // Act
             val viewModel = viewModel(repository)
@@ -65,7 +70,12 @@ class RootViewModelTest {
     fun `should resolve to MainKey when initial state is already completed`() =
         runTest {
             // Arrange
-            val repository = FakeOnboardingRepository(OnboardingState(completed = true, hasSyncedLocalData = false))
+            val repository = FakeOnboardingRepository(
+                OnboardingState(
+                    completed = true,
+                    hasSyncedLocalData = false,
+                ),
+            )
 
             // Act
             val viewModel = viewModel(repository)
@@ -79,12 +89,20 @@ class RootViewModelTest {
     fun `should not change the resolved destination when a later emission flips completed to true`() =
         runTest {
             // Arrange
-            val repository = FakeOnboardingRepository(OnboardingState(completed = false, hasSyncedLocalData = false))
+            val repository = FakeOnboardingRepository(
+                OnboardingState(
+                    completed = false,
+                    hasSyncedLocalData = false,
+                ),
+            )
             val viewModel = viewModel(repository)
             assertEquals(OnboardingWelcomeKey, viewModel.initialDestination.value)
 
             // Act Mirrors reaching ALL_SET (or Skip) mid-flow: Room flips `completed` before Main shows.
-            repository.stateFlow.value = OnboardingState(completed = true, hasSyncedLocalData = false)
+            repository.stateFlow.value = OnboardingState(
+                completed = true,
+                hasSyncedLocalData = false,
+            )
 
             // Assert
             assertEquals(OnboardingWelcomeKey, viewModel.initialDestination.value)

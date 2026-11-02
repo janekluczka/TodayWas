@@ -33,7 +33,10 @@ class LocalHabitDataSourceImpl @Inject constructor(
     ): Result<HabitCheckInEntity> {
         val existing = habitCheckInDao.getByHabitAndDate(habitId, date.toString())
             ?: return Result.failure(NoSuchElementException("Check-in for habit $habitId on $date not found"))
-        val entity = existing.copy(value = value, updatedAt = updatedAt)
+        val entity = existing.copy(
+            value = value,
+            updatedAt = updatedAt,
+        )
         return safeDbCall { habitCheckInDao.update(entity) }.map { entity }
     }
 

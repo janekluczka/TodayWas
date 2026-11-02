@@ -34,7 +34,10 @@ fun DsScaffold(
 private fun DsScaffoldPreview() {
     DsTheme {
         DsScaffold(topBar = { DsTopBar(title = "TodayWas") }) { innerPadding ->
-            DsText(text = "No entries yet", modifier = Modifier.padding(innerPadding))
+            DsText(
+                text = "No entries yet",
+                modifier = Modifier.padding(innerPadding),
+            )
         }
     }
 }

@@ -18,7 +18,10 @@ fun DsNavigationBar(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
-    NavigationBar(modifier = modifier, content = content)
+    NavigationBar(
+        modifier = modifier,
+        content = content,
+    )
 }
 
 @Composable
@@ -50,13 +53,23 @@ private fun DsNavigationBarPreview() {
             DsNavigationBarItem(
                 selected = true,
                 onClick = {},
-                icon = { DsIcon(imageVector = Icons.Default.Edit, contentDescription = null) },
+                icon = {
+                    DsIcon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                    )
+                },
                 label = { DsText(text = "Journal") },
             )
             DsNavigationBarItem(
                 selected = false,
                 onClick = {},
-                icon = { DsIcon(imageVector = Icons.Default.Add, contentDescription = null) },
+                icon = {
+                    DsIcon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                    )
+                },
                 label = { DsText(text = "Habits") },
             )
         }

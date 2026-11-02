@@ -33,8 +33,14 @@ class CompleteOnboardingUseCaseTest {
     fun `should mark onboarding completed regardless of prior state when invoked`() =
         runTest {
             val priorStates = listOf(
-                OnboardingState(completed = false, hasSyncedLocalData = false),
-                OnboardingState(completed = true, hasSyncedLocalData = false),
+                OnboardingState(
+                    completed = false,
+                    hasSyncedLocalData = false,
+                ),
+                OnboardingState(
+                    completed = true,
+                    hasSyncedLocalData = false,
+                ),
             )
 
             for (priorState in priorStates) {

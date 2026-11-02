@@ -25,7 +25,10 @@ object HabitContributionCalculator {
                 val checkIn = checkInsByDate[date] ?: return@mapNotNull null
                 date to levelFor(checkIn.value, sortedValues)
             }.toMap()
-        return ContributionGrid(window = window, days = days)
+        return ContributionGrid(
+            window = window,
+            days = days,
+        )
     }
 
     // Cheaper than compute() for callers that only need one day's level (e.g. a habit list row's

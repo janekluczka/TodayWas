@@ -54,7 +54,12 @@ class CreateHabitViewModel @Inject constructor(
         if (_uiState.value.isSaving) return
         val state = _uiState.value
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, saveError = false) }
+            _uiState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                )
+            }
             val result = createHabit(
                 name = state.name,
                 description = state.description.ifBlank { null },
@@ -63,9 +68,19 @@ class CreateHabitViewModel @Inject constructor(
                 scaleMax = if (state.isBinary) null else state.scaleSteps,
             )
             if (result.isSuccess) {
-                _uiState.update { it.copy(isSaving = false, pendingNavigation = CreateHabitNavigation.Saved) }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        pendingNavigation = CreateHabitNavigation.Saved,
+                    )
+                }
             } else {
-                _uiState.update { it.copy(isSaving = false, saveError = true) }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        saveError = true,
+                    )
+                }
             }
         }
     }

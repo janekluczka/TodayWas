@@ -98,8 +98,14 @@ class HabitListViewModelTest {
             // Arrange
             val habits = listOf(habit("1"), habit("2"), habit("3"))
             val checkIns = listOf(
-                checkIn(habitId = "1", date = today.minusDays(5)),
-                checkIn(habitId = "2", date = today),
+                checkIn(
+                    habitId = "1",
+                    date = today.minusDays(5),
+                ),
+                checkIn(
+                    habitId = "2",
+                    date = today,
+                ),
             )
 
             // Act
@@ -118,9 +124,18 @@ class HabitListViewModelTest {
         runTest {
             // Arrange
             val habits = listOf(
-                habit("1", name = "Run"),
-                habit("2", name = "Drink water"),
-                habit("3", name = "Meditate"),
+                habit(
+                    "1",
+                    name = "Run",
+                ),
+                habit(
+                    "2",
+                    name = "Drink water",
+                ),
+                habit(
+                    "3",
+                    name = "Meditate",
+                ),
             )
             val viewModel = viewModel(habits)
 
@@ -142,9 +157,18 @@ class HabitListViewModelTest {
         runTest {
             // Arrange
             val habits = listOf(
-                habit("1", createdAt = Instant.ofEpochSecond(300)),
-                habit("2", createdAt = Instant.ofEpochSecond(100)),
-                habit("3", createdAt = Instant.ofEpochSecond(200)),
+                habit(
+                    "1",
+                    createdAt = Instant.ofEpochSecond(300),
+                ),
+                habit(
+                    "2",
+                    createdAt = Instant.ofEpochSecond(100),
+                ),
+                habit(
+                    "3",
+                    createdAt = Instant.ofEpochSecond(200),
+                ),
             )
             val viewModel = viewModel(habits)
 

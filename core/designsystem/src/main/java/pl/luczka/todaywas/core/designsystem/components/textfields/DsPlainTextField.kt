@@ -38,7 +38,11 @@ fun DsPlainTextField(
     val contentColor = LocalContentColor.current
     Box(modifier = modifier) {
         if (value.isEmpty() && placeholder != null) {
-            DsText(text = placeholder, style = textStyle, color = contentColor.copy(alpha = 0.6f))
+            DsText(
+                text = placeholder,
+                style = textStyle,
+                color = contentColor.copy(alpha = 0.6f),
+            )
         }
         BasicTextField(
             value = value,

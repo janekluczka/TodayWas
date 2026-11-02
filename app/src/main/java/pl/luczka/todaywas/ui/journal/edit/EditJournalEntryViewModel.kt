@@ -53,7 +53,10 @@ class EditJournalEntryViewModel @AssistedInject constructor(
             isSaving = false,
             saveError = false,
             starterPrompts = JournalStarterPromptTone.entries.map { tone ->
-                JournalStarterPromptUiState(tone = tone, variant = random.nextInt(STARTER_PROMPT_VARIANT_COUNT))
+                JournalStarterPromptUiState(
+                    tone = tone,
+                    variant = random.nextInt(STARTER_PROMPT_VARIANT_COUNT),
+                )
             },
         ),
     )
@@ -69,7 +72,13 @@ class EditJournalEntryViewModel @AssistedInject constructor(
     init {
         viewModelScope.launch {
             val entry = getJournalEntry(id) ?: return@launch
-            _uiState.update { it.copy(isLoading = false, entry = entry.toUiState(), text = entry.text) }
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    entry = entry.toUiState(),
+                    text = entry.text,
+                )
+            }
         }
         viewModelScope.launch {
             observeAuthState().collect { authState -> _uiState.update { it.copy(authState = authState.toUiState()) } }
@@ -111,7 +120,12 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         if (state.isSaving) return
         val entry = state.entry ?: return
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, saveError = false) }
+            _uiState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                )
+            }
             val result = updateJournalEntry(entry.id, state.text)
             if (result.isSuccess) {
                 _uiState.update { it.copy(isSaving = false) }
@@ -120,7 +134,12 @@ class EditJournalEntryViewModel @AssistedInject constructor(
                 _uiState.update { it.copy(isSaving = false) }
                 _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
             } else {
-                _uiState.update { it.copy(isSaving = false, saveError = true) }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        saveError = true,
+                    )
+                }
             }
         }
     }
@@ -153,7 +172,14 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         } else {
             HelpMeStartStep.SIGNED_OUT
         }
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true, step = step)) }
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.resetForNewSession(
+                    isVisible = true,
+                    step = step,
+                ),
+            )
+        }
     }
 
     private fun onHelpMeStartDismissed() {
@@ -182,7 +208,14 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         val entry = state.entry ?: return
         if (helpMeStart.isGenerating) return
         if ((helpMeStart.remainingToday ?: 1) <= 0) return
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null)) }
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.copy(
+                    isGenerating = true,
+                    error = null,
+                ),
+            )
+        }
         generateJob = viewModelScope.launch {
             val result = requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
             // Mirrors onRefine's expired-mid-flight handling: the 24h window can close during the
@@ -200,7 +233,10 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         val generatedText = _uiState.value.helpMeStart.generatedText ?: return
         generateJob?.cancel()
         _uiState.update {
-            it.copy(text = generatedText, helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false))
+            it.copy(
+                text = generatedText,
+                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
+            )
         }
     }
 
@@ -232,7 +268,14 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         val entry = state.entry ?: return
         if (helpMeRefine.isGenerating) return
         if ((helpMeRefine.remainingToday ?: 1) <= 0) return
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(isGenerating = true, error = null)) }
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.copy(
+                    isGenerating = true,
+                    error = null,
+                ),
+            )
+        }
         refineJob = viewModelScope.launch {
             val result = requestJournalRefinementPrompt(
                 state.text,
@@ -256,7 +299,10 @@ class EditJournalEntryViewModel @AssistedInject constructor(
         val refinedText = _uiState.value.helpMeRefine.refinedText ?: return
         refineJob?.cancel()
         _uiState.update {
-            it.copy(text = refinedText, helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false))
+            it.copy(
+                text = refinedText,
+                helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false),
+            )
         }
     }
 

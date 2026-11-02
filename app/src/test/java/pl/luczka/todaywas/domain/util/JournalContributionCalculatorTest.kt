@@ -15,7 +15,13 @@ class JournalContributionCalculatorTest {
     private val window = ContributionWindow.CalendarYear(2026)
 
     private fun entry(date: LocalDate) =
-        JournalEntry(id = date.toEpochDay().toString(), date = date, text = "entry", createdAt = now, updatedAt = now)
+        JournalEntry(
+            id = date.toEpochDay().toString(),
+            date = date,
+            text = "entry",
+            createdAt = now,
+            updatedAt = now,
+        )
 
     @Test
     fun `should map date to level 3 when it has an entry`() {

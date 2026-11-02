@@ -22,7 +22,10 @@ class LocalJournalDataSourceImpl @Inject constructor(
         updatedAt: Long,
     ): Result<JournalEntryEntity> {
         val existing = dao.getById(id) ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
-        val entity = existing.copy(text = text, updatedAt = updatedAt)
+        val entity = existing.copy(
+            text = text,
+            updatedAt = updatedAt,
+        )
         return safeDbCall { dao.update(entity) }.map { entity }
     }
 

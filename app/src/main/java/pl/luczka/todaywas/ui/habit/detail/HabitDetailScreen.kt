@@ -70,7 +70,11 @@ fun HabitDetailScreen(
         viewModel.onIntent(HabitDetailIntent.NavigationHandled)
     }
 
-    HabitDetailScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onBack = onBack)
+    HabitDetailScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+        onBack = onBack,
+    )
 }
 
 @Composable
@@ -135,7 +139,10 @@ private fun HabitDetailScreenContent(
                 showMonthLabels = true,
                 selectedDate = uiState.selectedDate,
                 onCellClick = { date -> onIntent(HabitDetailIntent.DaySelected(date)) },
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200, bottom = DsSpacing.space600),
+                modifier = Modifier.fillMaxWidth().padding(
+                    top = DsSpacing.space200,
+                    bottom = DsSpacing.space600,
+                ),
             )
             DayDetailPanel(
                 day = uiState.selectedDay,
@@ -161,7 +168,10 @@ private fun HabitDetailScreenContent(
     }
 
     if (uiState.isDeleteHabitDialogVisible) {
-        DeleteHabitDialog(checkInCount = uiState.checkInCount, onIntent = onIntent)
+        DeleteHabitDialog(
+            checkInCount = uiState.checkInCount,
+            onIntent = onIntent,
+        )
     }
 }
 
@@ -208,18 +218,30 @@ private fun DayDetailPanel(
     } else {
         MaterialTheme.typography.titleMedium
     }
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
-        DsText(text = dateLabel, style = MaterialTheme.typography.titleMedium)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
+    ) {
+        DsText(
+            text = dateLabel,
+            style = MaterialTheme.typography.titleMedium,
+        )
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(top = DsSpacing.space100, bottom = DsSpacing.space400),
+            modifier = Modifier.padding(
+                top = DsSpacing.space100,
+                bottom = DsSpacing.space400,
+            ),
         ) {
             DsText(
                 text = stringResource(R.string.habit_checkin_not_logged_label),
                 style = MaterialTheme.typography.displayLarge,
                 color = Color.Transparent,
             )
-            DsText(text = statusLabel, style = statusStyle)
+            DsText(
+                text = statusLabel,
+                style = statusStyle,
+            )
         }
         if (day.eligibleForEdit || day.alreadyLogged) {
             Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
@@ -271,7 +293,10 @@ private fun EditRowSheetContent(
         { value -> value.toString() }
     }
     Column(modifier = Modifier.padding(horizontal = DsSpacing.space600)) {
-        DsText(text = formattedDate, modifier = Modifier.padding(bottom = DsSpacing.space400))
+        DsText(
+            text = formattedDate,
+            modifier = Modifier.padding(bottom = DsSpacing.space400),
+        )
         DsSegmentedRow(
             items = uiState.range.toList(),
             selectedItem = uiState.editingValue,
@@ -410,6 +435,9 @@ private fun HabitDetailScreenPreview(
 @Composable
 private fun DeleteHabitDialogPreview() {
     DsTheme {
-        DeleteHabitDialog(checkInCount = 12, onIntent = {})
+        DeleteHabitDialog(
+            checkInCount = 12,
+            onIntent = {},
+        )
     }
 }

@@ -32,7 +32,10 @@ fun DsCard(
 private fun DsCardPreview() {
     DsTheme {
         DsCard {
-            DsText(text = "Card content", modifier = Modifier.padding(DsSpacing.space400))
+            DsText(
+                text = "Card content",
+                modifier = Modifier.padding(DsSpacing.space400),
+            )
         }
     }
 }
