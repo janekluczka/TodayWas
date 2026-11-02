@@ -3,3 +3,6 @@
 
 # style: upgrade ktlint to 1.8 and stop wrapping at binary operators
 7da6f1d4570960bce1a70551a4cc03715fe60ec2
+
+# style: raise the line limit to 120
+020eee91c404a50d2abeff036f7136581f6858df
