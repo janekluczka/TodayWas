@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,15 +42,16 @@ import pl.luczka.todaywas.ui.model.HabitTypeUiState
 
 @Composable
 fun LogHabitCheckInsScreen(
-    onSaved: () -> Unit,
-    onCancelled: () -> Unit,
+    onSaveComplete: () -> Unit,
+    onCancel: () -> Unit,
     viewModel: LogHabitCheckInsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val currentOnSaveComplete by rememberUpdatedState(onSaveComplete)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {
-            LogHabitCheckInsNavigation.Saved -> onSaved()
+            LogHabitCheckInsNavigation.Saved -> currentOnSaveComplete()
         }
         viewModel.onIntent(LogHabitCheckInsIntent.NavigationHandled)
     }
@@ -57,7 +59,7 @@ fun LogHabitCheckInsScreen(
     LogHabitCheckInsScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
-        onCancel = onCancelled,
+        onCancel = onCancel,
     )
 }
 
@@ -111,7 +113,7 @@ private fun LogHabitCheckInsScreenContent(
             DsDateStrip(
                 selectedDate = uiState.selectedDate,
                 isSelectable = { it in uiState.selectableDates },
-                onDateSelected = { onIntent(LogHabitCheckInsIntent.DateSelected(it)) },
+                onDateSelect = { onIntent(LogHabitCheckInsIntent.DateSelected(it)) },
             )
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(uiState.rows, key = { it.habitId }) { row ->
@@ -168,7 +170,7 @@ private fun HabitCheckInRow(
                 DsSegmentedRow(
                     items = row.range.toList(),
                     selectedItem = row.value,
-                    onItemSelected = {
+                    onItemSelect = {
                         onIntent(
                             LogHabitCheckInsIntent.ValueChanged(row.habitId, it),
                         )
@@ -183,7 +185,7 @@ private fun HabitCheckInRow(
                 DsSegmentedRow(
                     items = row.range.toList(),
                     selectedItem = row.value,
-                    onItemSelected = {},
+                    onItemSelect = {},
                     enabled = false,
                     label = label,
                     modifier = Modifier

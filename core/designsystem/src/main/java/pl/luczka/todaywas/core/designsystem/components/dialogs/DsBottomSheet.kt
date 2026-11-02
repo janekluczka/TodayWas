@@ -26,10 +26,10 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 @Composable
 fun DsBottomSheet(
     onDismissRequest: () -> Unit,
-    onCloseClicked: () -> Unit,
+    onCloseClick: () -> Unit,
     closeContentDescription: String,
     saveText: String,
-    onSaveClicked: () -> Unit,
+    onSaveClick: () -> Unit,
     modifier: Modifier = Modifier,
     isSaving: Boolean = false,
     saveEnabled: Boolean = true,
@@ -46,7 +46,7 @@ fun DsBottomSheet(
                 .fillMaxWidth()
                 .padding(horizontal = DsSpacing.space400, vertical = DsSpacing.space200),
         ) {
-            DsIconButton(onClick = onCloseClicked) {
+            DsIconButton(onClick = onCloseClick) {
                 DsIcon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = closeContentDescription,
@@ -54,7 +54,7 @@ fun DsBottomSheet(
             }
             DsButtonWithLoading(
                 text = saveText,
-                onClick = onSaveClicked,
+                onClick = onSaveClick,
                 enabled = saveEnabled && !isSaving,
                 loading = isSaving,
             )
@@ -72,10 +72,10 @@ private fun DsBottomSheetPreview(
     DsTheme {
         DsBottomSheet(
             onDismissRequest = {},
-            onCloseClicked = {},
+            onCloseClick = {},
             closeContentDescription = "Close",
             saveText = "Save",
-            onSaveClicked = {},
+            onSaveClick = {},
             isSaving = isSaving,
         ) {
             DsText(

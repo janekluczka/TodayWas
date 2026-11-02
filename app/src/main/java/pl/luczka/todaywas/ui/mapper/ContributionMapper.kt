@@ -11,6 +11,8 @@ import pl.luczka.todaywas.domain.model.dateRange
 import pl.luczka.todaywas.ui.model.ContributionGridType
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 
+private const val DAYS_IN_WEEK = 7
+
 fun ContributionGrid.toUiState(
     now: Instant,
     type: ContributionGridType = ContributionGridType.BY_MONTH,
@@ -65,7 +67,7 @@ private fun ContributionGrid.toByMonthCells(
         val hasGapBefore = previousMonth != null && columnMonth != previousMonth
         previousMonth = columnMonth
 
-        (0..6).forEach { rowOffset ->
+        for (rowOffset in 0 until DAYS_IN_WEEK) {
             val rowDate = weekMonday.plusDays(rowOffset.toLong())
             cells.add(
                 if (rowDate < currentDate || rowDate > columnEnd) {

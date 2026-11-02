@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,17 +42,19 @@ import pl.luczka.todaywas.ui.onboarding.AllSetReason
 @Composable
 fun OnboardingAccountSetupScreen(
     onBack: () -> Unit,
-    onFinished: (AllSetReason) -> Unit,
+    onFinish: (AllSetReason) -> Unit,
     viewModel: OnboardingAccountSetupViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
+    val currentOnBack by rememberUpdatedState(onBack)
+    val currentOnFinish by rememberUpdatedState(onFinish)
     LaunchedEffect(uiState.pendingNavigation) {
         when (val navigation = uiState.pendingNavigation ?: return@LaunchedEffect) {
-            OnboardingAccountSetupNavigation.Back -> onBack()
-            is OnboardingAccountSetupNavigation.Finished -> onFinished(navigation.reason)
+            OnboardingAccountSetupNavigation.Back -> currentOnBack()
+            is OnboardingAccountSetupNavigation.Finished -> currentOnFinish(navigation.reason)
         }
         viewModel.onIntent(OnboardingAccountSetupIntent.NavigationHandled)
     }
@@ -99,47 +102,47 @@ private fun OnboardingAccountSetupScreenContent(
                 when (uiState.accountSubStep) {
                     AccountSubStep.SIGN_IN -> SignInFormContent(
                         state = uiState.signInForm,
-                        onEmailChanged = {
+                        onEmailChange = {
                             onIntent(OnboardingAccountSetupIntent.SignInEmailChanged(it))
                         },
-                        onPasswordChanged = {
+                        onPasswordChange = {
                             onIntent(OnboardingAccountSetupIntent.SignInPasswordChanged(it))
                         },
-                        onSubmitClicked = {
+                        onSubmitClick = {
                             onIntent(OnboardingAccountSetupIntent.SignInSubmitClicked)
                         },
-                        onGoogleIdTokenReceived = {
+                        onGoogleIdTokenReceive = {
                             onIntent(OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived(it))
                         },
-                        onGoogleSignInFailed = {
+                        onGoogleSignInFailure = {
                             onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
                         },
-                        onSignUpLinkClicked = {
+                        onSignUpLinkClick = {
                             onIntent(OnboardingAccountSetupIntent.SignUpLinkClicked)
                         },
                         modifier = Modifier.padding(top = AUTH_FORM_TOP_CLEARANCE),
                     )
                     AccountSubStep.SIGN_UP -> SignUpFormContent(
                         state = uiState.signUpForm,
-                        onEmailChanged = {
+                        onEmailChange = {
                             onIntent(OnboardingAccountSetupIntent.SignUpEmailChanged(it))
                         },
-                        onPasswordChanged = {
+                        onPasswordChange = {
                             onIntent(OnboardingAccountSetupIntent.SignUpPasswordChanged(it))
                         },
-                        onRepeatPasswordChanged = {
+                        onRepeatPasswordChange = {
                             onIntent(OnboardingAccountSetupIntent.SignUpRepeatPasswordChanged(it))
                         },
-                        onSubmitClicked = {
+                        onSubmitClick = {
                             onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
                         },
-                        onGoogleIdTokenReceived = {
+                        onGoogleIdTokenReceive = {
                             onIntent(OnboardingAccountSetupIntent.SignUpGoogleIdTokenReceived(it))
                         },
-                        onGoogleSignInFailed = {
+                        onGoogleSignInFailure = {
                             onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it))
                         },
-                        onSignInLinkClicked = {
+                        onSignInLinkClick = {
                             onIntent(OnboardingAccountSetupIntent.SignInLinkClicked)
                         },
                         modifier = Modifier.padding(top = AUTH_FORM_TOP_CLEARANCE),
@@ -150,10 +153,10 @@ private fun OnboardingAccountSetupScreenContent(
                             DataSyncReviewContent(
                                 summary = summary,
                                 isSyncing = uiState.isSyncing,
-                                onConfirmClicked = {
+                                onConfirmClick = {
                                     onIntent(OnboardingAccountSetupIntent.SyncConfirmClicked)
                                 },
-                                onSkipClicked = {
+                                onSkipClick = {
                                     onIntent(OnboardingAccountSetupIntent.SyncSkipClicked)
                                 },
                                 modifier = Modifier.fillMaxWidth(),

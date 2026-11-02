@@ -147,6 +147,11 @@ to dodge one result. Compile target is Java 17 (`@app/build.gradle.kts`). Depend
 versions live in `@gradle/libs.versions.toml` — add new dependencies there, not as inline version
 strings.
 
+detekt covers code smells, ktlint covers layout: detekt (with the compose-rules plugin, e.g.
+present-tense event lambdas like `onSaveClick`) runs on one shared config,
+`@config/detekt/detekt.yml`, built on detekt's defaults with no formatting rule set. Fix its
+findings; a rule that doesn't fit the project gets turned off there with a comment, not baselined.
+
 Layout (line breaks, wrapping, signatures) is the formatter's job only — don't add hand-checked
 layout rules. Code conventions beyond the formatter:
 
@@ -169,6 +174,7 @@ instrumented tests in `app/src/androidTest/`. No coverage threshold is enforced 
 - `./gradlew.bat testDebugUnitTest` — run local unit tests.
 - `./gradlew.bat ktlintCheck` — lint check; must pass before commit.
 - `./gradlew.bat ktlintFormat` — auto-fix formatting.
+- `./gradlew.bat detekt` — static analysis (code smells + compose-rules); must pass before commit.
 - `./gradlew.bat assembleDebug` — build a debug APK.
 - `./gradlew.bat connectedAndroidTest` — instrumented tests (requires a connected device/emulator).
 

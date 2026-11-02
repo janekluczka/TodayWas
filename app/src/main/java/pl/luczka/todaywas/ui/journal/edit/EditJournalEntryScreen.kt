@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -62,8 +63,8 @@ import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 @Composable
 fun EditJournalEntryScreen(
     id: String,
-    onSaved: () -> Unit,
-    onDiscarded: () -> Unit,
+    onSaveComplete: () -> Unit,
+    onDiscardComplete: () -> Unit,
     onNavigateToSignIn: () -> Unit,
     viewModel: EditJournalEntryViewModel =
         hiltViewModel<EditJournalEntryViewModel, EditJournalEntryViewModel.Factory> { factory ->
@@ -72,11 +73,14 @@ fun EditJournalEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val currentOnSaveComplete by rememberUpdatedState(onSaveComplete)
+    val currentOnDiscardComplete by rememberUpdatedState(onDiscardComplete)
+    val currentOnNavigateToSignIn by rememberUpdatedState(onNavigateToSignIn)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {
-            EditJournalEntryNavigation.Saved -> onSaved()
-            EditJournalEntryNavigation.Discarded -> onDiscarded()
-            EditJournalEntryNavigation.SignIn -> onNavigateToSignIn()
+            EditJournalEntryNavigation.Saved -> currentOnSaveComplete()
+            EditJournalEntryNavigation.Discarded -> currentOnDiscardComplete()
+            EditJournalEntryNavigation.SignIn -> currentOnNavigateToSignIn()
         }
         viewModel.onIntent(EditJournalEntryIntent.NavigationHandled)
     }
@@ -149,8 +153,8 @@ private fun EditJournalEntryScreenContent(
                 if (uiState.text.isEmpty()) {
                     StarterPromptList(
                         starterPrompts = uiState.starterPrompts,
-                        onPromptClicked = { onIntent(EditJournalEntryIntent.TextChanged(it)) },
-                        onHelpMeStartClicked = {
+                        onPromptClick = { onIntent(EditJournalEntryIntent.TextChanged(it)) },
+                        onHelpMeStartClick = {
                             onIntent(EditJournalEntryIntent.HelpMeStartClicked)
                         },
                         modifier = Modifier
@@ -176,14 +180,14 @@ private fun EditJournalEntryScreenContent(
         HelpMeStartBottomSheet(
             uiState = uiState.helpMeStart,
             onDismissRequest = { onIntent(EditJournalEntryIntent.HelpMeStartDismissed) },
-            onSignInClicked = { onIntent(EditJournalEntryIntent.SignInClicked) },
-            onToneSelected = { onIntent(EditJournalEntryIntent.HelpMeStartToneSelected(it)) },
-            onThoughtsChanged = {
+            onSignInClick = { onIntent(EditJournalEntryIntent.SignInClicked) },
+            onToneSelect = { onIntent(EditJournalEntryIntent.HelpMeStartToneSelected(it)) },
+            onThoughtsChange = {
                 onIntent(EditJournalEntryIntent.HelpMeStartThoughtsChanged(it))
             },
-            onGenerateClicked = { onIntent(EditJournalEntryIntent.GenerateClicked) },
-            onRegenerateClicked = { onIntent(EditJournalEntryIntent.RegenerateClicked) },
-            onUseGeneratedTextClicked = {
+            onGenerateClick = { onIntent(EditJournalEntryIntent.GenerateClicked) },
+            onRegenerateClick = { onIntent(EditJournalEntryIntent.RegenerateClicked) },
+            onUseGeneratedTextClick = {
                 onIntent(EditJournalEntryIntent.UseGeneratedTextClicked)
             },
         )
@@ -193,13 +197,13 @@ private fun EditJournalEntryScreenContent(
         HelpMeRefineBottomSheet(
             uiState = uiState.helpMeRefine,
             onDismissRequest = { onIntent(EditJournalEntryIntent.HelpMeRefineDismissed) },
-            onToneSelected = { onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(it)) },
-            onThoughtsChanged = {
+            onToneSelect = { onIntent(EditJournalEntryIntent.HelpMeRefineToneSelected(it)) },
+            onThoughtsChange = {
                 onIntent(EditJournalEntryIntent.HelpMeRefineThoughtsChanged(it))
             },
-            onRefineClicked = { onIntent(EditJournalEntryIntent.RefineClicked) },
-            onRegenerateClicked = { onIntent(EditJournalEntryIntent.RegenerateRefineClicked) },
-            onUseRefinedTextClicked = { onIntent(EditJournalEntryIntent.UseRefinedTextClicked) },
+            onRefineClick = { onIntent(EditJournalEntryIntent.RefineClicked) },
+            onRegenerateClick = { onIntent(EditJournalEntryIntent.RegenerateRefineClicked) },
+            onUseRefinedTextClick = { onIntent(EditJournalEntryIntent.UseRefinedTextClicked) },
         )
     }
 
@@ -240,11 +244,12 @@ private fun DiscardChangesDialog(onIntent: (EditJournalEntryIntent) -> Unit) {
 fun HelpMeRefineBottomSheet(
     uiState: HelpMeRefineUiState,
     onDismissRequest: () -> Unit,
-    onToneSelected: (JournalPromptToneUiState) -> Unit,
-    onThoughtsChanged: (String) -> Unit,
-    onRefineClicked: () -> Unit,
-    onRegenerateClicked: () -> Unit,
-    onUseRefinedTextClicked: () -> Unit,
+    onToneSelect: (JournalPromptToneUiState) -> Unit,
+    onThoughtsChange: (String) -> Unit,
+    onRefineClick: () -> Unit,
+    onRegenerateClick: () -> Unit,
+    onUseRefinedTextClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = uiState.error?.let { aiAssistErrorMessage(it) }
@@ -254,6 +259,7 @@ fun HelpMeRefineBottomSheet(
 
     DsModalBottomSheet(
         onDismissRequest = onDismissRequest,
+        modifier = modifier,
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -273,8 +279,8 @@ fun HelpMeRefineBottomSheet(
                         DsChoiceFlowRow(
                             items = JournalPromptToneUiState.entries.toList(),
                             selectedItem = uiState.selectedTone,
-                            onItemSelected = { tone ->
-                                tone?.let(onToneSelected)
+                            onItemSelect = { tone ->
+                                tone?.let(onToneSelect)
                             },
                             enabled = !uiState.isGenerating,
                             allowDeselect = false,
@@ -282,7 +288,7 @@ fun HelpMeRefineBottomSheet(
                         )
                         DsPlainTextField(
                             value = uiState.thoughts,
-                            onValueChange = onThoughtsChanged,
+                            onValueChange = onThoughtsChange,
                             placeholder = stringResource(
                                 R.string.journal_help_me_refine_thoughts_label,
                             ),
@@ -292,7 +298,7 @@ fun HelpMeRefineBottomSheet(
                         )
                         DsButtonWithLoading(
                             text = stringResource(R.string.journal_help_me_refine_generate_cta),
-                            onClick = onRefineClicked,
+                            onClick = onRefineClick,
                             enabled = uiState.selectedTone != null &&
                                 !uiState.isGenerating &&
                                 uiState.thoughts.length <= MAX_THOUGHTS_LENGTH,
@@ -314,14 +320,14 @@ fun HelpMeRefineBottomSheet(
                                 text = stringResource(
                                     R.string.journal_help_me_start_regenerate_cta,
                                 ),
-                                onClick = onRegenerateClicked,
+                                onClick = onRegenerateClick,
                                 enabled = (uiState.remainingToday ?: 1) > 0,
                                 loading = uiState.isGenerating,
                                 modifier = Modifier.weight(1f),
                             )
                             DsButton(
                                 text = stringResource(R.string.journal_ai_assist_accept_cta),
-                                onClick = onUseRefinedTextClicked,
+                                onClick = onUseRefinedTextClick,
                                 enabled = !uiState.isGenerating,
                                 modifier = Modifier.weight(1f),
                             )
@@ -449,11 +455,11 @@ private fun HelpMeRefineBottomSheetPreview(
         HelpMeRefineBottomSheet(
             uiState = state,
             onDismissRequest = {},
-            onToneSelected = {},
-            onThoughtsChanged = {},
-            onRefineClicked = {},
-            onRegenerateClicked = {},
-            onUseRefinedTextClicked = {},
+            onToneSelect = {},
+            onThoughtsChange = {},
+            onRefineClick = {},
+            onRegenerateClick = {},
+            onUseRefinedTextClick = {},
         )
     }
 }

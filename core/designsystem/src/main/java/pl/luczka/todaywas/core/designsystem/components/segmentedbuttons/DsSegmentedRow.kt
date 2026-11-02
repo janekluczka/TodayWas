@@ -17,7 +17,7 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 fun <T> DsSegmentedRow(
     items: List<T>,
     selectedItem: T?,
-    onItemSelected: (T?) -> Unit,
+    onItemSelect: (T?) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     allowDeselect: Boolean = true,
@@ -34,7 +34,7 @@ fun <T> DsSegmentedRow(
         for (item in items) {
             val selected = item == selectedItem
             DsSelectableCard(
-                onClick = { onItemSelected(if (allowDeselect && selected) null else item) },
+                onClick = { onItemSelect(if (allowDeselect && selected) null else item) },
                 enabled = enabled,
                 variant = if (selected) DsCardVariant.PRIMARY else DsCardVariant.NEUTRAL,
                 modifier = Modifier.weight(1f),
@@ -52,7 +52,7 @@ private fun DsSegmentedRowBinaryPreview() {
         DsSegmentedRow(
             items = listOf(0, 1),
             selectedItem = 1,
-            onItemSelected = {},
+            onItemSelect = {},
             label = { if (it == 1) "Done" else "Not done" },
         )
     }
@@ -65,7 +65,7 @@ private fun DsSegmentedRowScalePreview() {
         DsSegmentedRow(
             items = (1..5).toList(),
             selectedItem = null,
-            onItemSelected = {},
+            onItemSelect = {},
         )
     }
 }

@@ -21,13 +21,6 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
-enum class DsCardVariant {
-    NEUTRAL,
-    PRIMARY,
-    SECONDARY,
-    TERTIARY,
-}
-
 // A shared clickable/selectable card for small repeated-choice UI (segmented rows, date strips,
 // and similar pickers) so they all render through one place and stay visually consistent.
 // Disabled colors always follow Material3's standard disabled-content convention (onSurface at

@@ -22,8 +22,11 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 // persist — the system back gesture already exits the app for free (this is the root of the
 // onboarding back stack, so there's nothing for Nav3 to pop).
 @Composable
-fun OnboardingWelcomeScreen(onGetStartedClicked: () -> Unit) {
-    DsScaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+fun OnboardingWelcomeScreen(
+    onGetStartedClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    DsScaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -43,7 +46,7 @@ fun OnboardingWelcomeScreen(onGetStartedClicked: () -> Unit) {
             )
             DsButton(
                 text = stringResource(R.string.onboarding_welcome_cta),
-                onClick = onGetStartedClicked,
+                onClick = onGetStartedClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = DsSpacing.space600),
@@ -56,6 +59,6 @@ fun OnboardingWelcomeScreen(onGetStartedClicked: () -> Unit) {
 @Composable
 private fun OnboardingWelcomeScreenPreview() {
     DsTheme {
-        OnboardingWelcomeScreen(onGetStartedClicked = {})
+        OnboardingWelcomeScreen(onGetStartedClick = {})
     }
 }

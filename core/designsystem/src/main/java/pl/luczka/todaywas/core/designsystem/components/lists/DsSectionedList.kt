@@ -54,13 +54,13 @@ fun <T> DsSectionedList(
     itemContent: @Composable (T) -> Unit,
     modifier: Modifier = Modifier,
     title: String? = null,
-    onViewAllClicked: (() -> Unit)? = null,
+    onViewAllClick: (() -> Unit)? = null,
     viewAllLabel: String? = null,
 ) {
     // Both must be set for a trailing row to actually render (see the ViewAllRow call below) — a
     // caller passing only one is treated as "no view-all" everywhere, including corner/divider
     // placement, so a half-configured caller can't produce a dangling trailing divider.
-    val hasViewAll = onViewAllClicked != null && viewAllLabel != null
+    val hasViewAll = onViewAllClick != null && viewAllLabel != null
 
     Column(modifier = modifier) {
         if (title != null) {
@@ -92,9 +92,9 @@ fun <T> DsSectionedList(
                     }
                 }
             }
-            if (!isLoading && onViewAllClicked != null && viewAllLabel != null) {
+            if (!isLoading && onViewAllClick != null && viewAllLabel != null) {
                 SectionItem(shape = itemShape(isFirst = false, isLast = true)) {
-                    ViewAllRow(label = viewAllLabel, onClick = onViewAllClicked)
+                    ViewAllRow(label = viewAllLabel, onClick = onViewAllClick)
                 }
             }
         }
@@ -218,7 +218,7 @@ private fun DsSectionedListPreview(
                 items = listOf("Today was a good day.", "Feeling productive."),
                 isLoading = false,
                 itemContent = { PreviewRow(it) },
-                onViewAllClicked = {},
+                onViewAllClick = {},
                 viewAllLabel = "View all",
             )
             DsSectionedListPreviewState.POPULATED_NO_VIEW_ALL -> DsSectionedList(

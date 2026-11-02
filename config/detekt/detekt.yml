@@ -1,0 +1,47 @@
+# Built on detekt's default config (buildUponDefaultConfig = true); only overrides live here.
+# detekt covers code smells; ktlint (.editorconfig) owns layout, so layout rules stay off here.
+
+complexity:
+  CyclomaticComplexMethod:
+    # MVI onIntent() is a flat `when` dispatching each Intent to its handler.
+    ignoreSimpleWhenEntries: true
+  LongMethod:
+    # Composable bodies are declarative layout trees; length there isn't the smell it is elsewhere.
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # ViewModels hold one private handler per Intent, and screen files hold their previews.
+    ignorePrivate: true
+    ignoreAnnotatedFunctions: ['Preview', 'PreviewLightDark']
+    # An implementation's size is its interface's, which is already checked.
+    ignoreOverridden: true
+    # A Room DAO is one function per query by design.
+    ignoreAnnotated: ['Dao']
+    # Local data sources mirror their DAOs' surface (habits plus their check-ins).
+    allowedFunctionsPerInterface: 15
+
+exceptions:
+  SwallowedException:
+    excludes: &tests ['**/test/**', '**/androidTest/**']
+  TooGenericExceptionCaught:
+    # Data-layer wrappers (remoteCall, safeDbCall, ...) deliberately turn any exception into a
+    # Result.failure at the boundary, rethrowing CancellationException.
+    active: false
+  TooGenericExceptionThrown:
+    # Test fakes throw RuntimeException to simulate an arbitrary failure.
+    excludes: *tests
+
+naming:
+  FunctionNaming:
+    # Composable functions are PascalCase by official Jetpack Compose convention.
+    ignoreAnnotated: ['Composable']
+
+style:
+  MagicNumber:
+    ignoreEnums: true
+    # Preview sample data isn't shipped logic.
+    ignoreAnnotated: ['Preview', 'PreviewLightDark']
+  MaxLineLength:
+    # ktlint enforces the 120-column limit, including the backtick test-name exemption.
+    active: false
+  ReturnCount:
+    excludeGuardClauses: true

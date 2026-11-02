@@ -101,14 +101,14 @@ private val PreviewMainNavigation = MainNavigation(
 
 @Composable
 fun MainScreen(
-    onAddEntryClicked: () -> Unit,
-    onJournalEntryClicked: (JournalEntryUiState) -> Unit,
-    onJournalListClicked: () -> Unit,
-    onCreateHabitClicked: () -> Unit,
-    onLogCheckInsClicked: () -> Unit,
-    onHabitClicked: (String) -> Unit,
-    onHabitListClicked: () -> Unit,
-    onAccountClicked: () -> Unit,
+    onAddEntryClick: () -> Unit,
+    onJournalEntryClick: (JournalEntryUiState) -> Unit,
+    onJournalListClick: () -> Unit,
+    onCreateHabitClick: () -> Unit,
+    onLogCheckInsClick: () -> Unit,
+    onHabitClick: (String) -> Unit,
+    onHabitListClick: () -> Unit,
+    onAccountClick: () -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -126,14 +126,14 @@ fun MainScreen(
         uiState = uiState,
         onIntent = viewModel::onIntent,
         navigation = MainNavigation(
-            onAddEntry = onAddEntryClicked,
-            onJournalEntry = onJournalEntryClicked,
-            onJournalList = onJournalListClicked,
-            onCreateHabit = onCreateHabitClicked,
-            onLogCheckIns = onLogCheckInsClicked,
-            onHabit = onHabitClicked,
-            onHabitList = onHabitListClicked,
-            onAccount = onAccountClicked,
+            onAddEntry = onAddEntryClick,
+            onJournalEntry = onJournalEntryClick,
+            onJournalList = onJournalListClick,
+            onCreateHabit = onCreateHabitClick,
+            onLogCheckIns = onLogCheckInsClick,
+            onHabit = onHabitClick,
+            onHabitList = onHabitListClick,
+            onAccount = onAccountClick,
         ),
         snackbarHostState = snackbarHostState,
     )
@@ -392,7 +392,7 @@ private fun MainFab(
 @Composable
 private fun SectionHeader(
     title: String,
-    onArrowClicked: () -> Unit,
+    onArrowClick: () -> Unit,
     arrowContentDescription: String,
     modifier: Modifier = Modifier,
 ) {
@@ -405,7 +405,7 @@ private fun SectionHeader(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
         )
-        DsIconButton(onClick = onArrowClicked) {
+        DsIconButton(onClick = onArrowClick) {
             DsIcon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = arrowContentDescription,
@@ -423,7 +423,7 @@ private fun JournalSection(
     Column(modifier = modifier.padding(top = DsSpacing.space600)) {
         SectionHeader(
             title = stringResource(R.string.main_journal_section_title),
-            onArrowClicked = navigation.onJournalList,
+            onArrowClick = navigation.onJournalList,
             arrowContentDescription = stringResource(R.string.main_journal_view_all_cta),
             modifier = Modifier.padding(
                 start = DsSpacing.space600,
@@ -469,7 +469,7 @@ private fun HabitSection(
     Column(modifier = modifier.padding(top = DsSpacing.space600)) {
         SectionHeader(
             title = stringResource(R.string.main_habit_section_title),
-            onArrowClicked = navigation.onHabitList,
+            onArrowClick = navigation.onHabitList,
             arrowContentDescription = stringResource(R.string.main_habit_view_all_cta),
             modifier = Modifier.padding(
                 start = DsSpacing.space600,

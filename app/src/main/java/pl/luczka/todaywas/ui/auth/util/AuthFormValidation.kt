@@ -5,9 +5,11 @@ import androidx.compose.ui.res.stringResource
 import pl.luczka.todaywas.R
 import pl.luczka.todaywas.ui.model.AuthErrorUiState
 
+private const val MIN_PASSWORD_LENGTH = 6
+
 fun isValidEmail(email: String): Boolean = email.isNotBlank() && email.contains("@")
 
-fun isValidPassword(password: String): Boolean = password.length >= 6
+fun isValidPassword(password: String): Boolean = password.length >= MIN_PASSWORD_LENGTH
 
 fun isValidRepeatPassword(
     password: String,

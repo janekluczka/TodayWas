@@ -25,6 +25,7 @@ jobs:
             android:
               - 'app/**'
               - 'core/**'
+              - 'config/**'
               - 'build.gradle.kts'
               - 'settings.gradle.kts'
               - 'gradle/**'
@@ -55,6 +56,8 @@ jobs:
         run: chmod +x gradlew
       - name: ktlint
         run: ./gradlew ktlintCheck
+      - name: detekt
+        run: ./gradlew detekt
       - name: Android Lint
         run: ./gradlew lintDebug
       - name: Unit tests
