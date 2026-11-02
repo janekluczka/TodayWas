@@ -1,5 +1,7 @@
 package pl.luczka.todaywas.ui.account
 
+import pl.luczka.todaywas.ui.model.AuthErrorUiState
+
 sealed interface AccountIntent {
 
     data object BackClicked : AccountIntent
@@ -18,7 +20,9 @@ sealed interface AccountIntent {
         val idToken: String,
     ) : AccountIntent
 
-    data object GoogleSignInFailed : AccountIntent
+    data class GoogleSignInFailed(
+        val error: AuthErrorUiState,
+    ) : AccountIntent
 
     data object SignUpLinkClicked : AccountIntent
 
@@ -51,4 +55,8 @@ sealed interface AccountIntent {
     data object SyncSkipClicked : AccountIntent
 
     data object SyncLocalDataClicked : AccountIntent
+
+    data object NavigationHandled : AccountIntent
+
+    data object UserMessageShown : AccountIntent
 }

@@ -47,18 +47,17 @@ fun LogHabitCheckInsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                LogHabitCheckInsUiEvent.Saved -> onSaved()
-                LogHabitCheckInsUiEvent.Cancelled -> onCancelled()
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            LogHabitCheckInsNavigation.Saved -> onSaved()
         }
+        viewModel.onIntent(LogHabitCheckInsIntent.NavigationHandled)
     }
 
     LogHabitCheckInsScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        onCancel = onCancelled,
     )
 }
 
@@ -69,6 +68,7 @@ private fun LogHabitCheckInsUiState.hasPendingInput(): Boolean =
 private fun LogHabitCheckInsScreenContent(
     uiState: LogHabitCheckInsUiState,
     onIntent: (LogHabitCheckInsIntent) -> Unit,
+    onCancel: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = stringResource(R.string.habit_checkin_error)
@@ -83,7 +83,7 @@ private fun LogHabitCheckInsScreenContent(
             DsTopBar(
                 title = stringResource(R.string.habit_checkin_title),
                 navigationIcon = {
-                    DsIconButton(onClick = { onIntent(LogHabitCheckInsIntent.CancelClicked) }) {
+                    DsIconButton(onClick = onCancel) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
@@ -114,7 +114,7 @@ private fun LogHabitCheckInsScreenContent(
                 onDateSelected = { onIntent(LogHabitCheckInsIntent.DateSelected(it)) },
             )
             LazyColumn(modifier = Modifier.weight(1f)) {
-                items(uiState.rows) { row ->
+                items(uiState.rows, key = { it.habitId }) { row ->
                     HabitCheckInRow(
                         row = row,
                         onIntent = onIntent,
@@ -231,6 +231,7 @@ private fun LogHabitCheckInsScreenPreview() {
                 saveError = false,
             ),
             onIntent = {},
+            onCancel = {},
         )
     }
 }

@@ -19,4 +19,5 @@ data class AddJournalEntryUiState(
     // the ViewModel is created (see AddJournalEntryViewModel), not re-rolled while the screen is
     // open.
     val starterPrompts: List<JournalStarterPromptUiState> = emptyList(),
+    val pendingNavigation: AddJournalEntryNavigation? = null,
 )

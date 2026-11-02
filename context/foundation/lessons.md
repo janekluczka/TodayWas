@@ -100,3 +100,24 @@
 - **Problem**: Test names like `` `NameChanged updates name` `` or `` `SaveClicked failure sets saveError and does not emit Saved` `` describe the stimulus but not the expected outcome, and test bodies mixed setup, action, and assertion inline with no visual separation — both readable enough at a glance but slower to scan for what a failure actually means.
 - **Rule**: Test method names use backtick-quoted `` `should [expected outcome] when [scenario]` `` (e.g. `` `should set saveError and not emit Saved when SaveClicked fails` ``). Test bodies are structured as Arrange/Act/Assert with a `// Arrange`, `// Act`, `// Assert` comment above each section — an exception to the project's default no-comments rule, since these three are structural labels, not "what does this code do" explanations. Omit a section's comment (and the section itself) when a test has nothing to arrange (e.g. it only uses class-level fixture fields) — don't write an empty labeled block.
 - **Applies to**: plan, plan-review, implement, impl-review
+
+## One-off ViewModel effects are state, not a Channel-backed UiEvent flow (supersedes the UiEvent part of "ViewModels expose a sealed Intent + onIntent(), and a sealed UiEvent flow")
+
+- **Context**: Every ViewModel under `ui/<feature>/`; found by the 2026-10-31 Android audit (`context/audits/android-audit-2026-10-31.md`, finding A3).
+- **Problem**: 13 of 14 ViewModels sent navigation and errors through `Channel` + `receiveAsFlow()`, collected in `LaunchedEffect(Unit)`. Official guidance strongly recommends against it: delivery isn't guaranteed when the collector is cancelled mid-handling, and many of the events (e.g. "view all" taps) carried no logic, just a ViewModel round-trip.
+- **Rule**: No ViewModel→UI event streams. Navigation-only taps call the screen's navigation lambda directly. Navigation that follows logic is a `pendingNavigation: XxxNavigation?` state field the screen handles in `LaunchedEffect(uiState.pendingNavigation)` and acknowledges with `XxxIntent.NavigationHandled`. One-off messages are a `userMessage` field acknowledged with `UserMessageShown`. The sealed Intent + `onIntent()` part of the earlier lesson still stands.
+- **Applies to**: plan, plan-review, implement, impl-review
+
+## Run Android Lint in CI; JVM unit tests can't see API-level problems
+
+- **Context**: CI (`.github/workflows/ci.yml`) and any Java/Kotlin API use near `minSdk`; audit finding A1.
+- **Problem**: Three `LocalDate.ofInstant` calls (API 34) shipped with `minSdk = 30`, crashing Android 11–13 on the main screen. 397 green unit tests couldn't catch it — they run on a desktop JVM where the method exists — and CI didn't run lint, which flags it as a `NewApi` error.
+- **Rule**: `lintDebug` is a CI gate alongside ktlint and unit tests. When a lint error appears, fix it rather than baselining it. Prefer API-26-safe `java.time` forms (`instant.atZone(zone).toLocalDate()`) over newer convenience methods unless core library desugaring is enabled.
+- **Applies to**: implement, impl-review
+
+## Business-rule checks read persisted data, never a value the caller passes in
+
+- **Context**: Use cases enforcing rules such as the 24h edit window (FR-006); audit finding A4.
+- **Problem**: `UpdateJournalEntryUseCase` and `SaveHabitCheckInsUseCase` checked the edit window against a `createdAt` / existing-check-in list supplied by the ViewModel, and the repository wrote without checking — so a stale UI value or a new caller could reopen an expired entry.
+- **Rule**: A use case enforcing a rule loads the record it's guarding from the repository and checks the stored values. Callers pass identifiers and the new data only.
+- **Applies to**: plan, implement, impl-review

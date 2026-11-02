@@ -3,13 +3,11 @@ package pl.luczka.todaywas.ui.habit.logcheckin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
@@ -20,10 +18,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LogHabitCheckInsViewModel @Inject constructor(
-    private val observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
+    observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val logHabitCheckIns: LogHabitCheckInsUseCase,
     getFreshLoggableDates: GetFreshLoggableDatesUseCase,
 ) : ViewModel() {
+
+    private data class SaveState(
+        val isSaving: Boolean = false,
+        val saveError: Boolean = false,
+        val pendingNavigation: LogHabitCheckInsNavigation? = null,
+    )
 
     // Ascending (yesterday, then today) to match the existing chip display order; today stays the
     // default selection via .last().
@@ -31,41 +35,42 @@ class LogHabitCheckInsViewModel @Inject constructor(
 
     private val selectedDateFlow = MutableStateFlow(selectableDates.last())
     private val pendingValuesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
+    private val saveState = MutableStateFlow(SaveState())
 
-    private val _uiState = MutableStateFlow(
-        LogHabitCheckInsUiState(
-            selectableDates = selectableDates,
-            selectedDate = selectableDates.last(),
-            rows = emptyList(),
-            isSaving = false,
-            saveError = false,
-        ),
-    )
-    val uiState: StateFlow<LogHabitCheckInsUiState> = _uiState.asStateFlow()
-
-    private val eventChannel = Channel<LogHabitCheckInsUiEvent>(Channel.BUFFERED)
-    val events: Flow<LogHabitCheckInsUiEvent> = eventChannel.receiveAsFlow()
-
-    init {
-        viewModelScope.launch {
-            combine(
-                observeHabitCheckInBoard(),
-                selectedDateFlow,
-                pendingValuesFlow,
-            ) { board, selectedDate, pendingValues ->
-                selectedDate to board.toRows(selectedDate, pendingValues)
-            }.collect { (selectedDate, rows) ->
-                _uiState.update { it.copy(selectedDate = selectedDate, rows = rows) }
-            }
-        }
-    }
+    val uiState: StateFlow<LogHabitCheckInsUiState> =
+        combine(
+            observeHabitCheckInBoard(),
+            selectedDateFlow,
+            pendingValuesFlow,
+            saveState,
+        ) { board, selectedDate, pendingValues, save ->
+            LogHabitCheckInsUiState(
+                selectableDates = selectableDates,
+                selectedDate = selectedDate,
+                rows = board.toRows(selectedDate, pendingValues),
+                isSaving = save.isSaving,
+                saveError = save.saveError,
+                pendingNavigation = save.pendingNavigation,
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = LogHabitCheckInsUiState(
+                selectableDates = selectableDates,
+                selectedDate = selectableDates.last(),
+                rows = emptyList(),
+                isSaving = false,
+                saveError = false,
+            ),
+        )
 
     fun onIntent(intent: LogHabitCheckInsIntent) {
         when (intent) {
             is LogHabitCheckInsIntent.DateSelected -> onDateSelected(intent.date)
             is LogHabitCheckInsIntent.ValueChanged -> onValueChanged(intent.habitId, intent.value)
             LogHabitCheckInsIntent.SaveClicked -> onSaveClicked()
-            LogHabitCheckInsIntent.CancelClicked -> onCancelClicked()
+            LogHabitCheckInsIntent.NavigationHandled ->
+                saveState.update { it.copy(pendingNavigation = null) }
         }
     }
 
@@ -81,34 +86,21 @@ class LogHabitCheckInsViewModel @Inject constructor(
         pendingValuesFlow.update { if (value == null) it - habitId else it + (habitId to value) }
     }
 
-    private fun onCancelClicked() {
-        eventChannel.trySend(LogHabitCheckInsUiEvent.Cancelled)
-    }
-
     private fun onSaveClicked() {
-        if (_uiState.value.isSaving) return
+        if (saveState.value.isSaving) return
         val values = pendingValuesFlow.value
         if (values.isEmpty()) return
         val date = selectedDateFlow.value
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSaving = true,
-                    saveError = false,
-                )
-            }
+            saveState.update { it.copy(isSaving = true, saveError = false) }
             val result = logHabitCheckIns(date, values)
             if (result.isSuccess) {
                 pendingValuesFlow.value = emptyMap()
-                _uiState.update { it.copy(isSaving = false) }
-                eventChannel.trySend(LogHabitCheckInsUiEvent.Saved)
-            } else {
-                _uiState.update {
-                    it.copy(
-                        isSaving = false,
-                        saveError = true,
-                    )
+                saveState.update {
+                    it.copy(isSaving = false, pendingNavigation = LogHabitCheckInsNavigation.Saved)
                 }
+            } else {
+                saveState.update { it.copy(isSaving = false, saveError = true) }
             }
         }
     }

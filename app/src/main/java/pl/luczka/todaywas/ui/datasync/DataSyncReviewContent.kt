@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -33,9 +34,21 @@ fun DataSyncReviewContent(
         DsText(
             text = stringResource(
                 R.string.data_sync_review_summary_format,
-                summary.journalEntryCount,
-                summary.habitCount,
-                summary.checkInCount,
+                pluralStringResource(
+                    R.plurals.data_sync_review_journal_entries,
+                    summary.journalEntryCount,
+                    summary.journalEntryCount,
+                ),
+                pluralStringResource(
+                    R.plurals.data_sync_review_habits,
+                    summary.habitCount,
+                    summary.habitCount,
+                ),
+                pluralStringResource(
+                    R.plurals.data_sync_review_check_ins,
+                    summary.checkInCount,
+                    summary.checkInCount,
+                ),
             ),
         )
         DsButtonWithLoading(

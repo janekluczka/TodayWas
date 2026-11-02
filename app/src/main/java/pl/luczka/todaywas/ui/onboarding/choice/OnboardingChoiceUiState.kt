@@ -6,4 +6,5 @@ import androidx.compose.runtime.Immutable
 data class OnboardingChoiceUiState(
     val isSaving: Boolean = false,
     val saveError: Boolean = false,
+    val pendingNavigation: OnboardingChoiceNavigation? = null,
 )

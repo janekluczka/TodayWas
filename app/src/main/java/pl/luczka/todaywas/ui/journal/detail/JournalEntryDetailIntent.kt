@@ -4,9 +4,7 @@ sealed interface JournalEntryDetailIntent {
 
     data object ScreenEntered : JournalEntryDetailIntent
 
-    data object EditClicked : JournalEntryDetailIntent
-
-    data object BackClicked : JournalEntryDetailIntent
+    data object NavigationHandled : JournalEntryDetailIntent
 
     data object DeleteClicked : JournalEntryDetailIntent
 

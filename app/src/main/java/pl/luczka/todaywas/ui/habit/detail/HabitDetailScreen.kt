@@ -62,17 +62,17 @@ fun HabitDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                HabitDetailUiEvent.NavigatedBack -> onBack()
-            }
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (uiState.pendingNavigation ?: return@LaunchedEffect) {
+            HabitDetailNavigation.HabitDeleted -> onBack()
         }
+        viewModel.onIntent(HabitDetailIntent.NavigationHandled)
     }
 
     HabitDetailScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        onBack = onBack,
     )
 }
 
@@ -80,6 +80,7 @@ fun HabitDetailScreen(
 private fun HabitDetailScreenContent(
     uiState: HabitDetailUiState,
     onIntent: (HabitDetailIntent) -> Unit,
+    onBack: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val genericErrorMessage = stringResource(R.string.habit_detail_error)
@@ -108,7 +109,7 @@ private fun HabitDetailScreenContent(
             DsTopBar(
                 title = uiState.habitName,
                 navigationIcon = {
-                    DsIconButton(onClick = { onIntent(HabitDetailIntent.BackClicked) }) {
+                    DsIconButton(onClick = onBack) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
@@ -445,6 +446,7 @@ private fun HabitDetailScreenPreview(
         HabitDetailScreenContent(
             uiState = state,
             onIntent = {},
+            onBack = {},
         )
     }
 }

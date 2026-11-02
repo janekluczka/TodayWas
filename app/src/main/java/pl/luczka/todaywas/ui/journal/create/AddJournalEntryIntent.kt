@@ -15,7 +15,7 @@ sealed interface AddJournalEntryIntent {
 
     data object SaveClicked : AddJournalEntryIntent
 
-    data object CancelClicked : AddJournalEntryIntent
+    data object NavigationHandled : AddJournalEntryIntent
 
     data object SignInClicked : AddJournalEntryIntent
 

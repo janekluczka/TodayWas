@@ -3,16 +3,13 @@ package pl.luczka.todaywas.ui.journal.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
@@ -32,43 +29,31 @@ class JournalListViewModel @Inject constructor(
     // needs no re-sort — only OLDEST_FIRST does.
     private val selectedSort = MutableStateFlow(JournalSortUiState.NEWEST_FIRST)
 
-    private val _uiState = MutableStateFlow(JournalListUiState())
-    val uiState: StateFlow<JournalListUiState> = _uiState.asStateFlow()
-
-    private val eventChannel = Channel<JournalListUiEvent>(Channel.BUFFERED)
-    val events: Flow<JournalListUiEvent> = eventChannel.receiveAsFlow()
-
-    init {
-        viewModelScope.launch {
-            combine(observeJournalEntries(), selectedSort) { entries, sort ->
-                val uiEntries = entries.map { it.toUiState() }
-                val sorted = when (sort) {
+    val uiState: StateFlow<JournalListUiState> =
+        combine(
+            observeJournalEntries(),
+            selectedSort,
+            observeJournalContribution(flowOf(ContributionWindow.RollingTwelveMonths)),
+        ) { entries, sort, summary ->
+            val uiEntries = entries.map { it.toUiState() }
+            JournalListUiState(
+                isLoading = false,
+                entries = when (sort) {
                     JournalSortUiState.NEWEST_FIRST -> uiEntries.sortedByDescending { it.date }
                     JournalSortUiState.OLDEST_FIRST -> uiEntries.sortedBy { it.date }
-                }
-                sorted to sort
-            }.collect { (sorted, sort) ->
-                _uiState.update {
-                    it.copy(isLoading = false, entries = sorted, selectedSort = sort)
-                }
-            }
-        }
-        viewModelScope.launch {
-            observeJournalContribution(flowOf(ContributionWindow.RollingTwelveMonths))
-                .collect { summary ->
-                    _uiState.update {
-                        it.copy(contributionGrid = summary.grid.toUiState(clock.instant()))
-                    }
-                }
-        }
-    }
+                },
+                selectedSort = sort,
+                contributionGrid = summary.grid.toUiState(clock.instant()),
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = JournalListUiState(),
+        )
 
     fun onIntent(intent: JournalListIntent) {
         when (intent) {
             is JournalListIntent.SortSelected -> selectedSort.update { intent.sort }
-            is JournalListIntent.EntryClicked -> eventChannel.trySend(
-                JournalListUiEvent.NavigateToDetail(intent.entry.id),
-            )
         }
     }
 }

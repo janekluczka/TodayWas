@@ -4,15 +4,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -63,47 +62,39 @@ class OnboardingChoiceViewModelTest {
     }
 
     @Test
-    fun `should complete onboarding and emit Finished with NO_ACCOUNT reason when ContinueWithoutAccountClicked succeeds`() =
+    fun `should complete onboarding and set Finished with NO_ACCOUNT reason when ContinueWithoutAccountClicked succeeds`() =
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository()
             val viewModel = viewModel(repository)
-            val events = mutableListOf<OnboardingChoiceUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingChoiceIntent.ContinueWithoutAccountClicked)
-            runCurrent()
 
             // Assert
             assertEquals(1, repository.completeOnboardingCallCount)
             assertEquals(
-                listOf(OnboardingChoiceUiEvent.Finished(AllSetReason.NO_ACCOUNT)),
-                events,
+                OnboardingChoiceNavigation.Finished(AllSetReason.NO_ACCOUNT),
+                viewModel.uiState.value.pendingNavigation,
             )
             assertFalse(viewModel.uiState.value.isSaving)
-            collectJob.cancel()
         }
 
     @Test
-    fun `should set saveError without emitting Finished when ContinueWithoutAccountClicked fails`() =
+    fun `should set saveError without navigating when ContinueWithoutAccountClicked fails`() =
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository()
             repository.completeOnboardingResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
-            val events = mutableListOf<OnboardingChoiceUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingChoiceIntent.ContinueWithoutAccountClicked)
-            runCurrent()
 
             // Assert
             assertTrue(viewModel.uiState.value.saveError)
             assertFalse(viewModel.uiState.value.isSaving)
-            assertEquals(emptyList<OnboardingChoiceUiEvent>(), events)
-            collectJob.cancel()
+            assertNull(viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -116,36 +107,29 @@ class OnboardingChoiceViewModelTest {
             viewModel.onIntent(OnboardingChoiceIntent.ContinueWithoutAccountClicked)
             assertTrue(viewModel.uiState.value.saveError)
             repository.completeOnboardingResult = Result.success(Unit)
-            val events = mutableListOf<OnboardingChoiceUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(OnboardingChoiceIntent.ContinueWithoutAccountClicked)
-            runCurrent()
 
             // Assert
             assertFalse(viewModel.uiState.value.saveError)
             assertEquals(
-                listOf(OnboardingChoiceUiEvent.Finished(AllSetReason.NO_ACCOUNT)),
-                events,
+                OnboardingChoiceNavigation.Finished(AllSetReason.NO_ACCOUNT),
+                viewModel.uiState.value.pendingNavigation,
             )
-            collectJob.cancel()
         }
 
     @Test
-    fun `should emit NavigateToAccountSetup when SignInSignUpClicked`() =
+    fun `should clear pendingNavigation when NavigationHandled`() =
         runTest {
             // Arrange
             val viewModel = viewModel(FakeOnboardingRepository())
-            val events = mutableListOf<OnboardingChoiceUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
+            viewModel.onIntent(OnboardingChoiceIntent.ContinueWithoutAccountClicked)
 
             // Act
-            viewModel.onIntent(OnboardingChoiceIntent.SignInSignUpClicked)
-            runCurrent()
+            viewModel.onIntent(OnboardingChoiceIntent.NavigationHandled)
 
             // Assert
-            assertEquals(listOf(OnboardingChoiceUiEvent.NavigateToAccountSetup), events)
-            collectJob.cancel()
+            assertNull(viewModel.uiState.value.pendingNavigation)
         }
 }

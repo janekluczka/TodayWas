@@ -24,7 +24,7 @@ sealed interface HabitDetailIntent {
 
     data object CancelEditClicked : HabitDetailIntent
 
-    data object BackClicked : HabitDetailIntent
+    data object NavigationHandled : HabitDetailIntent
 
     data object DeleteHabitClicked : HabitDetailIntent
 

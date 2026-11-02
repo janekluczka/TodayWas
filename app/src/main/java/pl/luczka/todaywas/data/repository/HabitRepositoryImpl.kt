@@ -22,7 +22,7 @@ import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.model.HabitType
 import pl.luczka.todaywas.domain.repository.AuthRepository
 import pl.luczka.todaywas.domain.repository.HabitRepository
-import java.time.Instant
+import java.time.Clock
 import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
@@ -33,6 +33,7 @@ class HabitRepositoryImpl @Inject constructor(
     private val remoteHabitCheckInDataSource: RemoteHabitCheckInDataSource,
     private val authRepository: AuthRepository,
     private val syncScheduler: SyncScheduler,
+    private val clock: Clock = Clock.systemUTC(),
 ) : HabitRepository {
 
     // Guards against two concurrent syncWithRemote() calls racing each other - writes no longer
@@ -48,7 +49,7 @@ class HabitRepositoryImpl @Inject constructor(
         scaleMin: Int?,
         scaleMax: Int?,
     ): Result<Unit> {
-        val now = Instant.now().toEpochMilli()
+        val now = clock.instant().toEpochMilli()
         val entity = HabitEntity(
             id = UUID.randomUUID().toString(),
             name = name,
@@ -76,7 +77,7 @@ class HabitRepositoryImpl @Inject constructor(
         date: LocalDate,
         values: Map<String, Int>,
     ): Result<Unit> {
-        val createdAt = Instant.now().toEpochMilli()
+        val createdAt = clock.instant().toEpochMilli()
         val entities = values.map { (habitId, value) ->
             HabitCheckInEntity(
                 id = UUID.randomUUID().toString(),
@@ -97,13 +98,13 @@ class HabitRepositoryImpl @Inject constructor(
         date: LocalDate,
         value: Int,
     ): Result<Unit> {
-        val result = local.updateCheckIn(habitId, date, value, Instant.now().toEpochMilli())
+        val result = local.updateCheckIn(habitId, date, value, clock.instant().toEpochMilli())
         if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
 
     override suspend fun deleteHabit(id: String): Result<Unit> {
-        val deletedAt = Instant.now().toEpochMilli()
+        val deletedAt = clock.instant().toEpochMilli()
         val result = local.deleteHabitAndCheckIns(id, deletedAt)
         if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
@@ -113,7 +114,7 @@ class HabitRepositoryImpl @Inject constructor(
         habitId: String,
         date: LocalDate,
     ): Result<Unit> {
-        val result = local.deleteCheckIn(habitId, date, Instant.now().toEpochMilli())
+        val result = local.deleteCheckIn(habitId, date, clock.instant().toEpochMilli())
         if (result.isSuccess) scheduleSyncIfSignedIn()
         return result.map { }
     }
@@ -147,7 +148,7 @@ class HabitRepositoryImpl @Inject constructor(
 
                 local.applyRemoteSnapshot(habitsToApply.toEntity(), checkInsToApply.toEntity())
 
-                val cutoff = Instant.now().minus(TOMBSTONE_GC_WINDOW)
+                val cutoff = clock.instant().minus(TOMBSTONE_GC_WINDOW)
                 local.purgeDeletedBefore(cutoff.toEpochMilli())
                 // Check-ins must purge before habits: habit_check_ins.habit_id is now
                 // ON DELETE NO ACTION (see Phase 2), so deleting a habit row while any check-in

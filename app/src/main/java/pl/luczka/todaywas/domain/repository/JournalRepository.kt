@@ -15,8 +15,8 @@ interface JournalRepository : Syncable {
         text: String,
     ): Result<Unit>
 
-    // Callers must check EditWindow.isEditable first - enforced by UpdateJournalEntryUseCase,
-    // not here.
+    // Callers must check EditWindow.isEditable against the stored entry first - enforced by
+    // UpdateJournalEntryUseCase, not here.
     suspend fun updateEntry(
         id: String,
         text: String,

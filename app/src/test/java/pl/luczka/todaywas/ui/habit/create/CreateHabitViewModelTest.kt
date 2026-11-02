@@ -2,7 +2,6 @@ package pl.luczka.todaywas.ui.habit.create
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -11,6 +10,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -116,8 +116,6 @@ class CreateHabitViewModelTest {
             val viewModel = viewModel(repository)
             viewModel.onIntent(CreateHabitIntent.NameChanged("Mood"))
             viewModel.onIntent(CreateHabitIntent.ScaleStepsChanged(5))
-            val events = mutableListOf<CreateHabitUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(CreateHabitIntent.SaveClicked)
@@ -130,8 +128,7 @@ class CreateHabitViewModelTest {
             assertEquals(HabitType.SCALE, repository.lastCreatedType)
             assertEquals(1, repository.lastCreatedScaleMin)
             assertEquals(5, repository.lastCreatedScaleMax)
-            assertEquals(listOf(CreateHabitUiEvent.Saved), events)
-            collectJob.cancel()
+            assertEquals(CreateHabitNavigation.Saved, viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
@@ -153,15 +150,13 @@ class CreateHabitViewModelTest {
         }
 
     @Test
-    fun `should set saveError and not emit Saved when SaveClicked fails`() =
+    fun `should set saveError and not navigate when SaveClicked fails`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository()
             repository.createHabitResult = Result.failure(RuntimeException("write failed"))
             val viewModel = viewModel(repository)
             viewModel.onIntent(CreateHabitIntent.NameChanged("Drink water"))
-            val events = mutableListOf<CreateHabitUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
 
             // Act
             viewModel.onIntent(CreateHabitIntent.SaveClicked)
@@ -170,24 +165,22 @@ class CreateHabitViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isSaving)
             assertTrue(viewModel.uiState.value.saveError)
-            assertTrue(events.isEmpty())
-            collectJob.cancel()
+            assertNull(viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
-    fun `should emit Cancelled when CancelClicked is dispatched`() =
+    fun `should clear pendingNavigation when NavigationHandled`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
-            val events = mutableListOf<CreateHabitUiEvent>()
-            val collectJob = launch { viewModel.events.collect { events.add(it) } }
-
-            // Act
-            viewModel.onIntent(CreateHabitIntent.CancelClicked)
+            viewModel.onIntent(CreateHabitIntent.NameChanged("Drink water"))
+            viewModel.onIntent(CreateHabitIntent.SaveClicked)
             runCurrent()
 
+            // Act
+            viewModel.onIntent(CreateHabitIntent.NavigationHandled)
+
             // Assert
-            assertEquals(listOf(CreateHabitUiEvent.Cancelled), events)
-            collectJob.cancel()
+            assertNull(viewModel.uiState.value.pendingNavigation)
         }
 }

@@ -6,13 +6,10 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.usecase.ObserveAuthStateUseCase
@@ -30,9 +27,6 @@ class OnboardingAllSetViewModel @AssistedInject constructor(
 
     private val _uiState = MutableStateFlow(OnboardingAllSetUiState(reason = reason))
     val uiState: StateFlow<OnboardingAllSetUiState> = _uiState.asStateFlow()
-
-    private val eventChannel = Channel<OnboardingAllSetUiEvent>(Channel.BUFFERED)
-    val events: Flow<OnboardingAllSetUiEvent> = eventChannel.receiveAsFlow()
 
     private var finished = false
 
@@ -52,14 +46,16 @@ class OnboardingAllSetViewModel @AssistedInject constructor(
     fun onIntent(intent: OnboardingAllSetIntent) {
         when (intent) {
             OnboardingAllSetIntent.GetStartedClicked -> finish()
+            OnboardingAllSetIntent.NavigationHandled ->
+                _uiState.update { it.copy(pendingNavigation = null) }
         }
     }
 
-    // Guards against both the auto-advance timer and a manual tap firing Finished twice.
+    // Guards against both the auto-advance timer and a manual tap finishing twice.
     private fun finish() {
         if (finished) return
         finished = true
-        eventChannel.trySend(OnboardingAllSetUiEvent.Finished)
+        _uiState.update { it.copy(pendingNavigation = OnboardingAllSetNavigation.Finished) }
     }
 
     @AssistedFactory
