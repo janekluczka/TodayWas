@@ -68,19 +68,15 @@ class HabitRepositoryImplTest {
         override fun observeHabits(): Flow<List<HabitEntity>> =
             flowOf(
                 habits.values
-                    .filter {
-                        it.deletedAt ==
-                            null
-                    }.toList(),
+                    .filter { it.deletedAt == null }
+                    .toList(),
             )
 
         override fun observeCheckIns(): Flow<List<HabitCheckInEntity>> =
             flowOf(
                 checkIns.values
-                    .filter {
-                        it.deletedAt ==
-                            null
-                    }.toList(),
+                    .filter { it.deletedAt == null }
+                    .toList(),
             )
 
         override suspend fun insertHabit(entity: HabitEntity): Result<Unit> {

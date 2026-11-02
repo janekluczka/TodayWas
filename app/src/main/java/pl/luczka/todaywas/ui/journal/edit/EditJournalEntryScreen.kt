@@ -422,7 +422,7 @@ private class HelpMeRefineBottomSheetPreviewStateProvider :
             step = HelpMeRefineStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
             refinedText =
-            "Today went well overall, and I got a few things done that I'm proud of...",
+                "Today went well overall, and I got a few things done that I'm proud of...",
             remainingToday = 7,
         ),
         HelpMeRefineUiState(
@@ -430,7 +430,7 @@ private class HelpMeRefineBottomSheetPreviewStateProvider :
             step = HelpMeRefineStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
             refinedText =
-            "Today went well overall, and I got a few things done that I'm proud of...",
+                "Today went well overall, and I got a few things done that I'm proud of...",
             remainingToday = 0,
         ),
         HelpMeRefineUiState(

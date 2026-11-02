@@ -551,8 +551,8 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                     date = LocalDate.now().minusDays(1),
                     formattedDate = "Jul 26, 2026",
                     text =
-                    "A long entry that should get truncated in the list preview once it " +
-                        "wraps past two lines of text.",
+                        "A long entry that should get truncated in the list preview once it " +
+                            "wraps past two lines of text.",
                     createdAt = Instant.now(),
                 ),
             ),

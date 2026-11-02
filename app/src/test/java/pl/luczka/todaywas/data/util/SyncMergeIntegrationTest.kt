@@ -25,8 +25,11 @@ class SyncMergeIntegrationTest {
 
     private fun buildDatabase(context: Context): TodayWasDatabase =
         Room
-            .databaseBuilder(context, TodayWasDatabase::class.java, "test-todaywas-${System.nanoTime()}.db")
-            .allowMainThreadQueries()
+            .databaseBuilder(
+                context,
+                TodayWasDatabase::class.java,
+                "test-todaywas-${System.nanoTime()}.db",
+            ).allowMainThreadQueries()
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
             .addCallback(todayWasDatabaseCallbacks())
             .build()

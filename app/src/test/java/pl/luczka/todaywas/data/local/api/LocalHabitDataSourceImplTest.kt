@@ -41,26 +41,19 @@ class LocalHabitDataSourceImplTest {
         override fun observeAll(): Flow<List<HabitEntity>> =
             flowOf(
                 entities.values
-                    .filter {
-                        it.deletedAt ==
-                            null
-                    }.toList(),
+                    .filter { it.deletedAt == null }
+                    .toList(),
             )
 
         override suspend fun getAll(): List<HabitEntity> =
             entities.values
-                .filter {
-                    it.deletedAt ==
-                        null
-                }.toList()
+                .filter { it.deletedAt == null }
+                .toList()
 
         override suspend fun getAllIncludingDeleted(): List<HabitEntity> = entities.values.toList()
 
         override suspend fun getById(id: String): HabitEntity? =
-            entities[id]?.takeIf {
-                it.deletedAt ==
-                    null
-            }
+            entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insert(entity: HabitEntity) {
             insertCallCount++
@@ -111,14 +104,17 @@ class LocalHabitDataSourceImplTest {
         var upsertAllCallCount = 0
             private set
 
-        override fun observeAll(): Flow<List<HabitCheckInEntity>> = flowOf(entities.values.filter { it.deletedAt == null }.toList())
+        override fun observeAll(): Flow<List<HabitCheckInEntity>> =
+            flowOf(
+                entities.values
+                    .filter { it.deletedAt == null }
+                    .toList(),
+            )
 
         override suspend fun getAll(): List<HabitCheckInEntity> =
             entities.values
-                .filter {
-                    it.deletedAt ==
-                        null
-                }.toList()
+                .filter { it.deletedAt == null }
+                .toList()
 
         override suspend fun getAllIncludingDeleted(): List<HabitCheckInEntity> =
             entities.values

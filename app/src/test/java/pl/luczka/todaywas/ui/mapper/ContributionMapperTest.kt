@@ -68,14 +68,12 @@ class ContributionMapperTest {
         assertEquals(0, cells.size % 7)
         assertTrue(
             cells.filterIsInstance<DsContributionCellUiState.Level>().any {
-                it.date ==
-                    LocalDate.of(2026, 1, 1)
+                it.date == LocalDate.of(2026, 1, 1)
             },
         )
         assertTrue(
             cells.filterIsInstance<DsContributionCellUiState.Level>().any {
-                it.date ==
-                    LocalDate.of(2026, 12, 31)
+                it.date == LocalDate.of(2026, 12, 31)
             },
         )
     }
@@ -131,8 +129,7 @@ class ContributionMapperTest {
         // July's tail column: Mon-Fri (Jul 27-31) present, Sat-Sun (Aug 1-2) blank.
         assertTrue(
             (0..4).all {
-                dateOf(julyTail[it]) ==
-                    LocalDate.of(2026, 7, 27).plusDays(it.toLong())
+                dateOf(julyTail[it]) == LocalDate.of(2026, 7, 27).plusDays(it.toLong())
             },
         )
         assertTrue(julyTail[5] is DsContributionCellUiState.Blank)

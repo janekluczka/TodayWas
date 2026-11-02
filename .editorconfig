@@ -5,6 +5,9 @@ root = true
 ktlint_code_style = android_studio
 # Matches Android Studio/IntelliJ's default Kotlin line-length setting.
 max_line_length = 100
+# Backtick test names (`should [outcome] when [scenario]`, see lessons.md) can't be wrapped
+# shorter without truncating them, so they don't count towards the line length.
+ktlint_ignore_back_ticked_identifier = true
 # The android_studio style disallows trailing commas by default; keep them for cleaner diffs.
 ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true
@@ -14,12 +17,14 @@ ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_e
 ktlint_class_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 1
 # Composable functions are PascalCase by official Jetpack Compose convention.
 ktlint_function_naming_ignore_when_annotated_with = Composable
+# No blank line forced between `when` branches when one of them spans several lines.
+ij_kotlin_line_break_after_multiline_when_entry = false
+# Wrapping at a binary operator (`a ==\n    b`) reads badly; an overlong line fails
+# max-line-length instead and gets restructured (extract a variable, split a chain).
+ktlint_standard_binary-expression-wrapping = disabled
+# Chains of 4+ calls go one call per line.
+ktlint_standard_chain-method-continuation = enabled
 
 [**/src/test/**/*.kt]
-# Descriptive `should [outcome] when [scenario]` backtick test names (see lessons.md) routinely
-# push the bare `fun \`...\`() =` declaration line past 100 chars on its own, with no way to wrap
-# it shorter without truncating the name. Relaxed here rather than compromising on test-name
-# clarity; production code still holds the line at 100 above.
-max_line_length = 140
 # Tests keep `= runTest {` on its own line below the signature, as the existing tests are written.
 ktlint_function_signature_body_expression_wrapping = multiline

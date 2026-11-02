@@ -281,9 +281,7 @@ private fun JournalDateStrip(
 ) {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
-    val selectedDate = if (uiState.selectedSlot ==
-        JournalDateSlotUiState.TODAY
-    ) {
+    val selectedDate = if (uiState.selectedSlot == JournalDateSlotUiState.TODAY) {
         today
     } else {
         yesterday
@@ -539,7 +537,7 @@ private class HelpMeStartBottomSheetPreviewStateProvider :
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
             generatedText =
-            "I made real progress today, and it feels good to see it come together...",
+                "I made real progress today, and it feels good to see it come together...",
             remainingToday = 7,
         ),
         HelpMeStartUiState(
@@ -547,7 +545,7 @@ private class HelpMeStartBottomSheetPreviewStateProvider :
             step = HelpMeStartStep.PREVIEW,
             selectedTone = JournalPromptToneUiState.GOOD,
             generatedText =
-            "I made real progress today, and it feels good to see it come together...",
+                "I made real progress today, and it feels good to see it come together...",
             remainingToday = 0,
         ),
         HelpMeStartUiState(

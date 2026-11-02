@@ -28,8 +28,11 @@ class LocalHabitDataSourceIntegrationTest {
 
     private fun buildDatabase(context: Context): TodayWasDatabase =
         Room
-            .databaseBuilder(context, TodayWasDatabase::class.java, "test-todaywas-${System.nanoTime()}.db")
-            .allowMainThreadQueries()
+            .databaseBuilder(
+                context,
+                TodayWasDatabase::class.java,
+                "test-todaywas-${System.nanoTime()}.db",
+            ).allowMainThreadQueries()
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
             .addCallback(todayWasDatabaseCallbacks())
             .build()
@@ -102,7 +105,9 @@ class LocalHabitDataSourceIntegrationTest {
             // Act
             val result = dataSource.deleteHabitAndCheckIns("habit-1", 2_000L)
             val habit = db.habitDao().getAllIncludingDeleted().single { it.id == "habit-1" }
-            val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single { it.id == "check-in-1" }
+            val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single {
+                it.id == "check-in-1"
+            }
             db.close()
 
             // Assert
@@ -150,7 +155,9 @@ class LocalHabitDataSourceIntegrationTest {
             // Act
             val result = dataSource.deleteHabitAndCheckIns("habit-1", 2_000L)
             val habit = db.habitDao().getAllIncludingDeleted().single { it.id == "habit-1" }
-            val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single { it.id == "check-in-1" }
+            val checkIn = db.habitCheckInDao().getAllIncludingDeleted().single {
+                it.id == "check-in-1"
+            }
             db.close()
 
             // Assert: safeDbCall retries once, so both the attempt and its retry run the same

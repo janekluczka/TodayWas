@@ -53,7 +53,7 @@ fun Habit.toUiState(
         todayCheckIn == null -> HabitCheckInStatusUiState.NotLogged
         type == HabitType.BINARY -> HabitCheckInStatusUiState.LoggedBinary(
             done =
-            todayCheckIn.value == 1,
+                todayCheckIn.value == 1,
         )
         else -> HabitCheckInStatusUiState.LoggedScale(value = todayCheckIn.value)
     },

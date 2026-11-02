@@ -176,7 +176,10 @@ class OnboardingAccountSetupViewModelTest {
             runCurrent()
 
             // Assert
-            assertEquals(OnboardingAccountSetupNavigation.Back, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                OnboardingAccountSetupNavigation.Back,
+                viewModel.uiState.value.pendingNavigation,
+            )
         }
 
     @Test
@@ -331,7 +334,9 @@ class OnboardingAccountSetupViewModelTest {
             val viewModel = viewModel()
 
             // Act
-            viewModel.onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(AuthErrorUiState.NO_GOOGLE_ACCOUNT))
+            viewModel.onIntent(
+                OnboardingAccountSetupIntent.GoogleSignInFailed(AuthErrorUiState.NO_GOOGLE_ACCOUNT),
+            )
             runCurrent()
 
             // Assert

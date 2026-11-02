@@ -21,7 +21,8 @@ import pl.luczka.todaywas.domain.usecase.CreateHabitUseCase
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateHabitViewModelTest {
 
-    private fun viewModel(repository: FakeHabitRepository = FakeHabitRepository()) = CreateHabitViewModel(CreateHabitUseCase(repository))
+    private fun viewModel(repository: FakeHabitRepository = FakeHabitRepository()) =
+        CreateHabitViewModel(CreateHabitUseCase(repository))
 
     @Before
     fun setUp() {

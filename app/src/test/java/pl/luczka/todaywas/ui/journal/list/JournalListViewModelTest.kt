@@ -41,7 +41,9 @@ class JournalListViewModelTest {
     )
 
     // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
-    private fun TestScope.viewModel(entries: List<JournalEntry> = emptyList()): JournalListViewModel {
+    private fun TestScope.viewModel(
+        entries: List<JournalEntry> = emptyList(),
+    ): JournalListViewModel {
         val repository = FakeJournalRepository(entries)
         return JournalListViewModel(
             observeJournalEntries = ObserveJournalEntriesUseCase(repository),

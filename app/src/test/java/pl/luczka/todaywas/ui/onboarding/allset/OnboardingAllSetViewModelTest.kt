@@ -77,7 +77,10 @@ class OnboardingAllSetViewModelTest {
             viewModel.onIntent(OnboardingAllSetIntent.GetStartedClicked)
 
             // Assert
-            assertEquals(OnboardingAllSetNavigation.Finished, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                OnboardingAllSetNavigation.Finished,
+                viewModel.uiState.value.pendingNavigation,
+            )
         }
 
     @Test
@@ -91,7 +94,10 @@ class OnboardingAllSetViewModelTest {
             testDispatcher.scheduler.runCurrent()
 
             // Assert
-            assertEquals(OnboardingAllSetNavigation.Finished, viewModel.uiState.value.pendingNavigation)
+            assertEquals(
+                OnboardingAllSetNavigation.Finished,
+                viewModel.uiState.value.pendingNavigation,
+            )
         }
 
     @Test

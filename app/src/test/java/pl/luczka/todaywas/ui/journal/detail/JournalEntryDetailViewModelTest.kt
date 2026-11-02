@@ -81,7 +81,10 @@ class JournalEntryDetailViewModelTest {
     fun `should derive isEditable false when ScreenEntered is dispatched past the 24h window`() =
         runTest {
             // Arrange
-            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneId.systemDefault())
+            val expiredClock = Clock.fixed(
+                createdAt.plus(Duration.ofHours(25)),
+                ZoneId.systemDefault(),
+            )
             val viewModel = viewModel(clock = expiredClock)
 
             // Act
@@ -195,7 +198,10 @@ class JournalEntryDetailViewModelTest {
     fun `should succeed regardless of the entry's age, unlike editing`() =
         runTest {
             // Arrange - entry is well past its 24h edit window, unlike editing's expiry tests
-            val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneId.systemDefault())
+            val expiredClock = Clock.fixed(
+                createdAt.plus(Duration.ofHours(25)),
+                ZoneId.systemDefault(),
+            )
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository, clock = expiredClock)
             viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)

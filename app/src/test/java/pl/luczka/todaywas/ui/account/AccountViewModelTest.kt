@@ -336,7 +336,9 @@ class AccountViewModelTest {
         runTest {
             // Arrange
             val repository =
-                FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             val viewModel = viewModel(repository)
 
             // Act
@@ -351,7 +353,9 @@ class AccountViewModelTest {
         runTest {
             // Arrange
             val repository =
-                FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
             val onboardingRepository = FakeOnboardingRepository()
@@ -373,7 +377,9 @@ class AccountViewModelTest {
         runTest {
             // Arrange
             val repository =
-                FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             repository.signOutError = AuthError.NetworkUnavailable
             val journalRepository = FakeJournalRepository()
             val habitRepository = FakeHabitRepository()
@@ -396,7 +402,9 @@ class AccountViewModelTest {
         runTest {
             // Arrange
             val repository =
-                FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             repository.signOutError = AuthError.NetworkUnavailable
             val viewModel = viewModel(repository)
 
@@ -417,7 +425,9 @@ class AccountViewModelTest {
         runTest {
             // Arrange
             val repository =
-                FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             val viewModel = viewModel(repository)
             viewModel.onIntent(AccountIntent.SignUpLinkClicked)
             fillSignUpForm(viewModel)
@@ -595,7 +605,9 @@ class AccountViewModelTest {
             // Arrange
             val repository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
-            journalRepository.syncWithRemoteResult = Result.failure(RuntimeException("network error"))
+            journalRepository.syncWithRemoteResult = Result.failure(
+                RuntimeException("network error"),
+            )
             val onboardingRepository = FakeOnboardingRepository()
             val viewModel =
                 viewModel(
@@ -625,7 +637,9 @@ class AccountViewModelTest {
         runTest {
             // Arrange
             val repository =
-                FakeAuthRepository(initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"))
+                FakeAuthRepository(
+                    initialState = AuthState.SignedIn(userId = "u1", email = "a@b.com"),
+                )
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
             val viewModel =
