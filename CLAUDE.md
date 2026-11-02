@@ -25,7 +25,7 @@ decisions.
 Multi-module Gradle project: `:app` (application, package `pl.luczka.todaywas`) and
 `:core:designsystem` (reusable Material3 wrappers, package
 `pl.luczka.todaywas.core.designsystem`; must never depend on `:app`), plus `:ktlint-rules` (a
-plain JVM module with the project's custom ktlint rules, package `pl.luczka.todaywas.ktlint`,
+plain JVM module with the shared custom ktlint rules, package `pl.luczka.agenttoolkit.ktlint`,
 loaded into the other two through `ktlintRuleset`).
 
 ```
@@ -141,13 +141,15 @@ Kotlin, ktlint-enforced (engine pinned in `@gradle/libs.versions.toml`) with the
 code style (`@.editorconfig`). Settings on top of that style: trailing commas allowed, functions
 with 2+ parameters and every class header with parameters forced to one parameter per line,
 calls with 2+ arguments forced to one argument per line once any argument is named (custom
-`todaywas:argument-list-multiline` rule in `:ktlint-rules`; positional calls like
+`agent-toolkit:argument-list-multiline` rule in `:ktlint-rules`; positional calls like
 `assertEquals(2, count)` stay on one line), chains of 4+ calls one call per line, `@Composable` functions stay PascalCase, and backtick test
 names exempt from the 120-column limit. Lines are never wrapped at a binary operator — when
 `ktlintCheck` reports an overlong line it can't fix, restructure it (extract a variable, split a
 chain) instead of splitting a comparison like `a ==` / `b` across lines. `ktlintFormat` is the source of truth for layout — run
 it and accept its output; change `.editorconfig` settings deliberately rather than disabling rules
-to dodge one result. Compile target is Java 17 (`@app/build.gradle.kts`). Dependency
+to dodge one result. `.editorconfig`, `config/detekt/detekt.yml` and `ktlint-rules/` are shared
+configs synced from agent-toolkit by the `android-quality-setup` skill — change them there and
+re-sync, never only here (a local edit is overwritten on the next sync). Compile target is Java 17 (`@app/build.gradle.kts`). Dependency
 versions live in `@gradle/libs.versions.toml` — add new dependencies there, not as inline version
 strings.
 
