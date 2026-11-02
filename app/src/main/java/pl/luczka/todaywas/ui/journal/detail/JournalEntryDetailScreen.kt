@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -40,7 +41,7 @@ import pl.luczka.todaywas.ui.model.JournalEntryUiState
 fun JournalEntryDetailScreen(
     id: String,
     onBack: () -> Unit,
-    onEditClicked: () -> Unit,
+    onEditClick: () -> Unit,
     viewModel: JournalEntryDetailViewModel =
         hiltViewModel<JournalEntryDetailViewModel, JournalEntryDetailViewModel.Factory> { factory ->
             factory.create(id)
@@ -52,9 +53,10 @@ fun JournalEntryDetailScreen(
         viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
     }
 
+    val currentOnBack by rememberUpdatedState(onBack)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {
-            JournalEntryDetailNavigation.EntryDeleted -> onBack()
+            JournalEntryDetailNavigation.EntryDeleted -> currentOnBack()
         }
         viewModel.onIntent(JournalEntryDetailIntent.NavigationHandled)
     }
@@ -63,7 +65,7 @@ fun JournalEntryDetailScreen(
         uiState = uiState,
         onIntent = viewModel::onIntent,
         onBack = onBack,
-        onEditClicked = onEditClicked,
+        onEditClick = onEditClick,
     )
 }
 
@@ -72,7 +74,7 @@ private fun JournalEntryDetailScreenContent(
     uiState: JournalEntryDetailUiState,
     onIntent: (JournalEntryDetailIntent) -> Unit,
     onBack: () -> Unit,
-    onEditClicked: () -> Unit,
+    onEditClick: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val deleteErrorMessage = stringResource(R.string.journal_detail_delete_error)
@@ -96,7 +98,7 @@ private fun JournalEntryDetailScreenContent(
                     }
                 },
                 actions = {
-                    JournalEntryDetailActions(uiState, onIntent, onEditClicked)
+                    JournalEntryDetailActions(uiState, onIntent, onEditClick)
                 },
             )
         },
@@ -124,10 +126,10 @@ private fun JournalEntryDetailScreenContent(
 private fun JournalEntryDetailActions(
     uiState: JournalEntryDetailUiState,
     onIntent: (JournalEntryDetailIntent) -> Unit,
-    onEditClicked: () -> Unit,
+    onEditClick: () -> Unit,
 ) {
     if (uiState.isEditable) {
-        DsIconButton(onClick = onEditClicked) {
+        DsIconButton(onClick = onEditClick) {
             DsIcon(
                 imageVector = Icons.Filled.Edit,
                 contentDescription = stringResource(R.string.journal_detail_edit_action),
@@ -204,7 +206,7 @@ private fun JournalEntryDetailScreenPreview(
             uiState = state,
             onIntent = {},
             onBack = {},
-            onEditClicked = {},
+            onEditClick = {},
         )
     }
 }

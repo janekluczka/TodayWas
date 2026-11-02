@@ -46,7 +46,7 @@ import pl.luczka.todaywas.ui.model.JournalSortUiState
 @Composable
 fun JournalListScreen(
     onBack: () -> Unit,
-    onEntryClicked: (String) -> Unit,
+    onEntryClick: (String) -> Unit,
     viewModel: JournalListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -55,7 +55,7 @@ fun JournalListScreen(
         uiState = uiState,
         onIntent = viewModel::onIntent,
         onBack = onBack,
-        onEntryClicked = onEntryClicked,
+        onEntryClick = onEntryClick,
     )
 }
 
@@ -64,7 +64,7 @@ private fun JournalListScreenContent(
     uiState: JournalListUiState,
     onIntent: (JournalListIntent) -> Unit,
     onBack: () -> Unit,
-    onEntryClicked: (String) -> Unit,
+    onEntryClick: (String) -> Unit,
 ) {
     DsScaffold(
         topBar = {
@@ -101,7 +101,7 @@ private fun JournalListScreenContent(
             )
             SortChipRow(
                 selected = uiState.selectedSort,
-                onSortSelected = { onIntent(JournalListIntent.SortSelected(it)) },
+                onSortSelect = { onIntent(JournalListIntent.SortSelected(it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
             if (!uiState.isLoading && uiState.entries.isEmpty()) {
@@ -122,7 +122,7 @@ private fun JournalListScreenContent(
                     items(uiState.entries, key = { it.id }) { entry ->
                         JournalEntryRow(
                             entry = entry,
-                            onClick = { onEntryClicked(entry.id) },
+                            onClick = { onEntryClick(entry.id) },
                         )
                     }
                 }
@@ -134,7 +134,7 @@ private fun JournalListScreenContent(
 @Composable
 private fun SortChipRow(
     selected: JournalSortUiState,
-    onSortSelected: (JournalSortUiState) -> Unit,
+    onSortSelect: (JournalSortUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyRow(
@@ -149,7 +149,7 @@ private fun SortChipRow(
             DsChip(
                 text = stringResource(sort.labelRes()),
                 selected = sort == selected,
-                onClick = { onSortSelected(sort) },
+                onClick = { onSortSelect(sort) },
             )
         }
     }
@@ -203,7 +203,7 @@ private fun JournalListScreenPreview(
             uiState = state,
             onIntent = {},
             onBack = {},
-            onEntryClicked = {},
+            onEntryClick = {},
         )
     }
 }

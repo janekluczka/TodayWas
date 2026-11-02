@@ -29,12 +29,12 @@ import pl.luczka.todaywas.ui.model.AuthErrorUiState
 @Composable
 fun SignInFormContent(
     state: SignInFormUiState,
-    onEmailChanged: (String) -> Unit,
-    onPasswordChanged: (String) -> Unit,
-    onSubmitClicked: () -> Unit,
-    onGoogleIdTokenReceived: (String) -> Unit,
-    onGoogleSignInFailed: (AuthErrorUiState) -> Unit,
-    onSignUpLinkClicked: () -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onSubmitClick: () -> Unit,
+    onGoogleIdTokenReceive: (String) -> Unit,
+    onGoogleSignInFailure: (AuthErrorUiState) -> Unit,
+    onSignUpLinkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -54,7 +54,7 @@ fun SignInFormContent(
     ) {
         DsTextField(
             value = state.email,
-            onValueChange = onEmailChanged,
+            onValueChange = onEmailChange,
             label = stringResource(R.string.auth_form_email_label),
             enabled = !state.isSubmitting,
             isError = state.emailError,
@@ -71,7 +71,7 @@ fun SignInFormContent(
         )
         DsTextField(
             value = state.password,
-            onValueChange = onPasswordChanged,
+            onValueChange = onPasswordChange,
             label = stringResource(R.string.auth_form_password_label),
             enabled = !state.isSubmitting,
             isError = state.passwordError,
@@ -86,7 +86,7 @@ fun SignInFormContent(
         )
         DsButtonWithLoading(
             text = stringResource(R.string.auth_form_sign_in_cta),
-            onClick = onSubmitClicked,
+            onClick = onSubmitClick,
             loading = state.isSubmitting,
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,13 +94,13 @@ fun SignInFormContent(
         )
         GoogleSignInLaunchButton(
             enabled = !state.isSubmitting,
-            onIdTokenReceived = onGoogleIdTokenReceived,
-            onFailed = onGoogleSignInFailed,
+            onIdTokenReceive = onGoogleIdTokenReceive,
+            onFailure = onGoogleSignInFailure,
             modifier = Modifier.fillMaxWidth(),
         )
         DsTextButton(
             text = stringResource(R.string.auth_form_sign_up_link_cta),
-            onClick = onSignUpLinkClicked,
+            onClick = onSignUpLinkClick,
             enabled = !state.isSubmitting,
         )
     }
@@ -123,12 +123,12 @@ private fun SignInFormContentPreview(
     DsTheme {
         SignInFormContent(
             state = state,
-            onEmailChanged = {},
-            onPasswordChanged = {},
-            onSubmitClicked = {},
-            onGoogleIdTokenReceived = {},
-            onGoogleSignInFailed = {},
-            onSignUpLinkClicked = {},
+            onEmailChange = {},
+            onPasswordChange = {},
+            onSubmitClick = {},
+            onGoogleIdTokenReceive = {},
+            onGoogleSignInFailure = {},
+            onSignUpLinkClick = {},
         )
     }
 }

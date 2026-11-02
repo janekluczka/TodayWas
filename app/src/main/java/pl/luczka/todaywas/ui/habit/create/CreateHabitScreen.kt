@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -32,15 +33,16 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 @Composable
 fun CreateHabitScreen(
-    onSaved: () -> Unit,
-    onCancelled: () -> Unit,
+    onSaveComplete: () -> Unit,
+    onCancel: () -> Unit,
     viewModel: CreateHabitViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val currentOnSaveComplete by rememberUpdatedState(onSaveComplete)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {
-            CreateHabitNavigation.Saved -> onSaved()
+            CreateHabitNavigation.Saved -> currentOnSaveComplete()
         }
         viewModel.onIntent(CreateHabitIntent.NavigationHandled)
     }
@@ -48,7 +50,7 @@ fun CreateHabitScreen(
     CreateHabitScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
-        onCancel = onCancelled,
+        onCancel = onCancel,
     )
 }
 
@@ -153,7 +155,7 @@ private fun CheckInInputPreview(
         DsSegmentedRow(
             items = listOf(0, 1),
             selectedItem = null,
-            onItemSelected = {},
+            onItemSelect = {},
             label = { if (it == 1) doneLabel else notDoneLabel },
             modifier = modifier.fillMaxWidth(),
         )
@@ -161,7 +163,7 @@ private fun CheckInInputPreview(
         DsSegmentedRow(
             items = (1..uiState.scaleSteps).toList(),
             selectedItem = null,
-            onItemSelected = {},
+            onItemSelect = {},
             modifier = modifier.fillMaxWidth(),
         )
     }

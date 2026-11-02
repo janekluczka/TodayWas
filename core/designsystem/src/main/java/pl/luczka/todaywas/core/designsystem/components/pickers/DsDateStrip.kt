@@ -39,7 +39,7 @@ private val DATE_STRIP_CARD_SPACING = DsSpacing.space200
 fun DsDateStrip(
     selectedDate: LocalDate,
     isSelectable: (LocalDate) -> Boolean,
-    onDateSelected: (LocalDate) -> Unit,
+    onDateSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
     interactive: Boolean = true,
 ) {
@@ -65,7 +65,7 @@ fun DsDateStrip(
                 date = date,
                 selected = date == selectedDate,
                 available = interactive && isSelectable(date),
-                onClick = { if (interactive) onDateSelected(date) },
+                onClick = { if (interactive) onDateSelect(date) },
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -105,7 +105,7 @@ private fun DsDateStripPreview() {
         DsDateStrip(
             selectedDate = today,
             isSelectable = { it == today || it == today.minusDays(1) },
-            onDateSelected = {},
+            onDateSelect = {},
         )
     }
 }
@@ -118,7 +118,7 @@ private fun DsDateStripNonInteractivePreview() {
         DsDateStrip(
             selectedDate = today,
             isSelectable = { it == today },
-            onDateSelected = {},
+            onDateSelect = {},
             interactive = false,
         )
     }

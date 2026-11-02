@@ -22,8 +22,8 @@ import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
 fun DataSyncReviewContent(
     summary: LocalDataSummaryUi,
     isSyncing: Boolean,
-    onConfirmClicked: () -> Unit,
-    onSkipClicked: () -> Unit,
+    onConfirmClick: () -> Unit,
+    onSkipClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -53,13 +53,13 @@ fun DataSyncReviewContent(
         )
         DsButtonWithLoading(
             text = stringResource(R.string.data_sync_review_confirm_cta),
-            onClick = onConfirmClicked,
+            onClick = onConfirmClick,
             loading = isSyncing,
             modifier = Modifier.fillMaxWidth(),
         )
         DsTextButton(
             text = stringResource(R.string.data_sync_review_skip_cta),
-            onClick = onSkipClicked,
+            onClick = onSkipClick,
             enabled = !isSyncing,
         )
     }
@@ -93,8 +93,8 @@ private fun DataSyncReviewContentPreview(
         DataSyncReviewContent(
             summary = state.summary,
             isSyncing = state.isSyncing,
-            onConfirmClicked = {},
-            onSkipClicked = {},
+            onConfirmClick = {},
+            onSkipClick = {},
         )
     }
 }

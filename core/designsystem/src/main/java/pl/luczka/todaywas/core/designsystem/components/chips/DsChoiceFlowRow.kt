@@ -16,7 +16,7 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 fun <T> DsChoiceFlowRow(
     items: List<T>,
     selectedItem: T?,
-    onItemSelected: (T?) -> Unit,
+    onItemSelect: (T?) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     allowDeselect: Boolean = true,
@@ -31,7 +31,7 @@ fun <T> DsChoiceFlowRow(
             DsFilterChip(
                 text = label(item),
                 selected = selected,
-                onClick = { onItemSelected(if (allowDeselect && selected) null else item) },
+                onClick = { onItemSelect(if (allowDeselect && selected) null else item) },
                 enabled = enabled,
             )
         }
@@ -45,7 +45,7 @@ private fun DsChoiceFlowRowPreview() {
         DsChoiceFlowRow(
             items = listOf("Very bad", "Bad", "Neutral", "Good", "Very good"),
             selectedItem = "Good",
-            onItemSelected = {},
+            onItemSelect = {},
         )
     }
 }

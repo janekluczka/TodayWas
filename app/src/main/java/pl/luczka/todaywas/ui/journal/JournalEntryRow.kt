@@ -15,10 +15,11 @@ import pl.luczka.todaywas.ui.model.JournalEntryUiState
 fun JournalEntryRow(
     entry: JournalEntryUiState,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     DsText(
         text = entry.formattedDate,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(DsSpacing.space400),

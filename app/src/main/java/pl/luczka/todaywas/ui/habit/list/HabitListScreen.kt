@@ -42,7 +42,7 @@ import pl.luczka.todaywas.ui.model.HabitUiState
 @Composable
 fun HabitListScreen(
     onBack: () -> Unit,
-    onHabitClicked: (String) -> Unit,
+    onHabitClick: (String) -> Unit,
     viewModel: HabitListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,7 +51,7 @@ fun HabitListScreen(
         uiState = uiState,
         onIntent = viewModel::onIntent,
         onBack = onBack,
-        onHabitClicked = onHabitClicked,
+        onHabitClick = onHabitClick,
     )
 }
 
@@ -60,7 +60,7 @@ private fun HabitListScreenContent(
     uiState: HabitListUiState,
     onIntent: (HabitListIntent) -> Unit,
     onBack: () -> Unit,
-    onHabitClicked: (String) -> Unit,
+    onHabitClick: (String) -> Unit,
 ) {
     DsScaffold(
         topBar = {
@@ -85,7 +85,7 @@ private fun HabitListScreenContent(
         ) {
             SortChipRow(
                 selected = uiState.selectedSort,
-                onSortSelected = { onIntent(HabitListIntent.SortSelected(it)) },
+                onSortSelect = { onIntent(HabitListIntent.SortSelected(it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
             if (!uiState.isLoading && uiState.habits.isEmpty()) {
@@ -106,7 +106,7 @@ private fun HabitListScreenContent(
                     items(uiState.habits, key = { it.id }) { habit ->
                         HabitRow(
                             habit = habit,
-                            onClick = { onHabitClicked(habit.id) },
+                            onClick = { onHabitClick(habit.id) },
                         )
                     }
                 }
@@ -118,7 +118,7 @@ private fun HabitListScreenContent(
 @Composable
 private fun SortChipRow(
     selected: HabitSortUiState,
-    onSortSelected: (HabitSortUiState) -> Unit,
+    onSortSelect: (HabitSortUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyRow(
@@ -133,7 +133,7 @@ private fun SortChipRow(
             DsChip(
                 text = stringResource(sort.labelRes()),
                 selected = sort == selected,
-                onClick = { onSortSelected(sort) },
+                onClick = { onSortSelect(sort) },
             )
         }
     }
@@ -189,7 +189,7 @@ private fun HabitListScreenPreview(
             uiState = state,
             onIntent = {},
             onBack = {},
-            onHabitClicked = {},
+            onHabitClick = {},
         )
     }
 }

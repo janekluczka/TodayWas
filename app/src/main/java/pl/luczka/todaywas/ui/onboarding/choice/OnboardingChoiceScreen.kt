@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,14 +30,15 @@ import pl.luczka.todaywas.ui.onboarding.AllSetReason
 @Composable
 fun OnboardingChoiceScreen(
     onNavigateToAccountSetup: () -> Unit,
-    onFinished: (AllSetReason) -> Unit,
+    onFinish: (AllSetReason) -> Unit,
     viewModel: OnboardingChoiceViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val currentOnFinish by rememberUpdatedState(onFinish)
     LaunchedEffect(uiState.pendingNavigation) {
         when (val navigation = uiState.pendingNavigation ?: return@LaunchedEffect) {
-            is OnboardingChoiceNavigation.Finished -> onFinished(navigation.reason)
+            is OnboardingChoiceNavigation.Finished -> currentOnFinish(navigation.reason)
         }
         viewModel.onIntent(OnboardingChoiceIntent.NavigationHandled)
     }
@@ -44,7 +46,7 @@ fun OnboardingChoiceScreen(
     OnboardingChoiceScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
-        onSignInSignUpClicked = onNavigateToAccountSetup,
+        onSignInSignUpClick = onNavigateToAccountSetup,
     )
 }
 
@@ -52,7 +54,7 @@ fun OnboardingChoiceScreen(
 private fun OnboardingChoiceScreenContent(
     uiState: OnboardingChoiceUiState,
     onIntent: (OnboardingChoiceIntent) -> Unit,
-    onSignInSignUpClicked: () -> Unit,
+    onSignInSignUpClick: () -> Unit,
 ) {
     DsScaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -89,7 +91,7 @@ private fun OnboardingChoiceScreenContent(
             )
             DsTextButton(
                 text = stringResource(R.string.onboarding_account_signin_signup_cta),
-                onClick = onSignInSignUpClicked,
+                onClick = onSignInSignUpClick,
                 enabled = !uiState.isSaving,
                 modifier = Modifier.padding(top = DsSpacing.space200),
             )
@@ -115,7 +117,7 @@ private fun OnboardingChoiceScreenPreview(
         OnboardingChoiceScreenContent(
             uiState = state,
             onIntent = {},
-            onSignInSignUpClicked = {},
+            onSignInSignUpClick = {},
         )
     }
 }

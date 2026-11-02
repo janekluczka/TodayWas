@@ -2,6 +2,7 @@ package pl.luczka.todaywas.domain.model
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Year
 import java.time.ZoneId
 
 sealed interface ContributionWindow {
@@ -16,8 +17,8 @@ sealed interface ContributionWindow {
 fun ContributionWindow.dateRange(now: Instant): ClosedRange<LocalDate> {
     val today = now.atZone(ZoneId.systemDefault()).toLocalDate()
     return when (this) {
-        ContributionWindow.RollingTwelveMonths -> today.minusMonths(12).plusDays(1)..today
-        is ContributionWindow.CalendarYear -> LocalDate.of(year, 1, 1)..LocalDate.of(year, 12, 31)
+        ContributionWindow.RollingTwelveMonths -> today.minusYears(1).plusDays(1)..today
+        is ContributionWindow.CalendarYear -> Year.of(year).let { it.atDay(1)..it.atDay(it.length()) }
     }
 }
 

@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,7 +29,7 @@ import pl.luczka.todaywas.ui.onboarding.AllSetReason
 @Composable
 fun OnboardingAllSetScreen(
     reason: AllSetReason,
-    onFinished: () -> Unit,
+    onFinish: () -> Unit,
     viewModel: OnboardingAllSetViewModel =
         hiltViewModel<OnboardingAllSetViewModel, OnboardingAllSetViewModel.Factory> { factory ->
             factory.create(reason)
@@ -36,9 +37,10 @@ fun OnboardingAllSetScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val currentOnFinish by rememberUpdatedState(onFinish)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {
-            OnboardingAllSetNavigation.Finished -> onFinished()
+            OnboardingAllSetNavigation.Finished -> currentOnFinish()
         }
         viewModel.onIntent(OnboardingAllSetIntent.NavigationHandled)
     }

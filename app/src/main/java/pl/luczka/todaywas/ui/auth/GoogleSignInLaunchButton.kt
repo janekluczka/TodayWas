@@ -28,8 +28,8 @@ import pl.luczka.todaywas.ui.model.AuthErrorUiState
 @Composable
 fun GoogleSignInLaunchButton(
     enabled: Boolean,
-    onIdTokenReceived: (String) -> Unit,
-    onFailed: (AuthErrorUiState) -> Unit,
+    onIdTokenReceive: (String) -> Unit,
+    onFailure: (AuthErrorUiState) -> Unit,
     modifier: Modifier = Modifier,
     text: String = stringResource(R.string.auth_form_google_cta),
 ) {
@@ -46,7 +46,7 @@ fun GoogleSignInLaunchButton(
             // local.properties (external Google Cloud prerequisite) — fail gracefully rather
             // than letting GetGoogleIdOption throw IllegalArgumentException.
             if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
-                onFailed(AuthErrorUiState.UNKNOWN)
+                onFailure(AuthErrorUiState.UNKNOWN)
             } else {
                 isLaunching = true
                 coroutineScope.launch {
@@ -64,15 +64,15 @@ fun GoogleSignInLaunchButton(
                             .create(context)
                             .getCredential(context, request)
                         val credential = GoogleIdTokenCredential.createFrom(result.credential.data)
-                        onIdTokenReceived(credential.idToken)
-                    } catch (e: GetCredentialCancellationException) {
+                        onIdTokenReceive(credential.idToken)
+                    } catch (ignored: GetCredentialCancellationException) {
                         // User dismissed the system account picker — not a failure, no error to show.
-                    } catch (e: NoCredentialException) {
-                        onFailed(AuthErrorUiState.NO_GOOGLE_ACCOUNT)
-                    } catch (e: GetCredentialException) {
-                        onFailed(AuthErrorUiState.UNKNOWN)
-                    } catch (e: GoogleIdTokenParsingException) {
-                        onFailed(AuthErrorUiState.UNKNOWN)
+                    } catch (ignored: NoCredentialException) {
+                        onFailure(AuthErrorUiState.NO_GOOGLE_ACCOUNT)
+                    } catch (ignored: GetCredentialException) {
+                        onFailure(AuthErrorUiState.UNKNOWN)
+                    } catch (ignored: GoogleIdTokenParsingException) {
+                        onFailure(AuthErrorUiState.UNKNOWN)
                     } finally {
                         isLaunching = false
                     }

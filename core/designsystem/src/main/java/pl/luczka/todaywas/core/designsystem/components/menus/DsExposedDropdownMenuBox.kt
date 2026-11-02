@@ -23,7 +23,7 @@ fun DsExposedDropdownMenuBox(
     onExpandedChange: (Boolean) -> Unit,
     selectedText: String,
     options: List<String>,
-    onOptionSelected: (String) -> Unit,
+    onOptionSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
     label: String? = null,
 ) {
@@ -50,7 +50,7 @@ fun DsExposedDropdownMenuBox(
                 DsDropdownMenuItem(
                     text = option,
                     onClick = {
-                        onOptionSelected(option)
+                        onOptionSelect(option)
                         onExpandedChange(false)
                     },
                 )
@@ -70,7 +70,7 @@ private fun DsExposedDropdownMenuBoxPreview() {
             onExpandedChange = { expanded = it },
             selectedText = "Binary",
             options = listOf("Binary", "Scale"),
-            onOptionSelected = {},
+            onOptionSelect = {},
             label = "Habit type",
         )
     }

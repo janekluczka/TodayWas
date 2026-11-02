@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -53,9 +54,10 @@ fun AccountScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
 
+    val currentOnBack by rememberUpdatedState(onBack)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {
-            AccountNavigation.Back -> onBack()
+            AccountNavigation.Back -> currentOnBack()
         }
         viewModel.onIntent(AccountIntent.NavigationHandled)
     }
@@ -112,8 +114,8 @@ private fun AccountScreenContent(
                     DataSyncReviewContent(
                         summary = uiState.dataSyncSummary,
                         isSyncing = uiState.isSyncing,
-                        onConfirmClicked = { onIntent(AccountIntent.SyncConfirmClicked) },
-                        onSkipClicked = { onIntent(AccountIntent.SyncSkipClicked) },
+                        onConfirmClick = { onIntent(AccountIntent.SyncConfirmClicked) },
+                        onSkipClick = { onIntent(AccountIntent.SyncSkipClicked) },
                     )
                 else -> when (val authState = uiState.authState) {
                     AuthStateUi.Loading -> DsLoadingIndicator()
@@ -122,8 +124,8 @@ private fun AccountScreenContent(
                         email = authState.email,
                         isSigningOut = uiState.isSigningOut,
                         hasSyncedLocalData = uiState.hasSyncedLocalData,
-                        onSignOutClicked = { onIntent(AccountIntent.SignOutClicked) },
-                        onSyncLocalDataClicked = { onIntent(AccountIntent.SyncLocalDataClicked) },
+                        onSignOutClick = { onIntent(AccountIntent.SignOutClicked) },
+                        onSyncLocalDataClick = { onIntent(AccountIntent.SyncLocalDataClicked) },
                     )
                 }
             }
@@ -139,24 +141,24 @@ private fun SignedOutContent(
     when (uiState.step) {
         AccountStep.SIGN_IN -> SignInFormContent(
             state = uiState.signInForm,
-            onEmailChanged = { onIntent(AccountIntent.SignInEmailChanged(it)) },
-            onPasswordChanged = { onIntent(AccountIntent.SignInPasswordChanged(it)) },
-            onSubmitClicked = { onIntent(AccountIntent.SignInSubmitClicked) },
-            onGoogleIdTokenReceived = { onIntent(AccountIntent.SignInGoogleIdTokenReceived(it)) },
-            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
-            onSignUpLinkClicked = { onIntent(AccountIntent.SignUpLinkClicked) },
+            onEmailChange = { onIntent(AccountIntent.SignInEmailChanged(it)) },
+            onPasswordChange = { onIntent(AccountIntent.SignInPasswordChanged(it)) },
+            onSubmitClick = { onIntent(AccountIntent.SignInSubmitClicked) },
+            onGoogleIdTokenReceive = { onIntent(AccountIntent.SignInGoogleIdTokenReceived(it)) },
+            onGoogleSignInFailure = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
+            onSignUpLinkClick = { onIntent(AccountIntent.SignUpLinkClicked) },
         )
         AccountStep.SIGN_UP -> SignUpFormContent(
             state = uiState.signUpForm,
-            onEmailChanged = { onIntent(AccountIntent.SignUpEmailChanged(it)) },
-            onPasswordChanged = { onIntent(AccountIntent.SignUpPasswordChanged(it)) },
-            onRepeatPasswordChanged = { onIntent(AccountIntent.SignUpRepeatPasswordChanged(it)) },
-            onSubmitClicked = { onIntent(AccountIntent.SignUpSubmitClicked) },
-            onGoogleIdTokenReceived = {
+            onEmailChange = { onIntent(AccountIntent.SignUpEmailChanged(it)) },
+            onPasswordChange = { onIntent(AccountIntent.SignUpPasswordChanged(it)) },
+            onRepeatPasswordChange = { onIntent(AccountIntent.SignUpRepeatPasswordChanged(it)) },
+            onSubmitClick = { onIntent(AccountIntent.SignUpSubmitClicked) },
+            onGoogleIdTokenReceive = {
                 onIntent(AccountIntent.SignUpGoogleIdTokenReceived(it))
             },
-            onGoogleSignInFailed = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
-            onSignInLinkClicked = { onIntent(AccountIntent.SignInLinkClicked) },
+            onGoogleSignInFailure = { onIntent(AccountIntent.GoogleSignInFailed(it)) },
+            onSignInLinkClick = { onIntent(AccountIntent.SignInLinkClicked) },
         )
         AccountStep.SUCCESS -> AccountSuccessContent(onIntent)
         // Unreachable in practice: DATA_SYNC_REVIEW is only entered right after a successful
@@ -185,8 +187,8 @@ private fun SignedInContent(
     email: String?,
     isSigningOut: Boolean,
     hasSyncedLocalData: Boolean,
-    onSignOutClicked: () -> Unit,
-    onSyncLocalDataClicked: () -> Unit,
+    onSignOutClick: () -> Unit,
+    onSyncLocalDataClick: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
@@ -196,12 +198,12 @@ private fun SignedInContent(
         if (!hasSyncedLocalData) {
             DsButton(
                 text = stringResource(R.string.account_sync_local_data_cta),
-                onClick = onSyncLocalDataClicked,
+                onClick = onSyncLocalDataClick,
             )
         }
         DsButtonWithLoading(
             text = stringResource(R.string.preferences_sign_out_cta),
-            onClick = onSignOutClicked,
+            onClick = onSignOutClick,
             loading = isSigningOut,
         )
     }

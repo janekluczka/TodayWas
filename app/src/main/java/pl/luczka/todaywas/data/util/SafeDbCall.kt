@@ -15,6 +15,8 @@ suspend fun safeDbCall(block: suspend () -> Unit): Result<Unit> = try {
     } catch (retryException: CancellationException) {
         throw retryException
     } catch (retryException: Exception) {
+        // A rethrown shared instance can't suppress itself (addSuppressed throws).
+        if (retryException !== e) retryException.addSuppressed(e)
         Result.failure(retryException)
     }
 }

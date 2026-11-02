@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,9 +63,10 @@ fun HabitDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val currentOnBack by rememberUpdatedState(onBack)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {
-            HabitDetailNavigation.HabitDeleted -> onBack()
+            HabitDetailNavigation.HabitDeleted -> currentOnBack()
         }
         viewModel.onIntent(HabitDetailIntent.NavigationHandled)
     }
@@ -164,10 +166,10 @@ private fun HabitDetailScreenContent(
     if (uiState.isEditSheetOpen) {
         DsBottomSheet(
             onDismissRequest = { onIntent(HabitDetailIntent.CancelEditClicked) },
-            onCloseClicked = { onIntent(HabitDetailIntent.CancelEditClicked) },
+            onCloseClick = { onIntent(HabitDetailIntent.CancelEditClicked) },
             closeContentDescription = stringResource(R.string.habit_detail_cancel_edit_action),
             saveText = stringResource(R.string.habit_detail_save_cta),
-            onSaveClicked = { onIntent(HabitDetailIntent.SaveClicked) },
+            onSaveClick = { onIntent(HabitDetailIntent.SaveClicked) },
             isSaving = uiState.isSaving,
             saveEnabled = uiState.editingValue != null,
         ) {
@@ -310,7 +312,7 @@ private fun EditRowSheetContent(
         DsSegmentedRow(
             items = uiState.range.toList(),
             selectedItem = uiState.editingValue,
-            onItemSelected = { onIntent(HabitDetailIntent.ValueChanged(it)) },
+            onItemSelect = { onIntent(HabitDetailIntent.ValueChanged(it)) },
             label = label,
             modifier = Modifier
                 .fillMaxWidth()

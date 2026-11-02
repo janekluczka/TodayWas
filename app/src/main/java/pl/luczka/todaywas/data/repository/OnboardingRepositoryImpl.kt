@@ -1,12 +1,12 @@
 package pl.luczka.todaywas.data.repository
 
 import javax.inject.Inject
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
 import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
+import pl.luczka.todaywas.data.util.safeDbCall
 import pl.luczka.todaywas.domain.model.OnboardingState
 import pl.luczka.todaywas.domain.repository.OnboardingRepository
 
@@ -42,20 +42,5 @@ class OnboardingRepositoryImpl @Inject constructor(
         return upsertWithRetry(entity)
     }
 
-    private suspend fun upsertWithRetry(entity: UserPreferencesEntity): Result<Unit> = try {
-        dao.upsert(entity)
-        Result.success(Unit)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        // Retry once before giving up, per the plan's write-resilience contract.
-        try {
-            dao.upsert(entity)
-            Result.success(Unit)
-        } catch (retryException: CancellationException) {
-            throw retryException
-        } catch (retryException: Exception) {
-            Result.failure(retryException)
-        }
-    }
+    private suspend fun upsertWithRetry(entity: UserPreferencesEntity): Result<Unit> = safeDbCall { dao.upsert(entity) }
 }
