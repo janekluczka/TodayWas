@@ -68,7 +68,7 @@ class LogHabitCheckInsViewModel @Inject constructor(
             is LogHabitCheckInsIntent.DateSelected -> onDateSelected(intent.date)
             is LogHabitCheckInsIntent.ValueChanged -> onValueChanged(intent.habitId, intent.value)
             LogHabitCheckInsIntent.SaveClicked -> onSaveClicked()
-            LogHabitCheckInsIntent.NavigationHandled -> saveState.update { it.copy(pendingNavigation = null) }
+            LogHabitCheckInsIntent.NavigationHandled -> onNavigationHandled()
         }
     }
 
@@ -99,5 +99,9 @@ class LogHabitCheckInsViewModel @Inject constructor(
                 saveState.update { it.copy(isSaving = false, saveError = true) }
             }
         }
+    }
+
+    private fun onNavigationHandled() {
+        saveState.update { it.copy(pendingNavigation = null) }
     }
 }

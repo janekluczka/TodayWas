@@ -77,20 +77,20 @@ class AccountViewModel @Inject constructor(
             AccountIntent.SignInSubmitClicked -> onSignInSubmitClicked()
             is AccountIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(intent.idToken)
             is AccountIntent.GoogleSignInFailed -> onGoogleSignInFailed(intent.error)
-            AccountIntent.SignUpLinkClicked -> _uiState.update { it.copy(step = AccountStep.SIGN_UP) }
-            AccountIntent.SignInLinkClicked -> _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
+            AccountIntent.SignUpLinkClicked -> onSignUpLinkClicked()
+            AccountIntent.SignInLinkClicked -> onSignInLinkClicked()
             is AccountIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
             is AccountIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
             is AccountIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(intent.value)
             AccountIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
             is AccountIntent.SignUpGoogleIdTokenReceived -> onSignUpGoogleIdTokenReceived(intent.idToken)
-            AccountIntent.ContinueClicked -> _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
+            AccountIntent.ContinueClicked -> onContinueClicked()
             AccountIntent.SignOutClicked -> onSignOutClicked()
             AccountIntent.SyncConfirmClicked -> onSyncConfirmClicked()
             AccountIntent.SyncSkipClicked -> onSyncSkipClicked()
             AccountIntent.SyncLocalDataClicked -> onSyncLocalDataClicked()
-            AccountIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
-            AccountIntent.UserMessageShown -> _uiState.update { it.copy(userMessage = null) }
+            AccountIntent.NavigationHandled -> onNavigationHandled()
+            AccountIntent.UserMessageShown -> onUserMessageShown()
         }
     }
 
@@ -149,6 +149,14 @@ class AccountViewModel @Inject constructor(
             _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
             _uiState.update { it.copy(userMessage = error.toUiState()) }
         }
+    }
+
+    private fun onSignUpLinkClicked() {
+        _uiState.update { it.copy(step = AccountStep.SIGN_UP) }
+    }
+
+    private fun onSignInLinkClicked() {
+        _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
     }
 
     private fun onSignUpEmailChanged(value: String) {
@@ -223,6 +231,10 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    private fun onContinueClicked() {
+        _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
+    }
+
     private fun onSyncConfirmClicked() {
         if (_uiState.value.isSyncing) return
         viewModelScope.launch {
@@ -276,5 +288,13 @@ class AccountViewModel @Inject constructor(
                 _uiState.update { it.copy(userMessage = error.toUiState()) }
             }
         }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
+    }
+
+    private fun onUserMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 }

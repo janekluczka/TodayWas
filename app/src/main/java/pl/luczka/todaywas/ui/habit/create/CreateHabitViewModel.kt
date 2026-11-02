@@ -34,7 +34,7 @@ class CreateHabitViewModel @Inject constructor(
             is CreateHabitIntent.DescriptionChanged -> onDescriptionChanged(intent.description)
             is CreateHabitIntent.ScaleStepsChanged -> onScaleStepsChanged(intent.steps)
             CreateHabitIntent.SaveClicked -> onSaveClicked()
-            CreateHabitIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
+            CreateHabitIntent.NavigationHandled -> onNavigationHandled()
         }
     }
 
@@ -68,5 +68,9 @@ class CreateHabitViewModel @Inject constructor(
                 _uiState.update { it.copy(isSaving = false, saveError = true) }
             }
         }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
     }
 }

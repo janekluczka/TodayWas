@@ -106,16 +106,40 @@ class MainViewModel @Inject constructor(
 
     fun onIntent(intent: MainIntent) {
         when (intent) {
-            MainIntent.FabActionClicked -> screenState.update { it.copy(fabExpanded = false) }
-            MainIntent.FabToggled -> screenState.update { it.copy(fabExpanded = !it.fabExpanded) }
-            MainIntent.AccountIconClicked -> screenState.update { it.copy(isAccountSheetVisible = true) }
-            MainIntent.AccountSheetDismissed -> screenState.update { it.copy(isAccountSheetVisible = false) }
-            MainIntent.SignInSignUpPromptClicked -> screenState.update { it.copy(isAccountSheetVisible = false) }
-            MainIntent.SignOutClicked -> screenState.update { it.copy(isSignOutConfirmVisible = true) }
+            MainIntent.FabActionClicked -> onFabActionClicked()
+            MainIntent.FabToggled -> onFabToggled()
+            MainIntent.AccountIconClicked -> onAccountIconClicked()
+            MainIntent.AccountSheetDismissed -> onAccountSheetDismissed()
+            MainIntent.SignInSignUpPromptClicked -> onSignInSignUpPromptClicked()
+            MainIntent.SignOutClicked -> onSignOutClicked()
             MainIntent.SignOutConfirmed -> onSignOutConfirmed()
-            MainIntent.SignOutCancelled -> screenState.update { it.copy(isSignOutConfirmVisible = false) }
-            MainIntent.UserMessageShown -> screenState.update { it.copy(userMessage = null) }
+            MainIntent.SignOutCancelled -> onSignOutCancelled()
+            MainIntent.UserMessageShown -> onUserMessageShown()
         }
+    }
+
+    private fun onFabActionClicked() {
+        screenState.update { it.copy(fabExpanded = false) }
+    }
+
+    private fun onFabToggled() {
+        screenState.update { it.copy(fabExpanded = !it.fabExpanded) }
+    }
+
+    private fun onAccountIconClicked() {
+        screenState.update { it.copy(isAccountSheetVisible = true) }
+    }
+
+    private fun onAccountSheetDismissed() {
+        screenState.update { it.copy(isAccountSheetVisible = false) }
+    }
+
+    private fun onSignInSignUpPromptClicked() {
+        screenState.update { it.copy(isAccountSheetVisible = false) }
+    }
+
+    private fun onSignOutClicked() {
+        screenState.update { it.copy(isSignOutConfirmVisible = true) }
     }
 
     private fun onSignOutConfirmed() {
@@ -132,6 +156,14 @@ class MainViewModel @Inject constructor(
                 screenState.update { it.copy(isSigningOut = false, userMessage = error.toUiState()) }
             }
         }
+    }
+
+    private fun onSignOutCancelled() {
+        screenState.update { it.copy(isSignOutConfirmVisible = false) }
+    }
+
+    private fun onUserMessageShown() {
+        screenState.update { it.copy(userMessage = null) }
     }
 
     // CREATE_HABIT is never disabled — it has no eligibility criteria, unlike the other two.

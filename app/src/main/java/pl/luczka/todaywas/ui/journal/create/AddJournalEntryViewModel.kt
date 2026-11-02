@@ -83,7 +83,7 @@ class AddJournalEntryViewModel @Inject constructor(
             is AddJournalEntryIntent.SlotSelected -> onSlotSelected(intent.slot)
             is AddJournalEntryIntent.TextChanged -> onTextChanged(intent.text)
             AddJournalEntryIntent.SaveClicked -> onSaveClicked()
-            AddJournalEntryIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
+            AddJournalEntryIntent.NavigationHandled -> onNavigationHandled()
             AddJournalEntryIntent.HelpMeStartClicked -> onHelpMeStartClicked()
             AddJournalEntryIntent.HelpMeStartDismissed -> onHelpMeStartDismissed()
             AddJournalEntryIntent.SignInClicked -> onSignInClicked()
@@ -122,6 +122,10 @@ class AddJournalEntryViewModel @Inject constructor(
                 _uiState.update { it.copy(isSaving = false, saveError = true) }
             }
         }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
     }
 
     private fun onHelpMeStartClicked() {

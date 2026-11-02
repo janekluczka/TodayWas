@@ -146,7 +146,7 @@ class HabitDetailViewModel @AssistedInject constructor(
             is HabitDetailIntent.ValueChanged -> onValueChanged(intent.value)
             HabitDetailIntent.SaveClicked -> onSaveClicked()
             HabitDetailIntent.CancelEditClicked -> onCancelEditClicked()
-            HabitDetailIntent.NavigationHandled -> viewModelState.update { it.copy(pendingNavigation = null) }
+            HabitDetailIntent.NavigationHandled -> onNavigationHandled()
             HabitDetailIntent.DeleteHabitClicked -> onDeleteHabitClicked()
             HabitDetailIntent.DeleteHabitConfirmed -> onDeleteHabitConfirmed()
             HabitDetailIntent.DeleteHabitDismissed -> onDeleteHabitDismissed()
@@ -204,6 +204,10 @@ class HabitDetailViewModel @AssistedInject constructor(
                 }
             }
         }
+    }
+
+    private fun onNavigationHandled() {
+        viewModelState.update { it.copy(pendingNavigation = null) }
     }
 
     private fun onDeleteHabitClicked() {

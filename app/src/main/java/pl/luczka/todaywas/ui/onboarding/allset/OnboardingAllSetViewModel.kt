@@ -45,9 +45,17 @@ class OnboardingAllSetViewModel @AssistedInject constructor(
 
     fun onIntent(intent: OnboardingAllSetIntent) {
         when (intent) {
-            OnboardingAllSetIntent.GetStartedClicked -> finish()
-            OnboardingAllSetIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
+            OnboardingAllSetIntent.GetStartedClicked -> onGetStartedClicked()
+            OnboardingAllSetIntent.NavigationHandled -> onNavigationHandled()
         }
+    }
+
+    private fun onGetStartedClicked() {
+        finish()
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
     }
 
     // Guards against both the auto-advance timer and a manual tap finishing twice.

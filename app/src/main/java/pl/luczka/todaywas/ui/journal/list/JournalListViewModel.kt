@@ -52,7 +52,11 @@ class JournalListViewModel @Inject constructor(
 
     fun onIntent(intent: JournalListIntent) {
         when (intent) {
-            is JournalListIntent.SortSelected -> selectedSort.update { intent.sort }
+            is JournalListIntent.SortSelected -> onSortSelected(intent.sort)
         }
+    }
+
+    private fun onSortSelected(sort: JournalSortUiState) {
+        selectedSort.update { sort }
     }
 }
