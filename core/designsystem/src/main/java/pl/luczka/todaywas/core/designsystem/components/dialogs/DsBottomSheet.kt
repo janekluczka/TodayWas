@@ -35,14 +35,23 @@ fun DsBottomSheet(
     saveEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismissRequest, modifier = modifier) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+    ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = DsSpacing.space400, vertical = DsSpacing.space200),
+            modifier = Modifier.fillMaxWidth().padding(
+                horizontal = DsSpacing.space400,
+                vertical = DsSpacing.space200,
+            ),
         ) {
             DsIconButton(onClick = onCloseClick) {
-                DsIcon(imageVector = Icons.Filled.Close, contentDescription = closeContentDescription)
+                DsIcon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = closeContentDescription,
+                )
             }
             DsButtonWithLoading(
                 text = saveText,
@@ -70,7 +79,10 @@ private fun DsBottomSheetPreview(
             onSaveClick = {},
             isSaving = isSaving,
         ) {
-            DsText(text = "Sheet content", modifier = Modifier.padding(DsSpacing.space400))
+            DsText(
+                text = "Sheet content",
+                modifier = Modifier.padding(DsSpacing.space400),
+            )
         }
     }
 }

@@ -30,12 +30,27 @@ fun DsStepper(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier.fillMaxWidth(),
     ) {
-        DsFilledTonalIconButton(onClick = { onValueChange(value - 1) }, enabled = value > range.first) {
-            DsIcon(imageVector = Icons.Default.Remove, contentDescription = decreaseContentDescription)
+        DsFilledTonalIconButton(
+            onClick = { onValueChange(value - 1) },
+            enabled = value > range.first,
+        ) {
+            DsIcon(
+                imageVector = Icons.Default.Remove,
+                contentDescription = decreaseContentDescription,
+            )
         }
-        DsText(text = value.toString(), style = MaterialTheme.typography.headlineSmall)
-        DsFilledTonalIconButton(onClick = { onValueChange(value + 1) }, enabled = value < range.last) {
-            DsIcon(imageVector = Icons.Default.Add, contentDescription = increaseContentDescription)
+        DsText(
+            text = value.toString(),
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        DsFilledTonalIconButton(
+            onClick = { onValueChange(value + 1) },
+            enabled = value < range.last,
+        ) {
+            DsIcon(
+                imageVector = Icons.Default.Add,
+                contentDescription = increaseContentDescription,
+            )
         }
     }
 }

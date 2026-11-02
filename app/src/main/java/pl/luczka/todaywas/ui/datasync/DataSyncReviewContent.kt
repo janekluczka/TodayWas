@@ -26,7 +26,10 @@ fun DataSyncReviewContent(
     onSkipClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400), modifier = modifier.fillMaxWidth()) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
+        modifier = modifier.fillMaxWidth(),
+    ) {
         DsText(text = stringResource(R.string.data_sync_review_title))
         DsText(
             text = stringResource(
@@ -62,11 +65,19 @@ private data class DataSyncReviewPreviewState(
 private class DataSyncReviewContentPreviewProvider : PreviewParameterProvider<DataSyncReviewPreviewState> {
     override val values = sequenceOf(
         DataSyncReviewPreviewState(
-            summary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            summary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
             isSyncing = false,
         ),
         DataSyncReviewPreviewState(
-            summary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            summary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
             isSyncing = true,
         ),
     )

@@ -47,7 +47,11 @@ fun CreateHabitScreen(
         viewModel.onIntent(CreateHabitIntent.NavigationHandled)
     }
 
-    CreateHabitScreenContent(uiState = uiState, onIntent = viewModel::onIntent, onCancel = onCancel)
+    CreateHabitScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+        onCancel = onCancel,
+    )
 }
 
 private fun CreateHabitUiState.isSaveEnabled(): Boolean = !isSaving && name.isNotBlank()
@@ -114,7 +118,10 @@ private fun CreateHabitScreenContent(
                 text = stringResource(R.string.habit_create_preview_title),
                 modifier = Modifier.padding(top = DsSpacing.space400),
             )
-            CheckInInputPreview(uiState = uiState, modifier = Modifier.padding(top = DsSpacing.space200))
+            CheckInInputPreview(
+                uiState = uiState,
+                modifier = Modifier.padding(top = DsSpacing.space200),
+            )
             DsTextField(
                 value = uiState.description,
                 onValueChange = { onIntent(CreateHabitIntent.DescriptionChanged(it)) },

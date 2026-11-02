@@ -15,7 +15,10 @@ fun DsElevatedCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    ElevatedCard(modifier = modifier, content = content)
+    ElevatedCard(
+        modifier = modifier,
+        content = content,
+    )
 }
 
 @PreviewLightDark
@@ -23,7 +26,10 @@ fun DsElevatedCard(
 private fun DsElevatedCardPreview() {
     DsTheme {
         DsElevatedCard {
-            DsText(text = "Elevated card content", modifier = Modifier.padding(DsSpacing.space400))
+            DsText(
+                text = "Elevated card content",
+                modifier = Modifier.padding(DsSpacing.space400),
+            )
         }
     }
 }

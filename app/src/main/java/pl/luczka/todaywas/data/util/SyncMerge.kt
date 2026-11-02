@@ -47,5 +47,8 @@ fun mergeForSync(
         }
     }
 
-    return SyncMergeDecision(pushIds = pushIds, applyIds = applyIds)
+    return SyncMergeDecision(
+        pushIds = pushIds,
+        applyIds = applyIds,
+    )
 }

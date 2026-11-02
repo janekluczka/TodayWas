@@ -53,7 +53,10 @@ class SyncMergeIntegrationTest {
             // Act
             db.journalEntryDao().softDeleteById("entry-1", 2_000L)
             val local = db.journalEntryDao().getAllIncludingDeleted().toSyncMeta()
-            val decision = mergeForSync(local, remote = emptyList())
+            val decision = mergeForSync(
+                local,
+                remote = emptyList(),
+            )
             db.close()
 
             // Assert
@@ -83,7 +86,10 @@ class SyncMergeIntegrationTest {
             // Act
             db.habitDao().softDeleteById("habit-1", 2_000L)
             val local = db.habitDao().getAllIncludingDeleted().toSyncMeta()
-            val decision = mergeForSync(local, remote = emptyList())
+            val decision = mergeForSync(
+                local,
+                remote = emptyList(),
+            )
             db.close()
 
             // Assert
@@ -111,7 +117,10 @@ class SyncMergeIntegrationTest {
             // Act
             db.habitCheckInDao().softDeleteById("check-in-1", 2_000L)
             val local = db.habitCheckInDao().getAllIncludingDeleted().toSyncMeta()
-            val decision = mergeForSync(local, remote = emptyList())
+            val decision = mergeForSync(
+                local,
+                remote = emptyList(),
+            )
             db.close()
 
             // Assert

@@ -30,7 +30,12 @@ class OnboardingChoiceViewModel @Inject constructor(
     private fun onContinueWithoutAccountClicked() {
         if (_uiState.value.isSaving) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, saveError = false) }
+            _uiState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                )
+            }
             val result = completeOnboarding()
             if (result.isSuccess) {
                 _uiState.update {
@@ -40,7 +45,12 @@ class OnboardingChoiceViewModel @Inject constructor(
                     )
                 }
             } else {
-                _uiState.update { it.copy(isSaving = false, saveError = true) }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        saveError = true,
+                    )
+                }
             }
         }
     }

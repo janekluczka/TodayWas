@@ -20,6 +20,9 @@ object JournalContributionCalculator {
             .takeWhile { it <= range.endInclusive }
             .filter { it in entryDates }
             .associateWith { ContributionLevel.LEVEL_3 }
-        return ContributionGrid(window = window, days = days)
+        return ContributionGrid(
+            window = window,
+            days = days,
+        )
     }
 }

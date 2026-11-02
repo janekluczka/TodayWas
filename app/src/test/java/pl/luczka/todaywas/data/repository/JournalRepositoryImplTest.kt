@@ -67,7 +67,10 @@ class JournalRepositoryImplTest {
             updatedAt: Long,
         ): Result<JournalEntryEntity> {
             val existing = entities[id] ?: return Result.failure(NoSuchElementException("Journal entry $id not found"))
-            val updated = existing.copy(text = text, updatedAt = updatedAt)
+            val updated = existing.copy(
+                text = text,
+                updatedAt = updatedAt,
+            )
             entities[id] = updated
             return Result.success(updated)
         }
@@ -164,7 +167,11 @@ class JournalRepositoryImplTest {
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local,
+                auth = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             repository.deleteEntry("1")
@@ -187,7 +194,11 @@ class JournalRepositoryImplTest {
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to entity))
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local,
+                auth = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             val result = repository.deleteEntry("1")
@@ -204,7 +215,11 @@ class JournalRepositoryImplTest {
             val local = FakeLocalJournalDataSource()
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local,
+                auth = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
@@ -220,7 +235,11 @@ class JournalRepositoryImplTest {
             val local = FakeLocalJournalDataSource()
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = null)
-            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local,
+                auth = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
@@ -236,7 +255,11 @@ class JournalRepositoryImplTest {
             val local = FakeLocalJournalDataSource(shouldFailInsert = true)
             val syncScheduler = FakeSyncScheduler()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, auth = auth, syncScheduler = syncScheduler)
+            val repository = repository(
+                local,
+                auth = auth,
+                syncScheduler = syncScheduler,
+            )
 
             // Act
             val result = repository.addEntry(LocalDate.of(2026, 7, 27), "Today was good.")
@@ -269,7 +292,11 @@ class JournalRepositoryImplTest {
             )
             val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("remote-1" to remoteOnly))
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, remote = remote, auth = auth)
+            val repository = repository(
+                local,
+                remote = remote,
+                auth = auth,
+            )
 
             // Act
             val result = repository.syncWithRemote()
@@ -305,7 +332,11 @@ class JournalRepositoryImplTest {
             )
             val remote = FakeRemoteJournalDataSource(entries = mutableMapOf("1" to remoteTombstone))
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, remote = remote, auth = auth)
+            val repository = repository(
+                local,
+                remote = remote,
+                auth = auth,
+            )
 
             // Act
             val result = repository.syncWithRemote()
@@ -336,7 +367,11 @@ class JournalRepositoryImplTest {
             val local = FakeLocalJournalDataSource(entities = mutableMapOf("1" to tombstoned))
             val remote = FakeRemoteJournalDataSource()
             val auth = FakeAuthRepository(currentUserId = "user-1")
-            val repository = repository(local, remote = remote, auth = auth)
+            val repository = repository(
+                local,
+                remote = remote,
+                auth = auth,
+            )
 
             // Act
             val result = repository.syncWithRemote()

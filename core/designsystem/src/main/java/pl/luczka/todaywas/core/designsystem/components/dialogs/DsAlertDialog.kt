@@ -33,8 +33,18 @@ private fun DsAlertDialogPreview() {
     DsTheme {
         DsAlertDialog(
             onDismissRequest = {},
-            confirmButton = { DsTextButton(text = "Confirm", onClick = {}) },
-            dismissButton = { DsTextButton(text = "Cancel", onClick = {}) },
+            confirmButton = {
+                DsTextButton(
+                    text = "Confirm",
+                    onClick = {},
+                )
+            },
+            dismissButton = {
+                DsTextButton(
+                    text = "Cancel",
+                    onClick = {},
+                )
+            },
             title = { DsText(text = "Delete entry?") },
             text = { DsText(text = "This can't be undone.") },
         )

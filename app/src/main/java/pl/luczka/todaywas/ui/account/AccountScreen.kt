@@ -71,7 +71,11 @@ fun AccountScreen(
 
     BackHandler(enabled = true) { viewModel.onIntent(AccountIntent.BackClicked) }
 
-    AccountScreenContent(uiState = uiState, onIntent = viewModel::onIntent, snackbarHostState = snackbarHostState)
+    AccountScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+        snackbarHostState = snackbarHostState,
+    )
 }
 
 @Composable
@@ -160,7 +164,10 @@ private fun SignedOutContent(
 
 @Composable
 private fun AccountSuccessContent(onIntent: (AccountIntent) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400), modifier = Modifier.fillMaxWidth()) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         DsText(text = stringResource(R.string.account_success_title))
         DsText(text = stringResource(R.string.account_success_message))
         DsButton(
@@ -178,10 +185,16 @@ private fun SignedInContent(
     onSignOutClick: () -> Unit,
     onSyncLocalDataClick: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.space400), modifier = Modifier.fillMaxWidth()) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         DsText(text = email ?: stringResource(R.string.preferences_signed_in_no_email))
         if (!hasSyncedLocalData) {
-            DsButton(text = stringResource(R.string.account_sync_local_data_cta), onClick = onSyncLocalDataClick)
+            DsButton(
+                text = stringResource(R.string.account_sync_local_data_cta),
+                onClick = onSyncLocalDataClick,
+            )
         }
         DsButtonWithLoading(
             text = stringResource(R.string.preferences_sign_out_cta),
@@ -241,14 +254,22 @@ private class AccountUiStatePreviewProvider : PreviewParameterProvider<AccountUi
             step = AccountStep.DATA_SYNC_REVIEW,
             signInForm = SignInFormUiState(),
             signUpForm = SignUpFormUiState(),
-            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            dataSyncSummary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
         ),
         AccountUiState(
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
             step = AccountStep.DATA_SYNC_REVIEW,
             signInForm = SignInFormUiState(),
             signUpForm = SignUpFormUiState(),
-            dataSyncSummary = LocalDataSummaryUi(journalEntryCount = 12, habitCount = 3, checkInCount = 40),
+            dataSyncSummary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
             isSyncing = true,
         ),
     )

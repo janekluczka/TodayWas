@@ -38,9 +38,15 @@ fun DsContributionValueBadge(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(size)
-            .background(color = backgroundColor, shape = RoundedCornerShape(BADGE_CORNER_RADIUS)),
+            .background(
+                color = backgroundColor,
+                shape = RoundedCornerShape(BADGE_CORNER_RADIUS),
+            ),
     ) {
-        DsText(text = valueText, color = labelColor)
+        DsText(
+            text = valueText,
+            color = labelColor,
+        )
     }
 }
 
@@ -48,7 +54,10 @@ fun DsContributionValueBadge(
 @Composable
 private fun DsContributionValueBadgePreview() {
     DsTheme {
-        DsContributionValueBadge(level = DsContributionLevel.LEVEL_4, valueText = "3")
+        DsContributionValueBadge(
+            level = DsContributionLevel.LEVEL_4,
+            valueText = "3",
+        )
     }
 }
 
@@ -56,6 +65,9 @@ private fun DsContributionValueBadgePreview() {
 @Composable
 private fun DsContributionValueBadgeNotLoggedPreview() {
     DsTheme {
-        DsContributionValueBadge(level = DsContributionLevel.NONE, valueText = "")
+        DsContributionValueBadge(
+            level = DsContributionLevel.NONE,
+            valueText = "",
+        )
     }
 }

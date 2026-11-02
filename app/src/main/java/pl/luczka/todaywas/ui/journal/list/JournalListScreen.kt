@@ -110,8 +110,14 @@ private fun JournalListScreenContent(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(uiState.entries, key = { it.id }) { entry ->
-                        JournalEntryRow(entry = entry, onClick = { onEntryClick(entry.id) })
+                    items(
+                        uiState.entries,
+                        key = { it.id },
+                    ) { entry ->
+                        JournalEntryRow(
+                            entry = entry,
+                            onClick = { onEntryClick(entry.id) },
+                        )
                     }
                 }
             }
@@ -127,7 +133,10 @@ private fun SortChipRow(
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        contentPadding = PaddingValues(horizontal = DsSpacing.space400, vertical = DsSpacing.space200),
+        contentPadding = PaddingValues(
+            horizontal = DsSpacing.space400,
+            vertical = DsSpacing.space200,
+        ),
         modifier = modifier,
     ) {
         items(JournalSortUiState.entries) { sort ->
@@ -156,7 +165,11 @@ private class JournalListUiStatePreviewProvider : PreviewParameterProvider<Journ
     )
     override val values = sequenceOf(
         JournalListUiState(isLoading = true),
-        JournalListUiState(isLoading = false, entries = emptyList(), contributionGrid = previewGrid),
+        JournalListUiState(
+            isLoading = false,
+            entries = emptyList(),
+            contributionGrid = previewGrid,
+        ),
         JournalListUiState(
             isLoading = false,
             entries = (1..8).map {

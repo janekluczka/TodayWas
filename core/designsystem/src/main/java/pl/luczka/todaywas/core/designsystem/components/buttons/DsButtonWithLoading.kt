@@ -22,9 +22,16 @@ fun DsButtonWithLoading(
     enabled: Boolean = true,
     loading: Boolean = false,
 ) {
-    Button(onClick = onClick, enabled = enabled && !loading, modifier = modifier.animateContentSize()) {
+    Button(
+        onClick = onClick,
+        enabled = enabled && !loading,
+        modifier = modifier.animateContentSize(),
+    ) {
         if (loading) {
-            DsLoadingIndicator(color = LocalContentColor.current, modifier = Modifier.size(20.dp))
+            DsLoadingIndicator(
+                color = LocalContentColor.current,
+                modifier = Modifier.size(20.dp),
+            )
         } else {
             DsText(text = text)
         }

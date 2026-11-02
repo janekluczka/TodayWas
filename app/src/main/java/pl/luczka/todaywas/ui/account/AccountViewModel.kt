@@ -103,11 +103,25 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignInEmailChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(
+                    email = value,
+                    emailError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignInPasswordChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(
+                    password = value,
+                    passwordError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignInSubmitClicked() {
@@ -118,7 +132,12 @@ class AccountViewModel @Inject constructor(
         val passwordValid = isValidPassword(form.password)
         if (!emailValid || !passwordValid) {
             _uiState.update {
-                it.copy(signInForm = it.signInForm.copy(emailError = !emailValid, passwordError = !passwordValid))
+                it.copy(
+                    signInForm = it.signInForm.copy(
+                        emailError = !emailValid,
+                        passwordError = !passwordValid,
+                    ),
+                )
             }
             return
         }
@@ -160,16 +179,35 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun onSignUpEmailChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    email = value,
+                    emailError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignUpPasswordChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    password = value,
+                    passwordError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignUpRepeatPasswordChanged(value: String) {
         _uiState.update {
-            it.copy(signUpForm = it.signUpForm.copy(repeatPassword = value, repeatPasswordError = false))
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    repeatPassword = value,
+                    repeatPasswordError = false,
+                ),
+            )
         }
     }
 
@@ -224,7 +262,12 @@ class AccountViewModel @Inject constructor(
         val summary = getLocalDataSummary()
         if (shouldReviewLocalDataBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
             postSyncAction = whenDone
-            _uiState.update { it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState()) }
+            _uiState.update {
+                it.copy(
+                    step = AccountStep.DATA_SYNC_REVIEW,
+                    dataSyncSummary = summary.toUiState(),
+                )
+            }
         } else {
             viewModelScope.launch { syncLocalData() }
             finishPostSyncAction(whenDone)
@@ -262,7 +305,12 @@ class AccountViewModel @Inject constructor(
             val summary = getLocalDataSummary()
             if (!summary.isEmpty) {
                 postSyncAction = PostSyncAction.RETURN_HOME
-                _uiState.update { it.copy(step = AccountStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState()) }
+                _uiState.update {
+                    it.copy(
+                        step = AccountStep.DATA_SYNC_REVIEW,
+                        dataSyncSummary = summary.toUiState(),
+                    )
+                }
             }
         }
     }
@@ -281,7 +329,12 @@ class AccountViewModel @Inject constructor(
             _uiState.update { it.copy(isSigningOut = true) }
             val result = signOut()
             if (result.isSuccess) {
-                _uiState.update { it.copy(step = AccountStep.SIGN_IN, isSigningOut = false) }
+                _uiState.update {
+                    it.copy(
+                        step = AccountStep.SIGN_IN,
+                        isSigningOut = false,
+                    )
+                }
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
                 _uiState.update { it.copy(isSigningOut = false) }

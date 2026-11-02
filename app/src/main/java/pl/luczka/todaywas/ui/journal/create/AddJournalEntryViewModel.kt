@@ -46,7 +46,10 @@ class AddJournalEntryViewModel @Inject constructor(
             isSaving = false,
             saveError = false,
             starterPrompts = JournalStarterPromptTone.entries.map { tone ->
-                JournalStarterPromptUiState(tone = tone, variant = random.nextInt(STARTER_PROMPT_VARIANT_COUNT))
+                JournalStarterPromptUiState(
+                    tone = tone,
+                    variant = random.nextInt(STARTER_PROMPT_VARIANT_COUNT),
+                )
             },
         ),
     )
@@ -69,7 +72,10 @@ class AddJournalEntryViewModel @Inject constructor(
                     } else {
                         availableSlots.firstOrNull() ?: current.selectedSlot
                     }
-                    current.copy(availableSlots = availableSlots, selectedSlot = selectedSlot)
+                    current.copy(
+                        availableSlots = availableSlots,
+                        selectedSlot = selectedSlot,
+                    )
                 }
             }
         }
@@ -114,12 +120,27 @@ class AddJournalEntryViewModel @Inject constructor(
         if (_uiState.value.isSaving) return
         val state = _uiState.value
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, saveError = false) }
+            _uiState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                )
+            }
             val result = addJournalEntry(state.selectedSlot.toDomain(), state.text)
             if (result.isSuccess) {
-                _uiState.update { it.copy(isSaving = false, pendingNavigation = AddJournalEntryNavigation.Saved) }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        pendingNavigation = AddJournalEntryNavigation.Saved,
+                    )
+                }
             } else {
-                _uiState.update { it.copy(isSaving = false, saveError = true) }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        saveError = true,
+                    )
+                }
             }
         }
     }
@@ -135,7 +156,14 @@ class AddJournalEntryViewModel @Inject constructor(
         } else {
             HelpMeStartStep.SIGNED_OUT
         }
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = true, step = step)) }
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.resetForNewSession(
+                    isVisible = true,
+                    step = step,
+                ),
+            )
+        }
     }
 
     private fun onHelpMeStartDismissed() {
@@ -165,7 +193,14 @@ class AddJournalEntryViewModel @Inject constructor(
         // doc comment) -- null means "don't know yet", so the first call of a session is never
         // preemptively blocked here; the server is the real source of truth either way.
         if ((helpMeStart.remainingToday ?: 1) <= 0) return
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(isGenerating = true, error = null)) }
+        _uiState.update {
+            it.copy(
+                helpMeStart = it.helpMeStart.copy(
+                    isGenerating = true,
+                    error = null,
+                ),
+            )
+        }
         generateJob = viewModelScope.launch {
             val result = requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
             _uiState.update { current -> current.copy(helpMeStart = current.helpMeStart.applyResult(result)) }
@@ -176,7 +211,10 @@ class AddJournalEntryViewModel @Inject constructor(
         val generatedText = _uiState.value.helpMeStart.generatedText ?: return
         generateJob?.cancel()
         _uiState.update {
-            it.copy(text = generatedText, helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false))
+            it.copy(
+                text = generatedText,
+                helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
+            )
         }
     }
 
@@ -245,7 +283,14 @@ class AddJournalEntryViewModel @Inject constructor(
         val tone = helpMeRefine.selectedTone ?: return
         if (helpMeRefine.isGenerating) return
         if ((helpMeRefine.remainingToday ?: 1) <= 0) return
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(isGenerating = true, error = null)) }
+        _uiState.update {
+            it.copy(
+                helpMeRefine = it.helpMeRefine.copy(
+                    isGenerating = true,
+                    error = null,
+                ),
+            )
+        }
         refineJob = viewModelScope.launch {
             val result = requestJournalRefinementPrompt(
                 _uiState.value.text,
@@ -260,7 +305,10 @@ class AddJournalEntryViewModel @Inject constructor(
         val refinedText = _uiState.value.helpMeRefine.refinedText ?: return
         refineJob?.cancel()
         _uiState.update {
-            it.copy(text = refinedText, helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false))
+            it.copy(
+                text = refinedText,
+                helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false),
+            )
         }
     }
 

@@ -104,11 +104,25 @@ class OnboardingAccountSetupViewModel @Inject constructor(
     }
 
     private fun onSignInEmailChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(
+                    email = value,
+                    emailError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignInPasswordChanged(value: String) {
-        _uiState.update { it.copy(signInForm = it.signInForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(
+                    password = value,
+                    passwordError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignInSubmitClicked() {
@@ -119,7 +133,12 @@ class OnboardingAccountSetupViewModel @Inject constructor(
         val passwordValid = isValidPassword(form.password)
         if (!emailValid || !passwordValid) {
             _uiState.update {
-                it.copy(signInForm = it.signInForm.copy(emailError = !emailValid, passwordError = !passwordValid))
+                it.copy(
+                    signInForm = it.signInForm.copy(
+                        emailError = !emailValid,
+                        passwordError = !passwordValid,
+                    ),
+                )
             }
             return
         }
@@ -161,16 +180,35 @@ class OnboardingAccountSetupViewModel @Inject constructor(
     }
 
     private fun onSignUpEmailChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(email = value, emailError = false)) }
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    email = value,
+                    emailError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignUpPasswordChanged(value: String) {
-        _uiState.update { it.copy(signUpForm = it.signUpForm.copy(password = value, passwordError = false)) }
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    password = value,
+                    passwordError = false,
+                ),
+            )
+        }
     }
 
     private fun onSignUpRepeatPasswordChanged(value: String) {
         _uiState.update {
-            it.copy(signUpForm = it.signUpForm.copy(repeatPassword = value, repeatPasswordError = false))
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    repeatPassword = value,
+                    repeatPasswordError = false,
+                ),
+            )
         }
     }
 
@@ -226,7 +264,10 @@ class OnboardingAccountSetupViewModel @Inject constructor(
         if (shouldReviewLocalDataBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
             pendingAllSetReason = reason
             _uiState.update {
-                it.copy(accountSubStep = AccountSubStep.DATA_SYNC_REVIEW, dataSyncSummary = summary.toUiState())
+                it.copy(
+                    accountSubStep = AccountSubStep.DATA_SYNC_REVIEW,
+                    dataSyncSummary = summary.toUiState(),
+                )
             }
         } else {
             viewModelScope.launch { syncLocalData() }

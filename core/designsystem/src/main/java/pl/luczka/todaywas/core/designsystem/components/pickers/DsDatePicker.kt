@@ -37,8 +37,18 @@ private fun DsDatePickerPreview() {
     DsTheme {
         DsDatePicker(
             onDismissRequest = {},
-            confirmButton = { DsTextButton(text = "OK", onClick = {}) },
-            dismissButton = { DsTextButton(text = "Cancel", onClick = {}) },
+            confirmButton = {
+                DsTextButton(
+                    text = "OK",
+                    onClick = {},
+                )
+            },
+            dismissButton = {
+                DsTextButton(
+                    text = "Cancel",
+                    onClick = {},
+                )
+            },
         )
     }
 }

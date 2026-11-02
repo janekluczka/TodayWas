@@ -25,7 +25,11 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
-        JournalEntryDetailUiState(isLoading = true, entry = null, isEditable = false),
+        JournalEntryDetailUiState(
+            isLoading = true,
+            entry = null,
+            isEditable = false,
+        ),
     )
     val uiState: StateFlow<JournalEntryDetailUiState> = _uiState.asStateFlow()
 
@@ -47,7 +51,11 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
             val entry = getJournalEntry(id) ?: return@launch
             _uiState.update {
-                it.copy(isLoading = false, entry = entry.toUiState(), isEditable = isEditable(entry.createdAt))
+                it.copy(
+                    isLoading = false,
+                    entry = entry.toUiState(),
+                    isEditable = isEditable(entry.createdAt),
+                )
             }
         }
     }
@@ -69,12 +77,23 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
         if (state.isDeleting) return
         val entry = state.entry ?: return
         viewModelScope.launch {
-            _uiState.update { it.copy(isDeleting = true, deleteError = false) }
+            _uiState.update {
+                it.copy(
+                    isDeleting = true,
+                    deleteError = false,
+                )
+            }
             val result = deleteJournalEntry(entry.id)
             if (result.isSuccess) {
                 _uiState.update { it.copy(pendingNavigation = JournalEntryDetailNavigation.EntryDeleted) }
             } else {
-                _uiState.update { it.copy(isDeleting = false, deleteError = true, isDeleteDialogVisible = false) }
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        deleteError = true,
+                        isDeleteDialogVisible = false,
+                    )
+                }
             }
         }
     }

@@ -19,7 +19,11 @@ fun DsNavigationRail(
     header: (@Composable ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    NavigationRail(header = header, modifier = modifier, content = content)
+    NavigationRail(
+        header = header,
+        modifier = modifier,
+        content = content,
+    )
 }
 
 @Composable
@@ -51,13 +55,23 @@ private fun DsNavigationRailPreview() {
             DsNavigationRailItem(
                 selected = true,
                 onClick = {},
-                icon = { DsIcon(imageVector = Icons.Default.Edit, contentDescription = null) },
+                icon = {
+                    DsIcon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                    )
+                },
                 label = { DsText(text = "Journal") },
             )
             DsNavigationRailItem(
                 selected = false,
                 onClick = {},
-                icon = { DsIcon(imageVector = Icons.Default.Add, contentDescription = null) },
+                icon = {
+                    DsIcon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                    )
+                },
                 label = { DsText(text = "Habits") },
             )
         }

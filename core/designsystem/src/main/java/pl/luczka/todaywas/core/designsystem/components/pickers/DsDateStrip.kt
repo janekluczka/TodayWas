@@ -86,7 +86,10 @@ private fun DateStripCard(
         modifier = modifier,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            DsText(text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()), fontSize = 10.sp)
+            DsText(
+                text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+                fontSize = 10.sp,
+            )
             DsText(text = date.dayOfMonth.toString())
         }
     }

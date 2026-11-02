@@ -51,7 +51,10 @@ class HabitMapperTest {
     @Test
     fun `should return NotLogged when no check-in exists for today`() {
         // Arrange
-        val board = HabitCheckInBoard(habits = listOf(habit()), checkIns = emptyList())
+        val board = HabitCheckInBoard(
+            habits = listOf(habit()),
+            checkIns = emptyList(),
+        )
 
         // Act
         val status = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayStatus
@@ -64,8 +67,19 @@ class HabitMapperTest {
     fun `should return LoggedBinary with done true when a BINARY habit's today check-in has value 1`() {
         // Arrange
         val board = HabitCheckInBoard(
-            habits = listOf(habit(id = "1", type = HabitType.BINARY)),
-            checkIns = listOf(checkIn(habitId = "1", date = today, value = 1)),
+            habits = listOf(
+                habit(
+                    id = "1",
+                    type = HabitType.BINARY,
+                ),
+            ),
+            checkIns = listOf(
+                checkIn(
+                    habitId = "1",
+                    date = today,
+                    value = 1,
+                ),
+            ),
         )
 
         // Act
@@ -79,8 +93,19 @@ class HabitMapperTest {
     fun `should return LoggedScale with the check-in's value when habit type is SCALE`() {
         // Arrange
         val board = HabitCheckInBoard(
-            habits = listOf(habit(id = "1", type = HabitType.SCALE)),
-            checkIns = listOf(checkIn(habitId = "1", date = today, value = 3)),
+            habits = listOf(
+                habit(
+                    id = "1",
+                    type = HabitType.SCALE,
+                ),
+            ),
+            checkIns = listOf(
+                checkIn(
+                    habitId = "1",
+                    date = today,
+                    value = 3,
+                ),
+            ),
         )
 
         // Act
@@ -95,7 +120,13 @@ class HabitMapperTest {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(habit(id = "1")),
-            checkIns = listOf(checkIn(habitId = "1", date = today.minusDays(1), value = 1)),
+            checkIns = listOf(
+                checkIn(
+                    habitId = "1",
+                    date = today.minusDays(1),
+                    value = 1,
+                ),
+            ),
         )
 
         // Act
@@ -108,7 +139,10 @@ class HabitMapperTest {
     @Test
     fun `should return NONE for todayLevel when the habit has no check-ins`() {
         // Arrange
-        val board = HabitCheckInBoard(habits = listOf(habit()), checkIns = emptyList())
+        val board = HabitCheckInBoard(
+            habits = listOf(habit()),
+            checkIns = emptyList(),
+        )
 
         // Act
         val level = board.sorted(HabitSortUiState.RECENTLY_CHECKED_IN).single().todayLevel
@@ -121,10 +155,21 @@ class HabitMapperTest {
     fun `should compute todayLevel matching HabitContributionCalculator's own output`() {
         // Arrange
         val checkIns = listOf(
-            checkIn(habitId = "1", date = today.minusDays(1), value = 1),
-            checkIn(habitId = "1", date = today, value = 5),
+            checkIn(
+                habitId = "1",
+                date = today.minusDays(1),
+                value = 1,
+            ),
+            checkIn(
+                habitId = "1",
+                date = today,
+                value = 5,
+            ),
         )
-        val board = HabitCheckInBoard(habits = listOf(habit()), checkIns = checkIns)
+        val board = HabitCheckInBoard(
+            habits = listOf(habit()),
+            checkIns = checkIns,
+        )
         val expectedLevel = HabitContributionCalculator.levelForDate(checkIns, today)!!
 
         // Act
@@ -140,9 +185,21 @@ class HabitMapperTest {
         val board = HabitCheckInBoard(
             habits = listOf(habit(id = "1"), habit(id = "2"), habit(id = "3")),
             checkIns = listOf(
-                checkIn(habitId = "1", date = today.minusDays(5), value = 1),
-                checkIn(habitId = "2", date = today.minusDays(1), value = 1),
-                checkIn(habitId = "3", date = today.minusDays(10), value = 1),
+                checkIn(
+                    habitId = "1",
+                    date = today.minusDays(5),
+                    value = 1,
+                ),
+                checkIn(
+                    habitId = "2",
+                    date = today.minusDays(1),
+                    value = 1,
+                ),
+                checkIn(
+                    habitId = "3",
+                    date = today.minusDays(10),
+                    value = 1,
+                ),
             ),
         )
 
@@ -158,11 +215,23 @@ class HabitMapperTest {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(
-                habit(id = "1", createdAt = Instant.ofEpochSecond(200)),
-                habit(id = "2", createdAt = Instant.ofEpochSecond(100)),
+                habit(
+                    id = "1",
+                    createdAt = Instant.ofEpochSecond(200),
+                ),
+                habit(
+                    id = "2",
+                    createdAt = Instant.ofEpochSecond(100),
+                ),
                 habit(id = "3"),
             ),
-            checkIns = listOf(checkIn(habitId = "3", date = today, value = 1)),
+            checkIns = listOf(
+                checkIn(
+                    habitId = "3",
+                    date = today,
+                    value = 1,
+                ),
+            ),
         )
 
         // Act
@@ -177,9 +246,18 @@ class HabitMapperTest {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(
-                habit(id = "1", name = "Run"),
-                habit(id = "2", name = "Drink water"),
-                habit(id = "3", name = "Meditate"),
+                habit(
+                    id = "1",
+                    name = "Run",
+                ),
+                habit(
+                    id = "2",
+                    name = "Drink water",
+                ),
+                habit(
+                    id = "3",
+                    name = "Meditate",
+                ),
             ),
             checkIns = emptyList(),
         )
@@ -196,9 +274,18 @@ class HabitMapperTest {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(
-                habit(id = "1", createdAt = Instant.ofEpochSecond(300)),
-                habit(id = "2", createdAt = Instant.ofEpochSecond(100)),
-                habit(id = "3", createdAt = Instant.ofEpochSecond(200)),
+                habit(
+                    id = "1",
+                    createdAt = Instant.ofEpochSecond(300),
+                ),
+                habit(
+                    id = "2",
+                    createdAt = Instant.ofEpochSecond(100),
+                ),
+                habit(
+                    id = "3",
+                    createdAt = Instant.ofEpochSecond(200),
+                ),
             ),
             checkIns = emptyList(),
         )

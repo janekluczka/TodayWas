@@ -26,7 +26,12 @@ fun DsChip(
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { DsText(text = text, color = if (selected) selectedLabelColor else labelColor) },
+        label = {
+            DsText(
+                text = text,
+                color = if (selected) selectedLabelColor else labelColor,
+            )
+        },
         colors = FilterChipDefaults.filterChipColors(
             containerColor = containerColor,
             selectedContainerColor = selectedContainerColor,
@@ -47,6 +52,9 @@ private fun DsChipPreview(
     selected: Boolean,
 ) {
     DsTheme {
-        DsChip(text = "Done", selected = selected)
+        DsChip(
+            text = "Done",
+            selected = selected,
+        )
     }
 }

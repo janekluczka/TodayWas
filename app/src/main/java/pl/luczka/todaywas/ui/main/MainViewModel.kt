@@ -149,11 +149,20 @@ class MainViewModel @Inject constructor(
             val result = signOut()
             if (result.isSuccess) {
                 screenState.update {
-                    it.copy(isSigningOut = false, isSignOutConfirmVisible = false, isAccountSheetVisible = false)
+                    it.copy(
+                        isSigningOut = false,
+                        isSignOutConfirmVisible = false,
+                        isAccountSheetVisible = false,
+                    )
                 }
             } else {
                 val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
-                screenState.update { it.copy(isSigningOut = false, userMessage = error.toUiState()) }
+                screenState.update {
+                    it.copy(
+                        isSigningOut = false,
+                        userMessage = error.toUiState(),
+                    )
+                }
             }
         }
     }

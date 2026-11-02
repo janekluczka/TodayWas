@@ -19,7 +19,12 @@ fun DsTextButton(
     enabled: Boolean = true,
     colors: ButtonColors = ButtonDefaults.textButtonColors(),
 ) {
-    TextButton(onClick = onClick, enabled = enabled, colors = colors, modifier = modifier) {
+    TextButton(
+        onClick = onClick,
+        enabled = enabled,
+        colors = colors,
+        modifier = modifier,
+    ) {
         DsText(text = text)
     }
 }

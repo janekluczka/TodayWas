@@ -145,7 +145,11 @@ class LocalHabitDataSourceIntegrationTest {
             )
             val callOrderLog = mutableListOf<String>()
             val dataSource = LocalHabitDataSourceImpl(
-                habitDao = RecordingHabitDao(db.habitDao(), callOrderLog, throwOnSoftDelete = true),
+                habitDao = RecordingHabitDao(
+                    db.habitDao(),
+                    callOrderLog,
+                    throwOnSoftDelete = true,
+                ),
                 habitCheckInDao = RecordingHabitCheckInDao(db.habitCheckInDao(), callOrderLog),
                 transactionRunner = RoomTransactionRunner(db),
             )

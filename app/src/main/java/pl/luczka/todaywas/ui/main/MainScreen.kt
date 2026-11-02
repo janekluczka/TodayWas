@@ -169,15 +169,24 @@ private fun MainScreenContent(
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         if (bothEmpty) {
-            MainEmptyState(navigation = navigation, modifier = Modifier.fillMaxSize().padding(innerPadding))
+            MainEmptyState(
+                navigation = navigation,
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+            )
         } else {
             // Each section is capped (DsSectionedList never shows more than MAIN_SECTION_CAP rows) and doesn't stretch
             // to fill extra space, so sections are stacked at their natural content height rather than weighted — a
             // weighted split left dead space between a short section and the next one instead of making it look
             // "bigger". Scrollable as a safety net in case combined content ever exceeds screen height.
             Column(modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())) {
-                JournalSection(uiState = uiState, navigation = navigation)
-                HabitSection(uiState = uiState, navigation = navigation)
+                JournalSection(
+                    uiState = uiState,
+                    navigation = navigation,
+                )
+                HabitSection(
+                    uiState = uiState,
+                    navigation = navigation,
+                )
             }
         }
     }
@@ -201,7 +210,10 @@ private fun MainEmptyState(
         verticalArrangement = Arrangement.Center,
         modifier = modifier.padding(DsSpacing.space600),
     ) {
-        DsText(text = stringResource(R.string.main_empty_state_title), style = MaterialTheme.typography.headlineSmall)
+        DsText(
+            text = stringResource(R.string.main_empty_state_title),
+            style = MaterialTheme.typography.headlineSmall,
+        )
         DsText(
             text = stringResource(R.string.main_empty_state_description),
             style = MaterialTheme.typography.bodyLarge,
@@ -334,7 +346,10 @@ private fun MainFab(
     onIntent: (MainIntent) -> Unit,
     navigation: MainNavigation,
 ) {
-    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(DsSpacing.space200)) {
+    Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
+    ) {
         if (uiState.fabExpanded) {
             for (action in FabActionUiState.entries) {
                 DsExtendedFloatingActionButton(
@@ -363,8 +378,15 @@ private fun SectionHeader(
     arrowContentDescription: String,
     modifier: Modifier = Modifier,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
-        DsText(text = title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        DsText(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f),
+        )
         DsIconButton(onClick = onArrowClick) {
             DsIcon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -404,7 +426,10 @@ private fun JournalSection(
                 items = uiState.journalEntries.take(MAIN_SECTION_CAP),
                 isLoading = false,
                 itemContent = { entry ->
-                    JournalEntryRow(entry = entry, onClick = { navigation.onJournalEntry(entry) })
+                    JournalEntryRow(
+                        entry = entry,
+                        onClick = { navigation.onJournalEntry(entry) },
+                    )
                 },
                 modifier = Modifier.padding(horizontal = DsSpacing.space600),
             )
@@ -440,14 +465,25 @@ private fun HabitSection(
                 items = emptyList<HabitUiState>(),
                 isLoading = true,
                 itemContent = {},
-                modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+                modifier = Modifier.padding(
+                    horizontal = DsSpacing.space600,
+                    vertical = DsSpacing.space200,
+                ),
             )
             uiState.habits.isEmpty() -> HabitEmptyContent()
             else -> DsSectionedList(
                 items = uiState.habits.take(MAIN_SECTION_CAP),
                 isLoading = false,
-                itemContent = { habit -> HabitRow(habit = habit, onClick = { navigation.onHabit(habit.id) }) },
-                modifier = Modifier.padding(horizontal = DsSpacing.space600, vertical = DsSpacing.space200),
+                itemContent = { habit ->
+                    HabitRow(
+                        habit = habit,
+                        onClick = { navigation.onHabit(habit.id) },
+                    )
+                },
+                modifier = Modifier.padding(
+                    horizontal = DsSpacing.space600,
+                    vertical = DsSpacing.space200,
+                ),
             )
         }
     }
@@ -466,7 +502,10 @@ private fun EmptySectionContent(text: String) {
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxWidth().height(EMPTY_SECTION_HEIGHT).padding(horizontal = DsSpacing.space600),
     ) {
-        DsText(text = text, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        DsText(
+            text = text,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -527,8 +566,14 @@ private class MainScreenPreviewStateProvider : PreviewParameterProvider<MainUiSt
                 )
             },
         ),
-        previewMainUiState(authState = AuthStateUi.Loading, isAccountSheetVisible = true),
-        previewMainUiState(authState = AuthStateUi.SignedOut, isAccountSheetVisible = true),
+        previewMainUiState(
+            authState = AuthStateUi.Loading,
+            isAccountSheetVisible = true,
+        ),
+        previewMainUiState(
+            authState = AuthStateUi.SignedOut,
+            isAccountSheetVisible = true,
+        ),
         previewMainUiState(
             authState = AuthStateUi.SignedIn(email = "person@example.com"),
             isAccountSheetVisible = true,

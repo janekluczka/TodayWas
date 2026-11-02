@@ -6,7 +6,12 @@ import pl.luczka.todaywas.domain.model.JournalPromptTone
 class FakeAiAssistRepository : AiAssistRepository {
 
     var generateResult: Result<AiPromptResult> =
-        Result.success(AiPromptResult(text = "Generated prompt.", remainingToday = 9))
+        Result.success(
+            AiPromptResult(
+                text = "Generated prompt.",
+                remainingToday = 9,
+            ),
+        )
 
     var generateCallCount = 0
         private set
@@ -18,7 +23,12 @@ class FakeAiAssistRepository : AiAssistRepository {
         private set
 
     var refineResult: Result<AiPromptResult> =
-        Result.success(AiPromptResult(text = "Refined text.", remainingToday = 9))
+        Result.success(
+            AiPromptResult(
+                text = "Refined text.",
+                remainingToday = 9,
+            ),
+        )
 
     var refineCallCount = 0
         private set

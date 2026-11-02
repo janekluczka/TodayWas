@@ -21,7 +21,10 @@ fun <T> DsChoiceFlowRow(
     allowDeselect: Boolean = true,
     label: (T) -> String = { it.toString() },
 ) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200), modifier = modifier) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.space200),
+        modifier = modifier,
+    ) {
         for (item in items) {
             val selected = item == selectedItem
             DsFilterChip(

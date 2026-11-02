@@ -5,7 +5,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import pl.luczka.todaywas.domain.model.OnboardingState
 
 class FakeOnboardingRepository(
-    initialState: OnboardingState = OnboardingState(completed = false, hasSyncedLocalData = false),
+    initialState: OnboardingState = OnboardingState(
+        completed = false,
+        hasSyncedLocalData = false,
+    ),
 ) : OnboardingRepository {
 
     val stateFlow = MutableStateFlow(initialState)

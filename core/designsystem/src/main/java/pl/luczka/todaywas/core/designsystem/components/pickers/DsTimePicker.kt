@@ -36,8 +36,18 @@ private fun DsTimePickerDialogPreview() {
     DsTheme {
         DsTimePickerDialog(
             onDismissRequest = {},
-            confirmButton = { DsTextButton(text = "OK", onClick = {}) },
-            dismissButton = { DsTextButton(text = "Cancel", onClick = {}) },
+            confirmButton = {
+                DsTextButton(
+                    text = "OK",
+                    onClick = {},
+                )
+            },
+            dismissButton = {
+                DsTextButton(
+                    text = "Cancel",
+                    onClick = {},
+                )
+            },
         )
     }
 }

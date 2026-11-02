@@ -137,7 +137,10 @@ internal fun ContributionCell(
         is DsContributionCellUiState.Level -> {
             val clickModifier = if (onClick != null) {
                 val label = cell.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-                Modifier.clickable(onClickLabel = label, onClick = onClick)
+                Modifier.clickable(
+                    onClickLabel = label,
+                    onClick = onClick,
+                )
             } else {
                 Modifier
             }
@@ -153,7 +156,10 @@ internal fun ContributionCell(
             } else {
                 shape
             }
-            Box(contentAlignment = Alignment.Center, modifier = modifier.size(cellSize).then(clickModifier)) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = modifier.size(cellSize).then(clickModifier),
+            ) {
                 if (selected) {
                     Box(
                         modifier = Modifier
@@ -164,7 +170,10 @@ internal fun ContributionCell(
                 Box(
                     modifier = Modifier
                         .size(fillSize)
-                        .background(color = levelColors.getValue(cell.level), shape = fillShape),
+                        .background(
+                            color = levelColors.getValue(cell.level),
+                            shape = fillShape,
+                        ),
                 )
             }
         }
@@ -218,7 +227,10 @@ fun DsContributionGrid(
                     // still reserves the exact same two-line height via a transparent copy of the label, so the 7-cell
                     // blocks stay aligned in a row across the whole grid regardless of which columns actually show
                     // text.
-                    MonthYearLabel(week = week, visible = index == weeks.lastIndex || week.weekHasGapBefore())
+                    MonthYearLabel(
+                        week = week,
+                        visible = index == weeks.lastIndex || week.weekHasGapBefore(),
+                    )
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(cellSize.cellSpacing)) {
                     week.forEach { cell ->
@@ -256,8 +268,16 @@ private fun MonthYearLabel(
     val yearText = date?.year?.toString().orEmpty()
     val monthText = date?.month?.getDisplayName(TextStyle.SHORT, Locale.getDefault()).orEmpty()
     Column(modifier = Modifier.padding(bottom = DsSpacing.space100)) {
-        DsText(text = monthText, style = MaterialTheme.typography.labelSmall, color = color)
-        DsText(text = yearText, style = MaterialTheme.typography.labelSmall, color = color)
+        DsText(
+            text = monthText,
+            style = MaterialTheme.typography.labelSmall,
+            color = color,
+        )
+        DsText(
+            text = yearText,
+            style = MaterialTheme.typography.labelSmall,
+            color = color,
+        )
     }
 }
 
@@ -277,8 +297,20 @@ private class DsContributionGridPreviewProvider : PreviewParameterProvider<List<
             add(DsContributionCellUiState.Blank(hasGapBefore = true))
             add(DsContributionCellUiState.Blank(hasGapBefore = true))
             add(DsContributionCellUiState.Blank(hasGapBefore = true))
-            add(DsContributionCellUiState.Level(today.minusDays(2), DsContributionLevel.LEVEL_1, hasGapBefore = true))
-            add(DsContributionCellUiState.Level(today.minusDays(1), DsContributionLevel.LEVEL_5, hasGapBefore = true))
+            add(
+                DsContributionCellUiState.Level(
+                    today.minusDays(2),
+                    DsContributionLevel.LEVEL_1,
+                    hasGapBefore = true,
+                ),
+            )
+            add(
+                DsContributionCellUiState.Level(
+                    today.minusDays(1),
+                    DsContributionLevel.LEVEL_5,
+                    hasGapBefore = true,
+                ),
+            )
             repeat(7) { add(DsContributionCellUiState.Level(today, DsContributionLevel.LEVEL_2)) }
         },
         // A single full column, no gaps.

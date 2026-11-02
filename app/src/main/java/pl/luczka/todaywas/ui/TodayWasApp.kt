@@ -144,7 +144,10 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
                 )
             }
             entry<HabitDetailKey> { key ->
-                HabitDetailScreen(habitId = key.habitId, onBack = { backStack.removeLastOrNull() })
+                HabitDetailScreen(
+                    habitId = key.habitId,
+                    onBack = { backStack.removeLastOrNull() },
+                )
             }
         },
     )

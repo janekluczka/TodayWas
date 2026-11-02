@@ -37,9 +37,16 @@ fun GoogleSignInButton(
     loading: Boolean = false,
     text: String = stringResource(R.string.auth_form_google_cta),
 ) {
-    OutlinedButton(onClick = onClick, enabled = enabled && !loading, modifier = modifier.animateContentSize()) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled && !loading,
+        modifier = modifier.animateContentSize(),
+    ) {
         if (loading) {
-            DsLoadingIndicator(color = LocalContentColor.current, modifier = Modifier.size(20.dp))
+            DsLoadingIndicator(
+                color = LocalContentColor.current,
+                modifier = Modifier.size(20.dp),
+            )
         } else {
             DsIcon(
                 imageVector = ImageVector.vectorResource(R.drawable.ic_google_logo),

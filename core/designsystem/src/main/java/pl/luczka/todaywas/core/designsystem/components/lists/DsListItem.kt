@@ -37,10 +37,18 @@ fun DsListItem(
         modifier = modifier.fillMaxWidth().then(clickableModifier).padding(DsSpacing.space400),
     ) {
         if (leadingIcon != null) {
-            DsIcon(imageVector = leadingIcon, contentDescription = null, tint = contentColor)
+            DsIcon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                tint = contentColor,
+            )
             Spacer(modifier = Modifier.width(DsSpacing.space400))
         }
-        DsText(text = text, color = contentColor, modifier = Modifier.weight(1f))
+        DsText(
+            text = text,
+            color = contentColor,
+            modifier = Modifier.weight(1f),
+        )
         trailingContent?.invoke()
     }
 }
@@ -49,6 +57,9 @@ fun DsListItem(
 @Composable
 private fun DsListItemPreview() {
     DsTheme {
-        DsListItem(text = "person@example.com", leadingIcon = Icons.Default.Person)
+        DsListItem(
+            text = "person@example.com",
+            leadingIcon = Icons.Default.Person,
+        )
     }
 }

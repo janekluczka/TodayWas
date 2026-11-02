@@ -24,7 +24,10 @@ class OnboardingAllSetViewModelTest {
     private fun viewModel(
         reason: AllSetReason,
         authRepository: FakeAuthRepository = FakeAuthRepository(),
-    ) = OnboardingAllSetViewModel(reason = reason, observeAuthState = ObserveAuthStateUseCase(authRepository))
+    ) = OnboardingAllSetViewModel(
+        reason = reason,
+        observeAuthState = ObserveAuthStateUseCase(authRepository),
+    )
 
     @Before
     fun setUp() {
@@ -54,7 +57,10 @@ class OnboardingAllSetViewModelTest {
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository(
-                initialState = AuthState.SignedIn(userId = "u1", email = "person@example.com"),
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "person@example.com",
+                ),
             )
 
             // Act

@@ -17,7 +17,11 @@ class RequestJournalRefinementPromptUseCaseTest {
             val useCase = RequestJournalRefinementPromptUseCase(repository)
 
             // Act
-            val result = useCase("Original draft text.", JournalPromptTone.GOOD, thoughts = null)
+            val result = useCase(
+                "Original draft text.",
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -34,7 +38,11 @@ class RequestJournalRefinementPromptUseCaseTest {
             val useCase = RequestJournalRefinementPromptUseCase(repository)
 
             // Act
-            useCase("Original draft text.", JournalPromptTone.GOOD, thoughts = "make it shorter")
+            useCase(
+                "Original draft text.",
+                JournalPromptTone.GOOD,
+                thoughts = "make it shorter",
+            )
 
             // Assert
             assertEquals("make it shorter", repository.lastRefineThoughts)
@@ -50,7 +58,11 @@ class RequestJournalRefinementPromptUseCaseTest {
             val useCase = RequestJournalRefinementPromptUseCase(repository)
 
             // Act
-            val result = useCase("Original draft text.", JournalPromptTone.BAD, thoughts = null)
+            val result = useCase(
+                "Original draft text.",
+                JournalPromptTone.BAD,
+                thoughts = null,
+            )
 
             // Assert
             assertTrue(result.isFailure)

@@ -360,7 +360,10 @@ class LocalHabitDataSourceImplTest {
                 createdAt = 1_000L,
                 updatedAt = 1_000L,
             )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to habit))
+            val habitDao = FakeHabitDao(
+                failuresBeforeSuccess = 0,
+                entities = mutableMapOf("1" to habit),
+            )
             val checkIn = HabitCheckInEntity(
                 id = "check-in-1",
                 habitId = "1",
@@ -373,7 +376,10 @@ class LocalHabitDataSourceImplTest {
             val dataSource = dataSource(habitDao, checkInDao)
 
             // Act
-            val result = dataSource.deleteHabitAndCheckIns(habitId = "1", deletedAt = 2_000L)
+            val result = dataSource.deleteHabitAndCheckIns(
+                habitId = "1",
+                deletedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -410,7 +416,11 @@ class LocalHabitDataSourceImplTest {
             val dataSource = dataSource(FakeHabitDao(failuresBeforeSuccess = 0), checkInDao)
 
             // Act
-            val result = dataSource.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), deletedAt = 2_000L)
+            val result = dataSource.deleteCheckIn(
+                habitId = "1",
+                date = LocalDate.of(2026, 7, 27),
+                deletedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isSuccess)
@@ -426,7 +436,11 @@ class LocalHabitDataSourceImplTest {
             val dataSource = dataSource(FakeHabitDao(failuresBeforeSuccess = 0), checkInDao)
 
             // Act
-            val result = dataSource.deleteCheckIn(habitId = "1", date = LocalDate.of(2026, 7, 27), deletedAt = 2_000L)
+            val result = dataSource.deleteCheckIn(
+                habitId = "1",
+                date = LocalDate.of(2026, 7, 27),
+                deletedAt = 2_000L,
+            )
 
             // Assert
             assertTrue(result.isFailure)
@@ -460,7 +474,10 @@ class LocalHabitDataSourceImplTest {
             )
 
             // Act
-            dataSource.applyRemoteSnapshot(habitsToApply = listOf(habit), checkInsToApply = listOf(checkIn))
+            dataSource.applyRemoteSnapshot(
+                habitsToApply = listOf(habit),
+                checkInsToApply = listOf(checkIn),
+            )
 
             // Assert
             assertEquals(1, habitDao.upsertCallCount)
@@ -493,7 +510,10 @@ class LocalHabitDataSourceImplTest {
                 updatedAt = 1_000L,
                 deletedAt = 500L,
             )
-            val habitDao = FakeHabitDao(failuresBeforeSuccess = 0, entities = mutableMapOf("1" to agedOutHabit))
+            val habitDao = FakeHabitDao(
+                failuresBeforeSuccess = 0,
+                entities = mutableMapOf("1" to agedOutHabit),
+            )
             val checkInDao = FakeHabitCheckInDao(entities = mutableMapOf(("1" to "2026-07-27") to agedOutCheckIn))
             val dataSource = dataSource(habitDao, checkInDao)
 

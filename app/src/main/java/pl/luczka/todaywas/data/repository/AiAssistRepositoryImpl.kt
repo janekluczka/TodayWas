@@ -37,13 +37,24 @@ class AiAssistRepositoryImpl @Inject constructor(
     override suspend fun generateJournalStarterPrompt(
         tone: JournalPromptTone,
         thoughts: String?,
-    ): Result<AiPromptResult> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, thoughts = thoughts))
+    ): Result<AiPromptResult> = invokeAiProxy(
+        AiPromptRequestDto(
+            tone = tone.level,
+            thoughts = thoughts,
+        ),
+    )
 
     override suspend fun refineJournalEntry(
         text: String,
         tone: JournalPromptTone,
         thoughts: String?,
-    ): Result<AiPromptResult> = invokeAiProxy(AiPromptRequestDto(tone = tone.level, text = text, thoughts = thoughts))
+    ): Result<AiPromptResult> = invokeAiProxy(
+        AiPromptRequestDto(
+            tone = tone.level,
+            text = text,
+            thoughts = thoughts,
+        ),
+    )
 
     private suspend fun invokeAiProxy(request: AiPromptRequestDto): Result<AiPromptResult> = try {
         val response = supabase.functions.invoke(function = FUNCTION_NAME) {
@@ -55,7 +66,12 @@ class AiAssistRepositoryImpl @Inject constructor(
             }
         }
         val body = response.body<AiPromptResponseDto>()
-        Result.success(AiPromptResult(text = body.text, remainingToday = body.remaining))
+        Result.success(
+            AiPromptResult(
+                text = body.text,
+                remainingToday = body.remaining,
+            ),
+        )
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {

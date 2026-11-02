@@ -45,7 +45,12 @@ class OnboardingAccountSetupViewModelTest {
 
     private class FakeOnboardingRepository : OnboardingRepository {
 
-        private val stateFlow = MutableStateFlow(OnboardingState(completed = false, hasSyncedLocalData = false))
+        private val stateFlow = MutableStateFlow(
+            OnboardingState(
+                completed = false,
+                hasSyncedLocalData = false,
+            ),
+        )
 
         var completeOnboardingCallCount = 0
             private set
@@ -332,7 +337,12 @@ class OnboardingAccountSetupViewModelTest {
             val viewModel = viewModel(authRepository = authRepository)
 
             // Act
-            authRepository.emit(AuthState.SignedIn(userId = "u1", email = "person@example.com"))
+            authRepository.emit(
+                AuthState.SignedIn(
+                    userId = "u1",
+                    email = "person@example.com",
+                ),
+            )
 
             // Assert
             assertEquals(AuthStateUi.SignedIn(email = "person@example.com"), viewModel.uiState.value.authState)
@@ -344,7 +354,10 @@ class OnboardingAccountSetupViewModelTest {
             // Arrange
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
-            val viewModel = viewModel(authRepository = authRepository, journalRepository = journalRepository)
+            val viewModel = viewModel(
+                authRepository = authRepository,
+                journalRepository = journalRepository,
+            )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
 
@@ -384,7 +397,11 @@ class OnboardingAccountSetupViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
+            val viewModel = viewModel(
+                onboardingRepository,
+                authRepository,
+                journalRepository = journalRepository,
+            )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
@@ -411,7 +428,11 @@ class OnboardingAccountSetupViewModelTest {
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             journalRepository.syncWithRemoteResult = Result.failure(RuntimeException("network error"))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
+            val viewModel = viewModel(
+                onboardingRepository,
+                authRepository,
+                journalRepository = journalRepository,
+            )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)
@@ -437,7 +458,11 @@ class OnboardingAccountSetupViewModelTest {
             val authRepository = FakeAuthRepository()
             val journalRepository = FakeJournalRepository(initialEntries = listOf(entry()))
             val onboardingRepository = FakeOnboardingRepository()
-            val viewModel = viewModel(onboardingRepository, authRepository, journalRepository = journalRepository)
+            val viewModel = viewModel(
+                onboardingRepository,
+                authRepository,
+                journalRepository = journalRepository,
+            )
             advanceToSignUp(viewModel)
             fillSignUpForm(viewModel)
             viewModel.onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked)

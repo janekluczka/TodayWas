@@ -24,7 +24,12 @@ fun DsAssistChip(
         label = { DsText(text = text) },
         enabled = enabled,
         leadingIcon = leadingIcon?.let {
-            { DsIcon(imageVector = it, contentDescription = null) }
+            {
+                DsIcon(
+                    imageVector = it,
+                    contentDescription = null,
+                )
+            }
         },
         modifier = modifier,
     )

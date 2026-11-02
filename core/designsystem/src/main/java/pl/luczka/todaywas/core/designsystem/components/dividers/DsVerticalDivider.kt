@@ -15,7 +15,11 @@ fun DsVerticalDivider(
     thickness: Dp = DividerDefaults.Thickness,
     color: Color = DividerDefaults.color,
 ) {
-    VerticalDivider(thickness = thickness, color = color, modifier = modifier)
+    VerticalDivider(
+        thickness = thickness,
+        color = color,
+        modifier = modifier,
+    )
 }
 
 @PreviewLightDark

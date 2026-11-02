@@ -165,7 +165,12 @@ class HabitDetailViewModel @AssistedInject constructor(
         val existingValue = viewModelState.value.checkIns
             .find { it.date == date }
             ?.value
-        viewModelState.update { it.copy(editingDate = date, editingValue = existingValue) }
+        viewModelState.update {
+            it.copy(
+                editingDate = date,
+                editingValue = existingValue,
+            )
+        }
     }
 
     private fun onValueChanged(value: Int?) {
@@ -180,7 +185,12 @@ class HabitDetailViewModel @AssistedInject constructor(
     }
 
     private fun onCancelEditClicked() {
-        viewModelState.update { it.copy(editingDate = null, editingValue = null) }
+        viewModelState.update {
+            it.copy(
+                editingDate = null,
+                editingValue = null,
+            )
+        }
     }
 
     private fun onSaveClicked() {
@@ -189,18 +199,39 @@ class HabitDetailViewModel @AssistedInject constructor(
         val date = state.editingDate
         val value = state.editingValue
         if (date == null || value == null) {
-            viewModelState.update { it.copy(editingDate = null, editingValue = null) }
+            viewModelState.update {
+                it.copy(
+                    editingDate = null,
+                    editingValue = null,
+                )
+            }
             return
         }
         viewModelScope.launch {
-            viewModelState.update { it.copy(isSaving = true, saveError = false, saveErrorIsWindowExpired = false) }
+            viewModelState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = false,
+                    saveErrorIsWindowExpired = false,
+                )
+            }
             val result = saveHabitCheckIns(habitId, mapOf(date to value))
             if (result.isSuccess) {
-                viewModelState.update { it.copy(isSaving = false, editingDate = null, editingValue = null) }
+                viewModelState.update {
+                    it.copy(
+                        isSaving = false,
+                        editingDate = null,
+                        editingValue = null,
+                    )
+                }
             } else {
                 val windowExpired = result.exceptionOrNull() is EditWindowExpiredException
                 viewModelState.update {
-                    it.copy(isSaving = false, saveError = true, saveErrorIsWindowExpired = windowExpired)
+                    it.copy(
+                        isSaving = false,
+                        saveError = true,
+                        saveErrorIsWindowExpired = windowExpired,
+                    )
                 }
             }
         }
@@ -221,13 +252,22 @@ class HabitDetailViewModel @AssistedInject constructor(
     private fun onDeleteHabitConfirmed() {
         if (viewModelState.value.isDeletingHabit) return
         viewModelScope.launch {
-            viewModelState.update { it.copy(isDeletingHabit = true, deleteHabitError = false) }
+            viewModelState.update {
+                it.copy(
+                    isDeletingHabit = true,
+                    deleteHabitError = false,
+                )
+            }
             val result = deleteHabit(habitId)
             if (result.isSuccess) {
                 viewModelState.update { it.copy(pendingNavigation = HabitDetailNavigation.HabitDeleted) }
             } else {
                 viewModelState.update {
-                    it.copy(isDeletingHabit = false, deleteHabitError = true, isDeleteHabitDialogVisible = false)
+                    it.copy(
+                        isDeletingHabit = false,
+                        deleteHabitError = true,
+                        isDeleteHabitDialogVisible = false,
+                    )
                 }
             }
         }
@@ -242,7 +282,12 @@ class HabitDetailViewModel @AssistedInject constructor(
     private fun deleteCheckIn(date: LocalDate) {
         if (viewModelState.value.isDeletingCheckIn) return
         viewModelScope.launch {
-            viewModelState.update { it.copy(isDeletingCheckIn = true, deleteCheckInError = false) }
+            viewModelState.update {
+                it.copy(
+                    isDeletingCheckIn = true,
+                    deleteCheckInError = false,
+                )
+            }
             val result = deleteHabitCheckIn(habitId, date)
             viewModelState.update {
                 val closeSheet = result.isSuccess && it.editingDate == date

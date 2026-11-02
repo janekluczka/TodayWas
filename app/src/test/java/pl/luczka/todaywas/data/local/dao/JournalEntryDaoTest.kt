@@ -73,7 +73,13 @@ class JournalEntryDaoTest {
                 .addCallback(todayWasDatabaseCallbacks())
                 .build()
             db.journalEntryDao().insert(
-                JournalEntryEntity(id = "entry-1", date = "2026-07-25", text = "Older", createdAt = 1L, updatedAt = 1L),
+                JournalEntryEntity(
+                    id = "entry-1",
+                    date = "2026-07-25",
+                    text = "Older",
+                    createdAt = 1L,
+                    updatedAt = 1L,
+                ),
             )
             db.journalEntryDao().insert(
                 JournalEntryEntity(

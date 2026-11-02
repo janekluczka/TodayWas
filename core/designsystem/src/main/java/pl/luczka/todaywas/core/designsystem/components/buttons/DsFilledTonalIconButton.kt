@@ -23,7 +23,13 @@ fun DsFilledTonalIconButton(
     colors: IconButtonColors = IconButtonDefaults.filledTonalIconButtonColors(),
     content: @Composable () -> Unit,
 ) {
-    FilledTonalIconButton(onClick = onClick, enabled = enabled, colors = colors, content = content, modifier = modifier)
+    FilledTonalIconButton(
+        onClick = onClick,
+        enabled = enabled,
+        colors = colors,
+        content = content,
+        modifier = modifier,
+    )
 }
 
 @PreviewLightDark
@@ -37,7 +43,10 @@ private fun DsFilledTonalIconButtonPreview(
             onClick = {},
             enabled = enabled,
         ) {
-            DsIcon(imageVector = Icons.Default.Add, contentDescription = "Increase")
+            DsIcon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Increase",
+            )
         }
     }
 }

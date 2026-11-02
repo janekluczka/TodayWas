@@ -27,7 +27,11 @@ fun DsExposedDropdownMenuBox(
     modifier: Modifier = Modifier,
     label: String? = null,
 ) {
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = onExpandedChange, modifier = modifier) {
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        modifier = modifier,
+    ) {
         OutlinedTextField(
             value = selectedText,
             onValueChange = {},
@@ -36,7 +40,10 @@ fun DsExposedDropdownMenuBox(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, expanded).fillMaxWidth(),
         )
-        DsDropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
+        DsDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) },
+        ) {
             for (option in options) {
                 DsDropdownMenuItem(
                     text = option,

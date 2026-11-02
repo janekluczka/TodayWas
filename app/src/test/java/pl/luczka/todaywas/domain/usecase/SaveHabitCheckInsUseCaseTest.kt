@@ -20,7 +20,14 @@ class SaveHabitCheckInsUseCaseTest {
     private val date = LocalDate.of(2026, 8, 2)
 
     private fun checkIn(createdAt: Instant) =
-        HabitCheckIn(id = "c1", habitId = "h1", date = date, value = 1, createdAt = createdAt, updatedAt = createdAt)
+        HabitCheckIn(
+            id = "c1",
+            habitId = "h1",
+            date = date,
+            value = 1,
+            createdAt = createdAt,
+            updatedAt = createdAt,
+        )
 
     @Test
     fun `should add a check-in when the date has none stored`() =
