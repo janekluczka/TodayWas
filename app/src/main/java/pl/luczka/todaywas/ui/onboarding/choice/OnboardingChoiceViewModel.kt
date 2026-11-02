@@ -23,7 +23,7 @@ class OnboardingChoiceViewModel @Inject constructor(
     fun onIntent(intent: OnboardingChoiceIntent) {
         when (intent) {
             OnboardingChoiceIntent.ContinueWithoutAccountClicked -> onContinueWithoutAccountClicked()
-            OnboardingChoiceIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
+            OnboardingChoiceIntent.NavigationHandled -> onNavigationHandled()
         }
     }
 
@@ -43,5 +43,9 @@ class OnboardingChoiceViewModel @Inject constructor(
                 _uiState.update { it.copy(isSaving = false, saveError = true) }
             }
         }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
     }
 }

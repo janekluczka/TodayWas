@@ -64,19 +64,15 @@ class OnboardingAccountSetupViewModel @Inject constructor(
     fun onIntent(intent: OnboardingAccountSetupIntent) {
         when (intent) {
             OnboardingAccountSetupIntent.StepBack -> onStepBack()
-            OnboardingAccountSetupIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
-            OnboardingAccountSetupIntent.UserMessageShown -> _uiState.update { it.copy(userMessage = null) }
+            OnboardingAccountSetupIntent.NavigationHandled -> onNavigationHandled()
+            OnboardingAccountSetupIntent.UserMessageShown -> onUserMessageShown()
             is OnboardingAccountSetupIntent.SignInEmailChanged -> onSignInEmailChanged(intent.value)
             is OnboardingAccountSetupIntent.SignInPasswordChanged -> onSignInPasswordChanged(intent.value)
             OnboardingAccountSetupIntent.SignInSubmitClicked -> onSignInSubmitClicked()
             is OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(intent.idToken)
             is OnboardingAccountSetupIntent.GoogleSignInFailed -> onGoogleSignInFailed(intent.error)
-            OnboardingAccountSetupIntent.SignUpLinkClicked -> _uiState.update {
-                it.copy(accountSubStep = AccountSubStep.SIGN_UP)
-            }
-            OnboardingAccountSetupIntent.SignInLinkClicked -> _uiState.update {
-                it.copy(accountSubStep = AccountSubStep.SIGN_IN)
-            }
+            OnboardingAccountSetupIntent.SignUpLinkClicked -> onSignUpLinkClicked()
+            OnboardingAccountSetupIntent.SignInLinkClicked -> onSignInLinkClicked()
             is OnboardingAccountSetupIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
             is OnboardingAccountSetupIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
             is OnboardingAccountSetupIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(intent.value)
@@ -97,6 +93,14 @@ class OnboardingAccountSetupViewModel @Inject constructor(
             }
             AccountSubStep.DATA_SYNC_REVIEW -> Unit
         }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
+    }
+
+    private fun onUserMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 
     private fun onSignInEmailChanged(value: String) {
@@ -146,6 +150,14 @@ class OnboardingAccountSetupViewModel @Inject constructor(
             _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
             _uiState.update { it.copy(userMessage = error.toUiState()) }
         }
+    }
+
+    private fun onSignUpLinkClicked() {
+        _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_UP) }
+    }
+
+    private fun onSignInLinkClicked() {
+        _uiState.update { it.copy(accountSubStep = AccountSubStep.SIGN_IN) }
     }
 
     private fun onSignUpEmailChanged(value: String) {

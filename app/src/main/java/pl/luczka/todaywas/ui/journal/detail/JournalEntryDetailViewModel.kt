@@ -32,7 +32,7 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
     fun onIntent(intent: JournalEntryDetailIntent) {
         when (intent) {
             JournalEntryDetailIntent.ScreenEntered -> onScreenEntered()
-            JournalEntryDetailIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
+            JournalEntryDetailIntent.NavigationHandled -> onNavigationHandled()
             JournalEntryDetailIntent.DeleteClicked -> onDeleteClicked()
             JournalEntryDetailIntent.DeleteConfirmed -> onDeleteConfirmed()
             JournalEntryDetailIntent.DeleteDismissed -> onDeleteDismissed()
@@ -50,6 +50,10 @@ class JournalEntryDetailViewModel @AssistedInject constructor(
                 it.copy(isLoading = false, entry = entry.toUiState(), isEditable = isEditable(entry.createdAt))
             }
         }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
     }
 
     private fun onDeleteClicked() {

@@ -38,7 +38,11 @@ class HabitListViewModel @Inject constructor(
 
     fun onIntent(intent: HabitListIntent) {
         when (intent) {
-            is HabitListIntent.SortSelected -> selectedSort.update { intent.sort }
+            is HabitListIntent.SortSelected -> onSortSelected(intent.sort)
         }
+    }
+
+    private fun onSortSelected(sort: HabitSortUiState) {
+        selectedSort.update { sort }
     }
 }

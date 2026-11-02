@@ -82,7 +82,7 @@ class EditJournalEntryViewModel @AssistedInject constructor(
             EditJournalEntryIntent.SaveClicked -> onSaveClicked()
             EditJournalEntryIntent.BackClicked -> onBackClicked()
             EditJournalEntryIntent.DiscardConfirmed -> onDiscardConfirmed()
-            EditJournalEntryIntent.NavigationHandled -> _uiState.update { it.copy(pendingNavigation = null) }
+            EditJournalEntryIntent.NavigationHandled -> onNavigationHandled()
             EditJournalEntryIntent.DiscardDismissed -> onDiscardDismissed()
             EditJournalEntryIntent.SignInClicked -> onSignInClicked()
             EditJournalEntryIntent.HelpMeStartClicked -> onHelpMeStartClicked()
@@ -136,6 +136,10 @@ class EditJournalEntryViewModel @AssistedInject constructor(
 
     private fun onDiscardConfirmed() {
         _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
     }
 
     private fun onDiscardDismissed() {
