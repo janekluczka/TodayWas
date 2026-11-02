@@ -24,7 +24,9 @@ decisions.
 
 Multi-module Gradle project: `:app` (application, package `pl.luczka.todaywas`) and
 `:core:designsystem` (reusable Material3 wrappers, package
-`pl.luczka.todaywas.core.designsystem`; must never depend on `:app`).
+`pl.luczka.todaywas.core.designsystem`; must never depend on `:app`), plus `:ktlint-rules` (a
+plain JVM module with the project's custom ktlint rules, package `pl.luczka.todaywas.ktlint`,
+loaded into the other two through `ktlintRuleset`).
 
 ```
 app/src/main/java/pl/luczka/todaywas/
@@ -138,7 +140,9 @@ Deliberate deviations from the `android-guidelines` baseline — follow these ov
 Kotlin, ktlint-enforced (engine pinned in `@gradle/libs.versions.toml`) with the `android_studio`
 code style (`@.editorconfig`). Settings on top of that style: trailing commas allowed, functions
 with 2+ parameters and every class header with parameters forced to one parameter per line,
-chains of 4+ calls one call per line, `@Composable` functions stay PascalCase, and backtick test
+calls with 2+ arguments forced to one argument per line once any argument is named (custom
+`todaywas:argument-list-multiline` rule in `:ktlint-rules`; positional calls like
+`assertEquals(2, count)` stay on one line), chains of 4+ calls one call per line, `@Composable` functions stay PascalCase, and backtick test
 names exempt from the 120-column limit. Lines are never wrapped at a binary operator — when
 `ktlintCheck` reports an overlong line it can't fix, restructure it (extract a variable, split a
 chain) instead of splitting a comparison like `a ==` / `b` across lines. `ktlintFormat` is the source of truth for layout — run
@@ -172,6 +176,7 @@ instrumented tests in `app/src/androidTest/`. No coverage threshold is enforced 
 ## Build, Test, and Development Commands
 
 - `./gradlew.bat testDebugUnitTest` — run local unit tests.
+- `./gradlew.bat :ktlint-rules:test` — run the custom ktlint rules' tests.
 - `./gradlew.bat ktlintCheck` — lint check; must pass before commit.
 - `./gradlew.bat ktlintFormat` — auto-fix formatting.
 - `./gradlew.bat detekt` — static analysis (code smells + compose-rules); must pass before commit.

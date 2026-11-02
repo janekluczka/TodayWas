@@ -10,6 +10,7 @@ kotlin = "2.4.10"
 composeBom = "2026.02.01"
 ktlint = "14.2.0"
 ktlintEngine = "1.8.0"
+slf4j = "2.0.18"
 detekt = "2.0.0-alpha.6"
 composeRules = "0.6.8"
 room = "2.8.4"
@@ -72,12 +73,17 @@ androidx-work-runtime = { group = "androidx.work", name = "work-runtime", versio
 androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "androidxHiltWork" }
 androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "androidxHiltWork" }
 compose-rules-detekt = { group = "io.nlopez.compose.rules", name = "detekt", version.ref = "composeRules" }
+ktlint-cli-ruleset-core = { group = "com.pinterest.ktlint", name = "ktlint-cli-ruleset-core", version.ref = "ktlintEngine" }
+ktlint-rule-engine-core = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine-core", version.ref = "ktlintEngine" }
+ktlint-test = { group = "com.pinterest.ktlint", name = "ktlint-test", version.ref = "ktlintEngine" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ktlint ={ id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

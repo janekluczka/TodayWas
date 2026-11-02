@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
     detektPlugins(libs.compose.rules.detekt)
+    ktlintRuleset(project(":ktlint-rules"))
 }
 
 ktlint {
