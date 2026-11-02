@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ktlint
+package pl.luczka.agenttoolkit.ktlint
 
 import com.pinterest.ktlint.rule.engine.core.api.AutocorrectDecision
 import com.pinterest.ktlint.rule.engine.core.api.ElementType.CALL_EXPRESSION
@@ -32,8 +32,8 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
  */
 class ArgumentListMultilineRule :
     Rule(
-        ruleId = RuleId("todaywas:argument-list-multiline"),
-        about = About(maintainer = "TodayWas"),
+        ruleId = RuleId("agent-toolkit:argument-list-multiline"),
+        about = About(maintainer = "agent-toolkit"),
         usesEditorConfigProperties = setOf(
             FORCE_MULTILINE_ARGUMENT_COUNT_PROPERTY,
             NAMED_ARGUMENTS_ONLY_PROPERTY,
@@ -87,7 +87,7 @@ class ArgumentListMultilineRule :
         val FORCE_MULTILINE_ARGUMENT_COUNT_PROPERTY: EditorConfigProperty<Int> =
             EditorConfigProperty(
                 type = PropertyType.LowerCasingPropertyType(
-                    "todaywas_argument_list_force_multiline_when_argument_count_greater_or_equal_than",
+                    "agent_toolkit_argument_list_force_multiline_when_argument_count_greater_or_equal_than",
                     "Force one argument per line when a call has at least this many arguments. Use 'unset' to disable.",
                     PropertyType.PropertyValueParser.POSITIVE_INT_VALUE_PARSER,
                     setOf("1", "2", "3", "4", "5", "unset"),
@@ -101,7 +101,7 @@ class ArgumentListMultilineRule :
         val NAMED_ARGUMENTS_ONLY_PROPERTY: EditorConfigProperty<Boolean> =
             EditorConfigProperty(
                 type = PropertyType.LowerCasingPropertyType(
-                    "todaywas_argument_list_force_multiline_named_arguments_only",
+                    "agent_toolkit_argument_list_force_multiline_named_arguments_only",
                     "Only force one argument per line when at least one argument of the call is named.",
                     PropertyType.PropertyValueParser.BOOLEAN_VALUE_PARSER,
                     setOf("true", "false"),

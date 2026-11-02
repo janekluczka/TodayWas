@@ -1,10 +1,10 @@
-package pl.luczka.todaywas.ktlint
+package pl.luczka.agenttoolkit.ktlint
 
 import com.pinterest.ktlint.test.KtLintAssertThat.Companion.assertThatRule
 import com.pinterest.ktlint.test.LintViolation
 import org.junit.Test
-import pl.luczka.todaywas.ktlint.ArgumentListMultilineRule.Companion.FORCE_MULTILINE_ARGUMENT_COUNT_PROPERTY
-import pl.luczka.todaywas.ktlint.ArgumentListMultilineRule.Companion.NAMED_ARGUMENTS_ONLY_PROPERTY
+import pl.luczka.agenttoolkit.ktlint.ArgumentListMultilineRule.Companion.FORCE_MULTILINE_ARGUMENT_COUNT_PROPERTY
+import pl.luczka.agenttoolkit.ktlint.ArgumentListMultilineRule.Companion.NAMED_ARGUMENTS_ONLY_PROPERTY
 
 class ArgumentListMultilineRuleTest {
 
