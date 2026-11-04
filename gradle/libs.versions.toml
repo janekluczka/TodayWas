@@ -11,6 +11,7 @@ composeBom = "2026.02.01"
 ktlint = "14.2.0"
 ktlintEngine = "1.8.0"
 slf4j = "2.0.18"
+konsist = "0.18.1"
 detekt = "2.0.0-alpha.6"
 composeRules = "0.6.8"
 room = "2.8.4"
@@ -77,6 +78,7 @@ ktlint-cli-ruleset-core = { group = "com.pinterest.ktlint", name = "ktlint-cli-r
 ktlint-rule-engine-core = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine-core", version.ref = "ktlintEngine" }
 ktlint-test = { group = "com.pinterest.ktlint", name = "ktlint-test", version.ref = "ktlintEngine" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsist" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
