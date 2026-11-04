@@ -116,7 +116,7 @@ class HabitMapperTest {
     }
 
     @Test
-    fun `should ignore a check-in that is not dated today`() {
+    fun `should ignore a check-in when it is not dated today`() {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(habit(id = "1")),
@@ -152,7 +152,7 @@ class HabitMapperTest {
     }
 
     @Test
-    fun `should compute todayLevel matching HabitContributionCalculator's own output`() {
+    fun `should compute todayLevel matching HabitContributionCalculator when mapping a habit`() {
         // Arrange
         val checkIns = listOf(
             checkIn(
@@ -180,7 +180,7 @@ class HabitMapperTest {
     }
 
     @Test
-    fun `should sort RECENTLY_CHECKED_IN by most recent check-in date descending`() {
+    fun `should sort by most recent check-in date descending when the sort is RECENTLY_CHECKED_IN`() {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(habit(id = "1"), habit(id = "2"), habit(id = "3")),
@@ -211,7 +211,7 @@ class HabitMapperTest {
     }
 
     @Test
-    fun `should sort habits with zero check-ins ever last, tiebroken by createdAt ascending`() {
+    fun `should sort habits last, tiebroken by createdAt ascending, when they have no check-ins ever`() {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(
@@ -242,7 +242,7 @@ class HabitMapperTest {
     }
 
     @Test
-    fun `should sort ALPHABETICAL by name ascending`() {
+    fun `should sort by name ascending when the sort is ALPHABETICAL`() {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(
@@ -270,7 +270,7 @@ class HabitMapperTest {
     }
 
     @Test
-    fun `should sort DATE_CREATED by createdAt ascending`() {
+    fun `should sort by createdAt ascending when the sort is DATE_CREATED`() {
         // Arrange
         val board = HabitCheckInBoard(
             habits = listOf(

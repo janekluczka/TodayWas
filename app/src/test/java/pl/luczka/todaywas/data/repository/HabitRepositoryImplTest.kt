@@ -406,7 +406,7 @@ class HabitRepositoryImplTest {
         }
 
     @Test
-    fun `should not resurrect a remotely-deleted habit during syncWithRemote`() =
+    fun `should not resurrect a remotely-deleted habit when syncWithRemote runs`() =
         runTest {
             // Arrange - local has a stale, unsynced, non-deleted edit with a *newer* updatedAt than
             // the remote tombstone, exercising tombstone supremacy over plain timestamp comparison.
@@ -451,7 +451,7 @@ class HabitRepositoryImplTest {
         }
 
     @Test
-    fun `should purge tombstoned habits older than the GC window during syncWithRemote`() =
+    fun `should purge tombstoned habits older than the GC window when syncWithRemote runs`() =
         runTest {
             // Arrange
             val agedOut = Instant
@@ -490,7 +490,7 @@ class HabitRepositoryImplTest {
         }
 
     @Test
-    fun `should purge check-ins before habits remotely during syncWithRemote GC`() =
+    fun `should purge check-ins before habits remotely when syncWithRemote runs GC`() =
         runTest {
             // Arrange
             val agedOut = Instant

@@ -65,7 +65,7 @@ class JournalListViewModelTest {
     }
 
     @Test
-    fun `should default to NEWEST_FIRST sort`() =
+    fun `should default to NEWEST_FIRST sort when the ViewModel is created`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel()
@@ -76,7 +76,7 @@ class JournalListViewModelTest {
         }
 
     @Test
-    fun `should sort NEWEST_FIRST by date descending`() =
+    fun `should sort by date descending when the sort is NEWEST_FIRST`() =
         runTest {
             // Arrange
             val today = LocalDate.of(2026, 6, 15)
@@ -115,7 +115,7 @@ class JournalListViewModelTest {
         }
 
     @Test
-    fun `should populate a non-empty contributionGrid`() =
+    fun `should populate a non-empty contributionGrid when entries are loaded`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel(listOf(entry("1", LocalDate.now())))

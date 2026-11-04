@@ -84,7 +84,7 @@ class LogHabitCheckInsViewModelTest {
     }
 
     @Test
-    fun `should contain exactly yesterday and today in selectableDates`() =
+    fun `should contain exactly yesterday and today in selectableDates when the ViewModel is created`() =
         runTest {
             // Arrange
             val viewModel = viewModel(FakeHabitRepository())

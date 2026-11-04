@@ -7,7 +7,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +21,6 @@ import kotlinx.coroutines.launch
 import pl.luczka.todaywas.domain.model.ContributionGrid
 import pl.luczka.todaywas.domain.model.ContributionWindow
 import pl.luczka.todaywas.domain.model.EditWindowExpiredException
-import pl.luczka.todaywas.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.usecase.DeleteHabitCheckInUseCase
 import pl.luczka.todaywas.domain.usecase.DeleteHabitUseCase
 import pl.luczka.todaywas.domain.usecase.GetFreshLoggableDatesUseCase
@@ -32,53 +30,6 @@ import pl.luczka.todaywas.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.ui.mapper.toUiState
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
-
-private data class HabitDetailViewModelState(
-    val isLoading: Boolean = true,
-    val habitName: String = "",
-    val type: HabitTypeUiState = HabitTypeUiState.BINARY,
-    val range: IntRange = 0..0,
-    val checkIns: List<HabitCheckIn> = emptyList(),
-    val selectedDate: LocalDate,
-    val editingDate: LocalDate? = null,
-    val editingValue: Int? = null,
-    val isSaving: Boolean = false,
-    val saveError: Boolean = false,
-    val saveErrorIsWindowExpired: Boolean = false,
-    val isDeleteHabitDialogVisible: Boolean = false,
-    val isDeletingHabit: Boolean = false,
-    val deleteHabitError: Boolean = false,
-    val isDeletingCheckIn: Boolean = false,
-    val deleteCheckInError: Boolean = false,
-    val pendingNavigation: HabitDetailNavigation? = null,
-) {
-    fun toUiState(
-        freshLoggableDates: List<LocalDate>,
-        isEditable: (Instant) -> Boolean,
-        contributionGrid: ContributionGridUiState,
-    ): HabitDetailUiState = HabitDetailUiState(
-        isLoading = isLoading,
-        habitName = habitName,
-        type = type,
-        range = range,
-        selectedDate = selectedDate,
-        selectedDay = checkIns.toSelectedDayUiState(selectedDate, freshLoggableDates, isEditable),
-        checkInCount = checkIns.size,
-        contributionGrid = contributionGrid,
-        editingDate = editingDate,
-        editingValue = editingValue,
-        isSaving = isSaving,
-        saveError = saveError,
-        saveErrorIsWindowExpired = saveErrorIsWindowExpired,
-        isDeleteHabitDialogVisible = isDeleteHabitDialogVisible,
-        isDeletingHabit = isDeletingHabit,
-        deleteHabitError = deleteHabitError,
-        isDeletingCheckIn = isDeletingCheckIn,
-        deleteCheckInError = deleteCheckInError,
-        pendingNavigation = pendingNavigation,
-    )
-}
 
 @HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)
 class HabitDetailViewModel @AssistedInject constructor(

@@ -10,7 +10,7 @@ import pl.luczka.todaywas.domain.repository.FakeJournalRepository
 class AddJournalEntryUseCaseTest {
 
     @Test
-    fun `should resolve TODAY to LocalDate now`() =
+    fun `should resolve the date to LocalDate now when the slot is TODAY`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository()
@@ -25,7 +25,7 @@ class AddJournalEntryUseCaseTest {
         }
 
     @Test
-    fun `should resolve YESTERDAY to LocalDate now minus one day`() =
+    fun `should resolve the date to LocalDate now minus one day when the slot is YESTERDAY`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository()

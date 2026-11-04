@@ -39,7 +39,7 @@ class HabitContributionCalculatorTest {
     }
 
     @Test
-    fun `should spread distinct values across the full level range`() {
+    fun `should spread values across the full level range when they are distinct`() {
         // Arrange
         val checkIns = listOf(
             checkIn(LocalDate.of(2026, 1, 1), 1),
@@ -61,7 +61,7 @@ class HabitContributionCalculatorTest {
     }
 
     @Test
-    fun `should map all identical values to the same top level`() {
+    fun `should map every value to the same top level when all values are identical`() {
         // Arrange
         val checkIns = listOf(
             checkIn(LocalDate.of(2026, 1, 1), 3),

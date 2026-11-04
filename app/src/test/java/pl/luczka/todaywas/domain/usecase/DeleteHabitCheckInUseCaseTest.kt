@@ -27,7 +27,7 @@ class DeleteHabitCheckInUseCaseTest {
         }
 
     @Test
-    fun `should pass a repository failure through unchanged`() =
+    fun `should pass the failure through unchanged when the repository fails`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository()

@@ -153,7 +153,7 @@ class AiAssistRepositoryImplTest {
         }
 
     @Test
-    fun `should configure a 30s request and socket timeout override`() =
+    fun `should apply a 30s request and socket timeout when calling the AI proxy`() =
         runTest {
             // Arrange
             var capturedRequestTimeoutMillis: Long? = null
@@ -181,7 +181,7 @@ class AiAssistRepositoryImplTest {
         }
 
     @Test
-    fun `should propagate CancellationException rather than converting it to a failure`() =
+    fun `should propagate CancellationException rather than a failure when the call is cancelled`() =
         runTest {
             // Arrange — the engine suspends mid-call so the cancellation below lands inside
             // invokeAiProxy's try block, not before the coroutine even starts.

@@ -22,153 +22,47 @@ decisions.
 
 ## Project Structure
 
-Multi-module Gradle project: `:app` (application, package `pl.luczka.todaywas`) and
-`:core:designsystem` (reusable Material3 wrappers, package
-`pl.luczka.todaywas.core.designsystem`; must never depend on `:app`), plus `:ktlint-rules` (a
-plain JVM module with the shared custom ktlint rules, package `pl.luczka.agenttoolkit.ktlint`,
-loaded into the other two through `ktlintRuleset`).
+Multi-module Gradle project:
 
-```
-app/src/main/java/pl/luczka/todaywas/
-  data/
-    local/
-      entity/         — Room entities
-      dao/            — Room DAOs
-      database/       — the Room database class
-    remote/
-      dto/            — remote-service-serializable payload types
-      api/            — remote data source interfaces + impls
-    repository/       — repository implementations only
-    mapper/           — entity/dto↔domain mappers + other data-layer error/state mappers
-    util/             — generic data-layer helpers
-  di/                 — every Hilt @Module in the app
-  domain/
-    model/            — domain models
-    usecase/          — one use case per action, invoked from ViewModels
-    util/             — stateless business-rule/algorithm objects
-    repository/       — repository interfaces
-  ui/
-    model/            — UI-facing models only (*UiState.kt / *Ui.kt)
-    mapper/           — domain→UI mapper functions targeting a shared ui/model/ type
-    <feature>/        — XxxIntent/UiState/UiEvent/ViewModel/Screen per screen or flow
-      <subflow>/      — when a feature bundles more than one independent flow
+- `:app` — the application, package `pl.luczka.todaywas`.
+- `:core:designsystem` — `Ds*` Material3 wrappers and `DsTheme`, package
+  `pl.luczka.todaywas.core.designsystem`; never depends on `:app`.
+- `:ktlint-rules` (custom ktlint rules) and `:architecture-tests` (Konsist house-style tests) —
+  plain JVM modules synced from agent-toolkit by the `android-quality-setup` skill. Never edit
+  them here; change them in agent-toolkit and re-sync.
 
-core/designsystem/src/main/java/pl/luczka/todaywas/core/designsystem/
-  components/<type>/  — DsXxx Material3 wrappers, grouped like Material3's own groupings
-  theme/              — the app's Compose theme + its semantic color/type tokens
-  tokens/             — reusable design tokens (spacing, etc.) beyond the theme itself
-  preview/            — shared preview providers
-```
+Other locations:
 
-Conventions the tree above doesn't spell out:
-
-- A Hilt `@Module` never lives inside a `data/` subpackage — it goes in `di/`, alongside every
-  other module in the app.
-- `data/repository/` holds only implementations; the interfaces they implement live in
-  `domain/repository/`, not alongside their impl.
-- `ui/mapper/` is a flat sibling of `ui/model/`, not nested inside it — same relationship as
-  `data/mapper/` to `data/local/`/`data/remote/`.
-- A flow's own mapper/util file (mapping to a type private to that flow, not a shared `ui/model/`
-  type) sits flat alongside its `Intent`/`UiState`/etc. files — it only earns a nested
-  `mapper/`/`util/` subpackage once there's more than one such file to group.
-- When a feature package bundles more than one independent flow, it splits into
-  `ui/<feature>/<subflow>/` — one subpackage per flow, each with its own full
-  `Intent`/`UiEvent`/`UiState`/`ViewModel`/`Screen` set. A constant or type genuinely shared across
-  two subflows of the same feature is declared in one subflow and imported cross-package by the
-  other, rather than duplicated.
 - Tests: `app/src/test/` (JUnit4 unit), `app/src/androidTest/` (instrumented).
 - `context/foundation/` — PRD, tech-stack, roadmap, lessons.md (see "Working in this repo" below).
 - `context/changes/<change-id>/` — in-flight change docs; archived to `context/archive/` when done.
 
 ## Architecture & Kotlin Conventions
 
-Baseline Android guidance comes from the `android-guidelines` skill (agent-toolkit `android`
-plugin, official developer.android.com recommendations). This file only adds project facts and the
-deliberate deviations listed under "Android guideline overrides" below.
+Android guidance comes from the `android-guidelines` skill (agent-toolkit `android` plugin):
+official developer.android.com recommendations plus my house style (`references/house-style.md`) —
+the package layout, MVI with a pure-router `onIntent`, state-based navigation and messages, the
+mandatory flat domain layer, mapping in dedicated `*Mapper.kt` files, `Ds` components, M3 slotted
+dialogs, previews, and `should … when …` tests. `:architecture-tests` enforces the parts it marks as
+checked. This file only adds project facts, plus two conventions not in the house style yet:
 
-MVI per screen: a ViewModel exposes `uiState: StateFlow<XxxUiState>` and a single
-`fun onIntent(intent: XxxIntent)` dispatching a sealed `XxxIntent` to private `onXxx()` handler
-methods (no per-action public methods). When the state derives from data streams, build it with
-`combine(...).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)`.
-
-No ViewModel→UI event streams (`Channel`/`SharedFlow`). Model outcomes as state instead:
-
-- Navigation-only taps (open a detail, cancel, back with no logic) never reach the ViewModel —
-  the screen calls its navigation lambda directly.
-- Navigation that follows logic (saved, deleted, expired) is a `pendingNavigation: XxxNavigation?`
-  field in the UI state; the screen reacts in `LaunchedEffect(uiState.pendingNavigation)` and then
-  sends `XxxIntent.NavigationHandled`, which clears it.
-- One-off messages are a `userMessage` field shown in a snackbar and cleared by
-  `XxxIntent.UserMessageShown`.
-
-Never expose a `domain.model` type through `UiState`/`Intent`/`Event` — always map to a `ui.model`
-type first, in its own dedicated `*Mapper.kt` file (e.g. `JournalEntryMapper.kt`,
-`FocusMapper.kt`), not inline in the ViewModel. The same rule applies one layer down: entity↔domain
-mapping lives in its own `*EntityMapper.kt`, never as a private method inside the repository.
-
-A flow (dialog/wizard) can live inside its host screen's ViewModel while it's small; once it
-becomes its own top-level screen (own nav entry, own lifecycle) it gets its own `ui/<feature>/`
-package and ViewModel. Root and screen-level navigation uses Navigation 3 (`NavDisplay`) — verify
-the current API shape before coding, it moves fast.
-
-Custom dialogs build on Material3's slotted components (e.g. `AlertDialog`'s
-`title`/`text`/`confirmButton`/`dismissButton`) rather than a bare `Dialog` + manual layout, unless
-the content genuinely doesn't fit any slotted shape.
-
-All user-facing Compose text goes in `strings.xml` via `stringResource(R.string.xxx)` — never
-hardcoded (preview-only sample text is exempt). Every screen and `:core:designsystem` component
-ships `@PreviewLightDark` preview(s) (use `@PreviewParameter` for multiple states instead of
-copy-pasted previews), wrapped in `DsTheme` (from `:core:designsystem`'s `theme/` package) — the
-same theme the real app renders with, since the theme lives in the design system module, not `:app`.
-
-## Android guideline overrides
-
-Deliberate deviations from the `android-guidelines` baseline — follow these over it.
-
-- UI actions: a single `onIntent(Intent)` entry point per ViewModel (MVI) instead of per-action
-  methods — one dispatch surface per screen.
-- Domain layer: mandatory, one use case per action, and ViewModels go through use cases rather
-  than calling repositories directly — keeps the 24h edit rule (FR-006) and similar business rules
-  in one testable place.
-- Use cases depend on repositories only, never on other use cases (official guidance allows
-  use-case chains) — shared logic goes into a combinator use case built on the repository.
-- Design-system components use the `Ds` prefix (`DsButton`, `DsTopBar`) to keep them apart from the
-  Material3 components they wrap.
+- A flow (dialog/wizard) can live inside its host screen's ViewModel while it's small; once it
+  becomes its own top-level screen (own nav entry, own lifecycle) it gets its own `ui/<feature>/`
+  package and ViewModel.
+- Prefer collapsing `val x = when (...) { ... }` directly into the assignment over a separate
+  mutable variable.
 
 ## Coding Style & Naming Conventions
 
-Kotlin, ktlint-enforced (engine pinned in `@gradle/libs.versions.toml`) with the `android_studio`
-code style (`@.editorconfig`). Settings on top of that style: trailing commas allowed, functions
-with 2+ parameters and every class header with parameters forced to one parameter per line,
-calls with 2+ arguments forced to one argument per line once any argument is named (custom
-`agent-toolkit:argument-list-multiline` rule in `:ktlint-rules`; positional calls like
-`assertEquals(2, count)` stay on one line), chains of 4+ calls one call per line, `@Composable` functions stay PascalCase, and backtick test
-names exempt from the 120-column limit. Lines are never wrapped at a binary operator — when
-`ktlintCheck` reports an overlong line it can't fix, restructure it (extract a variable, split a
-chain) instead of splitting a comparison like `a ==` / `b` across lines. `ktlintFormat` is the source of truth for layout — run
-it and accept its output; change `.editorconfig` settings deliberately rather than disabling rules
-to dodge one result. `.editorconfig`, `config/detekt/detekt.yml` and `ktlint-rules/` are shared
-configs synced from agent-toolkit by the `android-quality-setup` skill — change them there and
-re-sync, never only here (a local edit is overwritten on the next sync). Compile target is Java 17 (`@app/build.gradle.kts`). Dependency
-versions live in `@gradle/libs.versions.toml` — add new dependencies there, not as inline version
-strings.
-
-detekt covers code smells, ktlint covers layout: detekt (with the compose-rules plugin, e.g.
-present-tense event lambdas like `onSaveClick`) runs on one shared config,
-`@config/detekt/detekt.yml`, built on detekt's defaults with no formatting rule set. Fix its
-findings; a rule that doesn't fit the project gets turned off there with a comment, not baselined.
-
-Layout (line breaks, wrapping, signatures) is the formatter's job only — don't add hand-checked
-layout rules. Code conventions beyond the formatter:
-
-- Composable functions: `modifier: Modifier = Modifier` is the first optional parameter (after the
-  required ones, before other optional ones and a trailing content lambda), per the Compose API
-  guidelines and lint's `ModifierParameter`.
-- `@Immutable`/`@Stable` only where value-equality skipping is wanted and `equals()` is cheap —
-  strong skipping is on by default, so don't annotate every UI state class by habit, and be
-  careful with models holding large lists.
-- Prefer collapsing `val x = when (...) { ... }` directly into the assignment over a separate
-  mutable variable.
+Kotlin with ktlint (layout, `android_studio` style plus the shared `@.editorconfig`) and detekt
+(code smells, with compose-rules, on the shared `@config/detekt/detekt.yml`). Both configs are
+synced from agent-toolkit by `android-quality-setup` — change them there and re-sync, never only
+here (a local edit is overwritten on the next sync). `ktlintFormat` is the source of truth for
+layout; when `ktlintCheck` reports an overlong line it can't fix, restructure the code (extract a
+variable, split a chain) instead of wrapping at an operator. Fix detekt findings; a rule that
+doesn't fit gets changed in the shared config with a comment, not baselined. Compile target is
+Java 17 (`@app/build.gradle.kts`). Dependency versions live in `@gradle/libs.versions.toml` — add
+new dependencies there, not as inline version strings.
 
 ## Testing Guidelines
 
@@ -179,6 +73,7 @@ instrumented tests in `app/src/androidTest/`. No coverage threshold is enforced 
 
 - `./gradlew.bat testDebugUnitTest` — run local unit tests.
 - `./gradlew.bat :ktlint-rules:test` — run the custom ktlint rules' tests.
+- `./gradlew.bat :architecture-tests:test` — house-style architecture tests; must pass before commit.
 - `./gradlew.bat ktlintCheck` — lint check; must pass before commit.
 - `./gradlew.bat ktlintFormat` — auto-fix formatting.
 - `./gradlew.bat detekt` — static analysis (code smells + compose-rules); must pass before commit.
@@ -188,8 +83,9 @@ instrumented tests in `app/src/androidTest/`. No coverage threshold is enforced 
 ## Commit & Pull Request Guidelines
 
 Commit messages follow Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `style:`
-observed in history). No CI pipeline or PR template exists yet — see
-@context/foundation/health-check.md.
+observed in history). CI (`.github/workflows/ci.yml`, GitHub Actions) runs ktlint, detekt, Android
+Lint, the unit tests, both JVM modules' tests and the debug build — not the instrumented tests; no
+PR template exists yet — see @context/foundation/health-check.md.
 
 ## Security & Configuration Tips
 
@@ -200,7 +96,7 @@ hardcode them.
 
 This project uses the 10xDevs skill set for planning and implementation. Before planning or
 implementing a change, check @context/foundation/lessons.md — an append-only register of recurring
-rules (the Architecture & Kotlin Conventions above are drawn from it) — and whichever
+rules (the generic ones are promoted into the agent-toolkit house style) — and whichever
 `context/foundation/` doc is relevant (`prd.md`, `tech-stack.md`, `roadmap.md`). New work starts
 with `/10x-new` under `context/changes/<change-id>/` (identity file `change.md`, plus
 frame/plan/review artifacts); foundation docs are edited in place, never copied; a completed change

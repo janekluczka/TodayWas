@@ -134,7 +134,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should ignore DaySelected for a date after today`() =
+    fun `should ignore DaySelected when the date is after today`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(initialHabits = listOf(habit))
@@ -255,7 +255,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should keep selectedDate unchanged after deleting the selected day's check-in`() =
+    fun `should keep selectedDate unchanged when the selected day's check-in is deleted`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
@@ -459,7 +459,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should reflect loaded check-ins in contributionGrid`() =
+    fun `should reflect check-ins in contributionGrid when they are loaded`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(
@@ -488,7 +488,7 @@ class HabitDetailViewModelTest {
         }
 
     @Test
-    fun `should reuse the contributionGrid instance across unrelated state changes during editing`() =
+    fun `should reuse the contributionGrid instance when unrelated state changes during editing`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository(

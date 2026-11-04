@@ -123,7 +123,7 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `should start with isLoading true then flip false once data has loaded`() =
+    fun `should flip isLoading from true to false when data has loaded`() =
         runTest {
             // Arrange & Act
             val journalRepository = FakeJournalRepository()
@@ -147,7 +147,7 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should order habits by most recently checked-in first`() =
+    fun `should order habits by most recently checked-in first when habits are loaded`() =
         runTest {
             // Arrange
             val viewModel = viewModel(
@@ -175,7 +175,7 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should reflect entries from both sources in uiState`() =
+    fun `should reflect journal entries in uiState when the repository emits them`() =
         runTest {
             // Arrange
             val today = entry(LocalDate.now())
@@ -269,7 +269,7 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should ignore a check-in logged for a different day in habits`() =
+    fun `should ignore a check-in in habits when it was logged for a different day`() =
         runTest {
             // Arrange
             val viewModel = viewModel(
@@ -457,7 +457,7 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should reflect a session that becomes signed in in authState`() =
+    fun `should reflect a signed-in session in authState when the user signs in`() =
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)

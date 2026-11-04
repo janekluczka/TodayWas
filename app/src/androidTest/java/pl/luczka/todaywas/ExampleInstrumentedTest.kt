@@ -14,9 +14,11 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
     @Test
-    fun useAppContext() {
-        // Context of the app under test.
+    fun `should report the app package when reading the target context`() {
+        // Arrange
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+
+        // Assert
         assertEquals("pl.luczka.todaywas", appContext.packageName)
     }
 }

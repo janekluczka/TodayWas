@@ -26,3 +26,4 @@ rootProject.name = "Today Was"
 include(":app")
 include(":core:designsystem")
 include(":ktlint-rules")
+include(":architecture-tests")

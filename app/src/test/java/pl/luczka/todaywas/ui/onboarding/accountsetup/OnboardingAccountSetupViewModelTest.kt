@@ -113,7 +113,7 @@ class OnboardingAccountSetupViewModelTest {
     }
 
     @Test
-    fun `should start on SIGN_IN`() =
+    fun `should start on SIGN_IN when the ViewModel is created`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
@@ -330,7 +330,7 @@ class OnboardingAccountSetupViewModelTest {
         }
 
     @Test
-    fun `should reflect a session that becomes signed in in authState`() =
+    fun `should reflect a signed-in session in authState when the user signs in`() =
         runTest {
             // Arrange
             val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)

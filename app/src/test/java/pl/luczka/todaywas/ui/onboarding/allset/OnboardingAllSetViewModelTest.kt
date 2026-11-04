@@ -40,7 +40,7 @@ class OnboardingAllSetViewModelTest {
     }
 
     @Test
-    fun `should expose the given reason and no email on initial state`() =
+    fun `should expose the given reason and no email when the ViewModel is created`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel(AllSetReason.NO_ACCOUNT)
@@ -84,7 +84,7 @@ class OnboardingAllSetViewModelTest {
         }
 
     @Test
-    fun `should set Finished once the auto-advance delay elapses`() =
+    fun `should set Finished when the auto-advance delay elapses`() =
         runTest {
             // Arrange
             val viewModel = viewModel(AllSetReason.NO_ACCOUNT)

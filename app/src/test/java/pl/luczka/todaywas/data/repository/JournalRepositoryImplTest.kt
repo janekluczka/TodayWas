@@ -309,7 +309,7 @@ class JournalRepositoryImplTest {
         }
 
     @Test
-    fun `should not resurrect a remotely-deleted row during syncWithRemote`() =
+    fun `should not resurrect a remotely-deleted row when syncWithRemote runs`() =
         runTest {
             // Arrange - local has a stale, unsynced, non-deleted edit with a *newer* updatedAt than
             // the remote tombstone, exercising tombstone supremacy over plain timestamp comparison.
@@ -348,7 +348,7 @@ class JournalRepositoryImplTest {
         }
 
     @Test
-    fun `should purge tombstones older than the GC window during syncWithRemote`() =
+    fun `should purge tombstones older than the GC window when syncWithRemote runs`() =
         runTest {
             // Arrange
             val agedOut = Instant
