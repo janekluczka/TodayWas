@@ -227,7 +227,7 @@ class JournalEntryDaoTest {
         }
 
     @Test
-    fun `should reject a second active entry for the same date`() =
+    fun `should reject a second active entry when one already exists for the same date`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
@@ -271,7 +271,7 @@ class JournalEntryDaoTest {
         }
 
     @Test
-    fun `should allow a fresh active entry after the previous one for the same date was soft-deleted`() =
+    fun `should allow a fresh active entry when the previous one for the same date was soft-deleted`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()

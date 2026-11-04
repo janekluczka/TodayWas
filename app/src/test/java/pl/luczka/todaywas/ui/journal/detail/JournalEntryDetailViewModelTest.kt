@@ -189,7 +189,7 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `should succeed regardless of the entry's age, unlike editing`() =
+    fun `should succeed when deleting an entry older than the edit window`() =
         runTest {
             // Arrange - entry is well past its 24h edit window, unlike editing's expiry tests
             val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneId.systemDefault())

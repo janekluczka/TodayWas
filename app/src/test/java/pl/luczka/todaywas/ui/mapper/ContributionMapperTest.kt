@@ -143,7 +143,7 @@ class ContributionMapperTest {
     }
 
     @Test
-    fun `should map a real check-in day to the correct level regardless of mode`() {
+    fun `should map a real check-in day to the correct level when either mode is used`() {
         // Arrange
         val date = LocalDate.of(2026, 3, 10)
         val grid = ContributionGrid(

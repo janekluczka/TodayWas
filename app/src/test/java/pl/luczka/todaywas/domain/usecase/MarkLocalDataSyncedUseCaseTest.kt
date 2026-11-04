@@ -9,7 +9,7 @@ import pl.luczka.todaywas.domain.repository.FakeOnboardingRepository
 class MarkLocalDataSyncedUseCaseTest {
 
     @Test
-    fun `should delegate to the repository and succeed`() =
+    fun `should succeed when the repository marks local data synced`() =
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository()
@@ -24,7 +24,7 @@ class MarkLocalDataSyncedUseCaseTest {
         }
 
     @Test
-    fun `should pass a repository failure through unchanged`() =
+    fun `should pass the failure through unchanged when the repository fails`() =
         runTest {
             // Arrange
             val repository = FakeOnboardingRepository()

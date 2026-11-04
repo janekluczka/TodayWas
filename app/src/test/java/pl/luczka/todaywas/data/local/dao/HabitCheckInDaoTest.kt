@@ -333,7 +333,7 @@ class HabitCheckInDaoTest {
         }
 
     @Test
-    fun `should reject a second active check-in for the same habit and date`() =
+    fun `should reject a second active check-in when one already exists for the same habit and date`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()
@@ -379,7 +379,7 @@ class HabitCheckInDaoTest {
         }
 
     @Test
-    fun `should allow a fresh active check-in after the previous one for the same habit and date was soft-deleted`() =
+    fun `should allow a fresh active check-in when the previous one for the same habit and date was soft-deleted`() =
         runTest {
             // Arrange
             val context = ApplicationProvider.getApplicationContext<Context>()

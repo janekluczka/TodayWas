@@ -118,7 +118,7 @@ class EditJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should expose one starterPrompts entry per tone with a variant picked from random on initial state`() =
+    fun `should expose one starterPrompts entry per tone with a random variant when the ViewModel is created`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel(random = Random(seed = 42))

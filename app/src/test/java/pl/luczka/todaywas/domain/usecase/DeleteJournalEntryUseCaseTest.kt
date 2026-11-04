@@ -25,7 +25,7 @@ class DeleteJournalEntryUseCaseTest {
         }
 
     @Test
-    fun `should succeed regardless of the entry's age, unlike Update`() =
+    fun `should succeed when the entry is older than the edit window`() =
         runTest {
             // Arrange - no clock/createdAt is involved at all, unlike UpdateJournalEntryUseCase
             val repository = FakeJournalRepository()
@@ -40,7 +40,7 @@ class DeleteJournalEntryUseCaseTest {
         }
 
     @Test
-    fun `should pass a repository failure through unchanged`() =
+    fun `should pass the failure through unchanged when the repository fails`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository()

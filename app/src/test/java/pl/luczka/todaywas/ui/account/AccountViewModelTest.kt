@@ -75,7 +75,7 @@ class AccountViewModelTest {
     }
 
     @Test
-    fun `should reflect the observed auth state and start on SIGN_IN on initial state`() =
+    fun `should reflect the observed auth state and start on SIGN_IN when the ViewModel is created`() =
         runTest {
             // Arrange
             val repository = FakeAuthRepository(initialState = AuthState.SignedOut)

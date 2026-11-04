@@ -10,7 +10,7 @@ import pl.luczka.todaywas.domain.repository.FakeAiAssistRepository
 class RequestJournalStarterPromptUseCaseTest {
 
     @Test
-    fun `should delegate tone and thoughts to the repository`() =
+    fun `should delegate tone and thoughts to the repository when invoked`() =
         runTest {
             // Arrange
             val repository = FakeAiAssistRepository()
@@ -27,7 +27,7 @@ class RequestJournalStarterPromptUseCaseTest {
         }
 
     @Test
-    fun `should pass a repository failure through unchanged`() =
+    fun `should pass the failure through unchanged when the repository fails`() =
         runTest {
             // Arrange
             val repository = FakeAiAssistRepository()

@@ -31,7 +31,7 @@ class GetLocalDataSummaryUseCaseTest {
         }
 
     @Test
-    fun `should count entries, habits, and check-ins from both repositories`() =
+    fun `should count entries, habits, and check-ins from both repositories when local data exists`() =
         runTest {
             // Arrange
             val entry = JournalEntry(

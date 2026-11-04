@@ -82,7 +82,7 @@ class HabitListViewModelTest {
     }
 
     @Test
-    fun `should default to RECENTLY_CHECKED_IN sort`() =
+    fun `should default to RECENTLY_CHECKED_IN sort when the ViewModel is created`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel()
@@ -93,7 +93,7 @@ class HabitListViewModelTest {
         }
 
     @Test
-    fun `should sort RECENTLY_CHECKED_IN by most recent check-in date descending`() =
+    fun `should sort by most recent check-in date descending when the sort is RECENTLY_CHECKED_IN`() =
         runTest {
             // Arrange
             val habits = listOf(habit("1"), habit("2"), habit("3"))

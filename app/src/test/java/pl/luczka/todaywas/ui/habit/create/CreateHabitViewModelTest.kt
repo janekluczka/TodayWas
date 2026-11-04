@@ -35,7 +35,7 @@ class CreateHabitViewModelTest {
     }
 
     @Test
-    fun `should be blank, binary, and default to the minimum scale step count on initial state`() =
+    fun `should be blank, binary, and default to the minimum scale step count when the ViewModel is created`() =
         runTest {
             // Arrange
             val viewModel = viewModel()

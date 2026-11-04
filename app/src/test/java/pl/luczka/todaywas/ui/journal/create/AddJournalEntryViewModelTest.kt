@@ -71,7 +71,7 @@ class AddJournalEntryViewModelTest {
     }
 
     @Test
-    fun `should derive both slots as available and default selectedSlot to TODAY on initial state`() =
+    fun `should derive both slots as available and default selectedSlot to TODAY when the ViewModel is created`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
@@ -85,7 +85,7 @@ class AddJournalEntryViewModelTest {
         }
 
     @Test
-    fun `should expose one starterPrompts entry per tone with a variant picked from random on initial state`() =
+    fun `should expose one starterPrompts entry per tone with a random variant when the ViewModel is created`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel(random = Random(seed = 42))

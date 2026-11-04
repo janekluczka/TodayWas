@@ -10,7 +10,7 @@ import pl.luczka.todaywas.domain.repository.FakeAiAssistRepository
 class RequestJournalRefinementPromptUseCaseTest {
 
     @Test
-    fun `should delegate text and tone to the repository`() =
+    fun `should delegate text and tone to the repository when invoked`() =
         runTest {
             // Arrange
             val repository = FakeAiAssistRepository()
@@ -49,7 +49,7 @@ class RequestJournalRefinementPromptUseCaseTest {
         }
 
     @Test
-    fun `should pass a repository failure through unchanged`() =
+    fun `should pass the failure through unchanged when the repository fails`() =
         runTest {
             // Arrange
             val repository = FakeAiAssistRepository()

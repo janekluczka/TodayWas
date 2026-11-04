@@ -9,7 +9,7 @@ import pl.luczka.todaywas.data.repository.JournalRepositoryImpl
 class RepositoryModuleScopeTest {
 
     @Test
-    fun `should carry Singleton scope on bindJournalRepository`() {
+    fun `should carry Singleton scope when binding the journal repository`() {
         // Act
         val method = RepositoryModule::class.java.getDeclaredMethod(
             "bindJournalRepository",
@@ -21,7 +21,7 @@ class RepositoryModuleScopeTest {
     }
 
     @Test
-    fun `should carry Singleton scope on bindHabitRepository`() {
+    fun `should carry Singleton scope when binding the habit repository`() {
         // Act
         val method = RepositoryModule::class.java.getDeclaredMethod(
             "bindHabitRepository",
