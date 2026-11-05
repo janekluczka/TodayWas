@@ -1,9 +1,13 @@
 package pl.luczka.todaywas.feature.journal.impl.create
 
+import java.time.Instant
+import java.time.LocalDate
 import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -21,6 +25,7 @@ import pl.luczka.todaywas.core.domain.model.AiAssistError
 import pl.luczka.todaywas.core.domain.model.AiAssistException
 import pl.luczka.todaywas.core.domain.model.AiPromptResult
 import pl.luczka.todaywas.core.domain.model.AuthState
+import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.repository.AiAssistRepository
 import pl.luczka.todaywas.core.domain.repository.AuthRepository
 import pl.luczka.todaywas.core.domain.repository.JournalRepository
@@ -41,7 +46,14 @@ import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddJournalEntryViewModelTest {
 
-    private fun viewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: AddJournalEntryViewModel) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
+
+    private fun TestScope.viewModel(
         repository: JournalRepository = FakeJournalRepository(),
         authRepository: AuthRepository = FakeAuthRepository(
             initialState = AuthState.SignedIn(
@@ -58,7 +70,7 @@ class AddJournalEntryViewModelTest {
         requestJournalStarterPrompt = RequestJournalStarterPromptUseCase(aiAssistRepository),
         requestJournalRefinementPrompt = RequestJournalRefinementPromptUseCase(aiAssistRepository),
         random = random,
-    )
+    ).also { collectUiState(it) }
 
     @Before
     fun setUp() {
@@ -94,6 +106,26 @@ class AddJournalEntryViewModelTest {
             val prompts = viewModel.uiState.value.starterPrompts
             assertEquals(JournalStarterPromptTone.entries.toSet(), prompts.map { it.tone }.toSet())
             assertTrue(prompts.all { it.variant in 0 until STARTER_PROMPT_VARIANT_COUNT })
+        }
+
+    @Test
+    fun `should fall back to YESTERDAY when today already has an entry`() =
+        runTest {
+            // Arrange
+            val todayEntry = JournalEntry(
+                id = "1",
+                date = LocalDate.now(),
+                text = "Already written.",
+                createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
+            )
+
+            // Act
+            val viewModel = viewModel(FakeJournalRepository(initialEntries = listOf(todayEntry)))
+
+            // Assert
+            assertEquals(listOf(JournalDateSlotUiState.YESTERDAY), viewModel.uiState.value.availableSlots)
+            assertEquals(JournalDateSlotUiState.YESTERDAY, viewModel.uiState.value.selectedSlot)
         }
 
     @Test

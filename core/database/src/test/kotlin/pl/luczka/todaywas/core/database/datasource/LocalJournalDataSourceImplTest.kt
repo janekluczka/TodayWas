@@ -37,6 +37,9 @@ class LocalJournalDataSourceImplTest {
 
         override suspend fun getAllIncludingDeleted(): List<JournalEntryEntity> = entities.values.toList()
 
+        override fun observeById(id: String): Flow<JournalEntryEntity?> =
+            flowOf(entities[id]?.takeIf { it.deletedAt == null })
+
         override suspend fun getById(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insert(entity: JournalEntryEntity) {

@@ -50,10 +50,6 @@ internal fun JournalEntryDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-    }
-
     val currentOnBack by rememberUpdatedState(onBack)
     LaunchedEffect(uiState.pendingNavigation) {
         when (uiState.pendingNavigation ?: return@LaunchedEffect) {

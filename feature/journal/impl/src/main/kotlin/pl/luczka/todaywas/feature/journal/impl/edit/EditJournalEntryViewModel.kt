@@ -9,16 +9,19 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlin.random.Random
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.core.domain.model.AiAssistException
 import pl.luczka.todaywas.core.domain.model.AiPromptResult
 import pl.luczka.todaywas.core.domain.model.EditWindowExpiredException
-import pl.luczka.todaywas.core.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
@@ -37,31 +40,67 @@ import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 @HiltViewModel(assistedFactory = EditJournalEntryViewModel.Factory::class)
 internal class EditJournalEntryViewModel @AssistedInject constructor(
     @Assisted private val id: String,
-    private val getJournalEntry: GetJournalEntryUseCase,
+    observeJournalEntry: ObserveJournalEntryUseCase,
+    observeAuthState: ObserveAuthStateUseCase,
     private val updateJournalEntry: UpdateJournalEntryUseCase,
-    private val observeAuthState: ObserveAuthStateUseCase,
     private val requestJournalStarterPrompt: RequestJournalStarterPromptUseCase,
     private val requestJournalRefinementPrompt: RequestJournalRefinementPromptUseCase,
     private val isEditable: IsEditableUseCase,
     random: Random,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
+    // State owned by this screen itself, as opposed to the entry and auth state it observes.
+    private data class ScreenState(
+        // Null until the user changes the text; the stored entry's text shows until then.
+        val text: String? = null,
+        val isSaving: Boolean = false,
+        val saveError: Boolean = false,
+        val isDiscardConfirmVisible: Boolean = false,
+        val helpMeStart: HelpMeStartUiState = HelpMeStartUiState(),
+        val helpMeRefine: HelpMeRefineUiState = HelpMeRefineUiState(),
+        val pendingNavigation: EditJournalEntryNavigation? = null,
+    )
+
+    private val screenState = MutableStateFlow(ScreenState())
+
+    private val starterPrompts = JournalStarterPromptTone.entries.map { tone ->
+        JournalStarterPromptUiState(
+            tone = tone,
+            variant = random.nextInt(STARTER_PROMPT_VARIANT_COUNT),
+        )
+    }
+
+    // filterNotNull: a missing row keeps the screen loading, as the one-shot load did.
+    val uiState: StateFlow<EditJournalEntryUiState> = combine(
+        observeJournalEntry(id).filterNotNull(),
+        observeAuthState(),
+        screenState,
+    ) { entry, authState, screen ->
         EditJournalEntryUiState(
+            isLoading = false,
+            entry = entry.toUiState(),
+            text = screen.text ?: entry.text,
+            isSaving = screen.isSaving,
+            saveError = screen.saveError,
+            isDiscardConfirmVisible = screen.isDiscardConfirmVisible,
+            authState = authState.toUiState(),
+            helpMeStart = screen.helpMeStart,
+            helpMeRefine = screen.helpMeRefine,
+            starterPrompts = starterPrompts,
+            pendingNavigation = screen.pendingNavigation,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = EditJournalEntryUiState(
             isLoading = true,
             entry = null,
             text = "",
             isSaving = false,
             saveError = false,
-            starterPrompts = JournalStarterPromptTone.entries.map { tone ->
-                JournalStarterPromptUiState(
-                    tone = tone,
-                    variant = random.nextInt(STARTER_PROMPT_VARIANT_COUNT),
-                )
-            },
+            starterPrompts = starterPrompts,
         ),
     )
-    val uiState: StateFlow<EditJournalEntryUiState> = _uiState.asStateFlow()
 
     // Tracks the in-flight generate/regenerate call so a stale response can never land after the
     // sheet session it belongs to has already been reset (dismissed, reopened, or accepted).
@@ -69,22 +108,6 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
 
     // Same purpose as generateJob, for the independent refine sheet.
     private var refineJob: Job? = null
-
-    init {
-        viewModelScope.launch {
-            val entry = getJournalEntry(id) ?: return@launch
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    entry = entry.toUiState(),
-                    text = entry.text,
-                )
-            }
-        }
-        viewModelScope.launch {
-            observeAuthState().collect { authState -> _uiState.update { it.copy(authState = authState.toUiState()) } }
-        }
-    }
 
     fun onIntent(intent: EditJournalEntryIntent) {
         when (intent) {
@@ -113,15 +136,15 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
     }
 
     private fun onTextChanged(text: String) {
-        _uiState.update { it.copy(text = text) }
+        screenState.update { it.copy(text = text) }
     }
 
     private fun onSaveClicked() {
-        val state = _uiState.value
-        if (state.isSaving) return
+        if (screenState.value.isSaving) return
+        val state = uiState.value
         val entry = state.entry ?: return
         viewModelScope.launch {
-            _uiState.update {
+            screenState.update {
                 it.copy(
                     isSaving = true,
                     saveError = false,
@@ -129,13 +152,13 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
             }
             val result = updateJournalEntry(entry.id, state.text)
             if (result.isSuccess) {
-                _uiState.update { it.copy(isSaving = false) }
-                _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Saved) }
+                screenState.update { it.copy(isSaving = false) }
+                screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Saved) }
             } else if (result.exceptionOrNull() is EditWindowExpiredException) {
-                _uiState.update { it.copy(isSaving = false) }
-                _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
+                screenState.update { it.copy(isSaving = false) }
+                screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
             } else {
-                _uiState.update {
+                screenState.update {
                     it.copy(
                         isSaving = false,
                         saveError = true,
@@ -146,34 +169,34 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
     }
 
     private fun onBackClicked() {
-        val state = _uiState.value
+        val state = uiState.value
         if (state.text == state.entry?.text.orEmpty()) {
-            _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
+            screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
         } else {
-            _uiState.update { it.copy(isDiscardConfirmVisible = true) }
+            screenState.update { it.copy(isDiscardConfirmVisible = true) }
         }
     }
 
     private fun onDiscardConfirmed() {
-        _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
+        screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
     }
 
     private fun onNavigationHandled() {
-        _uiState.update { it.copy(pendingNavigation = null) }
+        screenState.update { it.copy(pendingNavigation = null) }
     }
 
     private fun onDiscardDismissed() {
-        _uiState.update { it.copy(isDiscardConfirmVisible = false) }
+        screenState.update { it.copy(isDiscardConfirmVisible = false) }
     }
 
     private fun onHelpMeStartClicked() {
         generateJob?.cancel()
-        val step = if (_uiState.value.authState is AuthStateUi.SignedIn) {
+        val step = if (uiState.value.authState is AuthStateUi.SignedIn) {
             HelpMeStartStep.INPUT
         } else {
             HelpMeStartStep.SIGNED_OUT
         }
-        _uiState.update {
+        screenState.update {
             it.copy(
                 helpMeStart = it.helpMeStart.resetForNewSession(
                     isVisible = true,
@@ -185,31 +208,30 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
 
     private fun onHelpMeStartDismissed() {
         generateJob?.cancel()
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false)) }
+        screenState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false)) }
     }
 
     private fun onSignInClicked() {
         generateJob?.cancel()
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false)) }
-        _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.SignIn) }
+        screenState.update { it.copy(helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false)) }
+        screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.SignIn) }
     }
 
     private fun onHelpMeStartToneSelected(tone: JournalPromptToneUiState) {
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(selectedTone = tone)) }
+        screenState.update { it.copy(helpMeStart = it.helpMeStart.copy(selectedTone = tone)) }
     }
 
     private fun onHelpMeStartThoughtsChanged(thoughts: String) {
-        _uiState.update { it.copy(helpMeStart = it.helpMeStart.copy(thoughts = thoughts)) }
+        screenState.update { it.copy(helpMeStart = it.helpMeStart.copy(thoughts = thoughts)) }
     }
 
     private fun onGenerate() {
-        val state = _uiState.value
-        val helpMeStart = state.helpMeStart
+        val helpMeStart = screenState.value.helpMeStart
         val tone = helpMeStart.selectedTone ?: return
-        val entry = state.entry ?: return
+        val entry = uiState.value.entry ?: return
         if (helpMeStart.isGenerating) return
         if ((helpMeStart.remainingToday ?: 1) <= 0) return
-        _uiState.update {
+        screenState.update {
             it.copy(
                 helpMeStart = it.helpMeStart.copy(
                     isGenerating = true,
@@ -222,18 +244,18 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
             // Mirrors onRefine's expired-mid-flight handling: the 24h window can close during the
             // 10-20s call, and this screen has no non-editing fallback to show instead.
             if (!isEditable(entry.createdAt)) {
-                _uiState.update { it.copy(helpMeStart = HelpMeStartUiState()) }
-                _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
+                screenState.update { it.copy(helpMeStart = HelpMeStartUiState()) }
+                screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
                 return@launch
             }
-            _uiState.update { current -> current.copy(helpMeStart = current.helpMeStart.applyResult(result)) }
+            screenState.update { current -> current.copy(helpMeStart = current.helpMeStart.applyResult(result)) }
         }
     }
 
     private fun onUseGeneratedTextClicked() {
-        val generatedText = _uiState.value.helpMeStart.generatedText ?: return
+        val generatedText = screenState.value.helpMeStart.generatedText ?: return
         generateJob?.cancel()
-        _uiState.update {
+        screenState.update {
             it.copy(
                 text = generatedText,
                 helpMeStart = it.helpMeStart.resetForNewSession(isVisible = false),
@@ -242,34 +264,34 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
     }
 
     private fun onHelpMeRefineClicked() {
-        val state = _uiState.value
+        val state = uiState.value
         if (state.authState !is AuthStateUi.SignedIn) return
         if (state.text.isBlank() || state.text.length > MAX_REFINE_TEXT_LENGTH) return
         refineJob?.cancel()
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = true)) }
+        screenState.update { it.copy(helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = true)) }
     }
 
     private fun onHelpMeRefineDismissed() {
         refineJob?.cancel()
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false)) }
+        screenState.update { it.copy(helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false)) }
     }
 
     private fun onHelpMeRefineToneSelected(tone: JournalPromptToneUiState) {
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(selectedTone = tone)) }
+        screenState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(selectedTone = tone)) }
     }
 
     private fun onHelpMeRefineThoughtsChanged(thoughts: String) {
-        _uiState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(thoughts = thoughts)) }
+        screenState.update { it.copy(helpMeRefine = it.helpMeRefine.copy(thoughts = thoughts)) }
     }
 
     private fun onRefine() {
-        val state = _uiState.value
-        val helpMeRefine = state.helpMeRefine
+        val state = uiState.value
+        val helpMeRefine = screenState.value.helpMeRefine
         val tone = helpMeRefine.selectedTone ?: return
         val entry = state.entry ?: return
         if (helpMeRefine.isGenerating) return
         if ((helpMeRefine.remainingToday ?: 1) <= 0) return
-        _uiState.update {
+        screenState.update {
             it.copy(
                 helpMeRefine = it.helpMeRefine.copy(
                     isGenerating = true,
@@ -285,21 +307,21 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
             )
             // The 24h window can close mid-request (the call takes 10-20s). Unlike the old Detail-hosted edit sheet,
             // this screen has no non-editing display mode to fall back into, so a result landing after expiry is
-            // discarded the same way an explicit discard is: pop back to Detail, which re-fetches and shows the
+            // discarded the same way an explicit discard is: pop back to Detail, which observes and shows the
             // (untouched) entry read-only.
             if (!isEditable(entry.createdAt)) {
-                _uiState.update { it.copy(helpMeRefine = HelpMeRefineUiState()) }
-                _uiState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
+                screenState.update { it.copy(helpMeRefine = HelpMeRefineUiState()) }
+                screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
                 return@launch
             }
-            _uiState.update { current -> current.copy(helpMeRefine = current.helpMeRefine.applyResult(result)) }
+            screenState.update { current -> current.copy(helpMeRefine = current.helpMeRefine.applyResult(result)) }
         }
     }
 
     private fun onUseRefinedTextClicked() {
-        val refinedText = _uiState.value.helpMeRefine.refinedText ?: return
+        val refinedText = screenState.value.helpMeRefine.refinedText ?: return
         refineJob?.cancel()
-        _uiState.update {
+        screenState.update {
             it.copy(
                 text = refinedText,
                 helpMeRefine = it.helpMeRefine.resetForNewSession(isVisible = false),

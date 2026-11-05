@@ -7,6 +7,8 @@ interface LocalJournalDataSource {
 
     fun observeEntries(): Flow<List<JournalEntryEntity>>
 
+    fun observeEntry(id: String): Flow<JournalEntryEntity?>
+
     suspend fun getEntry(id: String): JournalEntryEntity?
 
     suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit>

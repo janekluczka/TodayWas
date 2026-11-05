@@ -2,6 +2,7 @@ package pl.luczka.todaywas.core.domain.usecase
 
 import java.time.Instant
 import java.time.LocalDate
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -9,7 +10,7 @@ import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
 
-class GetJournalEntryUseCaseTest {
+class ObserveJournalEntryUseCaseTest {
 
     @Test
     fun `should return the entry when found`() =
@@ -23,10 +24,10 @@ class GetJournalEntryUseCaseTest {
                 updatedAt = Instant.EPOCH,
             )
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
-            val useCase = GetJournalEntryUseCase(repository)
+            val useCase = ObserveJournalEntryUseCase(repository)
 
             // Act
-            val result = useCase("1")
+            val result = useCase("1").first()
 
             // Assert
             assertEquals(entry, result)
@@ -37,10 +38,10 @@ class GetJournalEntryUseCaseTest {
         runTest {
             // Arrange
             val repository = FakeJournalRepository()
-            val useCase = GetJournalEntryUseCase(repository)
+            val useCase = ObserveJournalEntryUseCase(repository)
 
             // Act
-            val result = useCase("1")
+            val result = useCase("1").first()
 
             // Assert
             assertNull(result)

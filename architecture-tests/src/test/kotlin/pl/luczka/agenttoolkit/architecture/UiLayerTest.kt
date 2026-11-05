@@ -37,6 +37,66 @@ class UiLayerTest {
     }
 
     @Test
+    fun `should not start work when a ViewModel is created`() {
+        // Arrange
+        val asyncStart = Regex("""\b(launch|launchIn|async|collect|collectLatest)\b""")
+        val launchingProperty = Regex("""=\s*viewModelScope\s*\.\s*(launch|async)\b""")
+
+        // Act
+        val initBlocks = viewModels.flatMap { it.initBlocks }.filter { asyncStart.containsMatchIn(it.text) }
+        val properties = viewModels
+            .flatMap { it.properties(includeNested = false) }
+            .filter { launchingProperty.containsMatchIn(it.text) }
+
+        // Assert
+        (initBlocks + properties).assertEmpty(
+            additionalMessage = "Build uiState with combine + stateIn(WhileSubscribed(5_000)); " +
+                "don't launch or collect in init {} (developer.android.com, State production).",
+        )
+    }
+
+    @Test
+    fun `should name a user action when an intent is declared`() {
+        // Arrange
+        // A screen-lifecycle name means the screen, not the user, starts the work.
+        val lifecycleVerbs = "Entered|Started|Opened|Shown|Resumed|Appeared|Created|Initiali[sz]ed"
+        val lifecycle = Regex("""((Screen|View|Page)\w*)?($lifecycleVerbs)""")
+        // Load/Refresh/Fetch/Init* are fine only as a user's own action (pull to refresh, "load more" tap).
+        val loadPrefix = Regex("""(Load|Refresh|Fetch|Init)\w*""")
+        val userAction = Regex(""".*(Clicked|Tapped|Pressed|Requested|Swiped|Pulled)""")
+
+        // Act
+        val lifecycleIntents = Scopes.production.files
+            .filter { it.nameWithExtension.endsWith("Intent.kt") }
+            .flatMap { it.objects(includeNested = true) + it.classes(includeNested = true) }
+            .filter { lifecycle.matches(it.name) || (loadPrefix.matches(it.name) && !userAction.matches(it.name)) }
+
+        // Assert
+        lifecycleIntents.assertEmpty(
+            additionalMessage = "A screen never starts a load: drop the intent and observe the data in uiState.",
+        )
+    }
+
+    @Test
+    fun `should not dispatch an intent when a LaunchedEffect runs once on entering composition`() {
+        // Arrange
+        // A constant key runs the effect each time the screen enters composition; a state key
+        // (LaunchedEffect(uiState.pendingNavigation)) reacts to state and stays allowed.
+        val onEntry = Regex("""LaunchedEffect\(\s*(key1\s*=\s*)?(Unit|true)\s*\)\s*\{[^}]*\bonIntent\b""")
+
+        // Act
+        val loadingScreens = Scopes.production.files
+            .flatMap { it.functions(includeNested = true, includeLocal = false) }
+            .filterNot { function -> function.annotations.any { it.name.startsWith("Preview") } }
+            .filter { onEntry.containsMatchIn(it.text) }
+
+        // Assert
+        loadingScreens.assertEmpty(
+            additionalMessage = "A screen never starts a load; the ViewModel observes its data in uiState.",
+        )
+    }
+
+    @Test
     fun `should not inject a repository when a ViewModel is declared`() {
         // Arrange
         val withRepository = viewModels.filter { viewModel ->

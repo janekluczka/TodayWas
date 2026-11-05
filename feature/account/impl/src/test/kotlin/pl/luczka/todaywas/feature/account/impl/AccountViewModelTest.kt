@@ -4,6 +4,8 @@ import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -40,7 +42,14 @@ import pl.luczka.todaywas.core.ui.model.AuthStateUi
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {
 
-    private fun viewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: AccountViewModel) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
+
+    private fun TestScope.viewModel(
         repository: FakeAuthRepository,
         journalRepository: FakeJournalRepository = FakeJournalRepository(),
         habitRepository: FakeHabitRepository = FakeHabitRepository(),
@@ -56,7 +65,7 @@ class AccountViewModelTest {
         syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
         markLocalDataSynced = MarkLocalDataSyncedUseCase(onboardingRepository),
         shouldReviewLocalDataBeforeSync = ShouldReviewLocalDataBeforeSyncUseCase(),
-    )
+    ).also { collectUiState(it) }
 
     private fun fillSignUpForm(viewModel: AccountViewModel) {
         viewModel.onIntent(AccountIntent.SignUpEmailChanged("person@example.com"))

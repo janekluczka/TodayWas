@@ -12,6 +12,8 @@ class LocalJournalDataSourceImpl @Inject constructor(
 
     override fun observeEntries(): Flow<List<JournalEntryEntity>> = dao.observeAll()
 
+    override fun observeEntry(id: String): Flow<JournalEntryEntity?> = dao.observeById(id)
+
     override suspend fun getEntry(id: String): JournalEntryEntity? = dao.getById(id)
 
     override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> = safeDbCall { dao.insert(entity) }

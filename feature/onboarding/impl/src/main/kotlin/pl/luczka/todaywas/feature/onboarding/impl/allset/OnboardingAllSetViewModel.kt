@@ -8,10 +8,12 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
@@ -25,23 +27,40 @@ internal class OnboardingAllSetViewModel @AssistedInject constructor(
     observeAuthState: ObserveAuthStateUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(OnboardingAllSetUiState(reason = reason))
-    val uiState: StateFlow<OnboardingAllSetUiState> = _uiState.asStateFlow()
+    // State owned by this screen itself, as opposed to the auth state and timer it observes.
+    private data class ScreenState(
+        val isGetStartedClicked: Boolean = false,
+        val isNavigationHandled: Boolean = false,
+    )
 
-    private var finished = false
+    private val screenState = MutableStateFlow(ScreenState())
 
-    init {
-        viewModelScope.launch {
-            observeAuthState().collect { state ->
-                val email = (state.toUiState() as? AuthStateUi.SignedIn)?.email
-                _uiState.update { it.copy(email = email) }
-            }
-        }
-        viewModelScope.launch {
-            delay(AUTO_ADVANCE_DELAY_MS)
-            finish()
-        }
+    // Part of the state pipeline, so it only runs while the screen is collected.
+    private val autoAdvanceElapsed = flow {
+        emit(false)
+        delay(AUTO_ADVANCE_DELAY_MS)
+        emit(true)
     }
+
+    // Finishes once, whichever of the timer and a tap comes first.
+    val uiState: StateFlow<OnboardingAllSetUiState> = combine(
+        observeAuthState(),
+        autoAdvanceElapsed,
+        screenState,
+    ) { authState, elapsed, screen ->
+        val isFinished = screen.isGetStartedClicked || elapsed
+        OnboardingAllSetUiState(
+            reason = reason,
+            email = (authState.toUiState() as? AuthStateUi.SignedIn)?.email,
+            pendingNavigation = OnboardingAllSetNavigation.Finished.takeIf {
+                isFinished && !screen.isNavigationHandled
+            },
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = OnboardingAllSetUiState(reason = reason),
+    )
 
     fun onIntent(intent: OnboardingAllSetIntent) {
         when (intent) {
@@ -51,18 +70,11 @@ internal class OnboardingAllSetViewModel @AssistedInject constructor(
     }
 
     private fun onGetStartedClicked() {
-        finish()
+        screenState.update { it.copy(isGetStartedClicked = true) }
     }
 
     private fun onNavigationHandled() {
-        _uiState.update { it.copy(pendingNavigation = null) }
-    }
-
-    // Guards against both the auto-advance timer and a manual tap finishing twice.
-    private fun finish() {
-        if (finished) return
-        finished = true
-        _uiState.update { it.copy(pendingNavigation = OnboardingAllSetNavigation.Finished) }
+        screenState.update { it.copy(isNavigationHandled = true) }
     }
 
     @AssistedFactory

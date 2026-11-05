@@ -8,6 +8,8 @@ interface JournalRepository : Syncable {
 
     fun observeEntries(): Flow<List<JournalEntry>>
 
+    fun observeEntry(id: String): Flow<JournalEntry?>
+
     suspend fun getEntry(id: String): JournalEntry?
 
     suspend fun addEntry(

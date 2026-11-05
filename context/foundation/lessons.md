@@ -122,3 +122,10 @@
 - **Problem**: `UpdateJournalEntryUseCase` and `SaveHabitCheckInsUseCase` checked the edit window against a `createdAt` / existing-check-in list supplied by the ViewModel, and the repository wrote without checking — so a stale UI value or a new caller could reopen an expired entry.
 - **Rule**: A use case enforcing a rule loads the record it's guarding from the repository and checks the stored values. Callers pass identifiers and the new data only.
 - **Applies to**: plan, implement, impl-review
+
+## A screen never starts a load, and a ViewModel starts no work in init {}
+
+- **Context**: Every ViewModel and screen under a feature's `:impl` (and `:app`'s `RootViewModel`); found when `JournalEntryDetailScreen` called `LaunchedEffect(Unit) { onIntent(ScreenEntered) }` to re-run a one-shot `getJournalEntry(id)`.
+- **Problem**: The detail ViewModel is retained across the trip to Edit, so its one-shot load showed stale text after a save; re-running the load on every entry into composition hid that instead of fixing it. Eight more ViewModels launched or collected in `init {}`, which developer.android.com's State production page warns against ("Don't launch asynchronous operations in the `init` block or constructor of a `ViewModel`").
+- **Rule**: State comes from observing streams — `combine(...)` over use-case flows and a private screen-state `MutableStateFlow`, exposed with `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)`. A one-shot read becomes an `Observe…` use case over a Room `Flow` query. No `init {}` that launches or collects, no `ScreenEntered`/`*Opened`/`Load*`-style intent, no `LaunchedEffect(Unit) { onIntent(…) }`. Work that isn't screen state leaves the ViewModel (the restore sync is `StartupSync` → WorkManager from app start; the all-set timer is a cold flow in the `combine`). Enforced by `:architecture-tests` (`UiLayerTest`), house style `android-guidelines` → `house-style.md`, "UI layer".
+- **Applies to**: plan, plan-review, implement, impl-review

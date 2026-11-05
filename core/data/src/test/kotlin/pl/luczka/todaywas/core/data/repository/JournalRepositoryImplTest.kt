@@ -53,6 +53,9 @@ class JournalRepositoryImplTest {
         override fun observeEntries(): Flow<List<JournalEntryEntity>> =
             flowOf(entities.values.filter { it.deletedAt == null }.toList())
 
+        override fun observeEntry(id: String): Flow<JournalEntryEntity?> =
+            flowOf(entities[id]?.takeIf { it.deletedAt == null })
+
         override suspend fun getEntry(id: String): JournalEntryEntity? = entities[id]?.takeIf { it.deletedAt == null }
 
         override suspend fun insertEntry(entity: JournalEntryEntity): Result<Unit> {
