@@ -1,4 +1,8 @@
 [versions]
+android-compileSdk = "37"
+android-compileSdkMinor = "1"
+android-minSdk = "30"
+android-targetSdk = "36"
 agp = "9.3.1"
 coreKtx = "1.19.0"
 junit = "4.13.2"
@@ -80,6 +84,12 @@ ktlint-rule-engine-core = { group = "com.pinterest.ktlint", name = "ktlint-rule-
 ktlint-test = { group = "com.pinterest.ktlint", name = "ktlint-test", version.ref = "ktlintEngine" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsist" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
+ktlint-gradlePlugin = { group = "org.jlleitschuh.gradle", name = "ktlint-gradle", version.ref = "ktlint" }
+detekt-gradlePlugin = { group = "dev.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -92,4 +102,13 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 androidx-room = { id = "androidx.room", version.ref = "room" }
 jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+agenttoolkit-android-application = { id = "agenttoolkit.android.application" }
+agenttoolkit-android-library = { id = "agenttoolkit.android.library" }
+agenttoolkit-android-compose = { id = "agenttoolkit.android.compose" }
+agenttoolkit-android-feature-api = { id = "agenttoolkit.android.feature.api" }
+agenttoolkit-android-feature-impl = { id = "agenttoolkit.android.feature.impl" }
+agenttoolkit-android-hilt = { id = "agenttoolkit.android.hilt" }
+agenttoolkit-android-room = { id = "agenttoolkit.android.room" }
+agenttoolkit-jvm-library = { id = "agenttoolkit.jvm.library" }
+agenttoolkit-quality = { id = "agenttoolkit.quality" }
 

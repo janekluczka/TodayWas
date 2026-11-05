@@ -25,6 +25,8 @@ jobs:
             android:
               - 'app/**'
               - 'core/**'
+              - 'feature/**'
+              - 'build-logic/**'
               - 'config/**'
               - 'ktlint-rules/**'
               - 'architecture-tests/**'
