@@ -57,7 +57,7 @@ import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 @Composable
-fun AddJournalEntryScreen(
+internal fun AddJournalEntryScreen(
     onSaveComplete: () -> Unit,
     onCancel: () -> Unit,
     onNavigateToSignIn: () -> Unit,
@@ -201,7 +201,7 @@ private fun JournalDateSlotUiState.title(): String = when (this) {
 // tapping it while signed out opens the sheet with a sign-in explainer instead of the tone picker, so the feature stays
 // discoverable either way.
 @Composable
-fun StarterPromptList(
+internal fun StarterPromptList(
     starterPrompts: List<JournalStarterPromptUiState>,
     onPromptClick: (String) -> Unit,
     onHelpMeStartClick: () -> Unit,
@@ -301,7 +301,7 @@ private fun LocalDate.toSlot(
 // input it acts on rather than floating in a header disconnected from it.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpMeStartBottomSheet(
+internal fun HelpMeStartBottomSheet(
     uiState: HelpMeStartUiState,
     onDismissRequest: () -> Unit,
     onSignInClick: () -> Unit,
@@ -413,7 +413,7 @@ fun HelpMeStartBottomSheet(
 }
 
 @Composable
-fun aiAssistToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
+internal fun aiAssistToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
     JournalPromptToneUiState.VERY_BAD -> stringResource(R.string.journal_ai_assist_tone_very_bad)
     JournalPromptToneUiState.BAD -> stringResource(R.string.journal_ai_assist_tone_bad)
     JournalPromptToneUiState.NEUTRAL -> stringResource(R.string.journal_ai_assist_tone_neutral)
@@ -422,7 +422,7 @@ fun aiAssistToneLabel(tone: JournalPromptToneUiState): String = when (tone) {
 }
 
 @Composable
-fun aiAssistErrorMessage(error: AiAssistErrorUiState): String = when (error) {
+internal fun aiAssistErrorMessage(error: AiAssistErrorUiState): String = when (error) {
     AiAssistErrorUiState.INVALID_REQUEST -> stringResource(R.string.journal_ai_assist_error_invalid_request)
     AiAssistErrorUiState.UPSTREAM_FAILED -> stringResource(R.string.journal_ai_assist_error_upstream_failed)
     AiAssistErrorUiState.NOT_SIGNED_IN -> stringResource(R.string.journal_ai_assist_error_not_signed_in)

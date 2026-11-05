@@ -6,7 +6,7 @@ import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
 import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 
 @Immutable
-data class HabitDetailUiState(
+internal data class HabitDetailUiState(
     val isLoading: Boolean,
     val habitName: String,
     val type: HabitTypeUiState,
@@ -33,7 +33,7 @@ data class HabitDetailUiState(
     val isEditSheetOpen: Boolean get() = editingDate != null
 }
 
-data class HabitDetailDayUiState(
+internal data class HabitDetailDayUiState(
     val date: LocalDate,
     val value: Int?,
     val eligibleForEdit: Boolean,

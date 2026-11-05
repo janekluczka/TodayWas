@@ -17,7 +17,7 @@ import pl.luczka.todaywas.core.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 
 @HiltViewModel
-class LogHabitCheckInsViewModel @Inject constructor(
+internal class LogHabitCheckInsViewModel @Inject constructor(
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val logHabitCheckIns: LogHabitCheckInsUseCase,
     getFreshLoggableDates: GetFreshLoggableDatesUseCase,

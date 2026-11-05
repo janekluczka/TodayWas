@@ -2,7 +2,7 @@ package pl.luczka.todaywas.feature.journal.impl.edit
 
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
-sealed interface EditJournalEntryIntent {
+internal sealed interface EditJournalEntryIntent {
 
     data class TextChanged(
         val text: String,

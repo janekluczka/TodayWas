@@ -31,7 +31,7 @@ import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 @HiltViewModel
-class AddJournalEntryViewModel @Inject constructor(
+internal class AddJournalEntryViewModel @Inject constructor(
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     observeAuthState: ObserveAuthStateUseCase,
     private val addJournalEntry: AddJournalEntryUseCase,

@@ -2,10 +2,10 @@ package pl.luczka.todaywas.feature.habit.impl.create
 
 import androidx.compose.runtime.Immutable
 
-val HabitScaleStepsRange = 2..7
+internal val HabitScaleStepsRange = 2..7
 
 @Immutable
-data class CreateHabitUiState(
+internal data class CreateHabitUiState(
     val name: String,
     val description: String,
     val scaleSteps: Int,

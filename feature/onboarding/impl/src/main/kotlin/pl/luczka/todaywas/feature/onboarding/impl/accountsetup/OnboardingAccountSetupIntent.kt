@@ -2,7 +2,7 @@ package pl.luczka.todaywas.feature.onboarding.impl.accountsetup
 
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 
-sealed interface OnboardingAccountSetupIntent {
+internal sealed interface OnboardingAccountSetupIntent {
 
     data object StepBack : OnboardingAccountSetupIntent
 

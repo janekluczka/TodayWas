@@ -39,7 +39,7 @@ import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.feature.journal.impl.R
 
 @Composable
-fun JournalEntryDetailScreen(
+internal fun JournalEntryDetailScreen(
     id: String,
     onBack: () -> Unit,
     onEditClick: () -> Unit,

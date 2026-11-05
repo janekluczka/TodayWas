@@ -32,7 +32,7 @@ import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
 
 @HiltViewModel
-class OnboardingAccountSetupViewModel @Inject constructor(
+internal class OnboardingAccountSetupViewModel @Inject constructor(
     private val completeOnboarding: CompleteOnboardingUseCase,
     observeAuthState: ObserveAuthStateUseCase,
     observeOnboardingState: ObserveOnboardingStateUseCase,

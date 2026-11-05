@@ -6,7 +6,7 @@ import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalSortUiState
 
 @Immutable
-data class JournalListUiState(
+internal data class JournalListUiState(
     val isLoading: Boolean = true,
     val entries: List<JournalEntryUiState> = emptyList(),
     val selectedSort: JournalSortUiState = JournalSortUiState.NEWEST_FIRST,

@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.journal.impl.model
 
-enum class JournalPromptToneUiState {
+internal enum class JournalPromptToneUiState {
     VERY_BAD,
     BAD,
     NEUTRAL,

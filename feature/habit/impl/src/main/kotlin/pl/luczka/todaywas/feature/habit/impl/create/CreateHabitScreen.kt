@@ -33,7 +33,7 @@ import pl.luczka.todaywas.core.ui.R as CoreUiR
 import pl.luczka.todaywas.feature.habit.impl.R
 
 @Composable
-fun CreateHabitScreen(
+internal fun CreateHabitScreen(
     onSaveComplete: () -> Unit,
     onCancel: () -> Unit,
     viewModel: CreateHabitViewModel = hiltViewModel(),

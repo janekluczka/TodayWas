@@ -31,7 +31,7 @@ import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
 
 @HiltViewModel
-class AccountViewModel @Inject constructor(
+internal class AccountViewModel @Inject constructor(
     observeAuthState: ObserveAuthStateUseCase,
     observeOnboardingState: ObserveOnboardingStateUseCase,
     private val signUpWithEmail: SignUpWithEmailUseCase,

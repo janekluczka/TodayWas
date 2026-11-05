@@ -41,7 +41,7 @@ import pl.luczka.todaywas.core.ui.model.HabitUiState
 import pl.luczka.todaywas.feature.habit.impl.R
 
 @Composable
-fun HabitListScreen(
+internal fun HabitListScreen(
     onBack: () -> Unit,
     onHabitClick: (String) -> Unit,
     viewModel: HabitListViewModel = hiltViewModel(),

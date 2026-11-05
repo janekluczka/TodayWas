@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 
 @Immutable
-data class JournalEntryDetailUiState(
+internal data class JournalEntryDetailUiState(
     val isLoading: Boolean,
     val entry: JournalEntryUiState?,
     val isEditable: Boolean,

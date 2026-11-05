@@ -6,7 +6,7 @@ import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.feature.journal.impl.edit.HelpMeRefineUiState
 
 @Immutable
-data class AddJournalEntryUiState(
+internal data class AddJournalEntryUiState(
     val availableSlots: List<JournalDateSlotUiState>,
     val selectedSlot: JournalDateSlotUiState,
     val text: String,

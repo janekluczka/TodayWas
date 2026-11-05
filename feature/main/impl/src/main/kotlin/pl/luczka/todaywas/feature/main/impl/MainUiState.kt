@@ -7,7 +7,7 @@ import pl.luczka.todaywas.core.ui.model.HabitUiState
 import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 
 @Immutable
-data class MainUiState(
+internal data class MainUiState(
     val isLoading: Boolean,
     val journalEntries: List<JournalEntryUiState>,
     val habits: List<HabitUiState>,

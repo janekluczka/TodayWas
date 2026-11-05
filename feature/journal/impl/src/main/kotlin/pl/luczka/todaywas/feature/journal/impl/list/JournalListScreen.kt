@@ -45,7 +45,7 @@ import pl.luczka.todaywas.feature.journal.impl.R
 import pl.luczka.todaywas.feature.journal.impl.model.JournalSortUiState
 
 @Composable
-fun JournalListScreen(
+internal fun JournalListScreen(
     onBack: () -> Unit,
     onEntryClick: (String) -> Unit,
     viewModel: JournalListViewModel = hiltViewModel(),

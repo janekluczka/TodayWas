@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.onboarding.impl.choice
 
-sealed interface OnboardingChoiceIntent {
+internal sealed interface OnboardingChoiceIntent {
 
     data object ContinueWithoutAccountClicked : OnboardingChoiceIntent
 

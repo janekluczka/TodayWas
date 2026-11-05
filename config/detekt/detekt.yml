@@ -45,3 +45,9 @@ style:
     active: false
   ReturnCount:
     excludeGuardClauses: true
+
+Compose:
+  ModifierMissing:
+    # A feature's :impl declares its composables internal (house style, "Modules"), so the
+    # default only_public would stop checking every screen.
+    checkModifiersForVisibility: public_and_internal

@@ -13,7 +13,7 @@ import pl.luczka.todaywas.core.domain.usecase.CompleteOnboardingUseCase
 import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 
 @HiltViewModel
-class OnboardingChoiceViewModel @Inject constructor(
+internal class OnboardingChoiceViewModel @Inject constructor(
     private val completeOnboarding: CompleteOnboardingUseCase,
 ) : ViewModel() {
 

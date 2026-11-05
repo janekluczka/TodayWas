@@ -1,7 +1,10 @@
 package pl.luczka.agenttoolkit.architecture
 
+import com.lemonappdev.konsist.api.declaration.KoFunctionDeclaration
 import com.lemonappdev.konsist.api.ext.list.withAnnotationNamed
 import com.lemonappdev.konsist.api.ext.list.withNameEndingWith
+import com.lemonappdev.konsist.api.provider.KoNameProvider
+import com.lemonappdev.konsist.api.provider.modifier.KoVisibilityModifierProvider
 import com.lemonappdev.konsist.api.verify.assertEmpty
 import org.junit.Test
 
@@ -89,6 +92,27 @@ class ModuleTest {
     }
 
     @Test
+    fun `should be internal or private when a top-level declaration in a feature impl is not its entry builder`() {
+        // Arrange
+        val implModules = Modules.all.filter { it.isFeatureImpl }.map { it.konsistName }
+        val implFiles = Scopes.production.files.filter { file -> file.modulePath in implModules }
+
+        // Act
+        val exposed = implFiles.flatMap { file ->
+            file
+                .declarations(includeNested = false, includeLocal = false)
+                .filterIsInstance<KoVisibilityModifierProvider>()
+                .filter { it.hasPublicOrDefaultModifier && !it.isEntryBuilder() }
+                .map { "${file.path}: ${(it as? KoNameProvider)?.name}" }
+        }
+
+        // Assert
+        exposed.assertNone(
+            "Everything in a feature's :impl is internal or private, except its EntryProviderScope entry builder.",
+        )
+    }
+
+    @Test
     fun `should live under its module's package when a file is in a project module`() {
         // Act
         val misplaced = (Scopes.production.files + Scopes.test.files).filter { file ->
@@ -116,6 +140,9 @@ class ModuleTest {
         // Assert
         offending.assertNone("A module's namespace is <base>.<module path>.")
     }
+
+    private fun KoVisibilityModifierProvider.isEntryBuilder() =
+        this is KoFunctionDeclaration && receiverType?.name?.startsWith("EntryProviderScope") == true
 
     private fun List<String>.assertNone(message: String) {
         check(isEmpty()) { "$message\n" + joinToString("\n") }

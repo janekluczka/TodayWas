@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.journal.impl.detail
 
-sealed interface JournalEntryDetailIntent {
+internal sealed interface JournalEntryDetailIntent {
 
     data object ScreenEntered : JournalEntryDetailIntent
 

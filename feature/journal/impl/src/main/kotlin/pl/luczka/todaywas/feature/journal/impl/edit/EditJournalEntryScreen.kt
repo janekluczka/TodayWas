@@ -62,7 +62,7 @@ import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 @Composable
-fun EditJournalEntryScreen(
+internal fun EditJournalEntryScreen(
     id: String,
     onSaveComplete: () -> Unit,
     onDiscardComplete: () -> Unit,
@@ -223,7 +223,7 @@ private fun DiscardChangesDialog(onIntent: (EditJournalEntryIntent) -> Unit) {
 // sheet is only ever shown while already signed in.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpMeRefineBottomSheet(
+internal fun HelpMeRefineBottomSheet(
     uiState: HelpMeRefineUiState,
     onDismissRequest: () -> Unit,
     onToneSelect: (JournalPromptToneUiState) -> Unit,

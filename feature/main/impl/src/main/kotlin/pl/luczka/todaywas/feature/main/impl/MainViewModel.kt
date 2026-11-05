@@ -32,7 +32,7 @@ import pl.luczka.todaywas.core.ui.model.HabitUiState
 import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+internal class MainViewModel @Inject constructor(
     observeJournalEntries: ObserveJournalEntriesUseCase,
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,

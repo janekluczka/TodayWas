@@ -32,7 +32,7 @@ import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
 
 @HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)
-class HabitDetailViewModel @AssistedInject constructor(
+internal class HabitDetailViewModel @AssistedInject constructor(
     @Assisted private val habitId: String,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     observeHabitContribution: ObserveHabitContributionUseCase,

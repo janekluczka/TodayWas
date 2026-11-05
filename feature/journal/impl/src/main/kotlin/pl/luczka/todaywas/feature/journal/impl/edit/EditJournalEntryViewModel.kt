@@ -35,7 +35,7 @@ import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 @HiltViewModel(assistedFactory = EditJournalEntryViewModel.Factory::class)
-class EditJournalEntryViewModel @AssistedInject constructor(
+internal class EditJournalEntryViewModel @AssistedInject constructor(
     @Assisted private val id: String,
     private val getJournalEntry: GetJournalEntryUseCase,
     private val updateJournalEntry: UpdateJournalEntryUseCase,

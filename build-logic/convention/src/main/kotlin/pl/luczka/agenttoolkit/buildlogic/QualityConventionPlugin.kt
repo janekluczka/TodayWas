@@ -24,6 +24,9 @@ class QualityConventionPlugin : Plugin<Project> {
                 config.setFrom(rootProject.file("config/detekt/detekt.yml"))
             }
             dependencies.add("ktlintRuleset", project(":ktlint-rules"))
+            // In every module, not only Compose ones: the shared config tunes its rules, and detekt
+            // rejects a config key no loaded plugin owns.
+            dependencies.add("detektPlugins", libs.library("compose-rules-detekt"))
         }
     }
 }

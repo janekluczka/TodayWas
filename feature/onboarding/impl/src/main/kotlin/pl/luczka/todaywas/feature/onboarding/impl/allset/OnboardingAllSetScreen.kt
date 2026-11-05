@@ -28,7 +28,7 @@ import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.R
 
 @Composable
-fun OnboardingAllSetScreen(
+internal fun OnboardingAllSetScreen(
     reason: AllSetReason,
     onFinish: () -> Unit,
     viewModel: OnboardingAllSetViewModel =

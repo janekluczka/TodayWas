@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.habit.impl.create
 
-sealed interface CreateHabitIntent {
+internal sealed interface CreateHabitIntent {
 
     data class NameChanged(
         val name: String,

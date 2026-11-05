@@ -29,7 +29,7 @@ import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.R
 
 @Composable
-fun OnboardingChoiceScreen(
+internal fun OnboardingChoiceScreen(
     onNavigateToAccountSetup: () -> Unit,
     onFinish: (AllSetReason) -> Unit,
     viewModel: OnboardingChoiceViewModel = hiltViewModel(),

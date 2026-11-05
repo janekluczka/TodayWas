@@ -7,7 +7,7 @@ import pl.luczka.todaywas.core.domain.model.HabitCheckInBoard
 import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 
-fun HabitCheckInBoard.toRows(
+internal fun HabitCheckInBoard.toRows(
     selectedDate: LocalDate,
     pendingValues: Map<String, Int>,
 ): List<HabitCheckInRowUiState> = habits.map { habit ->

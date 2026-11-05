@@ -5,7 +5,7 @@ import java.time.LocalDate
 import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 
 @Immutable
-data class LogHabitCheckInsUiState(
+internal data class LogHabitCheckInsUiState(
     val selectableDates: List<LocalDate>,
     val selectedDate: LocalDate,
     val rows: List<HabitCheckInRowUiState>,
@@ -14,7 +14,7 @@ data class LogHabitCheckInsUiState(
     val pendingNavigation: LogHabitCheckInsNavigation? = null,
 )
 
-sealed interface HabitCheckInRowUiState {
+internal sealed interface HabitCheckInRowUiState {
 
     val habitId: String
     val name: String

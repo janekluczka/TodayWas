@@ -42,7 +42,7 @@ import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.feature.habit.impl.R
 
 @Composable
-fun LogHabitCheckInsScreen(
+internal fun LogHabitCheckInsScreen(
     onSaveComplete: () -> Unit,
     onCancel: () -> Unit,
     viewModel: LogHabitCheckInsViewModel = hiltViewModel(),

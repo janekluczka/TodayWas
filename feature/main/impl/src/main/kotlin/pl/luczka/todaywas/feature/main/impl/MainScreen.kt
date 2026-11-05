@@ -99,7 +99,7 @@ private val PreviewMainNavigation = MainNavigation(
 )
 
 @Composable
-fun MainScreen(
+internal fun MainScreen(
     onAddEntryClick: () -> Unit,
     onJournalEntryClick: (JournalEntryUiState) -> Unit,
     onJournalListClick: () -> Unit,

@@ -2,7 +2,7 @@ package pl.luczka.todaywas.feature.main.impl
 
 // Navigation-only taps (opening a detail, a list, the add/create flows) don't go through the
 // ViewModel: the screen calls its navigation lambdas directly. Intents here change state.
-sealed interface MainIntent {
+internal sealed interface MainIntent {
 
     // A FAB menu action was tapped; the ViewModel collapses the menu, the screen navigates.
     data object FabActionClicked : MainIntent

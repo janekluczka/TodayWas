@@ -46,7 +46,7 @@ import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
 
 @Composable
-fun AccountScreen(
+internal fun AccountScreen(
     onBack: () -> Unit,
     viewModel: AccountViewModel = hiltViewModel(),
 ) {

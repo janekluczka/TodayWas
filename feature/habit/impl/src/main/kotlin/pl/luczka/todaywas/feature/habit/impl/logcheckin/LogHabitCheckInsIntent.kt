@@ -2,7 +2,7 @@ package pl.luczka.todaywas.feature.habit.impl.logcheckin
 
 import java.time.LocalDate
 
-sealed interface LogHabitCheckInsIntent {
+internal sealed interface LogHabitCheckInsIntent {
 
     data class DateSelected(
         val date: LocalDate,

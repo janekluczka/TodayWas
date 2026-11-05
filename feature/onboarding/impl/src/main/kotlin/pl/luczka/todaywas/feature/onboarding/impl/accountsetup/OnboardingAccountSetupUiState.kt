@@ -9,7 +9,7 @@ import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
 import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
 
 @Immutable
-data class OnboardingAccountSetupUiState(
+internal data class OnboardingAccountSetupUiState(
     val accountSubStep: AccountSubStep = AccountSubStep.SIGN_IN,
     val authState: AuthStateUi = AuthStateUi.Loading,
     val signInForm: SignInFormUiState = SignInFormUiState(),

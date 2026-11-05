@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.journal.impl.create
 
-sealed interface AddJournalEntryNavigation {
+internal sealed interface AddJournalEntryNavigation {
 
     data object Saved : AddJournalEntryNavigation
 

@@ -40,7 +40,7 @@ import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
 
 @Composable
-fun OnboardingAccountSetupScreen(
+internal fun OnboardingAccountSetupScreen(
     onBack: () -> Unit,
     onFinish: (AllSetReason) -> Unit,
     viewModel: OnboardingAccountSetupViewModel = hiltViewModel(),

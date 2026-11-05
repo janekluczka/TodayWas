@@ -2,7 +2,7 @@ package pl.luczka.todaywas.feature.account.impl
 
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 
-sealed interface AccountIntent {
+internal sealed interface AccountIntent {
 
     data object BackClicked : AccountIntent
 

@@ -6,10 +6,10 @@ import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 // Mirrors ai-proxy's MAX_THOUGHTS_LENGTH (supabase/functions/ai-proxy/index.ts) so both the start and refine thoughts
 // fields disable locally instead of always failing server-side with a generic invalid_request error.
-const val MAX_THOUGHTS_LENGTH = 1000
+internal const val MAX_THOUGHTS_LENGTH = 1000
 
 @Immutable
-data class HelpMeStartUiState(
+internal data class HelpMeStartUiState(
     val isVisible: Boolean = false,
     val step: HelpMeStartStep = HelpMeStartStep.INPUT,
     val selectedTone: JournalPromptToneUiState? = null,

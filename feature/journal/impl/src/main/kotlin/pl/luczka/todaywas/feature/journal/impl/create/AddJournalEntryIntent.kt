@@ -3,7 +3,7 @@ package pl.luczka.todaywas.feature.journal.impl.create
 import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
-sealed interface AddJournalEntryIntent {
+internal sealed interface AddJournalEntryIntent {
 
     data class SlotSelected(
         val slot: JournalDateSlotUiState,

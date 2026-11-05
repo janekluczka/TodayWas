@@ -13,7 +13,7 @@ import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.domain.usecase.CreateHabitUseCase
 
 @HiltViewModel
-class CreateHabitViewModel @Inject constructor(
+internal class CreateHabitViewModel @Inject constructor(
     private val createHabit: CreateHabitUseCase,
 ) : ViewModel() {
 

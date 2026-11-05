@@ -2,7 +2,7 @@ package pl.luczka.todaywas.feature.habit.impl.detail
 
 import java.time.LocalDate
 
-sealed interface HabitDetailIntent {
+internal sealed interface HabitDetailIntent {
 
     data class DaySelected(
         val date: LocalDate,

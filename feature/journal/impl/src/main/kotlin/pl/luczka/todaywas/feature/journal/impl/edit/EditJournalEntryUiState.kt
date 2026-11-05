@@ -7,7 +7,7 @@ import pl.luczka.todaywas.feature.journal.impl.create.HelpMeStartUiState
 import pl.luczka.todaywas.feature.journal.impl.create.JournalStarterPromptUiState
 
 @Immutable
-data class EditJournalEntryUiState(
+internal data class EditJournalEntryUiState(
     val isLoading: Boolean,
     val entry: JournalEntryUiState?,
     val text: String,

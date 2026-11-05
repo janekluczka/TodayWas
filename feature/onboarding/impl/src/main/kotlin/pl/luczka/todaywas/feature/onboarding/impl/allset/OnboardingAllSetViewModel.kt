@@ -20,7 +20,7 @@ import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 private const val AUTO_ADVANCE_DELAY_MS = 5_000L
 
 @HiltViewModel(assistedFactory = OnboardingAllSetViewModel.Factory::class)
-class OnboardingAllSetViewModel @AssistedInject constructor(
+internal class OnboardingAllSetViewModel @AssistedInject constructor(
     @Assisted reason: AllSetReason,
     observeAuthState: ObserveAuthStateUseCase,
 ) : ViewModel() {

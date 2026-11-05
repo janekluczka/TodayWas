@@ -17,7 +17,7 @@ import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 
 @HiltViewModel(assistedFactory = JournalEntryDetailViewModel.Factory::class)
-class JournalEntryDetailViewModel @AssistedInject constructor(
+internal class JournalEntryDetailViewModel @AssistedInject constructor(
     @Assisted private val id: String,
     private val getJournalEntry: GetJournalEntryUseCase,
     private val deleteJournalEntry: DeleteJournalEntryUseCase,

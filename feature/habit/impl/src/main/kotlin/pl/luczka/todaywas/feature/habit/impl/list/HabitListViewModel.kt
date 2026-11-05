@@ -17,7 +17,7 @@ import pl.luczka.todaywas.core.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.core.ui.model.HabitSortUiState
 
 @HiltViewModel
-class HabitListViewModel @Inject constructor(
+internal class HabitListViewModel @Inject constructor(
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
     private val clock: Clock,
 ) : ViewModel() {

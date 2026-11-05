@@ -6,7 +6,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
-/** Compose in an app or library module: the compiler plugin, the BOM, previews and compose-rules. */
+/** Compose in an app or library module: the compiler plugin, the BOM and previews. */
 class AndroidComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
@@ -23,7 +23,6 @@ class AndroidComposeConventionPlugin : Plugin<Project> {
             dependencies.add("androidTestImplementation", bom)
             dependencies.add("implementation", libs.library("androidx-compose-ui-tooling-preview"))
             dependencies.add("debugImplementation", libs.library("androidx-compose-ui-tooling"))
-            dependencies.add("detektPlugins", libs.library("compose-rules-detekt"))
         }
     }
 }

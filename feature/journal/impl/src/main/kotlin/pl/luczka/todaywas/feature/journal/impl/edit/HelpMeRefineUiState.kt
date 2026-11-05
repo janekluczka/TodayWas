@@ -6,10 +6,10 @@ import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 // Mirrors ai-proxy's MAX_TEXT_LENGTH (supabase/functions/ai-proxy/index.ts) so the entry point
 // disables locally instead of always failing server-side with a generic invalid_request error.
-const val MAX_REFINE_TEXT_LENGTH = 8000
+internal const val MAX_REFINE_TEXT_LENGTH = 8000
 
 @Immutable
-data class HelpMeRefineUiState(
+internal data class HelpMeRefineUiState(
     val isVisible: Boolean = false,
     val step: HelpMeRefineStep = HelpMeRefineStep.INPUT,
     val selectedTone: JournalPromptToneUiState? = null,

@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.account.impl
 
-sealed interface AccountNavigation {
+internal sealed interface AccountNavigation {
 
     data object Back : AccountNavigation
 }

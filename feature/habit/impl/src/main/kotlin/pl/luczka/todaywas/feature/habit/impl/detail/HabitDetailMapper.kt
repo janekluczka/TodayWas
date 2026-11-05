@@ -37,7 +37,7 @@ internal fun HabitDetailViewModelState.toUiState(
 // freshLoggableDates) — every other unlogged date is view-only, no action. A logged date is
 // editable only within the 24h edit window; deletion is always allowed regardless of age, so it
 // doesn't gate on eligibleForEdit at all (see alreadyLogged on the caller side).
-fun List<HabitCheckIn>.toSelectedDayUiState(
+internal fun List<HabitCheckIn>.toSelectedDayUiState(
     selectedDate: LocalDate,
     freshLoggableDates: List<LocalDate>,
     isEditable: (Instant) -> Boolean,
@@ -55,7 +55,7 @@ fun List<HabitCheckIn>.toSelectedDayUiState(
     )
 }
 
-fun Habit.detailRange(): IntRange = if (type == HabitType.BINARY) {
+internal fun Habit.detailRange(): IntRange = if (type == HabitType.BINARY) {
     0..1
 } else {
     (scaleMin ?: 0)..(scaleMax ?: 0)

@@ -22,7 +22,7 @@ import pl.luczka.todaywas.feature.onboarding.impl.R
 // persist — the system back gesture already exits the app for free (this is the root of the
 // onboarding back stack, so there's nothing for Nav3 to pop).
 @Composable
-fun OnboardingWelcomeScreen(
+internal fun OnboardingWelcomeScreen(
     onGetStartedClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

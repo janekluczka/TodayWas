@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.journal.impl.create
 
-enum class HelpMeStartStep {
+internal enum class HelpMeStartStep {
     SIGNED_OUT,
     INPUT,
     PREVIEW,

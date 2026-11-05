@@ -8,7 +8,7 @@ import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
 
 @Immutable
-data class AccountUiState(
+internal data class AccountUiState(
     val authState: AuthStateUi,
     val step: AccountStep,
     val signInForm: SignInFormUiState,

@@ -19,7 +19,7 @@ import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalSortUiState
 
 @HiltViewModel
-class JournalListViewModel @Inject constructor(
+internal class JournalListViewModel @Inject constructor(
     observeJournalEntries: ObserveJournalEntriesUseCase,
     observeJournalContribution: ObserveJournalContributionUseCase,
     private val clock: Clock,
