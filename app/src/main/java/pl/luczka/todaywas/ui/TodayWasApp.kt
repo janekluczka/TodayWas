@@ -12,8 +12,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import pl.luczka.todaywas.core.navigation.Navigator
-import pl.luczka.todaywas.feature.account.api.navigation.AccountKey
 import pl.luczka.todaywas.feature.account.api.navigation.navigateToAccount
+import pl.luczka.todaywas.feature.account.impl.navigation.accountEntries
 import pl.luczka.todaywas.feature.habit.api.navigation.CreateHabitKey
 import pl.luczka.todaywas.feature.habit.api.navigation.HabitDetailKey
 import pl.luczka.todaywas.feature.habit.api.navigation.HabitListKey
@@ -36,7 +36,6 @@ import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAccountSet
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAllSetKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingChoiceKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingWelcomeKey
-import pl.luczka.todaywas.ui.account.AccountScreen
 import pl.luczka.todaywas.ui.habit.create.CreateHabitScreen
 import pl.luczka.todaywas.ui.habit.detail.HabitDetailScreen
 import pl.luczka.todaywas.ui.habit.list.HabitListScreen
@@ -111,7 +110,7 @@ private fun TodayWasNavDisplay(initialDestination: NavKey) {
                     onAccountClick = navigator::navigateToAccount,
                 )
             }
-            entry<AccountKey> { AccountScreen(onBack = navigator::goBack) }
+            accountEntries(navigator)
             entry<JournalListKey> {
                 JournalListScreen(
                     onBack = navigator::goBack,

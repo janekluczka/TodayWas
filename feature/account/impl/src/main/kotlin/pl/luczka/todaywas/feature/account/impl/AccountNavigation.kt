@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.account
+package pl.luczka.todaywas.feature.account.impl
 
 sealed interface AccountNavigation {
 

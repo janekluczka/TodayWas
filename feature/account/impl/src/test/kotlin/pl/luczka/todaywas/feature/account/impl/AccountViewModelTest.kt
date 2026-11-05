@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.account
+package pl.luczka.todaywas.feature.account.impl
 
 import java.time.Instant
 import java.time.LocalDate

@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.account
+package pl.luczka.todaywas.feature.account.impl
 
 enum class AccountStep {
     SIGN_IN,

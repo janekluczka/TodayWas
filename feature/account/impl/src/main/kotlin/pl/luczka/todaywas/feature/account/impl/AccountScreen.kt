@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.account
+package pl.luczka.todaywas.feature.account.impl
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +23,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButtonWithLoading
@@ -45,6 +44,7 @@ import pl.luczka.todaywas.core.ui.datasync.DataSyncReviewContent
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
+import pl.luczka.todaywas.feature.account.impl.R
 
 @Composable
 fun AccountScreen(

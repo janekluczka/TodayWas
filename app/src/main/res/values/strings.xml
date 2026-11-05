@@ -140,12 +140,6 @@
     <string name="habit_detail_delete_error">Something went wrong. Please try again.</string>
     <string name="habit_detail_delete_checkin_action">Delete check-in</string>
 
-    <string name="account_top_bar_title">Account</string>
-    <string name="account_success_title">Account created!</string>
-    <string name="account_success_message">Your account is ready. Your data will now sync across devices.</string>
-    <string name="account_success_continue_cta">Continue</string>
-    <string name="account_sync_local_data_cta">Sync local data</string>
-
     <string name="account_section_title">Account</string>
     <string name="account_sign_out_confirm_title">Sign out?</string>
     <string name="account_sign_out_confirm_message">You can sign back in anytime — your data stays synced.</string>

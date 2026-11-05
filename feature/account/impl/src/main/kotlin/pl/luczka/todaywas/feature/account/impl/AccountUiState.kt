@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.account
+package pl.luczka.todaywas.feature.account.impl
 
 import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
