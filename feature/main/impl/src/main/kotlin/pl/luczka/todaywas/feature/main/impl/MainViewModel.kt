@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.main
+package pl.luczka.todaywas.feature.main.impl
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,7 +27,6 @@ import pl.luczka.todaywas.core.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
-import pl.luczka.todaywas.core.ui.model.FabActionUiState
 import pl.luczka.todaywas.core.ui.model.HabitSortUiState
 import pl.luczka.todaywas.core.ui.model.HabitUiState
 import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState

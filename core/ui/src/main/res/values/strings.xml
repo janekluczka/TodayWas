@@ -3,12 +3,6 @@
 
     <string name="main_habit_empty_state">No habits yet</string>
 
-    <string name="main_fab_add_journal">Add journal</string>
-
-    <string name="main_fab_create_habit">Create habit</string>
-
-    <string name="main_fab_log_check_ins">Log habits</string>
-
     <string name="content_description_back">Back</string>
 
     <string name="onboarding_account_signin_signup_cta">Sign in or create account</string>

@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.main
+package pl.luczka.todaywas.feature.main.impl
 
 import java.time.Clock
 import java.time.Instant
@@ -37,8 +37,8 @@ import pl.luczka.todaywas.core.testing.repository.FakeOnboardingRepository
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
-import pl.luczka.todaywas.core.ui.model.FabActionUiState
 import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.feature.main.impl.FabActionUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {

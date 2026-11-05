@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.main
+package pl.luczka.todaywas.feature.main.impl
 
 // Navigation-only taps (opening a detail, a list, the add/create flows) don't go through the
 // ViewModel: the screen calls its navigation lambdas directly. Intents here change state.

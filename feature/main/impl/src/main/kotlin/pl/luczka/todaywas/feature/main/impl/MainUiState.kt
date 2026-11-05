@@ -1,9 +1,8 @@
-package pl.luczka.todaywas.ui.main
+package pl.luczka.todaywas.feature.main.impl
 
 import androidx.compose.runtime.Immutable
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
-import pl.luczka.todaywas.core.ui.model.FabActionUiState
 import pl.luczka.todaywas.core.ui.model.HabitUiState
 import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 

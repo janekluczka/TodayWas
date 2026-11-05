@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.main
+package pl.luczka.todaywas.feature.main.impl
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,7 +35,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.time.Instant
 import java.time.LocalDate
-import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.appbars.DsTopBar
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsButton
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
@@ -59,11 +58,11 @@ import pl.luczka.todaywas.core.ui.habit.HabitRow
 import pl.luczka.todaywas.core.ui.journal.JournalEntryRow
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
-import pl.luczka.todaywas.core.ui.model.FabActionUiState
 import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.core.ui.model.HabitUiState
 import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.feature.main.impl.R
 
 // Each section shows at most this many items on Main before falling back to a "View all" row.
 private const val MAIN_SECTION_CAP = 5
@@ -221,12 +220,12 @@ private fun MainEmptyState(
             modifier = Modifier.padding(top = DsSpacing.space400),
         )
         DsButton(
-            text = stringResource(CoreUiR.string.main_fab_add_journal),
+            text = stringResource(R.string.main_fab_add_journal),
             onClick = navigation.onAddEntry,
             modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
         )
         DsButton(
-            text = stringResource(CoreUiR.string.main_fab_create_habit),
+            text = stringResource(R.string.main_fab_create_habit),
             onClick = navigation.onCreateHabit,
             modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
         )

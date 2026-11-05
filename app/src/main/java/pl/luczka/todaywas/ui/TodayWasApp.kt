@@ -12,20 +12,11 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import pl.luczka.todaywas.core.navigation.Navigator
-import pl.luczka.todaywas.feature.account.api.navigation.navigateToAccount
 import pl.luczka.todaywas.feature.account.impl.navigation.accountEntries
-import pl.luczka.todaywas.feature.habit.api.navigation.navigateToCreateHabit
-import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitDetail
-import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitList
-import pl.luczka.todaywas.feature.habit.api.navigation.navigateToLogHabitCheckIns
 import pl.luczka.todaywas.feature.habit.impl.navigation.habitEntries
-import pl.luczka.todaywas.feature.journal.api.navigation.navigateToAddJournalEntry
-import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalEntryDetail
-import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalList
 import pl.luczka.todaywas.feature.journal.impl.navigation.journalEntries
-import pl.luczka.todaywas.feature.main.api.navigation.MainKey
+import pl.luczka.todaywas.feature.main.impl.navigation.mainEntries
 import pl.luczka.todaywas.feature.onboarding.impl.navigation.onboardingEntries
-import pl.luczka.todaywas.ui.main.MainScreen
 
 @Composable
 fun TodayWasApp(viewModel: RootViewModel = hiltViewModel()) {
@@ -51,18 +42,7 @@ private fun TodayWasNavDisplay(initialDestination: NavKey) {
         ),
         entryProvider = entryProvider {
             onboardingEntries(navigator)
-            entry<MainKey> {
-                MainScreen(
-                    onAddEntryClick = navigator::navigateToAddJournalEntry,
-                    onJournalEntryClick = { entry -> navigator.navigateToJournalEntryDetail(entry.id) },
-                    onJournalListClick = navigator::navigateToJournalList,
-                    onCreateHabitClick = navigator::navigateToCreateHabit,
-                    onLogCheckInsClick = navigator::navigateToLogHabitCheckIns,
-                    onHabitClick = navigator::navigateToHabitDetail,
-                    onHabitListClick = navigator::navigateToHabitList,
-                    onAccountClick = navigator::navigateToAccount,
-                )
-            }
+            mainEntries(navigator)
             accountEntries(navigator)
             habitEntries(navigator)
             journalEntries(navigator)

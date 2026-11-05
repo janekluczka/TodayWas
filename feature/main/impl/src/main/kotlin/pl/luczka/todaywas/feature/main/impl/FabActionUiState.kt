@@ -1,7 +1,6 @@
-package pl.luczka.todaywas.core.ui.model
+package pl.luczka.todaywas.feature.main.impl
 
 import androidx.annotation.StringRes
-import pl.luczka.todaywas.core.ui.R
 
 enum class FabActionUiState(
     @StringRes val labelRes: Int,
