@@ -1,0 +1,22 @@
+package pl.luczka.todaywas.core.database.util
+
+import kotlinx.coroutines.CancellationException
+
+// Retries once before giving up, per the plan's write-resilience contract.
+suspend fun safeDbCall(block: suspend () -> Unit): Result<Unit> = try {
+    block()
+    Result.success(Unit)
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    try {
+        block()
+        Result.success(Unit)
+    } catch (retryException: CancellationException) {
+        throw retryException
+    } catch (retryException: Exception) {
+        // A rethrown shared instance can't suppress itself (addSuppressed throws).
+        if (retryException !== e) retryException.addSuppressed(e)
+        Result.failure(retryException)
+    }
+}
