@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -74,7 +76,14 @@ class OnboardingAccountSetupViewModelTest {
         override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
     }
 
-    private fun viewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: OnboardingAccountSetupViewModel) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
+
+    private fun TestScope.viewModel(
         repository: OnboardingRepository = FakeOnboardingRepository(),
         authRepository: FakeAuthRepository = FakeAuthRepository(),
         journalRepository: FakeJournalRepository = FakeJournalRepository(),
@@ -90,7 +99,7 @@ class OnboardingAccountSetupViewModelTest {
         syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
         markLocalDataSynced = MarkLocalDataSyncedUseCase(repository),
         shouldReviewLocalDataBeforeSync = ShouldReviewLocalDataBeforeSyncUseCase(),
-    )
+    ).also { collectUiState(it) }
 
     private fun advanceToSignUp(viewModel: OnboardingAccountSetupViewModel) {
         viewModel.onIntent(OnboardingAccountSetupIntent.SignUpLinkClicked)
