@@ -37,8 +37,8 @@ import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OnboardingAccountSetupViewModelTest {

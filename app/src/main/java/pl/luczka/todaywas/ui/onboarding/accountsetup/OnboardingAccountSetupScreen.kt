@@ -36,8 +36,8 @@ import pl.luczka.todaywas.core.ui.auth.util.message
 import pl.luczka.todaywas.core.ui.datasync.DataSyncReviewContent
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
 
 @Composable
 fun OnboardingAccountSetupScreen(

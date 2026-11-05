@@ -2,13 +2,40 @@ package pl.luczka.todaywas.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import pl.luczka.todaywas.core.navigation.Navigator
+import pl.luczka.todaywas.feature.account.api.navigation.AccountKey
+import pl.luczka.todaywas.feature.account.api.navigation.navigateToAccount
+import pl.luczka.todaywas.feature.habit.api.navigation.CreateHabitKey
+import pl.luczka.todaywas.feature.habit.api.navigation.HabitDetailKey
+import pl.luczka.todaywas.feature.habit.api.navigation.HabitListKey
+import pl.luczka.todaywas.feature.habit.api.navigation.LogHabitCheckInsKey
+import pl.luczka.todaywas.feature.habit.api.navigation.navigateToCreateHabit
+import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitDetail
+import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitList
+import pl.luczka.todaywas.feature.habit.api.navigation.navigateToLogHabitCheckIns
+import pl.luczka.todaywas.feature.journal.api.navigation.AddJournalEntryKey
+import pl.luczka.todaywas.feature.journal.api.navigation.EditJournalEntryKey
+import pl.luczka.todaywas.feature.journal.api.navigation.JournalEntryDetailKey
+import pl.luczka.todaywas.feature.journal.api.navigation.JournalListKey
+import pl.luczka.todaywas.feature.journal.api.navigation.navigateToAddJournalEntry
+import pl.luczka.todaywas.feature.journal.api.navigation.navigateToEditJournalEntry
+import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalEntryDetail
+import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalList
+import pl.luczka.todaywas.feature.main.api.navigation.MainKey
+import pl.luczka.todaywas.feature.main.api.navigation.replaceAllWithMain
+import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAccountSetupKey
+import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAllSetKey
+import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingChoiceKey
+import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingWelcomeKey
 import pl.luczka.todaywas.ui.account.AccountScreen
 import pl.luczka.todaywas.ui.habit.create.CreateHabitScreen
 import pl.luczka.todaywas.ui.habit.detail.HabitDetailScreen
@@ -34,14 +61,14 @@ fun TodayWasApp(viewModel: RootViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
+private fun TodayWasNavDisplay(initialDestination: NavKey) {
     val backStack = rememberNavBackStack(initialDestination)
+    val navigator = remember(backStack) { Navigator(backStack) }
 
     NavDisplay(
         backStack = backStack,
-        // NavDisplay throws if the backstack is emptied, so only pop when more than the root
-        // entry remains; back from the root falls through to the platform's default behavior.
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        // Back from the root falls through to the platform's default behavior.
+        onBack = navigator::goBack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
@@ -49,104 +76,92 @@ private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
         entryProvider = entryProvider {
             entry<OnboardingWelcomeKey> {
                 OnboardingWelcomeScreen(
-                    onGetStartedClick = {
-                        // Welcome is a one-way intro — replace it so back from Choice exits the
-                        // app instead of returning here.
-                        backStack.clear()
-                        backStack.add(OnboardingChoiceKey)
-                    },
+                    // Welcome is a one-way intro — replace it so back from Choice exits the
+                    // app instead of returning here.
+                    onGetStartedClick = { navigator.replaceAll(OnboardingChoiceKey) },
                 )
             }
             entry<OnboardingChoiceKey> {
                 OnboardingChoiceScreen(
-                    onNavigateToAccountSetup = { backStack.add(OnboardingAccountSetupKey) },
-                    onFinish = { reason ->
-                        backStack.clear()
-                        backStack.add(OnboardingAllSetKey(reason))
-                    },
+                    onNavigateToAccountSetup = { navigator.navigate(OnboardingAccountSetupKey) },
+                    onFinish = { reason -> navigator.replaceAll(OnboardingAllSetKey(reason)) },
                 )
             }
             entry<OnboardingAccountSetupKey> {
                 OnboardingAccountSetupScreen(
-                    onBack = { backStack.removeLastOrNull() },
-                    onFinish = { reason ->
-                        backStack.clear()
-                        backStack.add(OnboardingAllSetKey(reason))
-                    },
+                    onBack = navigator::goBack,
+                    onFinish = { reason -> navigator.replaceAll(OnboardingAllSetKey(reason)) },
                 )
             }
             entry<OnboardingAllSetKey> { key ->
                 OnboardingAllSetScreen(
                     reason = key.reason,
-                    onFinish = {
-                        backStack.clear()
-                        backStack.add(MainKey)
-                    },
+                    onFinish = navigator::replaceAllWithMain,
                 )
             }
             entry<MainKey> {
                 MainScreen(
-                    onAddEntryClick = { backStack.add(AddJournalEntryKey) },
-                    onJournalEntryClick = { entry -> backStack.add(JournalEntryDetailKey(id = entry.id)) },
-                    onJournalListClick = { backStack.add(JournalListKey) },
-                    onCreateHabitClick = { backStack.add(CreateHabitKey) },
-                    onLogCheckInsClick = { backStack.add(LogHabitCheckInsKey) },
-                    onHabitClick = { habitId -> backStack.add(HabitDetailKey(habitId)) },
-                    onHabitListClick = { backStack.add(HabitListKey) },
-                    onAccountClick = { backStack.add(AccountKey) },
+                    onAddEntryClick = navigator::navigateToAddJournalEntry,
+                    onJournalEntryClick = { entry -> navigator.navigateToJournalEntryDetail(entry.id) },
+                    onJournalListClick = navigator::navigateToJournalList,
+                    onCreateHabitClick = navigator::navigateToCreateHabit,
+                    onLogCheckInsClick = navigator::navigateToLogHabitCheckIns,
+                    onHabitClick = navigator::navigateToHabitDetail,
+                    onHabitListClick = navigator::navigateToHabitList,
+                    onAccountClick = navigator::navigateToAccount,
                 )
             }
-            entry<AccountKey> { AccountScreen(onBack = { backStack.removeLastOrNull() }) }
+            entry<AccountKey> { AccountScreen(onBack = navigator::goBack) }
             entry<JournalListKey> {
                 JournalListScreen(
-                    onBack = { backStack.removeLastOrNull() },
-                    onEntryClick = { id -> backStack.add(JournalEntryDetailKey(id = id)) },
+                    onBack = navigator::goBack,
+                    onEntryClick = navigator::navigateToJournalEntryDetail,
                 )
             }
             entry<HabitListKey> {
                 HabitListScreen(
-                    onBack = { backStack.removeLastOrNull() },
-                    onHabitClick = { habitId -> backStack.add(HabitDetailKey(habitId)) },
+                    onBack = navigator::goBack,
+                    onHabitClick = navigator::navigateToHabitDetail,
                 )
             }
             entry<AddJournalEntryKey> {
                 AddJournalEntryScreen(
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onCancel = { backStack.removeLastOrNull() },
-                    onNavigateToSignIn = { backStack.add(AccountKey) },
+                    onSaveComplete = navigator::goBack,
+                    onCancel = navigator::goBack,
+                    onNavigateToSignIn = navigator::navigateToAccount,
                 )
             }
             entry<JournalEntryDetailKey> { key ->
                 JournalEntryDetailScreen(
                     id = key.id,
-                    onBack = { backStack.removeLastOrNull() },
-                    onEditClick = { backStack.add(EditJournalEntryKey(id = key.id)) },
+                    onBack = navigator::goBack,
+                    onEditClick = { navigator.navigateToEditJournalEntry(key.id) },
                 )
             }
             entry<EditJournalEntryKey> { key ->
                 EditJournalEntryScreen(
                     id = key.id,
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onDiscardComplete = { backStack.removeLastOrNull() },
-                    onNavigateToSignIn = { backStack.add(AccountKey) },
+                    onSaveComplete = navigator::goBack,
+                    onDiscardComplete = navigator::goBack,
+                    onNavigateToSignIn = navigator::navigateToAccount,
                 )
             }
             entry<CreateHabitKey> {
                 CreateHabitScreen(
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onCancel = { backStack.removeLastOrNull() },
+                    onSaveComplete = navigator::goBack,
+                    onCancel = navigator::goBack,
                 )
             }
             entry<LogHabitCheckInsKey> {
                 LogHabitCheckInsScreen(
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onCancel = { backStack.removeLastOrNull() },
+                    onSaveComplete = navigator::goBack,
+                    onCancel = navigator::goBack,
                 )
             }
             entry<HabitDetailKey> { key ->
                 HabitDetailScreen(
                     habitId = key.habitId,
-                    onBack = { backStack.removeLastOrNull() },
+                    onBack = navigator::goBack,
                 )
             }
         },

@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.onboarding.accountsetup
 
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 
 sealed interface OnboardingAccountSetupNavigation {
 

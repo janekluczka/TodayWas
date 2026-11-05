@@ -25,7 +25,7 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.core.ui.R as CoreUiR
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 
 @Composable
 fun OnboardingAllSetScreen(

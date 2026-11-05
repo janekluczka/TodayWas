@@ -14,7 +14,7 @@ import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.AuthState
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OnboardingAllSetViewModelTest {

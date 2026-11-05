@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.ui.onboarding.allset
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 
 @Immutable
 data class OnboardingAllSetUiState(

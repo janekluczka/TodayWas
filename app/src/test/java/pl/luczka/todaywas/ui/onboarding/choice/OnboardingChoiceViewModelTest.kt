@@ -18,7 +18,7 @@ import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.OnboardingState
 import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
 import pl.luczka.todaywas.core.domain.usecase.CompleteOnboardingUseCase
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OnboardingChoiceViewModelTest {

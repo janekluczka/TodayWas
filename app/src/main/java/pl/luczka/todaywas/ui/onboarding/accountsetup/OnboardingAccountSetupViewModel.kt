@@ -28,8 +28,8 @@ import pl.luczka.todaywas.core.ui.auth.util.isValidPassword
 import pl.luczka.todaywas.core.ui.auth.util.isValidRepeatPassword
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
-import pl.luczka.todaywas.ui.onboarding.AllSetReason
 
 @HiltViewModel
 class OnboardingAccountSetupViewModel @Inject constructor(

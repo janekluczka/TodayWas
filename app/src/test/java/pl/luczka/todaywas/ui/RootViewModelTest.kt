@@ -15,6 +15,8 @@ import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.OnboardingState
 import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
 import pl.luczka.todaywas.core.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.feature.main.api.navigation.MainKey
+import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingWelcomeKey
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RootViewModelTest {

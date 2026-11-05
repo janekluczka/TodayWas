@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.ui.onboarding
+package pl.luczka.todaywas.feature.onboarding.api.navigation
 
 import kotlinx.serialization.Serializable
 
