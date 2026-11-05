@@ -28,8 +28,8 @@ import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.core.domain.usecase.SaveHabitCheckInsUseCase
-import pl.luczka.todaywas.ui.mapper.toUiState
-import pl.luczka.todaywas.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
 
 @HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)
 class HabitDetailViewModel @AssistedInject constructor(

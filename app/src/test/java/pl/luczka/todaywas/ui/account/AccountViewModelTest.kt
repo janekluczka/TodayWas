@@ -33,9 +33,9 @@ import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
 import pl.luczka.todaywas.core.testing.repository.FakeOnboardingRepository
-import pl.luczka.todaywas.ui.auth.SignInFormUiState
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {

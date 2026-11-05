@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.journal.edit
 
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 
 sealed interface EditJournalEntryIntent {
 

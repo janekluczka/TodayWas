@@ -15,8 +15,8 @@ import kotlinx.coroutines.flow.update
 import pl.luczka.todaywas.core.domain.model.ContributionWindow
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
-import pl.luczka.todaywas.ui.mapper.toUiState
-import pl.luczka.todaywas.ui.model.JournalSortUiState
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.JournalSortUiState
 
 @HiltViewModel
 class JournalListViewModel @Inject constructor(

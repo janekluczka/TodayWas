@@ -37,9 +37,9 @@ import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAiAssistRepository
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+import pl.luczka.todaywas.core.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 import pl.luczka.todaywas.ui.journal.create.STARTER_PROMPT_VARIANT_COUNT
-import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EditJournalEntryViewModelTest {

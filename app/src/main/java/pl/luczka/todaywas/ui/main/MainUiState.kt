@@ -1,11 +1,11 @@
 package pl.luczka.todaywas.ui.main
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.FabActionUiState
-import pl.luczka.todaywas.ui.model.HabitUiState
-import pl.luczka.todaywas.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.FabActionUiState
+import pl.luczka.todaywas.core.ui.model.HabitUiState
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 
 @Immutable
 data class MainUiState(

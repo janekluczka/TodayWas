@@ -26,7 +26,7 @@ import pl.luczka.todaywas.core.domain.usecase.GetFreshLoggableDatesUseCase
 import pl.luczka.todaywas.core.domain.usecase.LogHabitCheckInsUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LogHabitCheckInsViewModelTest {

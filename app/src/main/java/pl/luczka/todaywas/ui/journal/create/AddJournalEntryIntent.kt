@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.ui.journal.create
 
-import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
+import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 
 sealed interface AddJournalEntryIntent {
 

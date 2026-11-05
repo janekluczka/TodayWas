@@ -38,10 +38,11 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.journal.JournalEntryRow
-import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.model.JournalSortUiState
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.journal.JournalEntryRow
+import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.core.ui.model.JournalSortUiState
 
 @Composable
 fun JournalListScreen(
@@ -74,7 +75,7 @@ private fun JournalListScreenContent(
                     DsIconButton(onClick = onBack) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.content_description_back),
+                            contentDescription = stringResource(CoreUiR.string.content_description_back),
                         )
                     }
                 },
@@ -104,7 +105,7 @@ private fun JournalListScreenContent(
                     modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = DsSpacing.space400),
                 ) {
                     DsText(
-                        text = stringResource(R.string.main_journal_empty_state),
+                        text = stringResource(CoreUiR.string.main_journal_empty_state),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

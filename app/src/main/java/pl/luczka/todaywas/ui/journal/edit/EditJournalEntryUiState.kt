@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.ui.journal.edit
 
 import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.ui.journal.create.HelpMeStartUiState
 import pl.luczka.todaywas.ui.journal.create.JournalStarterPromptUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.JournalEntryUiState
 
 @Immutable
 data class EditJournalEntryUiState(

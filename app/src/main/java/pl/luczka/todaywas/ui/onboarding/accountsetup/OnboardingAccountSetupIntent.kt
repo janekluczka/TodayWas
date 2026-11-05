@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.onboarding.accountsetup
 
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 
 sealed interface OnboardingAccountSetupIntent {
 

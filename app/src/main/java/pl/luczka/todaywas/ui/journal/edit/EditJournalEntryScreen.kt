@@ -48,6 +48,11 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.components.textfields.DsPlainTextField
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 import pl.luczka.todaywas.ui.journal.create.HelpMeStartBottomSheet
 import pl.luczka.todaywas.ui.journal.create.JournalStarterPromptTone
 import pl.luczka.todaywas.ui.journal.create.JournalStarterPromptUiState
@@ -55,10 +60,6 @@ import pl.luczka.todaywas.ui.journal.create.MAX_THOUGHTS_LENGTH
 import pl.luczka.todaywas.ui.journal.create.StarterPromptList
 import pl.luczka.todaywas.ui.journal.create.aiAssistErrorMessage
 import pl.luczka.todaywas.ui.journal.create.aiAssistToneLabel
-import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
 @Composable
 fun EditJournalEntryScreen(
@@ -112,7 +113,7 @@ private fun EditJournalEntryScreenContent(
                     DsIconButton(onClick = { onIntent(EditJournalEntryIntent.BackClicked) }) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.content_description_back),
+                            contentDescription = stringResource(CoreUiR.string.content_description_back),
                         )
                     }
                 },

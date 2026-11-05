@@ -2,7 +2,7 @@ package pl.luczka.todaywas.ui.habit.logcheckin
 
 import androidx.compose.runtime.Immutable
 import java.time.LocalDate
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 
 @Immutable
 data class LogHabitCheckInsUiState(

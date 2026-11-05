@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.account
 
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 
 sealed interface AccountIntent {
 

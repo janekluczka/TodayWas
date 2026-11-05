@@ -22,7 +22,7 @@ import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
-import pl.luczka.todaywas.ui.model.JournalSortUiState
+import pl.luczka.todaywas.core.ui.model.JournalSortUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalListViewModelTest {

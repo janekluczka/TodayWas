@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.habit.list
 
-import pl.luczka.todaywas.ui.model.HabitSortUiState
+import pl.luczka.todaywas.core.ui.model.HabitSortUiState
 
 sealed interface HabitListIntent {
 

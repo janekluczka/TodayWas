@@ -1,8 +1,8 @@
 package pl.luczka.todaywas.ui.journal.edit
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
+import pl.luczka.todaywas.core.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 
 // Mirrors ai-proxy's MAX_TEXT_LENGTH (supabase/functions/ai-proxy/index.ts) so the entry point
 // disables locally instead of always failing server-side with a generic invalid_request error.

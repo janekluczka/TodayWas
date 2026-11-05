@@ -5,7 +5,7 @@ import java.time.LocalDate
 import pl.luczka.todaywas.core.domain.model.Habit
 import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
 
 internal fun HabitDetailViewModelState.toUiState(
     freshLoggableDates: List<LocalDate>,

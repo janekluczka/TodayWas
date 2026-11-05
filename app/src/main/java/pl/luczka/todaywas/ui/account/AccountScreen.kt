@@ -35,15 +35,16 @@ import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.auth.SignInFormContent
-import pl.luczka.todaywas.ui.auth.SignInFormUiState
-import pl.luczka.todaywas.ui.auth.SignUpFormContent
-import pl.luczka.todaywas.ui.auth.SignUpFormUiState
-import pl.luczka.todaywas.ui.auth.util.message
-import pl.luczka.todaywas.ui.datasync.DataSyncReviewContent
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.auth.SignInFormContent
+import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.core.ui.auth.SignUpFormContent
+import pl.luczka.todaywas.core.ui.auth.SignUpFormUiState
+import pl.luczka.todaywas.core.ui.auth.util.message
+import pl.luczka.todaywas.core.ui.datasync.DataSyncReviewContent
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
 
 @Composable
 fun AccountScreen(
@@ -92,7 +93,7 @@ private fun AccountScreenContent(
                     DsIconButton(onClick = { onIntent(AccountIntent.BackClicked) }) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.content_description_back),
+                            contentDescription = stringResource(CoreUiR.string.content_description_back),
                         )
                     }
                 },
@@ -189,7 +190,7 @@ private fun SignedInContent(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        DsText(text = email ?: stringResource(R.string.preferences_signed_in_no_email))
+        DsText(text = email ?: stringResource(CoreUiR.string.preferences_signed_in_no_email))
         if (!hasSyncedLocalData) {
             DsButton(
                 text = stringResource(R.string.account_sync_local_data_cta),
@@ -197,7 +198,7 @@ private fun SignedInContent(
             )
         }
         DsButtonWithLoading(
-            text = stringResource(R.string.preferences_sign_out_cta),
+            text = stringResource(CoreUiR.string.preferences_sign_out_cta),
             onClick = onSignOutClick,
             loading = isSigningOut,
         )

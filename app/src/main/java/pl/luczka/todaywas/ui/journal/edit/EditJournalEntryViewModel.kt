@@ -22,16 +22,16 @@ import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
+import pl.luczka.todaywas.core.ui.mapper.toDomain
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 import pl.luczka.todaywas.ui.journal.create.HelpMeStartStep
 import pl.luczka.todaywas.ui.journal.create.HelpMeStartUiState
 import pl.luczka.todaywas.ui.journal.create.JournalStarterPromptTone
 import pl.luczka.todaywas.ui.journal.create.JournalStarterPromptUiState
 import pl.luczka.todaywas.ui.journal.create.STARTER_PROMPT_VARIANT_COUNT
-import pl.luczka.todaywas.ui.mapper.toDomain
-import pl.luczka.todaywas.ui.mapper.toUiState
-import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
 @HiltViewModel(assistedFactory = EditJournalEntryViewModel.Factory::class)
 class EditJournalEntryViewModel @AssistedInject constructor(

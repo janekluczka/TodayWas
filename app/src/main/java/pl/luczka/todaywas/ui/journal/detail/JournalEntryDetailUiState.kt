@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.ui.journal.detail
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 
 @Immutable
 data class JournalEntryDetailUiState(

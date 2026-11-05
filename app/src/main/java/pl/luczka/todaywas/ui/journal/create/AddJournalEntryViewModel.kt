@@ -18,15 +18,15 @@ import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseC
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
+import pl.luczka.todaywas.core.ui.mapper.toDomain
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineStep
 import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineUiState
 import pl.luczka.todaywas.ui.journal.edit.MAX_REFINE_TEXT_LENGTH
-import pl.luczka.todaywas.ui.mapper.toDomain
-import pl.luczka.todaywas.ui.mapper.toUiState
-import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
 @HiltViewModel
 class AddJournalEntryViewModel @Inject constructor(

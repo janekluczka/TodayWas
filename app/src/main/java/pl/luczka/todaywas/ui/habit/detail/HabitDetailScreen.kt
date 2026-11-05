@@ -49,8 +49,9 @@ import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 
 @Composable
 fun HabitDetailScreen(
@@ -112,7 +113,7 @@ private fun HabitDetailScreenContent(
                     DsIconButton(onClick = onBack) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.content_description_back),
+                            contentDescription = stringResource(CoreUiR.string.content_description_back),
                         )
                     }
                 },

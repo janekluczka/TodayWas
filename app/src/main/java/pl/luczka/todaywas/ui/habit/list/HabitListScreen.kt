@@ -33,11 +33,12 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.habit.HabitRow
-import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
-import pl.luczka.todaywas.ui.model.HabitSortUiState
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import pl.luczka.todaywas.ui.model.HabitUiState
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.habit.HabitRow
+import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.core.ui.model.HabitSortUiState
+import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.core.ui.model.HabitUiState
 
 @Composable
 fun HabitListScreen(
@@ -70,7 +71,7 @@ private fun HabitListScreenContent(
                     DsIconButton(onClick = onBack) {
                         DsIcon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.content_description_back),
+                            contentDescription = stringResource(CoreUiR.string.content_description_back),
                         )
                     }
                 },
@@ -90,7 +91,7 @@ private fun HabitListScreenContent(
                     modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = DsSpacing.space400),
                 ) {
                     DsText(
-                        text = stringResource(R.string.main_habit_empty_state),
+                        text = stringResource(CoreUiR.string.main_habit_empty_state),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

@@ -24,6 +24,7 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.core.ui.R as CoreUiR
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
 
 @Composable
@@ -88,7 +89,7 @@ private fun allSetMessage(
     AllSetReason.NO_ACCOUNT -> stringResource(R.string.onboarding_all_set_no_account_message)
     AllSetReason.SIGNED_IN -> stringResource(
         R.string.onboarding_all_set_signed_in_format,
-        email ?: stringResource(R.string.preferences_signed_in_no_email),
+        email ?: stringResource(CoreUiR.string.preferences_signed_in_no_email),
     )
     AllSetReason.ACCOUNT_CREATED -> stringResource(R.string.onboarding_all_set_account_created_message)
 }

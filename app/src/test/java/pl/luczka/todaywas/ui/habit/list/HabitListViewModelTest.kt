@@ -23,7 +23,7 @@ import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
-import pl.luczka.todaywas.ui.model.HabitSortUiState
+import pl.luczka.todaywas.core.ui.model.HabitSortUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HabitListViewModelTest {

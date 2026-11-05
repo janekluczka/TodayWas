@@ -32,11 +32,11 @@ import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAiAssistRepository
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+import pl.luczka.todaywas.core.ui.model.AiAssistErrorUiState
+import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.core.ui.model.JournalPromptToneUiState
 import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineStep
 import pl.luczka.todaywas.ui.journal.edit.MAX_REFINE_TEXT_LENGTH
-import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
-import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
-import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddJournalEntryViewModelTest {

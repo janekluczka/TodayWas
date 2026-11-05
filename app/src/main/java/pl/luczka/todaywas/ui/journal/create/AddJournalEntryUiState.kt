@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.ui.journal.create
 
 import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
 import pl.luczka.todaywas.ui.journal.edit.HelpMeRefineUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.JournalDateSlotUiState
 
 @Immutable
 data class AddJournalEntryUiState(

@@ -53,16 +53,17 @@ import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.auth.util.message
-import pl.luczka.todaywas.ui.habit.HabitRow
-import pl.luczka.todaywas.ui.journal.JournalEntryRow
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
-import pl.luczka.todaywas.ui.model.FabActionUiState
-import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
-import pl.luczka.todaywas.ui.model.HabitTypeUiState
-import pl.luczka.todaywas.ui.model.HabitUiState
-import pl.luczka.todaywas.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.auth.util.message
+import pl.luczka.todaywas.core.ui.habit.HabitRow
+import pl.luczka.todaywas.core.ui.journal.JournalEntryRow
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.FabActionUiState
+import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.core.ui.model.HabitUiState
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 
 // Each section shows at most this many items on Main before falling back to a "View all" row.
 private const val MAIN_SECTION_CAP = 5
@@ -220,12 +221,12 @@ private fun MainEmptyState(
             modifier = Modifier.padding(top = DsSpacing.space400),
         )
         DsButton(
-            text = stringResource(R.string.main_fab_add_journal),
+            text = stringResource(CoreUiR.string.main_fab_add_journal),
             onClick = navigation.onAddEntry,
             modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
         )
         DsButton(
-            text = stringResource(R.string.main_fab_create_habit),
+            text = stringResource(CoreUiR.string.main_fab_create_habit),
             onClick = navigation.onCreateHabit,
             modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
         )
@@ -249,13 +250,13 @@ private fun AccountBottomSheet(
                     rows = listOf(
                         {
                             DsListItem(
-                                text = authState.email ?: stringResource(R.string.preferences_signed_in_no_email),
+                                text = authState.email ?: stringResource(CoreUiR.string.preferences_signed_in_no_email),
                                 leadingIcon = Icons.Default.Person,
                             )
                         },
                         {
                             DsListItem(
-                                text = stringResource(R.string.preferences_sign_out_cta),
+                                text = stringResource(CoreUiR.string.preferences_sign_out_cta),
                                 leadingIcon = Icons.AutoMirrored.Filled.Logout,
                                 trailingContent = if (uiState.isSigningOut) {
                                     { DsLoadingIndicator(modifier = Modifier.size(20.dp)) }
@@ -279,7 +280,7 @@ private fun AccountBottomSheet(
                     rows = listOf(
                         {
                             DsListItem(
-                                text = stringResource(R.string.onboarding_account_signin_signup_cta),
+                                text = stringResource(CoreUiR.string.onboarding_account_signin_signup_cta),
                                 leadingIcon = Icons.Default.Person,
                                 onClick = {
                                     onIntent(MainIntent.SignInSignUpPromptClicked)
@@ -439,7 +440,7 @@ private fun JournalSection(
 
 @Composable
 private fun JournalEmptyContent() {
-    EmptySectionContent(text = stringResource(R.string.main_journal_empty_state))
+    EmptySectionContent(text = stringResource(CoreUiR.string.main_journal_empty_state))
 }
 
 @Composable
@@ -491,7 +492,7 @@ private fun HabitSection(
 
 @Composable
 private fun HabitEmptyContent() {
-    EmptySectionContent(text = stringResource(R.string.main_habit_empty_state))
+    EmptySectionContent(text = stringResource(CoreUiR.string.main_habit_empty_state))
 }
 
 // Shared by both sections' empty state: no CTA (the FAB already covers that action), just a muted, centered message

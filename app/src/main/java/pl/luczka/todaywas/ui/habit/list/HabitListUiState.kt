@@ -1,8 +1,8 @@
 package pl.luczka.todaywas.ui.habit.list
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.model.HabitSortUiState
-import pl.luczka.todaywas.ui.model.HabitUiState
+import pl.luczka.todaywas.core.ui.model.HabitSortUiState
+import pl.luczka.todaywas.core.ui.model.HabitUiState
 
 @Immutable
 data class HabitListUiState(

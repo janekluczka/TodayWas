@@ -21,21 +21,21 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import pl.luczka.todaywas.R
 import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
-import pl.luczka.todaywas.ui.auth.SignInFormContent
-import pl.luczka.todaywas.ui.auth.SignInFormUiState
-import pl.luczka.todaywas.ui.auth.SignUpFormContent
-import pl.luczka.todaywas.ui.auth.SignUpFormUiState
-import pl.luczka.todaywas.ui.auth.util.message
-import pl.luczka.todaywas.ui.datasync.DataSyncReviewContent
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
-import pl.luczka.todaywas.ui.model.LocalDataSummaryUi
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.auth.SignInFormContent
+import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.core.ui.auth.SignUpFormContent
+import pl.luczka.todaywas.core.ui.auth.SignUpFormUiState
+import pl.luczka.todaywas.core.ui.auth.util.message
+import pl.luczka.todaywas.core.ui.datasync.DataSyncReviewContent
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
 
@@ -143,7 +143,7 @@ private fun OnboardingAccountSetupScreenContent(
                 ) {
                     DsIcon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.content_description_back),
+                        contentDescription = stringResource(CoreUiR.string.content_description_back),
                     )
                 }
             }

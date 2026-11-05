@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.journal.list
 
-import pl.luczka.todaywas.ui.model.JournalSortUiState
+import pl.luczka.todaywas.core.ui.model.JournalSortUiState
 
 sealed interface JournalListIntent {
 

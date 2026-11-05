@@ -1,9 +1,9 @@
 package pl.luczka.todaywas.ui.journal.list
 
 import androidx.compose.runtime.Immutable
-import pl.luczka.todaywas.ui.model.ContributionGridUiState
-import pl.luczka.todaywas.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.ui.model.JournalSortUiState
+import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.core.ui.model.JournalSortUiState
 
 @Immutable
 data class JournalListUiState(

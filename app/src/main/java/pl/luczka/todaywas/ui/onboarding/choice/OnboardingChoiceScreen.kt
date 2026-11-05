@@ -25,6 +25,7 @@ import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.core.ui.R as CoreUiR
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
 
 @Composable
@@ -85,7 +86,7 @@ private fun OnboardingChoiceScreenContent(
                 modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
             )
             DsTextButton(
-                text = stringResource(R.string.onboarding_account_signin_signup_cta),
+                text = stringResource(CoreUiR.string.onboarding_account_signin_signup_cta),
                 onClick = onSignInSignUpClick,
                 enabled = !uiState.isSaving,
                 modifier = Modifier.padding(top = DsSpacing.space200),

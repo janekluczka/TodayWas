@@ -21,13 +21,13 @@ import pl.luczka.todaywas.core.domain.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.core.domain.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.core.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
-import pl.luczka.todaywas.ui.auth.SignInFormUiState
-import pl.luczka.todaywas.ui.auth.SignUpFormUiState
-import pl.luczka.todaywas.ui.auth.util.isValidEmail
-import pl.luczka.todaywas.ui.auth.util.isValidPassword
-import pl.luczka.todaywas.ui.auth.util.isValidRepeatPassword
-import pl.luczka.todaywas.ui.mapper.toUiState
-import pl.luczka.todaywas.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.core.ui.auth.SignUpFormUiState
+import pl.luczka.todaywas.core.ui.auth.util.isValidEmail
+import pl.luczka.todaywas.core.ui.auth.util.isValidPassword
+import pl.luczka.todaywas.core.ui.auth.util.isValidRepeatPassword
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.ui.onboarding.AccountSubStep
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
 

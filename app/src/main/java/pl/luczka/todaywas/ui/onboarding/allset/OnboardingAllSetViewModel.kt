@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
-import pl.luczka.todaywas.ui.mapper.toUiState
-import pl.luczka.todaywas.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.ui.onboarding.AllSetReason
 
 private const val AUTO_ADVANCE_DELAY_MS = 5_000L
