@@ -13,7 +13,7 @@ import pl.luczka.todaywas.data.local.dao.HabitDao
 import pl.luczka.todaywas.data.local.dao.JournalEntryDao
 import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
 import pl.luczka.todaywas.data.local.database.TodayWasDatabase
-import pl.luczka.todaywas.data.local.database.todayWasDatabaseCallbacks
+import pl.luczka.todaywas.data.local.database.withTodayWasSchemaHistory
 import pl.luczka.todaywas.data.util.RoomTransactionRunner
 import pl.luczka.todaywas.data.util.TransactionRunner
 
@@ -25,8 +25,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): TodayWasDatabase = Room
         .databaseBuilder(context, TodayWasDatabase::class.java, "todaywas.db")
-        .fallbackToDestructiveMigration(dropAllTables = true)
-        .addCallback(todayWasDatabaseCallbacks())
+        .withTodayWasSchemaHistory()
         .build()
 
     @Provides

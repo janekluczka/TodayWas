@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.androidx.room)
 }
 
 val localProperties = Properties().apply {
@@ -65,6 +66,17 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    sourceSets {
+        // MigrationTestHelper reads exported schemas from assets. The migration tests run as
+        // Robolectric unit tests (so CI covers them), which only see the tested variant's merged
+        // assets — not the test source set's — so the schemas ship in debug builds only.
+        getByName("debug").assets.directories.add("$projectDir/schemas")
+    }
+}
+
+room {
+    // Exported schemas are the migration history: commit every new <version>.json.
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -105,6 +117,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.androidx.room.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
