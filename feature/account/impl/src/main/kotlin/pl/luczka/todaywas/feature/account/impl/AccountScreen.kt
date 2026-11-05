@@ -44,7 +44,6 @@ import pl.luczka.todaywas.core.ui.datasync.DataSyncReviewContent
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
-import pl.luczka.todaywas.feature.account.impl.R
 
 @Composable
 fun AccountScreen(

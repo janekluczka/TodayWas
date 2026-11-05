@@ -62,7 +62,6 @@ import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.core.ui.model.HabitUiState
 import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
-import pl.luczka.todaywas.feature.main.impl.R
 
 // Each section shows at most this many items on Main before falling back to a "View all" row.
 private const val MAIN_SECTION_CAP = 5
