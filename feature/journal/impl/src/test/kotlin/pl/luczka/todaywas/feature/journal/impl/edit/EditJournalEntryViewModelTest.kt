@@ -8,6 +8,8 @@ import java.time.ZoneId
 import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -28,9 +30,9 @@ import pl.luczka.todaywas.core.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.repository.AiAssistRepository
 import pl.luczka.todaywas.core.domain.repository.AuthRepository
-import pl.luczka.todaywas.core.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
@@ -53,7 +55,14 @@ class EditJournalEntryViewModelTest {
         updatedAt = createdAt,
     )
 
-    private fun viewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: EditJournalEntryViewModel) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
+
+    private fun TestScope.viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
         clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneId.systemDefault()),
         authRepository: AuthRepository = FakeAuthRepository(
@@ -67,14 +76,14 @@ class EditJournalEntryViewModelTest {
         id: String = "1",
     ) = EditJournalEntryViewModel(
         id = id,
-        getJournalEntry = GetJournalEntryUseCase(repository),
-        updateJournalEntry = UpdateJournalEntryUseCase(repository, clock),
+        observeJournalEntry = ObserveJournalEntryUseCase(repository),
         observeAuthState = ObserveAuthStateUseCase(authRepository),
+        updateJournalEntry = UpdateJournalEntryUseCase(repository, clock),
         requestJournalStarterPrompt = RequestJournalStarterPromptUseCase(aiAssistRepository),
         requestJournalRefinementPrompt = RequestJournalRefinementPromptUseCase(aiAssistRepository),
         isEditable = IsEditableUseCase(clock),
         random = random,
-    )
+    ).also { collectUiState(it) }
 
     private class MutableClock(
         private var current: Instant,
@@ -101,7 +110,7 @@ class EditJournalEntryViewModelTest {
     }
 
     @Test
-    fun `should load the entry and prefill text when constructed`() =
+    fun `should show the entry and prefill text when observed`() =
         runTest {
             // Arrange & Act
             val viewModel = viewModel()
@@ -115,6 +124,21 @@ class EditJournalEntryViewModelTest {
                 viewModel.uiState.value.entry
                     ?.id,
             )
+        }
+
+    @Test
+    fun `should keep the typed text when the observed entry changes`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+            val viewModel = viewModel(repository)
+            viewModel.onIntent(EditJournalEntryIntent.TextChanged("Typed text."))
+
+            // Act
+            repository.entriesFlow.value = listOf(entry.copy(updatedAt = createdAt.plusSeconds(1)))
+
+            // Assert
+            assertEquals("Typed text.", viewModel.uiState.value.text)
         }
 
     @Test
