@@ -22,18 +22,31 @@ decisions.
 
 ## Project Structure
 
-Multi-module Gradle project:
+Multi-module Gradle project, split the house-style way (`android-guidelines` →
+`house-style.md`, "Modules"). Each module's package and namespace is
+`pl.luczka.todaywas.<module path>`:
 
-- `:app` — the application, package `pl.luczka.todaywas`.
-- `:core:designsystem` — `Ds*` Material3 wrappers and `DsTheme`, package
-  `pl.luczka.todaywas.core.designsystem`; never depends on `:app`.
-- `:ktlint-rules` (custom ktlint rules) and `:architecture-tests` (Konsist house-style tests) —
-  plain JVM modules synced from agent-toolkit by the `android-quality-setup` skill. Never edit
-  them here; change them in agent-toolkit and re-sync.
+- `:app` — `Application`, `MainActivity`, the root `NavDisplay` (assembles every feature's
+  `xxxEntries(navigator)`) and `RootViewModel`; package `pl.luczka.todaywas`.
+- `:feature:<name>:api` / `:feature:<name>:impl` for `account`, `habit`, `journal`, `main`,
+  `onboarding` — `api` holds only the `NavKey`s and `Navigator.navigateToXxx()` functions; `impl`
+  holds the screens, ViewModels, the feature's strings and its entry builder. A feature reaches
+  another only through that one's `api`.
+- `:core:domain` — domain models, repository interfaces, use cases, business rules.
+- `:core:data` — repository implementations, mappers, sync; `:core:database` — Room entities,
+  DAOs, the database, migrations and the exported schemas (`core/database/schemas/`);
+  `:core:network` — Supabase client, DTOs, remote data sources.
+- `:core:ui` — UI models, mappers and composables shared by more than one feature, plus their
+  strings (referenced from features as `CoreUiR`); `:core:navigation` — the `Navigator`;
+  `:core:testing` — shared repository fakes.
+- `:core:designsystem` — `Ds*` Material3 wrappers and `DsTheme`; depends on no other module.
+- `build-logic/` (convention plugins), `:ktlint-rules` (custom ktlint rules) and
+  `:architecture-tests` (Konsist house-style tests) — synced from agent-toolkit by the
+  `android-quality-setup` skill. Never edit them here; change them in agent-toolkit and re-sync.
 
 Other locations:
 
-- Tests: `app/src/test/` (JUnit4 unit), `app/src/androidTest/` (instrumented).
+- Tests: `<module>/src/test/` (JUnit4 unit), `app/src/androidTest/` (instrumented).
 - `context/foundation/` — PRD, tech-stack, roadmap, lessons.md (see "Working in this repo" below).
 - `context/changes/<change-id>/` — in-flight change docs; archived to `context/archive/` when done.
 
@@ -63,8 +76,9 @@ new dependencies there, not as inline version strings.
 
 ## Testing Guidelines
 
-JUnit4 for local unit tests in `app/src/test/java/pl/luczka/todaywas/`; AndroidX Test + Espresso for
-instrumented tests in `app/src/androidTest/`. No coverage threshold is enforced yet.
+JUnit4 for local unit tests in each module's `src/test/kotlin/`, next to the code they cover;
+AndroidX Test + Espresso for instrumented tests in `app/src/androidTest/`. No coverage threshold is
+enforced yet.
 
 ## Build, Test, and Development Commands
 

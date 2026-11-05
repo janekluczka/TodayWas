@@ -27,8 +27,8 @@ Tests follow three non-negotiable principles for this project:
    research disagree about where the failure lives, research is the
    ground truth.
 
-Hot-spot scope used for likelihood weighting: `app/src/main/java`,
-`core/designsystem/src/main/java`, `supabase/functions/ai-proxy`.
+Hot-spot scope used for likelihood weighting: `app/src/main`, `core/*/src/main`, `feature/*/*/src/main`,
+`supabase/functions/ai-proxy`.
 
 ## 2. Risk Map
 
@@ -113,35 +113,35 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a unit test (ViewModel / use case / domain util)
 
-- **Location**: `app/src/test/java/pl/luczka/todaywas/<mirrors main package>/`.
+- **Location**: `<module>/src/test/kotlin/pl/luczka/todaywas/<mirrors main package>/` (use cases in `core/domain`, ViewModels in their `feature/<name>/impl`).
 - **Naming**: `<ClassUnderTest>Test.kt`, test methods backtick-quoted
   `` `should [outcome] when [scenario]` ``, bodies structured as
   Arrange/Act/Assert (see `context/foundation/lessons.md`).
-- **Reference test**: `app/src/test/java/pl/luczka/todaywas/domain/util/EditWindowTest.kt`.
+- **Reference test**: `core/domain/src/test/kotlin/pl/luczka/todaywas/core/domain/util/EditWindowTest.kt`.
 - **Run locally**: `./gradlew.bat testDebugUnitTest`.
 
 ### 6.2 Adding a local DB integration test (Room DAO)
 
-- **Location**: `app/src/test/java/pl/luczka/todaywas/data/local/dao/`.
+- **Location**: `core/database/src/test/kotlin/pl/luczka/todaywas/core/database/dao/`.
 - **Approach**: in-memory Room database via Robolectric, not a mocked DAO.
-- **Reference test**: `app/src/test/java/pl/luczka/todaywas/data/local/dao/HabitCheckInDaoTest.kt`.
+- **Reference test**: `core/database/src/test/kotlin/pl/luczka/todaywas/core/database/dao/HabitCheckInDaoTest.kt`.
 - **Run locally**: `./gradlew.bat testDebugUnitTest`.
 
 ### 6.3 Adding a sync/merge test
 
 - **Pure decision-function test** (no DB): construct `SyncMeta` fixtures directly and assert on
   `mergeForSync()`'s `pushIds`/`applyIds`. **Reference test**:
-  `app/src/test/java/pl/luczka/todaywas/data/util/SyncMergeTest.kt`.
+  `core/data/src/test/kotlin/pl/luczka/todaywas/core/data/util/SyncMergeTest.kt`.
 - **End-to-end chain test** (real DAO → real mapper → real merge decision, for a specific
   entity-level behavior like soft-delete push-eligibility): build a real Robolectric Room DB
   (same builder as 6.2), perform the write, read back, map via the entity's real `toSyncMeta()`,
   then call the real `mergeForSync()` — don't hand-build `SyncMeta` for this style, the point is
   proving the whole chain, not the decision function in isolation. **Reference test**:
-  `app/src/test/java/pl/luczka/todaywas/data/util/SyncMergeIntegrationTest.kt`.
+  `core/data/src/test/kotlin/pl/luczka/todaywas/core/data/util/SyncMergeIntegrationTest.kt`.
 - **ViewModel-level sync failure/success handling** (e.g. account-creation upload): use the
   existing `Fake*Repository`'s `syncWithRemoteResult` field to inject success/failure, assert on
   emitted `UiEvent`s and resulting `UiState`. **Reference test**:
-  `app/src/test/java/pl/luczka/todaywas/ui/account/AccountViewModelTest.kt`.
+  `feature/account/impl/src/test/kotlin/pl/luczka/todaywas/feature/account/impl/AccountViewModelTest.kt`.
 - **Run locally**: `./gradlew.bat testDebugUnitTest`.
 
 ### 6.4 Adding an RLS ownership test
