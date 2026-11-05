@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":feature:account:api"))
     implementation(project(":feature:account:impl"))
     implementation(project(":feature:habit:api"))
+    implementation(project(":feature:habit:impl"))
     implementation(project(":feature:journal:api"))
     implementation(project(":feature:main:api"))
     implementation(project(":feature:onboarding:api"))

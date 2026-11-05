@@ -14,14 +14,11 @@ import androidx.navigation3.ui.NavDisplay
 import pl.luczka.todaywas.core.navigation.Navigator
 import pl.luczka.todaywas.feature.account.api.navigation.navigateToAccount
 import pl.luczka.todaywas.feature.account.impl.navigation.accountEntries
-import pl.luczka.todaywas.feature.habit.api.navigation.CreateHabitKey
-import pl.luczka.todaywas.feature.habit.api.navigation.HabitDetailKey
-import pl.luczka.todaywas.feature.habit.api.navigation.HabitListKey
-import pl.luczka.todaywas.feature.habit.api.navigation.LogHabitCheckInsKey
 import pl.luczka.todaywas.feature.habit.api.navigation.navigateToCreateHabit
 import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitDetail
 import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitList
 import pl.luczka.todaywas.feature.habit.api.navigation.navigateToLogHabitCheckIns
+import pl.luczka.todaywas.feature.habit.impl.navigation.habitEntries
 import pl.luczka.todaywas.feature.journal.api.navigation.AddJournalEntryKey
 import pl.luczka.todaywas.feature.journal.api.navigation.EditJournalEntryKey
 import pl.luczka.todaywas.feature.journal.api.navigation.JournalEntryDetailKey
@@ -36,10 +33,6 @@ import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAccountSet
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAllSetKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingChoiceKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingWelcomeKey
-import pl.luczka.todaywas.ui.habit.create.CreateHabitScreen
-import pl.luczka.todaywas.ui.habit.detail.HabitDetailScreen
-import pl.luczka.todaywas.ui.habit.list.HabitListScreen
-import pl.luczka.todaywas.ui.habit.logcheckin.LogHabitCheckInsScreen
 import pl.luczka.todaywas.ui.journal.create.AddJournalEntryScreen
 import pl.luczka.todaywas.ui.journal.detail.JournalEntryDetailScreen
 import pl.luczka.todaywas.ui.journal.edit.EditJournalEntryScreen
@@ -111,16 +104,11 @@ private fun TodayWasNavDisplay(initialDestination: NavKey) {
                 )
             }
             accountEntries(navigator)
+            habitEntries(navigator)
             entry<JournalListKey> {
                 JournalListScreen(
                     onBack = navigator::goBack,
                     onEntryClick = navigator::navigateToJournalEntryDetail,
-                )
-            }
-            entry<HabitListKey> {
-                HabitListScreen(
-                    onBack = navigator::goBack,
-                    onHabitClick = navigator::navigateToHabitDetail,
                 )
             }
             entry<AddJournalEntryKey> {
@@ -143,24 +131,6 @@ private fun TodayWasNavDisplay(initialDestination: NavKey) {
                     onSaveComplete = navigator::goBack,
                     onDiscardComplete = navigator::goBack,
                     onNavigateToSignIn = navigator::navigateToAccount,
-                )
-            }
-            entry<CreateHabitKey> {
-                CreateHabitScreen(
-                    onSaveComplete = navigator::goBack,
-                    onCancel = navigator::goBack,
-                )
-            }
-            entry<LogHabitCheckInsKey> {
-                LogHabitCheckInsScreen(
-                    onSaveComplete = navigator::goBack,
-                    onCancel = navigator::goBack,
-                )
-            }
-            entry<HabitDetailKey> { key ->
-                HabitDetailScreen(
-                    habitId = key.habitId,
-                    onBack = navigator::goBack,
                 )
             }
         },
