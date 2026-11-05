@@ -24,16 +24,8 @@ import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalEntryD
 import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalList
 import pl.luczka.todaywas.feature.journal.impl.navigation.journalEntries
 import pl.luczka.todaywas.feature.main.api.navigation.MainKey
-import pl.luczka.todaywas.feature.main.api.navigation.replaceAllWithMain
-import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAccountSetupKey
-import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAllSetKey
-import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingChoiceKey
-import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingWelcomeKey
+import pl.luczka.todaywas.feature.onboarding.impl.navigation.onboardingEntries
 import pl.luczka.todaywas.ui.main.MainScreen
-import pl.luczka.todaywas.ui.onboarding.accountsetup.OnboardingAccountSetupScreen
-import pl.luczka.todaywas.ui.onboarding.allset.OnboardingAllSetScreen
-import pl.luczka.todaywas.ui.onboarding.choice.OnboardingChoiceScreen
-import pl.luczka.todaywas.ui.onboarding.welcome.OnboardingWelcomeScreen
 
 @Composable
 fun TodayWasApp(viewModel: RootViewModel = hiltViewModel()) {
@@ -58,31 +50,7 @@ private fun TodayWasNavDisplay(initialDestination: NavKey) {
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            entry<OnboardingWelcomeKey> {
-                OnboardingWelcomeScreen(
-                    // Welcome is a one-way intro — replace it so back from Choice exits the
-                    // app instead of returning here.
-                    onGetStartedClick = { navigator.replaceAll(OnboardingChoiceKey) },
-                )
-            }
-            entry<OnboardingChoiceKey> {
-                OnboardingChoiceScreen(
-                    onNavigateToAccountSetup = { navigator.navigate(OnboardingAccountSetupKey) },
-                    onFinish = { reason -> navigator.replaceAll(OnboardingAllSetKey(reason)) },
-                )
-            }
-            entry<OnboardingAccountSetupKey> {
-                OnboardingAccountSetupScreen(
-                    onBack = navigator::goBack,
-                    onFinish = { reason -> navigator.replaceAll(OnboardingAllSetKey(reason)) },
-                )
-            }
-            entry<OnboardingAllSetKey> { key ->
-                OnboardingAllSetScreen(
-                    reason = key.reason,
-                    onFinish = navigator::replaceAllWithMain,
-                )
-            }
+            onboardingEntries(navigator)
             entry<MainKey> {
                 MainScreen(
                     onAddEntryClick = navigator::navigateToAddJournalEntry,

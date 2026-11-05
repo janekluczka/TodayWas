@@ -39,6 +39,7 @@ dependencies {
     implementation(project(":feature:journal:impl"))
     implementation(project(":feature:main:api"))
     implementation(project(":feature:onboarding:api"))
+    implementation(project(":feature:onboarding:impl"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.core)
