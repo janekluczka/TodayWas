@@ -7,7 +7,11 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -20,14 +24,16 @@ import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.usecase.DeleteJournalEntryUseCase
-import pl.luczka.todaywas.core.domain.usecase.GetJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
+import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalEntryDetailViewModelTest {
 
     private val createdAt = Instant.parse("2026-08-01T00:00:00Z")
+    private val withinWindowClock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneId.systemDefault())
     private val entry = JournalEntry(
         id = "1",
         date = LocalDate.of(2026, 8, 1),
@@ -38,14 +44,20 @@ class JournalEntryDetailViewModelTest {
 
     private fun viewModel(
         repository: FakeJournalRepository = FakeJournalRepository(initialEntries = listOf(entry)),
-        clock: Clock = Clock.fixed(createdAt.plus(Duration.ofHours(1)), ZoneId.systemDefault()),
+        clock: Clock = withinWindowClock,
         id: String = "1",
     ) = JournalEntryDetailViewModel(
         id = id,
-        getJournalEntry = GetJournalEntryUseCase(repository),
+        observeJournalEntry = ObserveJournalEntryUseCase(repository),
         deleteJournalEntry = DeleteJournalEntryUseCase(repository),
         isEditable = IsEditableUseCase(clock),
     )
+
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: JournalEntryDetailViewModel): Job =
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
 
     @Before
     fun setUp() {
@@ -58,14 +70,13 @@ class JournalEntryDetailViewModelTest {
     }
 
     @Test
-    fun `should load the entry and populate isEditable when ScreenEntered is dispatched within the window`() =
+    fun `should show the entry and isEditable when observed within the window`() =
         runTest {
             // Arrange
             val viewModel = viewModel()
 
             // Act
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            collectUiState(viewModel)
 
             // Assert
             assertFalse(viewModel.uiState.value.isLoading)
@@ -78,46 +89,77 @@ class JournalEntryDetailViewModelTest {
         }
 
     @Test
-    fun `should derive isEditable false when ScreenEntered is dispatched past the 24h window`() =
+    fun `should derive isEditable false when observed past the 24h window`() =
         runTest {
             // Arrange
             val expiredClock = Clock.fixed(createdAt.plus(Duration.ofHours(25)), ZoneId.systemDefault())
             val viewModel = viewModel(clock = expiredClock)
 
             // Act
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            collectUiState(viewModel)
 
             // Assert
             assertFalse(viewModel.uiState.value.isEditable)
         }
 
     @Test
-    fun `should refetch the entry when ScreenEntered is dispatched again, fixing the stale-entry-after-edit bug`() =
+    fun `should stay loading when the entry does not exist`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(id = "missing")
+
+            // Act
+            collectUiState(viewModel)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.isLoading)
+        }
+
+    @Test
+    fun `should show the saved text when returning from Edit after a save`() =
         runTest {
             // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            val detailCollector = collectUiState(viewModel)
             assertEquals(
                 "Original text.",
                 viewModel.uiState.value.entry
                     ?.text,
             )
-            // Simulate Edit having saved a change through the repository directly, the same way
-            // the real Edit screen and this Detail ViewModel are now two separate ViewModel
-            // instances sharing the same underlying repository.
-            repository.entriesFlow.value = listOf(entry.copy(text = "Edited elsewhere."))
+            // Navigating to Edit takes Detail out of composition: the ViewModel is retained, its
+            // state stops being collected, and the upstream stops after the 5s grace period.
+            detailCollector.cancel()
+            UpdateJournalEntryUseCase(repository, withinWindowClock)("1", "Saved in Edit.")
+            advanceTimeBy(10_000)
 
-            // Act -- this is what the screen dispatches every time it (re)enters composition,
-            // including every return from Edit.
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            // Act
+            collectUiState(viewModel)
 
             // Assert
             assertEquals(
-                "Edited elsewhere.",
+                "Saved in Edit.",
+                viewModel.uiState.value.entry
+                    ?.text,
+            )
+        }
+
+    @Test
+    fun `should show the saved text when Edit saves within the 5s grace period`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+            val viewModel = viewModel(repository)
+            val detailCollector = collectUiState(viewModel)
+            detailCollector.cancel()
+
+            // Act
+            UpdateJournalEntryUseCase(repository, withinWindowClock)("1", "Saved in Edit.")
+            collectUiState(viewModel)
+
+            // Assert
+            assertEquals(
+                "Saved in Edit.",
                 viewModel.uiState.value.entry
                     ?.text,
             )
@@ -128,6 +170,7 @@ class JournalEntryDetailViewModelTest {
         runTest {
             // Arrange
             val viewModel = viewModel()
+            collectUiState(viewModel)
 
             // Act
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
@@ -141,6 +184,7 @@ class JournalEntryDetailViewModelTest {
         runTest {
             // Arrange
             val viewModel = viewModel()
+            collectUiState(viewModel)
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
 
             // Act
@@ -156,8 +200,7 @@ class JournalEntryDetailViewModelTest {
             // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            collectUiState(viewModel)
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
 
             // Act
@@ -176,8 +219,7 @@ class JournalEntryDetailViewModelTest {
             // Arrange
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            collectUiState(viewModel)
             viewModel.onIntent(JournalEntryDetailIntent.DeleteConfirmed)
             runCurrent()
 
@@ -198,8 +240,7 @@ class JournalEntryDetailViewModelTest {
                 repository,
                 clock = expiredClock,
             )
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            collectUiState(viewModel)
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
 
             // Act
@@ -217,8 +258,7 @@ class JournalEntryDetailViewModelTest {
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             repository.deleteEntryResult = Result.failure(RuntimeException("delete failed"))
             val viewModel = viewModel(repository)
-            viewModel.onIntent(JournalEntryDetailIntent.ScreenEntered)
-            runCurrent()
+            collectUiState(viewModel)
             viewModel.onIntent(JournalEntryDetailIntent.DeleteClicked)
 
             // Act

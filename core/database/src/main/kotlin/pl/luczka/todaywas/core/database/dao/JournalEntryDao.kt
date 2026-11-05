@@ -23,6 +23,9 @@ interface JournalEntryDao {
     suspend fun getAllIncludingDeleted(): List<JournalEntryEntity>
 
     @Query("SELECT * FROM journal_entries WHERE id = :id AND deletedAt IS NULL")
+    fun observeById(id: String): Flow<JournalEntryEntity?>
+
+    @Query("SELECT * FROM journal_entries WHERE id = :id AND deletedAt IS NULL")
     suspend fun getById(id: String): JournalEntryEntity?
 
     @Insert

@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import pl.luczka.todaywas.core.data.mapper.toDomain
@@ -35,6 +36,8 @@ class JournalRepositoryImpl @Inject constructor(
     private val syncMutex = Mutex()
 
     override fun observeEntries(): Flow<List<JournalEntry>> = local.observeEntries().toDomain()
+
+    override fun observeEntry(id: String): Flow<JournalEntry?> = local.observeEntry(id).map { it?.toDomain() }
 
     override suspend fun getEntry(id: String): JournalEntry? = local.getEntry(id)?.toDomain()
 

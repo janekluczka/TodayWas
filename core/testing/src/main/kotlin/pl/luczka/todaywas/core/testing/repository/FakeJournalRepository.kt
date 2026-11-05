@@ -3,6 +3,8 @@ package pl.luczka.todaywas.core.testing.repository
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.repository.JournalRepository
 
@@ -44,6 +46,9 @@ class FakeJournalRepository(
 
     override fun observeEntries(): Flow<List<JournalEntry>> = entriesFlow
 
+    override fun observeEntry(id: String): Flow<JournalEntry?> =
+        entriesFlow.map { entries -> entries.find { it.id == id } }
+
     override suspend fun getEntry(id: String): JournalEntry? = entriesFlow.value.find { it.id == id }
 
     override suspend fun addEntry(
@@ -63,6 +68,9 @@ class FakeJournalRepository(
         updateEntryCallCount++
         lastUpdatedId = id
         lastUpdatedText = text
+        if (updateEntryResult.isSuccess) {
+            entriesFlow.update { entries -> entries.map { if (it.id == id) it.copy(text = text) else it } }
+        }
         return updateEntryResult
     }
 
