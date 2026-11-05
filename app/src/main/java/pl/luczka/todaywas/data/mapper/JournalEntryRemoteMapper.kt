@@ -1,10 +1,10 @@
 package pl.luczka.todaywas.data.mapper
 
 import java.time.Instant
+import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
 import pl.luczka.todaywas.data.util.SyncMeta
-import pl.luczka.todaywas.domain.model.JournalEntry
 
 fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEntryRemoteDto(
     id = id,

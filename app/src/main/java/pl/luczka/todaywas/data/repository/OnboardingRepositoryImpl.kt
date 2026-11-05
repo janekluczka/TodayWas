@@ -4,11 +4,11 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import pl.luczka.todaywas.core.domain.model.OnboardingState
+import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
 import pl.luczka.todaywas.data.local.dao.UserPreferencesDao
 import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 import pl.luczka.todaywas.data.util.safeDbCall
-import pl.luczka.todaywas.domain.model.OnboardingState
-import pl.luczka.todaywas.domain.repository.OnboardingRepository
 
 class OnboardingRepositoryImpl @Inject constructor(
     private val dao: UserPreferencesDao,

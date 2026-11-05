@@ -26,5 +26,7 @@ dependencyResolutionManagement {
 rootProject.name = "Today Was"
 include(":app")
 include(":core:designsystem")
+include(":core:domain")
+include(":core:testing")
 include(":ktlint-rules")
 include(":architecture-tests")

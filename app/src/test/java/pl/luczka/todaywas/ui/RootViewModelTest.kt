@@ -12,9 +12,9 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.domain.model.OnboardingState
-import pl.luczka.todaywas.domain.repository.OnboardingRepository
-import pl.luczka.todaywas.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.core.domain.model.OnboardingState
+import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
+import pl.luczka.todaywas.core.domain.usecase.ObserveOnboardingStateUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RootViewModelTest {

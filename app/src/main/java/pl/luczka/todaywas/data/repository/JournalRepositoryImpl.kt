@@ -7,6 +7,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import pl.luczka.todaywas.core.domain.model.JournalEntry
+import pl.luczka.todaywas.core.domain.repository.AuthRepository
+import pl.luczka.todaywas.core.domain.repository.JournalRepository
 import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.mapper.toDomain
@@ -18,9 +21,6 @@ import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.data.util.mergeForSync
 import pl.luczka.todaywas.data.util.remoteCall
-import pl.luczka.todaywas.domain.model.JournalEntry
-import pl.luczka.todaywas.domain.repository.AuthRepository
-import pl.luczka.todaywas.domain.repository.JournalRepository
 
 class JournalRepositoryImpl @Inject constructor(
     private val local: LocalJournalDataSource,

@@ -5,11 +5,11 @@ import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.domain.model.Habit
-import pl.luczka.todaywas.domain.model.HabitCheckIn
-import pl.luczka.todaywas.domain.model.HabitCheckInBoard
-import pl.luczka.todaywas.domain.model.HabitType
-import pl.luczka.todaywas.domain.util.HabitContributionCalculator
+import pl.luczka.todaywas.core.domain.model.Habit
+import pl.luczka.todaywas.core.domain.model.HabitCheckIn
+import pl.luczka.todaywas.core.domain.model.HabitCheckInBoard
+import pl.luczka.todaywas.core.domain.model.HabitType
+import pl.luczka.todaywas.core.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.ui.model.HabitSortUiState
 

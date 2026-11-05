@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.mapper
 
-import pl.luczka.todaywas.domain.model.AiAssistError
+import pl.luczka.todaywas.core.domain.model.AiAssistError
 import pl.luczka.todaywas.ui.model.AiAssistErrorUiState
 
 fun AiAssistError.toUiState(): AiAssistErrorUiState = when (this) {

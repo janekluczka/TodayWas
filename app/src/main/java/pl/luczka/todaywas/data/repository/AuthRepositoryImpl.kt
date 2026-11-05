@@ -9,11 +9,11 @@ import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import pl.luczka.todaywas.core.domain.model.AuthException
+import pl.luczka.todaywas.core.domain.model.AuthState
+import pl.luczka.todaywas.core.domain.repository.AuthRepository
 import pl.luczka.todaywas.data.mapper.toAuthError
 import pl.luczka.todaywas.data.mapper.toAuthState
-import pl.luczka.todaywas.domain.model.AuthException
-import pl.luczka.todaywas.domain.model.AuthState
-import pl.luczka.todaywas.domain.repository.AuthRepository
 
 class AuthRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,

@@ -18,10 +18,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.domain.model.JournalEntry
-import pl.luczka.todaywas.domain.repository.FakeJournalRepository
-import pl.luczka.todaywas.domain.usecase.ObserveJournalContributionUseCase
-import pl.luczka.todaywas.domain.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.core.domain.model.JournalEntry
+import pl.luczka.todaywas.core.domain.usecase.ObserveJournalContributionUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
 import pl.luczka.todaywas.ui.model.JournalSortUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)

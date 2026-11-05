@@ -5,6 +5,11 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import pl.luczka.todaywas.core.domain.repository.AiAssistRepository
+import pl.luczka.todaywas.core.domain.repository.AuthRepository
+import pl.luczka.todaywas.core.domain.repository.HabitRepository
+import pl.luczka.todaywas.core.domain.repository.JournalRepository
+import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSourceImpl
 import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
@@ -20,11 +25,6 @@ import pl.luczka.todaywas.data.repository.AuthRepositoryImpl
 import pl.luczka.todaywas.data.repository.HabitRepositoryImpl
 import pl.luczka.todaywas.data.repository.JournalRepositoryImpl
 import pl.luczka.todaywas.data.repository.OnboardingRepositoryImpl
-import pl.luczka.todaywas.domain.repository.AiAssistRepository
-import pl.luczka.todaywas.domain.repository.AuthRepository
-import pl.luczka.todaywas.domain.repository.HabitRepository
-import pl.luczka.todaywas.domain.repository.JournalRepository
-import pl.luczka.todaywas.domain.repository.OnboardingRepository
 
 @Module
 @InstallIn(SingletonComponent::class)

@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.ui.habit.detail
 
 import java.time.LocalDate
-import pl.luczka.todaywas.domain.model.HabitCheckIn
+import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.ui.model.HabitTypeUiState
 
 // HabitDetailViewModel's internal state; it keeps domain check-ins and is mapped to

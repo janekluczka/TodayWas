@@ -18,11 +18,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.domain.model.JournalEntry
-import pl.luczka.todaywas.domain.repository.FakeJournalRepository
-import pl.luczka.todaywas.domain.usecase.DeleteJournalEntryUseCase
-import pl.luczka.todaywas.domain.usecase.GetJournalEntryUseCase
-import pl.luczka.todaywas.domain.usecase.IsEditableUseCase
+import pl.luczka.todaywas.core.domain.model.JournalEntry
+import pl.luczka.todaywas.core.domain.usecase.DeleteJournalEntryUseCase
+import pl.luczka.todaywas.core.domain.usecase.GetJournalEntryUseCase
+import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
+import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalEntryDetailViewModelTest {

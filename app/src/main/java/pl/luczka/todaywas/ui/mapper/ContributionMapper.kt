@@ -5,9 +5,9 @@ import java.time.LocalDate
 import java.time.YearMonth
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.domain.model.ContributionGrid
-import pl.luczka.todaywas.domain.model.ContributionLevel
-import pl.luczka.todaywas.domain.model.dateRange
+import pl.luczka.todaywas.core.domain.model.ContributionGrid
+import pl.luczka.todaywas.core.domain.model.ContributionLevel
+import pl.luczka.todaywas.core.domain.model.dateRange
 import pl.luczka.todaywas.ui.model.ContributionGridType
 import pl.luczka.todaywas.ui.model.ContributionGridUiState
 

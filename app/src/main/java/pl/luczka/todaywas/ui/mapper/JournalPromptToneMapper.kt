@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.ui.mapper
 
-import pl.luczka.todaywas.domain.model.JournalPromptTone
+import pl.luczka.todaywas.core.domain.model.JournalPromptTone
 import pl.luczka.todaywas.ui.model.JournalPromptToneUiState
 
 fun JournalPromptTone.toUiState(): JournalPromptToneUiState = when (this) {

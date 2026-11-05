@@ -8,6 +8,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import pl.luczka.todaywas.core.domain.model.Habit
+import pl.luczka.todaywas.core.domain.model.HabitCheckIn
+import pl.luczka.todaywas.core.domain.model.HabitType
+import pl.luczka.todaywas.core.domain.repository.AuthRepository
+import pl.luczka.todaywas.core.domain.repository.HabitRepository
 import pl.luczka.todaywas.data.local.api.LocalHabitDataSource
 import pl.luczka.todaywas.data.local.entity.HabitCheckInEntity
 import pl.luczka.todaywas.data.local.entity.HabitEntity
@@ -21,11 +26,6 @@ import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.data.util.mergeForSync
 import pl.luczka.todaywas.data.util.remoteCall
-import pl.luczka.todaywas.domain.model.Habit
-import pl.luczka.todaywas.domain.model.HabitCheckIn
-import pl.luczka.todaywas.domain.model.HabitType
-import pl.luczka.todaywas.domain.repository.AuthRepository
-import pl.luczka.todaywas.domain.repository.HabitRepository
 
 class HabitRepositoryImpl @Inject constructor(
     private val local: LocalHabitDataSource,

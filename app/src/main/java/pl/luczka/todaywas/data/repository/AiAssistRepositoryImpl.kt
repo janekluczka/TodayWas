@@ -11,13 +11,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
+import pl.luczka.todaywas.core.domain.model.AiAssistException
+import pl.luczka.todaywas.core.domain.model.AiPromptResult
+import pl.luczka.todaywas.core.domain.model.JournalPromptTone
+import pl.luczka.todaywas.core.domain.repository.AiAssistRepository
 import pl.luczka.todaywas.data.mapper.toAiAssistError
 import pl.luczka.todaywas.data.remote.dto.AiPromptRequestDto
 import pl.luczka.todaywas.data.remote.dto.AiPromptResponseDto
-import pl.luczka.todaywas.domain.model.AiAssistException
-import pl.luczka.todaywas.domain.model.AiPromptResult
-import pl.luczka.todaywas.domain.model.JournalPromptTone
-import pl.luczka.todaywas.domain.repository.AiAssistRepository
 
 private const val FUNCTION_NAME = "ai-proxy"
 

@@ -9,6 +9,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import pl.luczka.todaywas.core.domain.repository.AuthRepository
+import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.data.local.api.LocalJournalDataSource
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.remote.api.FakeRemoteJournalDataSource
@@ -16,8 +18,6 @@ import pl.luczka.todaywas.data.remote.api.RemoteJournalDataSource
 import pl.luczka.todaywas.data.remote.dto.JournalEntryRemoteDto
 import pl.luczka.todaywas.data.util.SyncScheduler
 import pl.luczka.todaywas.data.util.TOMBSTONE_GC_WINDOW
-import pl.luczka.todaywas.domain.repository.AuthRepository
-import pl.luczka.todaywas.domain.repository.FakeAuthRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalRepositoryImplTest {
