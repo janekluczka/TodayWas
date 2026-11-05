@@ -11,10 +11,13 @@ import pl.luczka.todaywas.data.local.entity.HabitEntity
 import pl.luczka.todaywas.data.local.entity.JournalEntryEntity
 import pl.luczka.todaywas.data.local.entity.UserPreferencesEntity
 
+// Bumping this needs a migration in TodayWasMigrations.kt and the newly exported schemas/<version>.json.
+const val TODAY_WAS_DATABASE_VERSION = 6
+
 @Database(
     entities = [UserPreferencesEntity::class, JournalEntryEntity::class, HabitEntity::class, HabitCheckInEntity::class],
-    version = 6,
-    exportSchema = false,
+    version = TODAY_WAS_DATABASE_VERSION,
+    exportSchema = true,
 )
 abstract class TodayWasDatabase : RoomDatabase() {
 
