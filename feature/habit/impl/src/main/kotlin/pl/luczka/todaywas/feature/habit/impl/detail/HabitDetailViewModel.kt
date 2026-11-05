@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -54,7 +55,31 @@ internal class HabitDetailViewModel @AssistedInject constructor(
         flowOf(ContributionWindow.RollingTwelveMonths),
     ).map { summary -> summary.grid.toUiState(clock.instant()) }
 
-    val uiState: StateFlow<HabitDetailUiState> = combine(viewModelState, contributionGrid) { state, grid ->
+    // viewModelState plus the observed habit and its check-ins. A board without this habit (e.g.
+    // right after deleting it) is skipped, keeping the last one shown. Handlers that need the
+    // stored check-ins read this; it's live whenever uiState is collected.
+    private val observedState: StateFlow<HabitDetailViewModelState> = combine(
+        viewModelState,
+        observeHabitCheckInBoard().mapNotNull { board ->
+            board.habits.find { it.id == habitId }?.let { habit ->
+                habit to board.checkIns.filter { it.habitId == habitId }
+            }
+        },
+    ) { state, (habit, checkIns) ->
+        state.copy(
+            isLoading = false,
+            habitName = habit.name,
+            type = habit.type.toUiState(),
+            range = habit.detailRange(),
+            checkIns = checkIns,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = viewModelState.value,
+    )
+
+    val uiState: StateFlow<HabitDetailUiState> = combine(observedState, contributionGrid) { state, grid ->
         state.toUiState(getFreshLoggableDates(), isEditable::invoke, grid)
     }.stateIn(
         scope = viewModelScope,
@@ -71,24 +96,6 @@ internal class HabitDetailViewModel @AssistedInject constructor(
             )
         },
     )
-
-    init {
-        viewModelScope.launch {
-            observeHabitCheckInBoard().collect { board ->
-                val habit = board.habits.find { it.id == habitId } ?: return@collect
-                val checkIns = board.checkIns.filter { it.habitId == habitId }
-                viewModelState.update {
-                    it.copy(
-                        isLoading = false,
-                        habitName = habit.name,
-                        type = habit.type.toUiState(),
-                        range = habit.detailRange(),
-                        checkIns = checkIns,
-                    )
-                }
-            }
-        }
-    }
 
     fun onIntent(intent: HabitDetailIntent) {
         when (intent) {
@@ -113,7 +120,7 @@ internal class HabitDetailViewModel @AssistedInject constructor(
     }
 
     private fun onEditRowClicked(date: LocalDate) {
-        val existingValue = viewModelState.value.checkIns
+        val existingValue = observedState.value.checkIns
             .find { it.date == date }
             ?.value
         viewModelState.update {
@@ -125,9 +132,8 @@ internal class HabitDetailViewModel @AssistedInject constructor(
     }
 
     private fun onValueChanged(value: Int?) {
-        val state = viewModelState.value
-        val date = state.editingDate ?: return
-        val isAlreadyLogged = state.checkIns.any { it.date == date }
+        val date = viewModelState.value.editingDate ?: return
+        val isAlreadyLogged = observedState.value.checkIns.any { it.date == date }
         if (value == null && isAlreadyLogged) {
             deleteCheckIn(date)
         } else {
