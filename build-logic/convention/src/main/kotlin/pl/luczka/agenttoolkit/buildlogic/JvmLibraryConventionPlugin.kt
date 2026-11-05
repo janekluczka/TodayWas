@@ -7,7 +7,12 @@ import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
-/** A plain Kotlin module (no Android resources or framework), such as `:core:domain`. */
+/**
+ * A plain Kotlin module (no Android resources or framework). Android Lint runs here but has no minSdk, so
+ * it can't flag an API-level problem (NewApi) such as `LocalDate.ofInstant` on minSdk 30: code the app
+ * runs on device and that touches API-levelled JDK classes (java.time, java.util) belongs in an Android
+ * library instead (house style, "Modules").
+ */
 class JvmLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
