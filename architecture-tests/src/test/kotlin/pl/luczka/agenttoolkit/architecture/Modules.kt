@@ -60,7 +60,7 @@ internal data class GradleModule(
 
     companion object {
         private val projectDependency = Regex("""project\(\s*"(:[\w:.-]+)"\s*\)""")
-        private val namespaceDeclaration = Regex("""namespace\s*=\s*"([\w.]+)"""")
+        private val namespaceDeclaration = Regex("""\bnamespace\s*=\s*"([\w.]+)"""")
 
         fun from(
             root: File,
