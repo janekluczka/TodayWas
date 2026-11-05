@@ -2,6 +2,8 @@ package pl.luczka.todaywas.feature.onboarding.impl.allset
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -21,13 +23,20 @@ class OnboardingAllSetViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private fun viewModel(
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: OnboardingAllSetViewModel) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
+
+    private fun TestScope.viewModel(
         reason: AllSetReason,
         authRepository: FakeAuthRepository = FakeAuthRepository(),
     ) = OnboardingAllSetViewModel(
         reason = reason,
         observeAuthState = ObserveAuthStateUseCase(authRepository),
-    )
+    ).also { collectUiState(it) }
 
     @Before
     fun setUp() {
@@ -95,6 +104,23 @@ class OnboardingAllSetViewModelTest {
 
             // Assert
             assertEquals(OnboardingAllSetNavigation.Finished, viewModel.uiState.value.pendingNavigation)
+        }
+
+    @Test
+    fun `should not auto-advance when nothing collects the state`() =
+        runTest {
+            // Arrange
+            val viewModel = OnboardingAllSetViewModel(
+                reason = AllSetReason.NO_ACCOUNT,
+                observeAuthState = ObserveAuthStateUseCase(FakeAuthRepository()),
+            )
+
+            // Act
+            testDispatcher.scheduler.advanceTimeBy(5_001)
+            testDispatcher.scheduler.runCurrent()
+
+            // Assert
+            assertNull(viewModel.uiState.value.pendingNavigation)
         }
 
     @Test
