@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-// Project-specific ktlint rules, loaded into :app and :core:designsystem through `ktlintRuleset`.
+// Shared custom ktlint rules (agent-toolkit), loaded into every Kotlin module through `ktlintRuleset`.
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktlint)

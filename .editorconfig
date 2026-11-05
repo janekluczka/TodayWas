@@ -5,7 +5,7 @@ root = true
 ktlint_code_style = android_studio
 # Wider than the android_studio default of 100; Android Studio picks this up as its right margin.
 max_line_length = 120
-# Backtick test names (`should [outcome] when [scenario]`, see lessons.md) can't be wrapped
+# Backtick test names (`should [outcome] when [scenario]`, see the house style) can't be wrapped
 # shorter without truncating them, so they don't count towards the line length.
 ktlint_ignore_back_ticked_identifier = true
 # The android_studio style disallows trailing commas by default; keep them for cleaner diffs.
