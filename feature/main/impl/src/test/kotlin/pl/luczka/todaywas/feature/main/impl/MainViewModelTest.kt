@@ -29,7 +29,6 @@ import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
-import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
@@ -106,7 +105,6 @@ class MainViewModelTest {
             observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
             observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
             observeAuthState = ObserveAuthStateUseCase(authRepository),
-            syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
             signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
             clock = clock,
         ).also { collectUiState(it) }
@@ -135,7 +133,6 @@ class MainViewModelTest {
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
-                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
                 clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )
@@ -375,61 +372,6 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `should sync local data when the screen loads while already signed in`() =
-        runTest {
-            // Arrange
-            val journalRepository = FakeJournalRepository()
-            val habitRepository = FakeHabitRepository()
-            val onboardingRepository = FakeOnboardingRepository()
-            val authRepository = FakeAuthRepository(
-                initialState = AuthState.SignedIn(
-                    userId = "u1",
-                    email = "a@b.com",
-                ),
-            )
-
-            // Act
-            MainViewModel(
-                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
-                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
-                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-                observeAuthState = ObserveAuthStateUseCase(authRepository),
-                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
-                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
-                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
-            )
-
-            // Assert
-            assertEquals(1, journalRepository.syncWithRemoteCallCount)
-            assertEquals(1, habitRepository.syncWithRemoteCallCount)
-        }
-
-    @Test
-    fun `should not sync local data when the screen loads while signed out`() =
-        runTest {
-            // Arrange
-            val journalRepository = FakeJournalRepository()
-            val habitRepository = FakeHabitRepository()
-            val onboardingRepository = FakeOnboardingRepository()
-            val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)
-
-            // Act
-            MainViewModel(
-                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
-                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
-                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
-                observeAuthState = ObserveAuthStateUseCase(authRepository),
-                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
-                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
-                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
-            )
-
-            // Assert
-            assertEquals(0, journalRepository.syncWithRemoteCallCount)
-            assertEquals(0, habitRepository.syncWithRemoteCallCount)
-        }
-
-    @Test
     fun `should show the account sheet when AccountIconClicked is dispatched`() =
         runTest {
             // Arrange
@@ -617,7 +559,6 @@ class MainViewModelTest {
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
-                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
                 clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )
@@ -653,7 +594,6 @@ class MainViewModelTest {
                 observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
                 observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
                 observeAuthState = ObserveAuthStateUseCase(authRepository),
-                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
                 signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
                 clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
             )

@@ -10,19 +10,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.core.domain.model.AuthError
 import pl.luczka.todaywas.core.domain.model.AuthException
-import pl.luczka.todaywas.core.domain.model.AuthState
 import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
-import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.core.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
@@ -36,8 +33,7 @@ internal class MainViewModel @Inject constructor(
     observeJournalEntries: ObserveJournalEntriesUseCase,
     observeAddableJournalDateSlots: ObserveAddableJournalDateSlotsUseCase,
     observeHabitCheckInBoard: ObserveHabitCheckInBoardUseCase,
-    private val observeAuthState: ObserveAuthStateUseCase,
-    private val syncLocalData: SyncLocalDataUseCase,
+    observeAuthState: ObserveAuthStateUseCase,
     private val signOut: SignOutUseCase,
     private val clock: Clock,
 ) : ViewModel() {
@@ -91,17 +87,6 @@ internal class MainViewModel @Inject constructor(
             isSigningOut = false,
         ),
     )
-
-    init {
-        // Basic reinstall/new-device restore: silently refresh local data from remote once, when
-        // the Main screen itself loads while signed in — Room stays the read source, so uiState's
-        // observed flows pick up whatever lands locally without any extra wiring.
-        viewModelScope.launch {
-            if (observeAuthState().first { it !is AuthState.Loading } is AuthState.SignedIn) {
-                syncLocalData()
-            }
-        }
-    }
 
     fun onIntent(intent: MainIntent) {
         when (intent) {
