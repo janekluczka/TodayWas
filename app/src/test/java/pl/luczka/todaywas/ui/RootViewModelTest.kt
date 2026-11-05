@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -36,8 +38,13 @@ class RootViewModelTest {
         override suspend fun resetSyncFlag(): Result<Unit> = Result.success(Unit)
     }
 
-    private fun viewModel(repository: OnboardingRepository) =
-        RootViewModel(observeOnboardingState = ObserveOnboardingStateUseCase(repository))
+    // initialDestination uses stateIn(Lazily), so it starts once something collects it.
+    private fun TestScope.viewModel(repository: OnboardingRepository) =
+        RootViewModel(observeOnboardingState = ObserveOnboardingStateUseCase(repository)).also { viewModel ->
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.initialDestination.collect {}
+            }
+        }
 
     @Before
     fun setUp() {
