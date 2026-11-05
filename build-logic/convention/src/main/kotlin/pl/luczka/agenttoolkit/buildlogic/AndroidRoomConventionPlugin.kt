@@ -38,8 +38,9 @@ class AndroidRoomConventionPlugin : Plugin<Project> {
 /**
  * MigrationTestHelper reads the exported schemas from assets. The migration tests run as Robolectric unit
  * tests (so CI covers them), which only see the tested variant's merged assets — not the test source
- * set's — so the schemas ship in debug builds only.
+ * set's — so the schemas ship in debug builds only, and the unit tests get the merged assets.
  */
 private fun CommonExtension.shipSchemasInDebugAssets(schemas: String) {
     sourceSets.getByName("debug").assets.directories.add(schemas)
+    testOptions.unitTests.isIncludeAndroidResources = true
 }

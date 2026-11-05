@@ -14,6 +14,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             extensions.configure<LibraryExtension> {
                 configureAndroidDefaults(this)
+                // A library has no targetSdk of its own; without one, its unit tests and lint run against
+                // compileSdk, which can be newer than the app targets and than Robolectric supports.
+                val targetSdk = libs.version("android-targetSdk").toInt()
+                testOptions.targetSdk = targetSdk
+                lint.targetSdk = targetSdk
             }
         }
     }

@@ -20,7 +20,5 @@ internal fun Project.configureAndroidDefaults(android: CommonExtension) {
         defaultConfig.minSdk = libs.version("android-minSdk").toInt()
         compileOptions.sourceCompatibility = javaVersion
         compileOptions.targetCompatibility = javaVersion
-        // Robolectric tests (Room migrations, anything reading resources) need the merged resources.
-        testOptions.unitTests.isIncludeAndroidResources = true
     }
 }
