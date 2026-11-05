@@ -44,11 +44,8 @@ official developer.android.com recommendations plus my house style (`references/
 the package layout, MVI with a pure-router `onIntent`, state-based navigation and messages, the
 mandatory flat domain layer, mapping in dedicated `*Mapper.kt` files, `Ds` components, M3 slotted
 dialogs, previews, and `should … when …` tests. `:architecture-tests` enforces the parts it marks as
-checked. This file only adds project facts, plus two conventions not in the house style yet:
+checked. This file only adds project facts, plus one convention not in the house style yet:
 
-- A flow (dialog/wizard) can live inside its host screen's ViewModel while it's small; once it
-  becomes its own top-level screen (own nav entry, own lifecycle) it gets its own `ui/<feature>/`
-  package and ViewModel.
 - Prefer collapsing `val x = when (...) { ... }` directly into the assignment over a separate
   mutable variable.
 
