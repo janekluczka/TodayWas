@@ -1,0 +1,15 @@
+package pl.luczka.todaywas.feature.journal.impl.list
+
+import androidx.compose.runtime.Immutable
+import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.feature.journal.impl.model.JournalSortUiState
+
+@Immutable
+data class JournalListUiState(
+    val isLoading: Boolean = true,
+    val entries: List<JournalEntryUiState> = emptyList(),
+    val selectedSort: JournalSortUiState = JournalSortUiState.NEWEST_FIRST,
+    // The full multi-week, month-aligned grid, always the rolling 12-month window.
+    val contributionGrid: ContributionGridUiState = ContributionGridUiState(cells = emptyList()),
+)

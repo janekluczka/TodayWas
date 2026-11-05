@@ -36,6 +36,7 @@ dependencies {
     implementation(project(":feature:habit:api"))
     implementation(project(":feature:habit:impl"))
     implementation(project(":feature:journal:api"))
+    implementation(project(":feature:journal:impl"))
     implementation(project(":feature:main:api"))
     implementation(project(":feature:onboarding:api"))
     implementation(libs.androidx.activity.compose)

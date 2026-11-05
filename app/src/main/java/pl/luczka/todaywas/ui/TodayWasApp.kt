@@ -19,24 +19,16 @@ import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitDetail
 import pl.luczka.todaywas.feature.habit.api.navigation.navigateToHabitList
 import pl.luczka.todaywas.feature.habit.api.navigation.navigateToLogHabitCheckIns
 import pl.luczka.todaywas.feature.habit.impl.navigation.habitEntries
-import pl.luczka.todaywas.feature.journal.api.navigation.AddJournalEntryKey
-import pl.luczka.todaywas.feature.journal.api.navigation.EditJournalEntryKey
-import pl.luczka.todaywas.feature.journal.api.navigation.JournalEntryDetailKey
-import pl.luczka.todaywas.feature.journal.api.navigation.JournalListKey
 import pl.luczka.todaywas.feature.journal.api.navigation.navigateToAddJournalEntry
-import pl.luczka.todaywas.feature.journal.api.navigation.navigateToEditJournalEntry
 import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalEntryDetail
 import pl.luczka.todaywas.feature.journal.api.navigation.navigateToJournalList
+import pl.luczka.todaywas.feature.journal.impl.navigation.journalEntries
 import pl.luczka.todaywas.feature.main.api.navigation.MainKey
 import pl.luczka.todaywas.feature.main.api.navigation.replaceAllWithMain
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAccountSetupKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingAllSetKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingChoiceKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingWelcomeKey
-import pl.luczka.todaywas.ui.journal.create.AddJournalEntryScreen
-import pl.luczka.todaywas.ui.journal.detail.JournalEntryDetailScreen
-import pl.luczka.todaywas.ui.journal.edit.EditJournalEntryScreen
-import pl.luczka.todaywas.ui.journal.list.JournalListScreen
 import pl.luczka.todaywas.ui.main.MainScreen
 import pl.luczka.todaywas.ui.onboarding.accountsetup.OnboardingAccountSetupScreen
 import pl.luczka.todaywas.ui.onboarding.allset.OnboardingAllSetScreen
@@ -105,34 +97,7 @@ private fun TodayWasNavDisplay(initialDestination: NavKey) {
             }
             accountEntries(navigator)
             habitEntries(navigator)
-            entry<JournalListKey> {
-                JournalListScreen(
-                    onBack = navigator::goBack,
-                    onEntryClick = navigator::navigateToJournalEntryDetail,
-                )
-            }
-            entry<AddJournalEntryKey> {
-                AddJournalEntryScreen(
-                    onSaveComplete = navigator::goBack,
-                    onCancel = navigator::goBack,
-                    onNavigateToSignIn = navigator::navigateToAccount,
-                )
-            }
-            entry<JournalEntryDetailKey> { key ->
-                JournalEntryDetailScreen(
-                    id = key.id,
-                    onBack = navigator::goBack,
-                    onEditClick = { navigator.navigateToEditJournalEntry(key.id) },
-                )
-            }
-            entry<EditJournalEntryKey> { key ->
-                EditJournalEntryScreen(
-                    id = key.id,
-                    onSaveComplete = navigator::goBack,
-                    onDiscardComplete = navigator::goBack,
-                    onNavigateToSignIn = navigator::navigateToAccount,
-                )
-            }
+            journalEntries(navigator)
         },
     )
 }

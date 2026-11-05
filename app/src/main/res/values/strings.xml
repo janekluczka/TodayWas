@@ -13,10 +13,6 @@
     <string name="main_empty_state_title">Nothing here yet</string>
     <string name="main_empty_state_description">Start journaling or create a habit to see it here.</string>
 
-    <string name="journal_list_title">Journal</string>
-    <string name="journal_sort_newest_first">Newest</string>
-    <string name="journal_sort_oldest_first">Oldest</string>
-
     <string name="content_description_add">Add</string>
 
     <string name="content_description_account">Account</string>
@@ -36,71 +32,6 @@
     <string name="onboarding_all_set_no_account_message">You\'re all set to start journaling and tracking habits locally.</string>
     <string name="onboarding_all_set_signed_in_format">Welcome back! You\'re signed in as %1$s.</string>
     <string name="onboarding_all_set_account_created_message">Your account is ready. Your data will now sync across devices.</string>
-
-    <string name="journal_add_entry_title_today">Today</string>
-    <string name="journal_add_entry_title_yesterday">Yesterday</string>
-    <string name="journal_add_entry_save_cta">Save</string>
-    <string name="journal_add_entry_error">Something went wrong. Please try again.</string>
-
-    <string name="journal_starter_prompt_positive_1">Today was a good day because…</string>
-    <string name="journal_starter_prompt_positive_2">I\'m feeling grateful for…</string>
-    <string name="journal_starter_prompt_positive_3">Something that made me smile today was…</string>
-    <string name="journal_starter_prompt_positive_4">I\'m proud of myself for…</string>
-    <string name="journal_starter_prompt_positive_5">Today went better than expected because…</string>
-    <string name="journal_starter_prompt_neutral_1">Today was pretty average. I…</string>
-    <string name="journal_starter_prompt_neutral_2">Nothing major happened today, but…</string>
-    <string name="journal_starter_prompt_neutral_3">Today felt like any other day. I…</string>
-    <string name="journal_starter_prompt_neutral_4">I spent today mostly…</string>
-    <string name="journal_starter_prompt_neutral_5">Today was steady — I…</string>
-    <string name="journal_starter_prompt_negative_1">Today was tough because…</string>
-    <string name="journal_starter_prompt_negative_2">I\'m feeling drained after…</string>
-    <string name="journal_starter_prompt_negative_3">Today didn\'t go the way I hoped because…</string>
-    <string name="journal_starter_prompt_negative_4">I\'m struggling with…</string>
-    <string name="journal_starter_prompt_negative_5">Today felt heavy. I…</string>
-
-    <string name="journal_help_me_start_cta">Help me start</string>
-    <string name="journal_help_me_start_signed_out_title">Sign in to use AI assist</string>
-    <string name="journal_help_me_start_signed_out_message">Get a starting line for today\'s entry, personalized to your mood. Sign in to try it.</string>
-    <string name="journal_help_me_start_dialog_title">What\'s today\'s mood?</string>
-    <string name="journal_help_me_start_preview_title">Suggested start</string>
-    <string name="journal_ai_assist_tone_very_bad">Very bad</string>
-    <string name="journal_ai_assist_tone_bad">Bad</string>
-    <string name="journal_ai_assist_tone_neutral">Neutral</string>
-    <string name="journal_ai_assist_tone_good">Good</string>
-    <string name="journal_ai_assist_tone_very_good">Very good</string>
-    <string name="journal_help_me_start_thoughts_label">A few thoughts (optional)</string>
-    <string name="journal_help_me_start_generate_cta">Generate</string>
-    <string name="journal_help_me_start_regenerate_cta">Regenerate</string>
-    <string name="journal_ai_assist_accept_cta">Accept</string>
-    <string name="journal_ai_assist_error_invalid_request">Something went wrong. Please try again.</string>
-    <string name="journal_ai_assist_error_upstream_failed">Couldn\'t generate a prompt right now. Please try again.</string>
-    <string name="journal_ai_assist_error_not_signed_in">Please sign in to use this feature.</string>
-    <string name="journal_ai_assist_error_daily_limit_reached">You\'ve used all your AI assist requests for today. Try again tomorrow.</string>
-    <string name="journal_ai_assist_error_network_unavailable">No internet connection.</string>
-    <string name="journal_ai_assist_error_unknown">Something went wrong. Please try again.</string>
-
-    <string name="journal_detail_title">Journal entry</string>
-    <string name="journal_detail_edit_action">Edit</string>
-    <string name="journal_detail_save_cta">Save</string>
-    <string name="journal_detail_error">Something went wrong. Please try again.</string>
-    <string name="journal_detail_delete_action">Delete</string>
-    <string name="journal_detail_delete_dialog_title">Delete entry?</string>
-    <string name="journal_detail_delete_dialog_text">This can\'t be undone.</string>
-    <string name="journal_detail_delete_confirm_cta">Delete</string>
-    <string name="journal_detail_delete_cancel_cta">Cancel</string>
-    <string name="journal_detail_delete_error">Something went wrong. Please try again.</string>
-
-    <string name="journal_help_me_refine_cta">Help me refine</string>
-    <string name="journal_help_me_refine_dialog_title">Refine this entry</string>
-    <string name="journal_help_me_refine_preview_title">Refined journal</string>
-    <string name="journal_help_me_refine_generate_cta">Refine</string>
-    <string name="journal_help_me_refine_thoughts_label">A few thoughts about the refinement (optional)</string>
-
-    <string name="journal_edit_entry_title">Edit journal entry</string>
-    <string name="journal_edit_discard_dialog_title">Discard changes?</string>
-    <string name="journal_edit_discard_dialog_text">Your edits haven\'t been saved.</string>
-    <string name="journal_edit_discard_confirm_cta">Discard</string>
-    <string name="journal_edit_discard_cancel_cta">Keep editing</string>
 
     <string name="account_section_title">Account</string>
     <string name="account_sign_out_confirm_title">Sign out?</string>
