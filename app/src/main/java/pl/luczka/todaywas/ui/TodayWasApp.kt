@@ -2,27 +2,21 @@ package pl.luczka.todaywas.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import pl.luczka.todaywas.ui.account.AccountScreen
-import pl.luczka.todaywas.ui.habit.create.CreateHabitScreen
-import pl.luczka.todaywas.ui.habit.detail.HabitDetailScreen
-import pl.luczka.todaywas.ui.habit.list.HabitListScreen
-import pl.luczka.todaywas.ui.habit.logcheckin.LogHabitCheckInsScreen
-import pl.luczka.todaywas.ui.journal.create.AddJournalEntryScreen
-import pl.luczka.todaywas.ui.journal.detail.JournalEntryDetailScreen
-import pl.luczka.todaywas.ui.journal.edit.EditJournalEntryScreen
-import pl.luczka.todaywas.ui.journal.list.JournalListScreen
-import pl.luczka.todaywas.ui.main.MainScreen
-import pl.luczka.todaywas.ui.onboarding.accountsetup.OnboardingAccountSetupScreen
-import pl.luczka.todaywas.ui.onboarding.allset.OnboardingAllSetScreen
-import pl.luczka.todaywas.ui.onboarding.choice.OnboardingChoiceScreen
-import pl.luczka.todaywas.ui.onboarding.welcome.OnboardingWelcomeScreen
+import pl.luczka.todaywas.core.navigation.Navigator
+import pl.luczka.todaywas.feature.account.impl.navigation.accountEntries
+import pl.luczka.todaywas.feature.habit.impl.navigation.habitEntries
+import pl.luczka.todaywas.feature.journal.impl.navigation.journalEntries
+import pl.luczka.todaywas.feature.main.impl.navigation.mainEntries
+import pl.luczka.todaywas.feature.onboarding.impl.navigation.onboardingEntries
 
 @Composable
 fun TodayWasApp(viewModel: RootViewModel = hiltViewModel()) {
@@ -34,121 +28,24 @@ fun TodayWasApp(viewModel: RootViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun TodayWasNavDisplay(initialDestination: TodayWasKey) {
+private fun TodayWasNavDisplay(initialDestination: NavKey) {
     val backStack = rememberNavBackStack(initialDestination)
+    val navigator = remember(backStack) { Navigator(backStack) }
 
     NavDisplay(
         backStack = backStack,
-        // NavDisplay throws if the backstack is emptied, so only pop when more than the root
-        // entry remains; back from the root falls through to the platform's default behavior.
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        // Back from the root falls through to the platform's default behavior.
+        onBack = navigator::goBack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            entry<OnboardingWelcomeKey> {
-                OnboardingWelcomeScreen(
-                    onGetStartedClick = {
-                        // Welcome is a one-way intro — replace it so back from Choice exits the
-                        // app instead of returning here.
-                        backStack.clear()
-                        backStack.add(OnboardingChoiceKey)
-                    },
-                )
-            }
-            entry<OnboardingChoiceKey> {
-                OnboardingChoiceScreen(
-                    onNavigateToAccountSetup = { backStack.add(OnboardingAccountSetupKey) },
-                    onFinish = { reason ->
-                        backStack.clear()
-                        backStack.add(OnboardingAllSetKey(reason))
-                    },
-                )
-            }
-            entry<OnboardingAccountSetupKey> {
-                OnboardingAccountSetupScreen(
-                    onBack = { backStack.removeLastOrNull() },
-                    onFinish = { reason ->
-                        backStack.clear()
-                        backStack.add(OnboardingAllSetKey(reason))
-                    },
-                )
-            }
-            entry<OnboardingAllSetKey> { key ->
-                OnboardingAllSetScreen(
-                    reason = key.reason,
-                    onFinish = {
-                        backStack.clear()
-                        backStack.add(MainKey)
-                    },
-                )
-            }
-            entry<MainKey> {
-                MainScreen(
-                    onAddEntryClick = { backStack.add(AddJournalEntryKey) },
-                    onJournalEntryClick = { entry -> backStack.add(JournalEntryDetailKey(id = entry.id)) },
-                    onJournalListClick = { backStack.add(JournalListKey) },
-                    onCreateHabitClick = { backStack.add(CreateHabitKey) },
-                    onLogCheckInsClick = { backStack.add(LogHabitCheckInsKey) },
-                    onHabitClick = { habitId -> backStack.add(HabitDetailKey(habitId)) },
-                    onHabitListClick = { backStack.add(HabitListKey) },
-                    onAccountClick = { backStack.add(AccountKey) },
-                )
-            }
-            entry<AccountKey> { AccountScreen(onBack = { backStack.removeLastOrNull() }) }
-            entry<JournalListKey> {
-                JournalListScreen(
-                    onBack = { backStack.removeLastOrNull() },
-                    onEntryClick = { id -> backStack.add(JournalEntryDetailKey(id = id)) },
-                )
-            }
-            entry<HabitListKey> {
-                HabitListScreen(
-                    onBack = { backStack.removeLastOrNull() },
-                    onHabitClick = { habitId -> backStack.add(HabitDetailKey(habitId)) },
-                )
-            }
-            entry<AddJournalEntryKey> {
-                AddJournalEntryScreen(
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onCancel = { backStack.removeLastOrNull() },
-                    onNavigateToSignIn = { backStack.add(AccountKey) },
-                )
-            }
-            entry<JournalEntryDetailKey> { key ->
-                JournalEntryDetailScreen(
-                    id = key.id,
-                    onBack = { backStack.removeLastOrNull() },
-                    onEditClick = { backStack.add(EditJournalEntryKey(id = key.id)) },
-                )
-            }
-            entry<EditJournalEntryKey> { key ->
-                EditJournalEntryScreen(
-                    id = key.id,
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onDiscardComplete = { backStack.removeLastOrNull() },
-                    onNavigateToSignIn = { backStack.add(AccountKey) },
-                )
-            }
-            entry<CreateHabitKey> {
-                CreateHabitScreen(
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onCancel = { backStack.removeLastOrNull() },
-                )
-            }
-            entry<LogHabitCheckInsKey> {
-                LogHabitCheckInsScreen(
-                    onSaveComplete = { backStack.removeLastOrNull() },
-                    onCancel = { backStack.removeLastOrNull() },
-                )
-            }
-            entry<HabitDetailKey> { key ->
-                HabitDetailScreen(
-                    habitId = key.habitId,
-                    onBack = { backStack.removeLastOrNull() },
-                )
-            }
+            onboardingEntries(navigator)
+            mainEntries(navigator)
+            accountEntries(navigator)
+            habitEntries(navigator)
+            journalEntries(navigator)
         },
     )
 }

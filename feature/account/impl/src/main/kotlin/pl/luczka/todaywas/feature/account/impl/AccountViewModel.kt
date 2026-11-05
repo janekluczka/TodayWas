@@ -1,0 +1,353 @@
+package pl.luczka.todaywas.feature.account.impl
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import pl.luczka.todaywas.core.domain.model.AuthError
+import pl.luczka.todaywas.core.domain.model.AuthException
+import pl.luczka.todaywas.core.domain.usecase.GetLocalDataSummaryUseCase
+import pl.luczka.todaywas.core.domain.usecase.MarkLocalDataSyncedUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.core.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
+import pl.luczka.todaywas.core.domain.usecase.SignInWithEmailUseCase
+import pl.luczka.todaywas.core.domain.usecase.SignInWithGoogleUseCase
+import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
+import pl.luczka.todaywas.core.domain.usecase.SignUpWithEmailUseCase
+import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.core.ui.auth.SignUpFormUiState
+import pl.luczka.todaywas.core.ui.auth.util.isValidEmail
+import pl.luczka.todaywas.core.ui.auth.util.isValidPassword
+import pl.luczka.todaywas.core.ui.auth.util.isValidRepeatPassword
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+
+@HiltViewModel
+internal class AccountViewModel @Inject constructor(
+    observeAuthState: ObserveAuthStateUseCase,
+    observeOnboardingState: ObserveOnboardingStateUseCase,
+    private val signUpWithEmail: SignUpWithEmailUseCase,
+    private val signInWithEmail: SignInWithEmailUseCase,
+    private val signInWithGoogle: SignInWithGoogleUseCase,
+    private val signOut: SignOutUseCase,
+    private val getLocalDataSummary: GetLocalDataSummaryUseCase,
+    private val syncLocalData: SyncLocalDataUseCase,
+    private val markLocalDataSynced: MarkLocalDataSyncedUseCase,
+    private val shouldReviewLocalDataBeforeSync: ShouldReviewLocalDataBeforeSyncUseCase,
+) : ViewModel() {
+
+    private enum class PostSyncAction { NAVIGATE_BACK, SHOW_SUCCESS, RETURN_HOME }
+
+    private val _uiState = MutableStateFlow(
+        AccountUiState(
+            authState = AuthStateUi.Loading,
+            step = AccountStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+            signUpForm = SignUpFormUiState(),
+        ),
+    )
+    val uiState: StateFlow<AccountUiState> = _uiState.asStateFlow()
+
+    private var postSyncAction = PostSyncAction.RETURN_HOME
+
+    init {
+        viewModelScope.launch {
+            observeAuthState().collect { state -> _uiState.update { it.copy(authState = state.toUiState()) } }
+        }
+        viewModelScope.launch {
+            observeOnboardingState().collect { state ->
+                _uiState.update { it.copy(hasSyncedLocalData = state.hasSyncedLocalData) }
+            }
+        }
+    }
+
+    fun onIntent(intent: AccountIntent) {
+        when (intent) {
+            AccountIntent.BackClicked -> onBackClicked()
+            is AccountIntent.SignInEmailChanged -> onSignInEmailChanged(intent.value)
+            is AccountIntent.SignInPasswordChanged -> onSignInPasswordChanged(intent.value)
+            AccountIntent.SignInSubmitClicked -> onSignInSubmitClicked()
+            is AccountIntent.SignInGoogleIdTokenReceived -> onSignInGoogleIdTokenReceived(intent.idToken)
+            is AccountIntent.GoogleSignInFailed -> onGoogleSignInFailed(intent.error)
+            AccountIntent.SignUpLinkClicked -> onSignUpLinkClicked()
+            AccountIntent.SignInLinkClicked -> onSignInLinkClicked()
+            is AccountIntent.SignUpEmailChanged -> onSignUpEmailChanged(intent.value)
+            is AccountIntent.SignUpPasswordChanged -> onSignUpPasswordChanged(intent.value)
+            is AccountIntent.SignUpRepeatPasswordChanged -> onSignUpRepeatPasswordChanged(intent.value)
+            AccountIntent.SignUpSubmitClicked -> onSignUpSubmitClicked()
+            is AccountIntent.SignUpGoogleIdTokenReceived -> onSignUpGoogleIdTokenReceived(intent.idToken)
+            AccountIntent.ContinueClicked -> onContinueClicked()
+            AccountIntent.SignOutClicked -> onSignOutClicked()
+            AccountIntent.SyncConfirmClicked -> onSyncConfirmClicked()
+            AccountIntent.SyncSkipClicked -> onSyncSkipClicked()
+            AccountIntent.SyncLocalDataClicked -> onSyncLocalDataClicked()
+            AccountIntent.NavigationHandled -> onNavigationHandled()
+            AccountIntent.UserMessageShown -> onUserMessageShown()
+        }
+    }
+
+    private fun onBackClicked() {
+        if (_uiState.value.step == AccountStep.SIGN_UP) {
+            _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
+        } else {
+            _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
+        }
+    }
+
+    private fun onSignInEmailChanged(value: String) {
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(
+                    email = value,
+                    emailError = false,
+                ),
+            )
+        }
+    }
+
+    private fun onSignInPasswordChanged(value: String) {
+        _uiState.update {
+            it.copy(
+                signInForm = it.signInForm.copy(
+                    password = value,
+                    passwordError = false,
+                ),
+            )
+        }
+    }
+
+    private fun onSignInSubmitClicked() {
+        val form = _uiState.value.signInForm
+        if (form.isSubmitting) return
+
+        val emailValid = isValidEmail(form.email)
+        val passwordValid = isValidPassword(form.password)
+        if (!emailValid || !passwordValid) {
+            _uiState.update {
+                it.copy(
+                    signInForm = it.signInForm.copy(
+                        emailError = !emailValid,
+                        passwordError = !passwordValid,
+                    ),
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = true)) }
+            applySignInResult(signInWithEmail(form.email, form.password))
+        }
+    }
+
+    private fun onSignInGoogleIdTokenReceived(idToken: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = true)) }
+            applySignInResult(signInWithGoogle(idToken))
+        }
+    }
+
+    private fun onGoogleSignInFailed(error: AuthErrorUiState) {
+        _uiState.update { it.copy(userMessage = error) }
+    }
+
+    private suspend fun applySignInResult(result: Result<Unit>) {
+        if (result.isSuccess) {
+            _uiState.update { it.copy(signInForm = SignInFormUiState()) }
+            proceedAfterAuthSuccess(PostSyncAction.NAVIGATE_BACK)
+        } else {
+            val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+            _uiState.update { it.copy(signInForm = it.signInForm.copy(isSubmitting = false)) }
+            _uiState.update { it.copy(userMessage = error.toUiState()) }
+        }
+    }
+
+    private fun onSignUpLinkClicked() {
+        _uiState.update { it.copy(step = AccountStep.SIGN_UP) }
+    }
+
+    private fun onSignInLinkClicked() {
+        _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
+    }
+
+    private fun onSignUpEmailChanged(value: String) {
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    email = value,
+                    emailError = false,
+                ),
+            )
+        }
+    }
+
+    private fun onSignUpPasswordChanged(value: String) {
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    password = value,
+                    passwordError = false,
+                ),
+            )
+        }
+    }
+
+    private fun onSignUpRepeatPasswordChanged(value: String) {
+        _uiState.update {
+            it.copy(
+                signUpForm = it.signUpForm.copy(
+                    repeatPassword = value,
+                    repeatPasswordError = false,
+                ),
+            )
+        }
+    }
+
+    private fun onSignUpSubmitClicked() {
+        val form = _uiState.value.signUpForm
+        if (form.isSubmitting) return
+
+        val emailValid = isValidEmail(form.email)
+        val passwordValid = isValidPassword(form.password)
+        val repeatPasswordValid = isValidRepeatPassword(form.password, form.repeatPassword)
+        if (!emailValid || !passwordValid || !repeatPasswordValid) {
+            _uiState.update {
+                it.copy(
+                    signUpForm = it.signUpForm.copy(
+                        emailError = !emailValid,
+                        passwordError = !passwordValid,
+                        repeatPasswordError = !repeatPasswordValid,
+                    ),
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = true)) }
+            val result = signUpWithEmail(form.email, form.password)
+            applySignUpResult(result)
+        }
+    }
+
+    private fun onSignUpGoogleIdTokenReceived(idToken: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = true)) }
+            applySignUpResult(signInWithGoogle(idToken))
+        }
+    }
+
+    private suspend fun applySignUpResult(result: Result<Unit>) {
+        if (result.isSuccess) {
+            _uiState.update { it.copy(signUpForm = SignUpFormUiState()) }
+            proceedAfterAuthSuccess(PostSyncAction.SHOW_SUCCESS)
+        } else {
+            val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+            _uiState.update { it.copy(signUpForm = it.signUpForm.copy(isSubmitting = false)) }
+            _uiState.update { it.copy(userMessage = error.toUiState()) }
+        }
+    }
+
+    // Shows the data-review step only the first time there's unsynced local data to offer;
+    // otherwise syncs transparently in the background and proceeds as before.
+    private suspend fun proceedAfterAuthSuccess(whenDone: PostSyncAction) {
+        val summary = getLocalDataSummary()
+        if (shouldReviewLocalDataBeforeSync(_uiState.value.hasSyncedLocalData, summary)) {
+            postSyncAction = whenDone
+            _uiState.update {
+                it.copy(
+                    step = AccountStep.DATA_SYNC_REVIEW,
+                    dataSyncSummary = summary.toUiState(),
+                )
+            }
+        } else {
+            viewModelScope.launch { syncLocalData() }
+            finishPostSyncAction(whenDone)
+        }
+    }
+
+    private fun onContinueClicked() {
+        _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
+    }
+
+    private fun onSyncConfirmClicked() {
+        if (_uiState.value.isSyncing) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSyncing = true) }
+            val result = syncLocalData()
+            _uiState.update { it.copy(isSyncing = false) }
+            if (result.isSuccess) {
+                markLocalDataSynced()
+                _uiState.update { it.copy(dataSyncSummary = null) }
+                finishPostSyncAction(postSyncAction)
+            } else {
+                val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+                _uiState.update { it.copy(userMessage = error.toUiState()) }
+            }
+        }
+    }
+
+    private fun onSyncSkipClicked() {
+        _uiState.update { it.copy(dataSyncSummary = null) }
+        finishPostSyncAction(postSyncAction)
+    }
+
+    private fun onSyncLocalDataClicked() {
+        viewModelScope.launch {
+            val summary = getLocalDataSummary()
+            if (!summary.isEmpty) {
+                postSyncAction = PostSyncAction.RETURN_HOME
+                _uiState.update {
+                    it.copy(
+                        step = AccountStep.DATA_SYNC_REVIEW,
+                        dataSyncSummary = summary.toUiState(),
+                    )
+                }
+            }
+        }
+    }
+
+    private fun finishPostSyncAction(action: PostSyncAction) {
+        when (action) {
+            PostSyncAction.NAVIGATE_BACK -> _uiState.update { it.copy(pendingNavigation = AccountNavigation.Back) }
+            PostSyncAction.SHOW_SUCCESS -> _uiState.update { it.copy(step = AccountStep.SUCCESS) }
+            PostSyncAction.RETURN_HOME -> _uiState.update { it.copy(step = AccountStep.SIGN_IN) }
+        }
+    }
+
+    private fun onSignOutClicked() {
+        if (_uiState.value.isSigningOut) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSigningOut = true) }
+            val result = signOut()
+            if (result.isSuccess) {
+                _uiState.update {
+                    it.copy(
+                        step = AccountStep.SIGN_IN,
+                        isSigningOut = false,
+                    )
+                }
+            } else {
+                val error = (result.exceptionOrNull() as? AuthException)?.error ?: AuthError.Unknown
+                _uiState.update { it.copy(isSigningOut = false) }
+                _uiState.update { it.copy(userMessage = error.toUiState()) }
+            }
+        }
+    }
+
+    private fun onNavigationHandled() {
+        _uiState.update { it.copy(pendingNavigation = null) }
+    }
+
+    private fun onUserMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
+    }
+}

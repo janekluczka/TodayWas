@@ -1,0 +1,72 @@
+<resources>
+    <string name="main_journal_empty_state">No entries yet</string>
+
+    <string name="main_habit_empty_state">No habits yet</string>
+
+    <string name="content_description_back">Back</string>
+
+    <string name="onboarding_account_signin_signup_cta">Sign in or create account</string>
+
+    <string name="auth_form_email_label">Email</string>
+
+    <string name="auth_form_email_error">Enter a valid email address</string>
+
+    <string name="auth_form_password_label">Password</string>
+
+    <string name="auth_form_password_error">Password must be at least 6 characters</string>
+
+    <string name="auth_form_repeat_password_label">Repeat password</string>
+
+    <string name="auth_form_repeat_password_error">Passwords don\'t match</string>
+
+    <string name="auth_form_sign_up_cta">Create account</string>
+
+    <string name="auth_form_sign_in_cta">Sign in</string>
+
+    <string name="auth_form_sign_up_link_cta">New here? Create an account</string>
+
+    <string name="auth_form_sign_in_link_cta">Already have an account? Sign in</string>
+
+    <string name="auth_form_google_cta">Sign in with Google</string>
+
+    <string name="auth_form_google_sign_up_cta">Sign up with Google</string>
+
+    <string name="auth_error_email_already_registered">An account with this email already exists</string>
+
+    <string name="auth_error_invalid_credentials">Incorrect email or password</string>
+
+    <string name="auth_error_weak_password">Password is too weak</string>
+
+    <string name="auth_error_network_unavailable">No internet connection</string>
+
+    <string name="auth_error_no_google_account">No Google account on this device. Add one in Settings, or use email instead.</string>
+
+    <string name="auth_error_unknown">Something went wrong. Please try again.</string>
+
+    <string name="preferences_sign_out_cta">Sign out</string>
+
+    <string name="preferences_signed_in_no_email">Signed in</string>
+
+    <string name="data_sync_review_title">Add your existing data to this account?</string>
+
+    <string name="data_sync_review_summary_format">%1$s, %2$s, %3$s</string>
+
+    <plurals name="data_sync_review_journal_entries">
+        <item quantity="one">%d journal entry</item>
+        <item quantity="other">%d journal entries</item>
+    </plurals>
+
+    <plurals name="data_sync_review_habits">
+        <item quantity="one">%d habit</item>
+        <item quantity="other">%d habits</item>
+    </plurals>
+
+    <plurals name="data_sync_review_check_ins">
+        <item quantity="one">%d check-in</item>
+        <item quantity="other">%d check-ins</item>
+    </plurals>
+
+    <string name="data_sync_review_confirm_cta">Add my data</string>
+
+    <string name="data_sync_review_skip_cta">Not now</string>
+</resources>

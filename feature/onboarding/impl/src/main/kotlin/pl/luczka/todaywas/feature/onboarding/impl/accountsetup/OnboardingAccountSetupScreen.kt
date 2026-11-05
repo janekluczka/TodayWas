@@ -1,0 +1,188 @@
+package pl.luczka.todaywas.feature.onboarding.impl.accountsetup
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pl.luczka.todaywas.core.designsystem.components.buttons.DsIconButton
+import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
+import pl.luczka.todaywas.core.designsystem.components.layout.DsScaffold
+import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
+import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.core.ui.R as CoreUiR
+import pl.luczka.todaywas.core.ui.auth.SignInFormContent
+import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
+import pl.luczka.todaywas.core.ui.auth.SignUpFormContent
+import pl.luczka.todaywas.core.ui.auth.SignUpFormUiState
+import pl.luczka.todaywas.core.ui.auth.util.message
+import pl.luczka.todaywas.core.ui.datasync.DataSyncReviewContent
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
+import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
+import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
+
+@Composable
+internal fun OnboardingAccountSetupScreen(
+    onBack: () -> Unit,
+    onFinish: (AllSetReason) -> Unit,
+    viewModel: OnboardingAccountSetupViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessages = AuthErrorUiState.entries.associateWith { it.message() }
+
+    val currentOnBack by rememberUpdatedState(onBack)
+    val currentOnFinish by rememberUpdatedState(onFinish)
+    LaunchedEffect(uiState.pendingNavigation) {
+        when (val navigation = uiState.pendingNavigation ?: return@LaunchedEffect) {
+            OnboardingAccountSetupNavigation.Back -> currentOnBack()
+            is OnboardingAccountSetupNavigation.Finished -> currentOnFinish(navigation.reason)
+        }
+        viewModel.onIntent(OnboardingAccountSetupIntent.NavigationHandled)
+    }
+
+    uiState.userMessage?.let { userMessage ->
+        LaunchedEffect(userMessage) {
+            snackbarHostState.showSnackbar(errorMessages.getValue(userMessage))
+            viewModel.onIntent(OnboardingAccountSetupIntent.UserMessageShown)
+        }
+    }
+
+    OnboardingAccountSetupScreenContent(
+        uiState = uiState,
+        onIntent = viewModel::onIntent,
+        snackbarHostState = snackbarHostState,
+    )
+}
+
+private val AUTH_FORM_SUBSTEPS = setOf(AccountSubStep.SIGN_IN, AccountSubStep.SIGN_UP)
+
+// The extra top padding (on top of the screen's own space600) clears the floating back button
+// below, which sits outside this padding at the true top-left.
+private val AUTH_FORM_TOP_CLEARANCE = DsSpacing.space1000
+
+@Composable
+private fun OnboardingAccountSetupScreenContent(
+    uiState: OnboardingAccountSetupUiState,
+    onIntent: (OnboardingAccountSetupIntent) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+) {
+    DsScaffold(
+        snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
+        modifier = Modifier.fillMaxSize(),
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            Column(modifier = Modifier.fillMaxSize().padding(DsSpacing.space600)) {
+                when (uiState.accountSubStep) {
+                    AccountSubStep.SIGN_IN -> SignInFormContent(
+                        state = uiState.signInForm,
+                        onEmailChange = { onIntent(OnboardingAccountSetupIntent.SignInEmailChanged(it)) },
+                        onPasswordChange = { onIntent(OnboardingAccountSetupIntent.SignInPasswordChanged(it)) },
+                        onSubmitClick = { onIntent(OnboardingAccountSetupIntent.SignInSubmitClicked) },
+                        onGoogleIdTokenReceive = {
+                            onIntent(OnboardingAccountSetupIntent.SignInGoogleIdTokenReceived(it))
+                        },
+                        onGoogleSignInFailure = { onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it)) },
+                        onSignUpLinkClick = { onIntent(OnboardingAccountSetupIntent.SignUpLinkClicked) },
+                        modifier = Modifier.padding(top = AUTH_FORM_TOP_CLEARANCE),
+                    )
+                    AccountSubStep.SIGN_UP -> SignUpFormContent(
+                        state = uiState.signUpForm,
+                        onEmailChange = { onIntent(OnboardingAccountSetupIntent.SignUpEmailChanged(it)) },
+                        onPasswordChange = { onIntent(OnboardingAccountSetupIntent.SignUpPasswordChanged(it)) },
+                        onRepeatPasswordChange = {
+                            onIntent(OnboardingAccountSetupIntent.SignUpRepeatPasswordChanged(it))
+                        },
+                        onSubmitClick = { onIntent(OnboardingAccountSetupIntent.SignUpSubmitClicked) },
+                        onGoogleIdTokenReceive = {
+                            onIntent(OnboardingAccountSetupIntent.SignUpGoogleIdTokenReceived(it))
+                        },
+                        onGoogleSignInFailure = { onIntent(OnboardingAccountSetupIntent.GoogleSignInFailed(it)) },
+                        onSignInLinkClick = { onIntent(OnboardingAccountSetupIntent.SignInLinkClicked) },
+                        modifier = Modifier.padding(top = AUTH_FORM_TOP_CLEARANCE),
+                    )
+                    AccountSubStep.DATA_SYNC_REVIEW -> {
+                        val summary = uiState.dataSyncSummary
+                        if (summary != null) {
+                            DataSyncReviewContent(
+                                summary = summary,
+                                isSyncing = uiState.isSyncing,
+                                onConfirmClick = { onIntent(OnboardingAccountSetupIntent.SyncConfirmClicked) },
+                                onSkipClick = { onIntent(OnboardingAccountSetupIntent.SyncSkipClicked) },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
+            }
+            // Floats where a topbar's navigation icon normally sits, without the AppBar surface/elevation — a sibling
+            // overlay rather than nested in the padded content, so it sits flush at the true top-left instead of
+            // indented by the content's own space600 padding.
+            if (uiState.accountSubStep in AUTH_FORM_SUBSTEPS) {
+                DsIconButton(
+                    onClick = { onIntent(OnboardingAccountSetupIntent.StepBack) },
+                    modifier = Modifier.align(Alignment.TopStart).padding(DsSpacing.space300),
+                ) {
+                    DsIcon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(CoreUiR.string.content_description_back),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private class OnboardingAccountSetupUiStatePreviewProvider :
+    PreviewParameterProvider<OnboardingAccountSetupUiState> {
+    override val values = sequenceOf(
+        OnboardingAccountSetupUiState(
+            accountSubStep = AccountSubStep.SIGN_IN,
+            signInForm = SignInFormUiState(),
+        ),
+        OnboardingAccountSetupUiState(
+            accountSubStep = AccountSubStep.SIGN_UP,
+            signUpForm = SignUpFormUiState(),
+        ),
+        OnboardingAccountSetupUiState(
+            accountSubStep = AccountSubStep.DATA_SYNC_REVIEW,
+            dataSyncSummary = LocalDataSummaryUi(
+                journalEntryCount = 12,
+                habitCount = 3,
+                checkInCount = 40,
+            ),
+        ),
+    )
+}
+
+@PreviewLightDark
+@Composable
+private fun OnboardingAccountSetupScreenPreview(
+    @PreviewParameter(OnboardingAccountSetupUiStatePreviewProvider::class)
+    state: OnboardingAccountSetupUiState,
+) {
+    DsTheme {
+        OnboardingAccountSetupScreenContent(
+            uiState = state,
+            onIntent = {},
+        )
+    }
+}

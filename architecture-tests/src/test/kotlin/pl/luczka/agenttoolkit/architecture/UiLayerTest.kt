@@ -17,7 +17,7 @@ class UiLayerTest {
         val leaking = Scopes.production
             .classesAndInterfacesAndObjects(includeNested = false)
             .withNameMatching(Regex(".+(UiState|Ui|Intent|Navigation)"))
-            .filter { it.resideInPackage("..ui..") && !it.hasPrivateModifier }
+            .filter { (it.resideInPackage("..ui..") || it.resideInPackage("..feature..")) && !it.hasPrivateModifier }
             .filter { mentionsAny(it.text, it.containingFile.importedDomainModelNames()) }
 
         // Assert

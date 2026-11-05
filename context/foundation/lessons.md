@@ -21,6 +21,7 @@
 - **Context**: All Compose UI in :app
 - **Problem**: Hardcoded strings in composables (e.g. the first draft of MainScreen.kt/OnboardingDialog.kt) block localization and make copy changes require hunting through composables instead of one strings.xml.
 - **Rule**: All user-facing Compose UI text must live in `app/src/main/res/values/strings.xml`, referenced via `stringResource(R.string.xxx)` — never a hardcoded string literal in a composable. Preview-only sample text is exempt since it's never shipped to users.
+  **Update (modularize)**: since the module split, the file is the owning module's `src/main/res/values/strings.xml` — a feature's `impl` for its own text, `:core:ui` for text shared by more than one feature (referenced as `CoreUiR.string.xxx`). The no-literals rule is unchanged.
 - **Applies to**: plan, plan-review, implement, impl-review
 
 ## Custom dialogs build on Material3's real slot components, not a bare Dialog + manual layout

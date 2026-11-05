@@ -1,0 +1,66 @@
+package pl.luczka.todaywas.core.domain.usecase
+
+import java.time.Instant
+import java.time.LocalDate
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Test
+import pl.luczka.todaywas.core.domain.model.JournalDateSlot
+import pl.luczka.todaywas.core.domain.model.JournalEntry
+import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+
+class ObserveAddableJournalDateSlotsUseCaseTest {
+
+    private fun entryFor(date: LocalDate) =
+        JournalEntry(
+            id = "1",
+            date = date,
+            text = "text",
+            createdAt = Instant.EPOCH,
+            updatedAt = Instant.EPOCH,
+        )
+
+    @Test
+    fun `should make both slots addable when neither today nor yesterday is logged`() =
+        runTest {
+            // Arrange
+            val useCase = ObserveAddableJournalDateSlotsUseCase(FakeJournalRepository())
+
+            // Act
+            val slots = useCase().first()
+
+            // Assert
+            assertEquals(setOf(JournalDateSlot.TODAY, JournalDateSlot.YESTERDAY), slots.toSet())
+        }
+
+    @Test
+    fun `should make only yesterday addable when today is already logged`() =
+        runTest {
+            // Arrange
+            val useCase = ObserveAddableJournalDateSlotsUseCase(
+                FakeJournalRepository(listOf(entryFor(LocalDate.now()))),
+            )
+
+            // Act
+            val slots = useCase().first()
+
+            // Assert
+            assertEquals(listOf(JournalDateSlot.YESTERDAY), slots)
+        }
+
+    @Test
+    fun `should make no slots addable when both today and yesterday are logged`() =
+        runTest {
+            // Arrange
+            val useCase = ObserveAddableJournalDateSlotsUseCase(
+                FakeJournalRepository(listOf(entryFor(LocalDate.now()), entryFor(LocalDate.now().minusDays(1)))),
+            )
+
+            // Act
+            val slots = useCase().first()
+
+            // Assert
+            assertEquals(emptyList<JournalDateSlot>(), slots)
+        }
+}

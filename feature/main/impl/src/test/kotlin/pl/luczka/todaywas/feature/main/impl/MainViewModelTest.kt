@@ -1,0 +1,672 @@
+package pl.luczka.todaywas.feature.main.impl
+
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import pl.luczka.todaywas.core.domain.model.AuthError
+import pl.luczka.todaywas.core.domain.model.AuthState
+import pl.luczka.todaywas.core.domain.model.Habit
+import pl.luczka.todaywas.core.domain.model.HabitCheckIn
+import pl.luczka.todaywas.core.domain.model.HabitType
+import pl.luczka.todaywas.core.domain.model.JournalEntry
+import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
+import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
+import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
+import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
+import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+import pl.luczka.todaywas.core.testing.repository.FakeOnboardingRepository
+import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.feature.main.impl.FabActionUiState
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class MainViewModelTest {
+
+    private fun entry(
+        date: LocalDate,
+        text: String = "entry",
+    ) = JournalEntry(
+        id = date.hashCode().toString(),
+        date = date,
+        text = text,
+        createdAt = Instant.now(),
+        updatedAt = Instant.now(),
+    )
+
+    private fun habit(
+        id: String,
+        name: String = "habit-$id",
+        type: HabitType = HabitType.BINARY,
+        scaleMin: Int? = null,
+        scaleMax: Int? = null,
+    ) = Habit(
+        id = id,
+        name = name,
+        description = null,
+        type = type,
+        scaleMin = scaleMin,
+        scaleMax = scaleMax,
+        createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
+    )
+
+    private fun checkIn(
+        habitId: String,
+        date: LocalDate,
+        value: Int,
+    ) = HabitCheckIn(
+        id = habitId,
+        habitId = habitId,
+        date = date,
+        value = value,
+        createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH,
+    )
+
+    // uiState uses stateIn(WhileSubscribed), so it only updates while something collects it.
+    private fun TestScope.collectUiState(viewModel: MainViewModel) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect {}
+        }
+    }
+
+    private fun TestScope.viewModel(
+        entries: List<JournalEntry> = emptyList(),
+        habits: List<Habit> = emptyList(),
+        checkIns: List<HabitCheckIn> = emptyList(),
+        authRepository: FakeAuthRepository = FakeAuthRepository(),
+        clock: Clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
+    ): MainViewModel {
+        val journalRepository = FakeJournalRepository(entries)
+        val habitRepository = FakeHabitRepository(habits, checkIns)
+        val onboardingRepository = FakeOnboardingRepository()
+        return MainViewModel(
+            observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+            observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+            observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+            observeAuthState = ObserveAuthStateUseCase(authRepository),
+            syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+            signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+            clock = clock,
+        ).also { collectUiState(it) }
+    }
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `should flip isLoading from true to false when data has loaded`() =
+        runTest {
+            // Arrange & Act
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository()
+            val viewModel = MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
+            )
+            assertTrue(viewModel.uiState.value.isLoading)
+            collectUiState(viewModel)
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isLoading)
+        }
+
+    @Test
+    fun `should order habits by most recently checked-in first when habits are loaded`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(
+                habits = listOf(habit(id = "1"), habit(id = "2"), habit(id = "3")),
+                checkIns = listOf(
+                    checkIn(
+                        habitId = "1",
+                        date = LocalDate.now().minusDays(5),
+                        value = 1,
+                    ),
+                    checkIn(
+                        habitId = "2",
+                        date = LocalDate.now(),
+                        value = 1,
+                    ),
+                ),
+            )
+
+            // Act
+            val ids = viewModel.uiState.value.habits
+                .map { it.id }
+
+            // Assert
+            assertEquals(listOf("2", "1", "3"), ids)
+        }
+
+    @Test
+    fun `should reflect journal entries in uiState when the repository emits them`() =
+        runTest {
+            // Arrange
+            val today = entry(LocalDate.now())
+
+            // Act
+            val viewModel = viewModel(entries = listOf(today))
+            val state = viewModel.uiState.value
+
+            // Assert
+            assertEquals(listOf(today.toUiState()), state.journalEntries)
+        }
+
+    @Test
+    fun `should reflect not-logged status in habits when no check-in exists for today`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(
+                habits = listOf(
+                    habit(
+                        id = "1",
+                        name = "Drink water",
+                    ),
+                ),
+            )
+
+            // Act
+            val state = viewModel.uiState.value.habits
+                .single()
+
+            // Assert
+            assertEquals("Drink water", state.name)
+            assertEquals(HabitCheckInStatusUiState.NotLogged, state.todayStatus)
+        }
+
+    @Test
+    fun `should reflect LoggedBinary status in habits when a binary check-in exists for today`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(
+                habits = listOf(
+                    habit(
+                        id = "1",
+                        type = HabitType.BINARY,
+                    ),
+                ),
+                checkIns = listOf(
+                    checkIn(
+                        habitId = "1",
+                        date = LocalDate.now(),
+                        value = 1,
+                    ),
+                ),
+            )
+
+            // Act
+            val state = viewModel.uiState.value.habits
+                .single()
+
+            // Assert
+            assertEquals(HabitCheckInStatusUiState.LoggedBinary(done = true), state.todayStatus)
+        }
+
+    @Test
+    fun `should reflect LoggedScale status in habits when a scale check-in exists for today`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(
+                habits = listOf(
+                    habit(
+                        id = "1",
+                        type = HabitType.SCALE,
+                        scaleMin = 1,
+                        scaleMax = 5,
+                    ),
+                ),
+                checkIns = listOf(
+                    checkIn(
+                        habitId = "1",
+                        date = LocalDate.now(),
+                        value = 3,
+                    ),
+                ),
+            )
+
+            // Act
+            val state = viewModel.uiState.value.habits
+                .single()
+
+            // Assert
+            assertEquals(HabitCheckInStatusUiState.LoggedScale(value = 3), state.todayStatus)
+        }
+
+    @Test
+    fun `should ignore a check-in in habits when it was logged for a different day`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(
+                habits = listOf(habit(id = "1")),
+                checkIns = listOf(
+                    checkIn(
+                        habitId = "1",
+                        date = LocalDate.now().minusDays(1),
+                        value = 1,
+                    ),
+                ),
+            )
+
+            // Act
+            val status = viewModel.uiState.value.habits
+                .single()
+                .todayStatus
+
+            // Assert
+            assertEquals(HabitCheckInStatusUiState.NotLogged, status)
+        }
+
+    @Test
+    fun `should not disable ADD_JOURNAL_ENTRY when a journal slot is addable`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(entries = emptyList())
+
+            // Act
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
+
+            // Assert
+            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY !in disabledFabActions)
+        }
+
+    @Test
+    fun `should disable ADD_JOURNAL_ENTRY when no slots are addable`() =
+        runTest {
+            // Arrange
+            val entries = listOf(entry(LocalDate.now()), entry(LocalDate.now().minusDays(1)))
+            val viewModel = viewModel(entries = entries)
+
+            // Act
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
+
+            // Assert
+            assertTrue(FabActionUiState.ADD_JOURNAL_ENTRY in disabledFabActions)
+        }
+
+    @Test
+    fun `should never disable CREATE_HABIT but disable LOG_HABIT_CHECK_INS when no habits exist`() =
+        runTest {
+            // Arrange
+            val entries = listOf(entry(LocalDate.now()))
+            val viewModel = viewModel(entries = entries)
+
+            // Act
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
+
+            // Assert
+            assertTrue(FabActionUiState.CREATE_HABIT !in disabledFabActions)
+            assertTrue(FabActionUiState.LOG_HABIT_CHECK_INS in disabledFabActions)
+        }
+
+    @Test
+    fun `should disable no actions when slots and habits both exist`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(habits = listOf(habit(id = "1")))
+
+            // Act
+            val disabledFabActions = viewModel.uiState.value.disabledFabActions
+
+            // Assert
+            assertEquals(emptySet<FabActionUiState>(), disabledFabActions)
+        }
+
+    @Test
+    fun `should collapse the fab when FabActionClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(entries = listOf(entry(LocalDate.now())))
+            viewModel.onIntent(MainIntent.FabToggled)
+
+            // Act
+            viewModel.onIntent(MainIntent.FabActionClicked)
+
+            // Assert
+            assertEquals(false, viewModel.uiState.value.fabExpanded)
+        }
+
+    @Test
+    fun `should flip fabExpanded when FabToggled is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel(entries = emptyList())
+
+            // Act
+            viewModel.onIntent(MainIntent.FabToggled)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.fabExpanded)
+        }
+
+    @Test
+    fun `should sync local data when the screen loads while already signed in`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
+
+            // Act
+            MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
+            )
+
+            // Assert
+            assertEquals(1, journalRepository.syncWithRemoteCallCount)
+            assertEquals(1, habitRepository.syncWithRemoteCallCount)
+        }
+
+    @Test
+    fun `should not sync local data when the screen loads while signed out`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)
+
+            // Act
+            MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
+            )
+
+            // Assert
+            assertEquals(0, journalRepository.syncWithRemoteCallCount)
+            assertEquals(0, habitRepository.syncWithRemoteCallCount)
+        }
+
+    @Test
+    fun `should show the account sheet when AccountIconClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+
+            // Act
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should hide the account sheet when AccountSheetDismissed is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.AccountSheetDismissed)
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should reflect a signed-in session in authState when the user signs in`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(initialState = AuthState.SignedOut)
+            val viewModel = viewModel(authRepository = authRepository)
+
+            // Act
+            authRepository.emit(
+                AuthState.SignedIn(
+                    userId = "u1",
+                    email = "person@example.com",
+                ),
+            )
+
+            // Assert
+            assertEquals(AuthStateUi.SignedIn(email = "person@example.com"), viewModel.uiState.value.authState)
+        }
+
+    @Test
+    fun `should close the sheet when SignInSignUpPromptClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignInSignUpPromptClicked)
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should show the sign-out confirmation when SignOutClicked is dispatched`() =
+        runTest {
+            // Arrange
+            val viewModel = viewModel()
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Assert
+            assertTrue(viewModel.uiState.value.isSignOutConfirmVisible)
+        }
+
+    @Test
+    fun `should hide the sign-out confirmation without signing out when SignOutCancelled is dispatched`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutCancelled)
+
+            // Assert
+            assertTrue(!viewModel.uiState.value.isSignOutConfirmVisible)
+            assertEquals(0, authRepository.signOutCallCount)
+        }
+
+    @Test
+    fun `should sign out and close the dialog and sheet when SignOutConfirmed succeeds`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            val state = viewModel.uiState.value
+            assertEquals(1, authRepository.signOutCallCount)
+            assertTrue(!state.isSigningOut)
+            assertTrue(!state.isSignOutConfirmVisible)
+            assertTrue(!state.isAccountSheetVisible)
+        }
+
+    @Test
+    fun `should stop signing out but leave the dialog and sheet open when SignOutConfirmed fails`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
+            authRepository.signOutError = AuthError.Unknown
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            val state = viewModel.uiState.value
+            assertEquals(1, authRepository.signOutCallCount)
+            assertTrue(!state.isSigningOut)
+            assertTrue(state.isSignOutConfirmVisible)
+            assertTrue(state.isAccountSheetVisible)
+            assertEquals(AuthErrorUiState.UNKNOWN, state.userMessage)
+        }
+
+    @Test
+    fun `should clear userMessage when UserMessageShown is dispatched`() =
+        runTest {
+            // Arrange
+            val authRepository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
+            authRepository.signOutError = AuthError.Unknown
+            val viewModel = viewModel(authRepository = authRepository)
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Act
+            viewModel.onIntent(MainIntent.UserMessageShown)
+
+            // Assert
+            assertEquals(null, viewModel.uiState.value.userMessage)
+        }
+
+    @Test
+    fun `should clear synced local data when SignOutConfirmed succeeds`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
+            val viewModel = MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
+            )
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(1, journalRepository.clearLocalCallCount)
+            assertEquals(1, habitRepository.clearLocalCallCount)
+            assertEquals(1, onboardingRepository.resetSyncFlagCallCount)
+        }
+
+    @Test
+    fun `should not clear local data when SignOutConfirmed fails`() =
+        runTest {
+            // Arrange
+            val journalRepository = FakeJournalRepository()
+            val habitRepository = FakeHabitRepository()
+            val onboardingRepository = FakeOnboardingRepository()
+            val authRepository = FakeAuthRepository(
+                initialState = AuthState.SignedIn(
+                    userId = "u1",
+                    email = "a@b.com",
+                ),
+            )
+            authRepository.signOutError = AuthError.Unknown
+            val viewModel = MainViewModel(
+                observeJournalEntries = ObserveJournalEntriesUseCase(journalRepository),
+                observeAddableJournalDateSlots = ObserveAddableJournalDateSlotsUseCase(journalRepository),
+                observeHabitCheckInBoard = ObserveHabitCheckInBoardUseCase(habitRepository),
+                observeAuthState = ObserveAuthStateUseCase(authRepository),
+                syncLocalData = SyncLocalDataUseCase(journalRepository, habitRepository),
+                signOut = SignOutUseCase(authRepository, journalRepository, habitRepository, onboardingRepository),
+                clock = Clock.fixed(Instant.now(), ZoneId.systemDefault()),
+            )
+            viewModel.onIntent(MainIntent.AccountIconClicked)
+            viewModel.onIntent(MainIntent.SignOutClicked)
+
+            // Act
+            viewModel.onIntent(MainIntent.SignOutConfirmed)
+            runCurrent()
+
+            // Assert
+            assertEquals(0, journalRepository.clearLocalCallCount)
+            assertEquals(0, habitRepository.clearLocalCallCount)
+            assertEquals(0, onboardingRepository.resetSyncFlagCallCount)
+        }
+}

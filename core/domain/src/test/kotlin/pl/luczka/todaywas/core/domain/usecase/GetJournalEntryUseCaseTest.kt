@@ -1,0 +1,48 @@
+package pl.luczka.todaywas.core.domain.usecase
+
+import java.time.Instant
+import java.time.LocalDate
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+import pl.luczka.todaywas.core.domain.model.JournalEntry
+import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+
+class GetJournalEntryUseCaseTest {
+
+    @Test
+    fun `should return the entry when found`() =
+        runTest {
+            // Arrange
+            val entry = JournalEntry(
+                id = "1",
+                date = LocalDate.of(2026, 7, 27),
+                text = "Today was good.",
+                createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
+            )
+            val repository = FakeJournalRepository(initialEntries = listOf(entry))
+            val useCase = GetJournalEntryUseCase(repository)
+
+            // Act
+            val result = useCase("1")
+
+            // Assert
+            assertEquals(entry, result)
+        }
+
+    @Test
+    fun `should return null when not found`() =
+        runTest {
+            // Arrange
+            val repository = FakeJournalRepository()
+            val useCase = GetJournalEntryUseCase(repository)
+
+            // Act
+            val result = useCase("1")
+
+            // Assert
+            assertNull(result)
+        }
+}

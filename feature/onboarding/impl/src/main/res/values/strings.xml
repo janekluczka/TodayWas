@@ -1,0 +1,25 @@
+<resources>
+    <string name="onboarding_welcome_title">Welcome to Today Was</string>
+
+    <string name="onboarding_welcome_description">Track your journal and habits effortlessly in one place</string>
+
+    <string name="onboarding_welcome_cta">Get started</string>
+
+    <string name="onboarding_account_title">Your data, your choice</string>
+
+    <string name="onboarding_account_description">All your data is stored locally, but you can enable remote sync and AI assist features by creating a free account.</string>
+
+    <string name="onboarding_account_continue_without_account_cta">Continue without account</string>
+
+    <string name="onboarding_account_error">Something went wrong. Please try again.</string>
+
+    <string name="onboarding_all_set_title">All set!</string>
+
+    <string name="onboarding_all_set_cta">Get started</string>
+
+    <string name="onboarding_all_set_no_account_message">You\'re all set to start journaling and tracking habits locally.</string>
+
+    <string name="onboarding_all_set_signed_in_format">Welcome back! You\'re signed in as %1$s.</string>
+
+    <string name="onboarding_all_set_account_created_message">Your account is ready. Your data will now sync across devices.</string>
+</resources>

@@ -25,6 +25,8 @@ jobs:
             android:
               - 'app/**'
               - 'core/**'
+              - 'feature/**'
+              - 'build-logic/**'
               - 'config/**'
               - 'ktlint-rules/**'
               - 'architecture-tests/**'
@@ -75,8 +77,8 @@ jobs:
       # or a new <version>.json wasn't committed.
       - name: Room schemas are committed
         run: |
-          git diff --exit-code -- app/schemas
-          test -z "$(git status --porcelain -- app/schemas)"
+          git diff --exit-code -- core/database/schemas
+          test -z "$(git status --porcelain -- core/database/schemas)"
 
   deploy-edge-function:
     needs: changes

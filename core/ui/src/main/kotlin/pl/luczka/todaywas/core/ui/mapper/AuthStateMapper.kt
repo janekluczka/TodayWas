@@ -1,0 +1,10 @@
+package pl.luczka.todaywas.core.ui.mapper
+
+import pl.luczka.todaywas.core.domain.model.AuthState
+import pl.luczka.todaywas.core.ui.model.AuthStateUi
+
+fun AuthState.toUiState(): AuthStateUi = when (this) {
+    AuthState.Loading -> AuthStateUi.Loading
+    is AuthState.SignedIn -> AuthStateUi.SignedIn(email = email)
+    AuthState.SignedOut -> AuthStateUi.SignedOut
+}

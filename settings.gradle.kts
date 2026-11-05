@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -25,5 +26,22 @@ dependencyResolutionManagement {
 rootProject.name = "Today Was"
 include(":app")
 include(":core:designsystem")
+include(":core:data")
+include(":core:database")
+include(":core:domain")
+include(":core:navigation")
+include(":core:network")
+include(":core:testing")
+include(":core:ui")
+include(":feature:account:api")
+include(":feature:account:impl")
+include(":feature:habit:api")
+include(":feature:habit:impl")
+include(":feature:journal:api")
+include(":feature:journal:impl")
+include(":feature:main:api")
+include(":feature:main:impl")
+include(":feature:onboarding:api")
+include(":feature:onboarding:impl")
 include(":ktlint-rules")
 include(":architecture-tests")

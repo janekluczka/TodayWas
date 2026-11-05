@@ -22,3 +22,7 @@ internal fun mentionsAny(
     text: String,
     names: Set<String>,
 ): Boolean = names.any { Regex("""\b${Regex.escape(it)}\b""").containsMatchIn(text) }
+
+/** Konsist's module name with `/` separators (it reports `core\data` on Windows), e.g. `core/data`. */
+internal val KoFileDeclaration.modulePath: String
+    get() = moduleName.replace('\\', '/')

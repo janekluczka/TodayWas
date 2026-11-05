@@ -28,12 +28,13 @@ ktlint {
 }
 
 tasks.test {
-    // Konsist parses the other modules' sources from disk, which Gradle doesn't see as inputs; declare
-    // them so the task reruns when they change instead of being skipped as up to date.
+    // Konsist parses the other modules' sources, and ModuleTest their build scripts, from disk, which
+    // Gradle doesn't see as inputs; declare them so the task reruns when they change instead of being
+    // skipped as up to date.
     inputs
         .files(
             rootProject.fileTree(rootDir) {
-                include("**/src/**/*.kt")
+                include("**/src/**/*.kt", "**/build.gradle.kts")
                 exclude("**/build/**")
             },
         ).withPathSensitivity(PathSensitivity.RELATIVE)
