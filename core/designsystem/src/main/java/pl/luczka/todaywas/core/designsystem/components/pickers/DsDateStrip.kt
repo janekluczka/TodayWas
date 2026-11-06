@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -82,7 +82,7 @@ private fun DateStripCard(
         onClick = onClick,
         enabled = available,
         variant = if (selected) DsCardVariant.PRIMARY else DsCardVariant.SECONDARY,
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
