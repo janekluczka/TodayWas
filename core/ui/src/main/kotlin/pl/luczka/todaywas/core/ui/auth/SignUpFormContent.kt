@@ -49,7 +49,9 @@ fun SignUpFormContent(
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxWidth().verticalScroll(scrollState),
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(scrollState),
     ) {
         DsTextField(
             value = state.email,
@@ -101,7 +103,9 @@ fun SignUpFormContent(
             text = stringResource(R.string.auth_form_sign_up_cta),
             onClick = onSubmitClick,
             loading = state.isSubmitting,
-            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space200),
         )
         GoogleSignInLaunchButton(
             enabled = !state.isSubmitting,

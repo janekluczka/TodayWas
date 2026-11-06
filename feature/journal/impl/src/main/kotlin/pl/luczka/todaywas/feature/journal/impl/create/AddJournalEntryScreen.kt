@@ -121,7 +121,11 @@ private fun AddJournalEntryScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             JournalDateStrip(
                 uiState = uiState,
                 onIntent = onIntent,
@@ -147,7 +151,9 @@ private fun AddJournalEntryScreenContent(
                         starterPrompts = uiState.starterPrompts,
                         onPromptClick = { onIntent(AddJournalEntryIntent.TextChanged(it)) },
                         onHelpMeStartClick = { onIntent(AddJournalEntryIntent.HelpMeStartClicked) },
-                        modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(),
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .fillMaxWidth(),
                     )
                 } else if (uiState.authState is AuthStateUi.SignedIn && uiState.text.length <= MAX_REFINE_TEXT_LENGTH) {
                     DsAssistChip(
@@ -325,7 +331,9 @@ internal fun HelpMeStartBottomSheet(
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-                modifier = Modifier.fillMaxWidth().padding(DsSpacing.space600),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(DsSpacing.space600),
             ) {
                 when (uiState.step) {
                     HelpMeStartStep.SIGNED_OUT -> {

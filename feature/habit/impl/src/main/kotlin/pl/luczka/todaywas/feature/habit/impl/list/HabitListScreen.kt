@@ -79,7 +79,11 @@ private fun HabitListScreenContent(
         },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             SortChipRow(
                 selected = uiState.selectedSort,
                 onSortSelect = { onIntent(HabitListIntent.SortSelected(it)) },
@@ -88,7 +92,10 @@ private fun HabitListScreenContent(
             if (!uiState.isLoading && uiState.habits.isEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = DsSpacing.space400),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = DsSpacing.space400),
                 ) {
                     DsText(
                         text = stringResource(CoreUiR.string.main_habit_empty_state),

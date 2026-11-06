@@ -80,11 +80,8 @@ class JournalEntryDetailViewModelTest {
 
             // Assert
             assertFalse(viewModel.uiState.value.isLoading)
-            assertEquals(
-                "Original text.",
-                viewModel.uiState.value.entry
-                    ?.text,
-            )
+            val shownEntry = viewModel.uiState.value.entry
+            assertEquals("Original text.", shownEntry?.text)
             assertTrue(viewModel.uiState.value.isEditable)
         }
 
@@ -122,11 +119,8 @@ class JournalEntryDetailViewModelTest {
             val repository = FakeJournalRepository(initialEntries = listOf(entry))
             val viewModel = viewModel(repository)
             val detailCollector = collectUiState(viewModel)
-            assertEquals(
-                "Original text.",
-                viewModel.uiState.value.entry
-                    ?.text,
-            )
+            val entryBeforeEdit = viewModel.uiState.value.entry
+            assertEquals("Original text.", entryBeforeEdit?.text)
             // Navigating to Edit takes Detail out of composition: the ViewModel is retained, its
             // state stops being collected, and the upstream stops after the 5s grace period.
             detailCollector.cancel()
@@ -137,11 +131,8 @@ class JournalEntryDetailViewModelTest {
             collectUiState(viewModel)
 
             // Assert
-            assertEquals(
-                "Saved in Edit.",
-                viewModel.uiState.value.entry
-                    ?.text,
-            )
+            val shownEntry = viewModel.uiState.value.entry
+            assertEquals("Saved in Edit.", shownEntry?.text)
         }
 
     @Test
@@ -158,11 +149,8 @@ class JournalEntryDetailViewModelTest {
             collectUiState(viewModel)
 
             // Assert
-            assertEquals(
-                "Saved in Edit.",
-                viewModel.uiState.value.entry
-                    ?.text,
-            )
+            val shownEntry = viewModel.uiState.value.entry
+            assertEquals("Saved in Edit.", shownEntry?.text)
         }
 
     @Test

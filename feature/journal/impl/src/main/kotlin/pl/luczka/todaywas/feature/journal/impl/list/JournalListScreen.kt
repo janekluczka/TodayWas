@@ -83,7 +83,11 @@ private fun JournalListScreenContent(
         },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp
             // content padding via contentPadding, so it scrolls edge-to-edge while still resting
             // at the same inset as the rest of the screen's content.
@@ -92,7 +96,9 @@ private fun JournalListScreenContent(
                 cellSize = DsContributionGridSize.MEDIUM,
                 contentPadding = PaddingValues(horizontal = DsSpacing.space400),
                 showMonthLabels = true,
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space200),
             )
             SortChipRow(
                 selected = uiState.selectedSort,
@@ -102,7 +108,10 @@ private fun JournalListScreenContent(
             if (!uiState.isLoading && uiState.entries.isEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = DsSpacing.space400),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = DsSpacing.space400),
                 ) {
                     DsText(
                         text = stringResource(CoreUiR.string.main_journal_empty_state),

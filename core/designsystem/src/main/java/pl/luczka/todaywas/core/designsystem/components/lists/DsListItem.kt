@@ -34,7 +34,10 @@ fun DsListItem(
     val clickableModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth().then(clickableModifier).padding(DsSpacing.space400),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(clickableModifier)
+            .padding(DsSpacing.space400),
     ) {
         if (leadingIcon != null) {
             DsIcon(

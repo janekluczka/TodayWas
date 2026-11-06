@@ -61,7 +61,10 @@ private fun OnboardingAllSetScreenContent(
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(DsSpacing.space600),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(DsSpacing.space600),
         ) {
             DsText(
                 text = stringResource(R.string.onboarding_all_set_title),
@@ -75,7 +78,9 @@ private fun OnboardingAllSetScreenContent(
             DsButton(
                 text = stringResource(R.string.onboarding_all_set_cta),
                 onClick = { onIntent(OnboardingAllSetIntent.GetStartedClicked) },
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space600),
             )
         }
     }

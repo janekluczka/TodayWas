@@ -5,5 +5,8 @@ import com.pinterest.ktlint.rule.engine.core.api.RuleProvider
 import com.pinterest.ktlint.rule.engine.core.api.RuleSetId
 
 class AgentToolkitRuleSetProvider : RuleSetProviderV3(RuleSetId("agent-toolkit")) {
-    override fun getRuleProviders(): Set<RuleProvider> = setOf(RuleProvider { ArgumentListMultilineRule() })
+    override fun getRuleProviders(): Set<RuleProvider> = setOf(
+        RuleProvider { ArgumentListMultilineRule() },
+        RuleProvider { ModifierChainMultilineRule() },
+    )
 }

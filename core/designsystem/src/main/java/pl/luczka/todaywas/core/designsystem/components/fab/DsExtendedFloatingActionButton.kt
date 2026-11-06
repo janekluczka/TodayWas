@@ -56,7 +56,12 @@ fun DsExtendedFloatingActionButton(
     }
     Box(modifier = modifier) {
         if (!enabled) {
-            Box(modifier = Modifier.matchParentSize().clip(shape).background(MaterialTheme.colorScheme.background))
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(shape)
+                    .background(MaterialTheme.colorScheme.background),
+            )
         }
         ExtendedFloatingActionButton(
             onClick = { if (enabled) onClick() },

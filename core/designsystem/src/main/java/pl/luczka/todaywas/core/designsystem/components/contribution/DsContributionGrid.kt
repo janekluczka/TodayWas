@@ -158,7 +158,9 @@ internal fun ContributionCell(
             }
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = modifier.size(cellSize).then(clickModifier),
+                modifier = modifier
+                    .size(cellSize)
+                    .then(clickModifier),
             ) {
                 if (selected) {
                     Box(
