@@ -1,10 +1,10 @@
 ---
 change_id: mvp-certification-fixes
 title: Close the 3 gaps from the 10xDevs MVP certification check
-status: planned
+status: archived
 created: 2026-08-16
 updated: 2026-11-06
-archived_at: null
+archived_at: 2026-11-06T16:13:21Z
 ---
 
 ## Notes
