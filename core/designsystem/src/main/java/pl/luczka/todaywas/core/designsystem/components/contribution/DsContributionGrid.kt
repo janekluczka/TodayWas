@@ -103,8 +103,8 @@ enum class DsContributionGridSize(
     val monthGap: Dp,
     val cellCornerRadius: Dp,
 ) {
-    MEDIUM(cellSize = 24.dp, cellSpacing = 4.dp, monthGap = 24.dp, cellCornerRadius = 4.dp),
-    LARGE(cellSize = 32.dp, cellSpacing = 4.dp, monthGap = 24.dp, cellCornerRadius = 8.dp),
+    MEDIUM(cellSize = 24.dp, cellSpacing = DsSpacing.space100, monthGap = DsSpacing.space600, cellCornerRadius = 4.dp),
+    LARGE(cellSize = 32.dp, cellSpacing = DsSpacing.space100, monthGap = DsSpacing.space600, cellCornerRadius = 8.dp),
 }
 
 @Composable
@@ -186,7 +186,7 @@ internal fun ContributionCell(
 // cellSize picks one of the named DsContributionGridSize presets — the screen just passes the preset it wants rather
 // than wiring cell/spacing/gap dp values by hand. selectedDate/onCellClick default to null so every existing
 // non-interactive caller compiles and renders unchanged. contentPadding defaults to none — the screen embedding this
-// grid owns whatever horizontal inset it needs (e.g. 16.dp to match the rest of that screen's content) rather than this
+// grid owns whatever horizontal inset it needs (e.g. DsSpacing.space400 to match the rest of that screen's content) rather than this
 // component baking one in, since a hardcoded inset here would either double up with or fight the screen's own.
 // showMonthLabels is opt-in (defaults off) since Main's compact overview scale has no room for it; screens with a
 // full-size drill-down grid can turn it on.
