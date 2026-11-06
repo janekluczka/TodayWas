@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsAlpha
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 // A shared clickable/selectable card for small repeated-choice UI (segmented rows, date strips, and similar pickers) so
@@ -38,11 +39,11 @@ fun DsSelectableCard(
         !enabled -> {
             val isSelectedVariant = variant != DsCardVariant.NEUTRAL
             containerColor = if (isSelectedVariant) {
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                MaterialTheme.colorScheme.onSurface.copy(alpha = DsAlpha.DISABLED_CONTAINER)
             } else {
                 Color.Transparent
             }
-            contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DsAlpha.DISABLED_CONTENT)
         }
         variant == DsCardVariant.PRIMARY -> {
             containerColor = MaterialTheme.colorScheme.primary

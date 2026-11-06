@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 // Fixed brand palette on every device — no Material You dynamic color. Dynamic color would pull the scheme from the
 // user's wallpaper, making DsColor's calm/cool palette meaningless (and making the contribution-grid intensity
@@ -98,11 +99,21 @@ fun DsTheme(
     content: @Composable () -> Unit,
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colors = if (darkTheme) DarkDsColors else LightDsColors
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = DsTypography,
-        shapes = DsShapes,
-        content = content,
-    )
+    CompositionLocalProvider(LocalDsColors provides colors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = DsTypography,
+            shapes = DsShapes,
+            content = content,
+        )
+    }
+}
+
+// Read access to the theme values M3's MaterialTheme has no slot for, mirroring MaterialTheme.colorScheme.
+object DsTheme {
+    val colors: DsColors
+        @Composable
+        get() = LocalDsColors.current
 }

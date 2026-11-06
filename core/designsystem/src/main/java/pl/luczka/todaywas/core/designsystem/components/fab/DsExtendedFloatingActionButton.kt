@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsAlpha
 import pl.luczka.todaywas.core.designsystem.tokens.DsElevation
 
 // Standard M3 disabled-container/content alpha (matches Button's own disabled treatment) — an unavailable FAB action
@@ -34,12 +35,12 @@ fun DsExtendedFloatingActionButton(
     val containerColor = if (enabled) {
         FloatingActionButtonDefaults.containerColor
     } else {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        MaterialTheme.colorScheme.onSurface.copy(alpha = DsAlpha.DISABLED_CONTAINER)
     }
     val contentColor = if (enabled) {
         contentColorFor(containerColor)
     } else {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+        MaterialTheme.colorScheme.onSurface.copy(alpha = DsAlpha.DISABLED_CONTENT)
     }
     // A disabled control casts no shadow (matches Button's own disabled treatment) — with a
     // translucent container color, the default elevated shadow would otherwise show through as a

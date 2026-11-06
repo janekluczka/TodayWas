@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsAlpha
 
 // A borderless, containerless text field for "free writing" contexts (the journal body) -- no
 // outline/underline/filled background, just text blending into the surrounding surface, closer to
@@ -41,7 +42,7 @@ fun DsPlainTextField(
             DsText(
                 text = placeholder,
                 style = textStyle,
-                color = contentColor.copy(alpha = 0.6f),
+                color = contentColor.copy(alpha = DsAlpha.PLACEHOLDER),
             )
         }
         BasicTextField(
