@@ -34,6 +34,7 @@ import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsRadius
 import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.core.designsystem.tokens.DsStroke
 
 enum class DsContributionLevel {
     NONE,
@@ -89,12 +90,10 @@ internal val DarkLevelColors = mapOf(
     DsContributionLevel.LEVEL_5 to DsColor.teal90,
 )
 
-// The selected-cell ring is drawn as three concentric layers, outside in: a 2.dp ring in the selection color, a 2.dp
-// gap that lets the surface behind the grid show through (so the ring visibly floats off the cell rather than sitting
-// flush against it), then the cell's own level color filling the remainder. The ring's own outer corner radius matches
+// The selected-cell ring is drawn as three concentric layers, outside in: a DsStroke.selectionRing ring in the selection
+// color, a DsStroke.selectionRingGap gap that lets the surface behind the grid show through (so the ring visibly floats
+// off the cell rather than sitting flush against it), then the cell's own level color filling the remainder. The ring's own outer corner radius matches
 // the preset's own cellCornerRadius so a selected cell reads as the same rounded shape, just outlined.
-internal val SELECTION_RING_WIDTH = 2.dp
-internal val SELECTION_RING_GAP = 1.dp
 
 // Named presets a screen picks from instead of wiring cell/spacing/gap/corner dp values by hand.
 // cellCornerRadius is per-preset (not a single shared constant) since a bigger cell reads better
@@ -157,12 +156,12 @@ internal fun ContributionCell(
                 Modifier
             }
             val fillSize = if (selected) {
-                cellSize - (SELECTION_RING_WIDTH + SELECTION_RING_GAP) * 2
+                cellSize - (DsStroke.selectionRing + DsStroke.selectionRingGap) * 2
             } else {
                 cellSize
             }
             val fillShape = if (selected) {
-                val fillCornerRadius = (cellCornerRadius - SELECTION_RING_WIDTH - SELECTION_RING_GAP)
+                val fillCornerRadius = (cellCornerRadius - DsStroke.selectionRing - DsStroke.selectionRingGap)
                     .coerceAtLeast(0.dp)
                 RoundedCornerShape(fillCornerRadius)
             } else {
@@ -178,7 +177,7 @@ internal fun ContributionCell(
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .border(SELECTION_RING_WIDTH, MaterialTheme.colorScheme.primary, shape),
+                            .border(DsStroke.selectionRing, MaterialTheme.colorScheme.primary, shape),
                     )
                 }
                 Box(
