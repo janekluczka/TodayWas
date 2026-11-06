@@ -20,9 +20,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.AiAssistError
-import pl.luczka.todaywas.core.domain.model.AiAssistException
-import pl.luczka.todaywas.core.domain.model.JournalPromptTone
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistError
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistException
+import pl.luczka.todaywas.domain.aiassist.model.JournalPromptTone
 
 class AiAssistRepositoryImplTest {
 

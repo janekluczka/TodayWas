@@ -1,11 +1,11 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.aiassist.usecase
 
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.JournalPromptTone
 import pl.luczka.todaywas.core.testing.repository.FakeAiAssistRepository
+import pl.luczka.todaywas.domain.aiassist.model.JournalPromptTone
 
 class RequestJournalStarterPromptUseCaseTest {
 

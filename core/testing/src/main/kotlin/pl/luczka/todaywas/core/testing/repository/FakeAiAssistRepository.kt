@@ -1,8 +1,8 @@
 package pl.luczka.todaywas.core.testing.repository
 
-import pl.luczka.todaywas.core.domain.model.AiPromptResult
-import pl.luczka.todaywas.core.domain.model.JournalPromptTone
-import pl.luczka.todaywas.core.domain.repository.AiAssistRepository
+import pl.luczka.todaywas.domain.aiassist.model.AiPromptResult
+import pl.luczka.todaywas.domain.aiassist.model.JournalPromptTone
+import pl.luczka.todaywas.domain.aiassist.repository.AiAssistRepository
 
 class FakeAiAssistRepository : AiAssistRepository {
 

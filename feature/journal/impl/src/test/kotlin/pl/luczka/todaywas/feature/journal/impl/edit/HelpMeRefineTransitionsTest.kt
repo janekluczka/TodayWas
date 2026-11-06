@@ -3,9 +3,9 @@ package pl.luczka.todaywas.feature.journal.impl.edit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.AiAssistError
-import pl.luczka.todaywas.core.domain.model.AiAssistException
-import pl.luczka.todaywas.core.domain.model.AiPromptResult
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistError
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistException
+import pl.luczka.todaywas.domain.aiassist.model.AiPromptResult
 import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 

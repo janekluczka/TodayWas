@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.model
+package pl.luczka.todaywas.domain.aiassist.model
 
 enum class JournalPromptTone(
     val level: Int,

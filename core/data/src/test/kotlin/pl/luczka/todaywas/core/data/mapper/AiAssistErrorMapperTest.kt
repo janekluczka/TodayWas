@@ -13,7 +13,7 @@ import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.AiAssistError
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistError
 
 class AiAssistErrorMapperTest {
 

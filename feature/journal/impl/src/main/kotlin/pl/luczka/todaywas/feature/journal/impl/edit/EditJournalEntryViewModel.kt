@@ -17,12 +17,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
-import pl.luczka.todaywas.core.domain.usecase.RequestJournalRefinementPromptUseCase
-import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.domain.aiassist.usecase.RequestJournalRefinementPromptUseCase
+import pl.luczka.todaywas.domain.aiassist.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.entry.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.entry.usecase.IsEditableUseCase

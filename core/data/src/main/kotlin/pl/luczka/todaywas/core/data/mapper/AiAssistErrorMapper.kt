@@ -4,7 +4,7 @@ import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.exceptions.UnauthorizedRestException
 import java.io.IOException
-import pl.luczka.todaywas.core.domain.model.AiAssistError
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistError
 
 private const val HTTP_TOO_MANY_REQUESTS = 429
 
