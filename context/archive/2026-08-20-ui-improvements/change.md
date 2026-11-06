@@ -1,10 +1,10 @@
 ---
 change_id: ui-improvements
 title: UI improvements across every screen, following the user flow
-status: planned
+status: archived
 created: 2026-08-20
-updated: 2026-08-21
-archived_at: null
+updated: 2026-11-06
+archived_at: 2026-11-06T16:13:20Z
 ---
 
 ## Notes
@@ -17,7 +17,7 @@ one screen at a time. Scoped as a single change/feature rather than one change p
 `context/archive/2026-08-18-architecture-hardening/`. This change starts fresh on
 `feature/ui-improvements`, branched off `master` at that point.
 
-Note: `context/changes/ux-refinements/` (status `impl_reviewed`, created 2026-08-11 — bottom-nav
+Note: `context/archive/2026-08-11-ux-refinements/` (status `impl_reviewed`, created 2026-08-11 — bottom-nav
 removal / hub main screen) already appears fully implemented in the current codebase but was never
 archived. Out of scope for this change unless it turns out to overlap; flagged here for later
-cleanup.
+cleanup (archived 2026-11-06).
