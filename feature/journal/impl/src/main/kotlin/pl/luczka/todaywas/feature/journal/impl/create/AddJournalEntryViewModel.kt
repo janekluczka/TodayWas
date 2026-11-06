@@ -13,8 +13,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.model.AiAssistException
-import pl.luczka.todaywas.core.domain.model.AiPromptResult
 import pl.luczka.todaywas.core.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
@@ -24,12 +22,13 @@ import pl.luczka.todaywas.core.ui.mapper.toDomain
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
-import pl.luczka.todaywas.feature.journal.impl.edit.HelpMeRefineStep
 import pl.luczka.todaywas.feature.journal.impl.edit.HelpMeRefineUiState
 import pl.luczka.todaywas.feature.journal.impl.edit.MAX_REFINE_TEXT_LENGTH
+import pl.luczka.todaywas.feature.journal.impl.edit.applyResult
+import pl.luczka.todaywas.feature.journal.impl.edit.requestStarted
+import pl.luczka.todaywas.feature.journal.impl.edit.requestableTone
+import pl.luczka.todaywas.feature.journal.impl.edit.resetForNewSession
 import pl.luczka.todaywas.feature.journal.impl.mapper.toDomain
-import pl.luczka.todaywas.feature.journal.impl.mapper.toUiState
-import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 @HiltViewModel
@@ -209,20 +208,8 @@ internal class AddJournalEntryViewModel @Inject constructor(
 
     private fun onGenerate() {
         val helpMeStart = screenState.value.helpMeStart
-        val tone = helpMeStart.selectedTone ?: return
-        if (helpMeStart.isGenerating) return
-        // remainingToday is only known once a call has actually returned this session (see its
-        // doc comment) -- null means "don't know yet", so the first call of a session is never
-        // preemptively blocked here; the server is the real source of truth either way.
-        if ((helpMeStart.remainingToday ?: 1) <= 0) return
-        screenState.update {
-            it.copy(
-                helpMeStart = it.helpMeStart.copy(
-                    isGenerating = true,
-                    error = null,
-                ),
-            )
-        }
+        val tone = helpMeStart.requestableTone() ?: return
+        screenState.update { it.copy(helpMeStart = it.helpMeStart.requestStarted()) }
         generateJob = viewModelScope.launch {
             val result = requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
             screenState.update { current -> current.copy(helpMeStart = current.helpMeStart.applyResult(result)) }
@@ -239,45 +226,6 @@ internal class AddJournalEntryViewModel @Inject constructor(
             )
         }
     }
-
-    // Preserves remainingToday — see its doc comment on HelpMeStartUiState — and only resets when
-    // a new AddJournalEntryViewModel instance is created.
-    private fun HelpMeStartUiState.resetForNewSession(
-        isVisible: Boolean,
-        step: HelpMeStartStep = HelpMeStartStep.INPUT,
-    ): HelpMeStartUiState = copy(
-        isVisible = isVisible,
-        step = step,
-        selectedTone = null,
-        thoughts = "",
-        generatedText = null,
-        isGenerating = false,
-        error = null,
-    )
-
-    private fun HelpMeStartUiState.applyResult(result: Result<AiPromptResult>): HelpMeStartUiState = result.fold(
-        onSuccess = { prompt ->
-            copy(
-                step = HelpMeStartStep.PREVIEW,
-                generatedText = prompt.text,
-                isGenerating = false,
-                error = null,
-                remainingToday = prompt.remainingToday,
-            )
-        },
-        onFailure = { throwable ->
-            val error = (throwable as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
-            copy(
-                isGenerating = false,
-                error = error,
-                remainingToday = if (error == AiAssistErrorUiState.DAILY_LIMIT_REACHED) {
-                    0
-                } else {
-                    remainingToday
-                },
-            )
-        },
-    )
 
     private fun onHelpMeRefineClicked() {
         val state = uiState.value
@@ -302,17 +250,8 @@ internal class AddJournalEntryViewModel @Inject constructor(
 
     private fun onRefine() {
         val helpMeRefine = screenState.value.helpMeRefine
-        val tone = helpMeRefine.selectedTone ?: return
-        if (helpMeRefine.isGenerating) return
-        if ((helpMeRefine.remainingToday ?: 1) <= 0) return
-        screenState.update {
-            it.copy(
-                helpMeRefine = it.helpMeRefine.copy(
-                    isGenerating = true,
-                    error = null,
-                ),
-            )
-        }
+        val tone = helpMeRefine.requestableTone() ?: return
+        screenState.update { it.copy(helpMeRefine = it.helpMeRefine.requestStarted()) }
         refineJob = viewModelScope.launch {
             val result = requestJournalRefinementPrompt(
                 screenState.value.text,
@@ -333,39 +272,4 @@ internal class AddJournalEntryViewModel @Inject constructor(
             )
         }
     }
-
-    // Preserves remainingToday, mirroring HelpMeStartUiState's resetForNewSession.
-    private fun HelpMeRefineUiState.resetForNewSession(isVisible: Boolean): HelpMeRefineUiState = copy(
-        isVisible = isVisible,
-        step = HelpMeRefineStep.INPUT,
-        selectedTone = null,
-        thoughts = "",
-        refinedText = null,
-        isGenerating = false,
-        error = null,
-    )
-
-    private fun HelpMeRefineUiState.applyResult(result: Result<AiPromptResult>): HelpMeRefineUiState = result.fold(
-        onSuccess = { prompt ->
-            copy(
-                step = HelpMeRefineStep.PREVIEW,
-                refinedText = prompt.text,
-                isGenerating = false,
-                error = null,
-                remainingToday = prompt.remainingToday,
-            )
-        },
-        onFailure = { throwable ->
-            val error = (throwable as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
-            copy(
-                isGenerating = false,
-                error = error,
-                remainingToday = if (error == AiAssistErrorUiState.DAILY_LIMIT_REACHED) {
-                    0
-                } else {
-                    remainingToday
-                },
-            )
-        },
-    )
 }

@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.model.AiAssistException
-import pl.luczka.todaywas.core.domain.model.AiPromptResult
 import pl.luczka.todaywas.core.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
@@ -27,14 +25,17 @@ import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
+import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 import pl.luczka.todaywas.feature.journal.impl.create.HelpMeStartStep
 import pl.luczka.todaywas.feature.journal.impl.create.HelpMeStartUiState
 import pl.luczka.todaywas.feature.journal.impl.create.JournalStarterPromptTone
 import pl.luczka.todaywas.feature.journal.impl.create.JournalStarterPromptUiState
 import pl.luczka.todaywas.feature.journal.impl.create.STARTER_PROMPT_VARIANT_COUNT
+import pl.luczka.todaywas.feature.journal.impl.create.applyResult
+import pl.luczka.todaywas.feature.journal.impl.create.requestStarted
+import pl.luczka.todaywas.feature.journal.impl.create.requestableTone
+import pl.luczka.todaywas.feature.journal.impl.create.resetForNewSession
 import pl.luczka.todaywas.feature.journal.impl.mapper.toDomain
-import pl.luczka.todaywas.feature.journal.impl.mapper.toUiState
-import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 
 @HiltViewModel(assistedFactory = EditJournalEntryViewModel.Factory::class)
@@ -227,27 +228,12 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
 
     private fun onGenerate() {
         val helpMeStart = screenState.value.helpMeStart
-        val tone = helpMeStart.selectedTone ?: return
+        val tone = helpMeStart.requestableTone() ?: return
         val entry = uiState.value.entry ?: return
-        if (helpMeStart.isGenerating) return
-        if ((helpMeStart.remainingToday ?: 1) <= 0) return
-        screenState.update {
-            it.copy(
-                helpMeStart = it.helpMeStart.copy(
-                    isGenerating = true,
-                    error = null,
-                ),
-            )
-        }
+        screenState.update { it.copy(helpMeStart = it.helpMeStart.requestStarted()) }
         generateJob = viewModelScope.launch {
             val result = requestJournalStarterPrompt(tone.toDomain(), helpMeStart.thoughts.ifBlank { null })
-            // Mirrors onRefine's expired-mid-flight handling: the 24h window can close during the
-            // 10-20s call, and this screen has no non-editing fallback to show instead.
-            if (!isEditable(entry.createdAt)) {
-                screenState.update { it.copy(helpMeStart = HelpMeStartUiState()) }
-                screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
-                return@launch
-            }
+            if (discardIfEditWindowClosed(entry) { it.copy(helpMeStart = HelpMeStartUiState()) }) return@launch
             screenState.update { current -> current.copy(helpMeStart = current.helpMeStart.applyResult(result)) }
         }
     }
@@ -287,35 +273,31 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
     private fun onRefine() {
         val state = uiState.value
         val helpMeRefine = screenState.value.helpMeRefine
-        val tone = helpMeRefine.selectedTone ?: return
+        val tone = helpMeRefine.requestableTone() ?: return
         val entry = state.entry ?: return
-        if (helpMeRefine.isGenerating) return
-        if ((helpMeRefine.remainingToday ?: 1) <= 0) return
-        screenState.update {
-            it.copy(
-                helpMeRefine = it.helpMeRefine.copy(
-                    isGenerating = true,
-                    error = null,
-                ),
-            )
-        }
+        screenState.update { it.copy(helpMeRefine = it.helpMeRefine.requestStarted()) }
         refineJob = viewModelScope.launch {
             val result = requestJournalRefinementPrompt(
                 state.text,
                 tone.toDomain(),
                 helpMeRefine.thoughts.ifBlank { null },
             )
-            // The 24h window can close mid-request (the call takes 10-20s). Unlike the old Detail-hosted edit sheet,
-            // this screen has no non-editing display mode to fall back into, so a result landing after expiry is
-            // discarded the same way an explicit discard is: pop back to Detail, which observes and shows the
-            // (untouched) entry read-only.
-            if (!isEditable(entry.createdAt)) {
-                screenState.update { it.copy(helpMeRefine = HelpMeRefineUiState()) }
-                screenState.update { it.copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
-                return@launch
-            }
+            if (discardIfEditWindowClosed(entry) { it.copy(helpMeRefine = HelpMeRefineUiState()) }) return@launch
             screenState.update { current -> current.copy(helpMeRefine = current.helpMeRefine.applyResult(result)) }
         }
+    }
+
+    // The 24h window can close mid-request (the call takes 10-20s). Unlike the old Detail-hosted edit sheet, this
+    // screen has no non-editing display mode to fall back into, so a result landing after expiry is discarded the
+    // same way an explicit discard is: the sheet resets and the screen pops back to Detail, which observes and shows
+    // the (untouched) entry read-only. Returns whether the result was discarded.
+    private fun discardIfEditWindowClosed(
+        entry: JournalEntryUiState,
+        resetSheet: (ScreenState) -> ScreenState,
+    ): Boolean {
+        if (isEditable(entry.createdAt)) return false
+        screenState.update { resetSheet(it).copy(pendingNavigation = EditJournalEntryNavigation.Discarded) }
+        return true
     }
 
     private fun onUseRefinedTextClicked() {
@@ -328,80 +310,6 @@ internal class EditJournalEntryViewModel @AssistedInject constructor(
             )
         }
     }
-
-    // Preserves remainingToday — see its doc comment on HelpMeStartUiState — and only resets when
-    // a new EditJournalEntryViewModel instance is created.
-    private fun HelpMeStartUiState.resetForNewSession(
-        isVisible: Boolean,
-        step: HelpMeStartStep = HelpMeStartStep.INPUT,
-    ): HelpMeStartUiState = copy(
-        isVisible = isVisible,
-        step = step,
-        selectedTone = null,
-        thoughts = "",
-        generatedText = null,
-        isGenerating = false,
-        error = null,
-    )
-
-    private fun HelpMeStartUiState.applyResult(result: Result<AiPromptResult>): HelpMeStartUiState = result.fold(
-        onSuccess = { prompt ->
-            copy(
-                step = HelpMeStartStep.PREVIEW,
-                generatedText = prompt.text,
-                isGenerating = false,
-                error = null,
-                remainingToday = prompt.remainingToday,
-            )
-        },
-        onFailure = { throwable ->
-            val error = (throwable as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
-            copy(
-                isGenerating = false,
-                error = error,
-                remainingToday = if (error == AiAssistErrorUiState.DAILY_LIMIT_REACHED) {
-                    0
-                } else {
-                    remainingToday
-                },
-            )
-        },
-    )
-
-    // Preserves remainingToday, mirroring HelpMeStartUiState's resetForNewSession.
-    private fun HelpMeRefineUiState.resetForNewSession(isVisible: Boolean): HelpMeRefineUiState = copy(
-        isVisible = isVisible,
-        step = HelpMeRefineStep.INPUT,
-        selectedTone = null,
-        thoughts = "",
-        refinedText = null,
-        isGenerating = false,
-        error = null,
-    )
-
-    private fun HelpMeRefineUiState.applyResult(result: Result<AiPromptResult>): HelpMeRefineUiState = result.fold(
-        onSuccess = { prompt ->
-            copy(
-                step = HelpMeRefineStep.PREVIEW,
-                refinedText = prompt.text,
-                isGenerating = false,
-                error = null,
-                remainingToday = prompt.remainingToday,
-            )
-        },
-        onFailure = { throwable ->
-            val error = (throwable as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
-            copy(
-                isGenerating = false,
-                error = error,
-                remainingToday = if (error == AiAssistErrorUiState.DAILY_LIMIT_REACHED) {
-                    0
-                } else {
-                    remainingToday
-                },
-            )
-        },
-    )
 
     @AssistedFactory
     interface Factory {
