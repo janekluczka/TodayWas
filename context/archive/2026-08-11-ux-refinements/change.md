@@ -1,10 +1,10 @@
 ---
 change_id: ux-refinements
 title: Replace bottom nav with a hub main screen; drop onboarding focus pick
-status: impl_reviewed
+status: archived
 created: 2026-08-11
-updated: 2026-08-11
-archived_at: null
+updated: 2026-11-06
+archived_at: 2026-11-06T16:11:20Z
 ---
 
 ## Notes
