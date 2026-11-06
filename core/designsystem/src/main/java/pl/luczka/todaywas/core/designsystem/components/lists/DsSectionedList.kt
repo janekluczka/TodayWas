@@ -26,6 +26,7 @@ import pl.luczka.todaywas.core.designsystem.components.dividers.DsHorizontalDivi
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsAlpha
 import pl.luczka.todaywas.core.designsystem.tokens.DsRadius
 import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
@@ -169,7 +170,7 @@ private fun SkeletonBar(widthFraction: Float) {
             .fillMaxWidth(widthFraction)
             .height(DsSize.skeletonLineHeight)
             .background(
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.24f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = DsAlpha.SKELETON),
                 shape = MaterialTheme.shapes.extraSmall,
             ),
     )

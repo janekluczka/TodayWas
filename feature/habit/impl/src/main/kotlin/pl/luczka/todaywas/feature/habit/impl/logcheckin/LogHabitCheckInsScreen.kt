@@ -1,6 +1,5 @@
 package pl.luczka.todaywas.feature.habit.impl.logcheckin
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,7 +33,6 @@ import pl.luczka.todaywas.core.designsystem.components.pickers.DsDateStrip
 import pl.luczka.todaywas.core.designsystem.components.segmentedbuttons.DsSegmentedRow
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.theme.DsColor
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.core.ui.R as CoreUiR
@@ -150,9 +148,6 @@ private fun HabitCheckInRow(
     } else {
         { value -> value.toString() }
     }
-    val isDarkTheme = isSystemInDarkTheme()
-    val doneChipContainerColor = if (isDarkTheme) DsColor.green20 else DsColor.green90
-    val doneChipLabelColor = if (isDarkTheme) DsColor.green80 else DsColor.green40
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -162,8 +157,8 @@ private fun HabitCheckInRow(
             if (row is HabitCheckInRowUiState.AlreadyLogged) {
                 DsChip(
                     text = doneLabel,
-                    containerColor = doneChipContainerColor,
-                    labelColor = doneChipLabelColor,
+                    containerColor = DsTheme.colors.successContainer,
+                    labelColor = DsTheme.colors.onSuccessContainer,
                 )
             }
         }

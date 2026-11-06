@@ -63,6 +63,23 @@ class ComposeTest {
                 withOwnStyle.entries.joinToString { (file, found) -> "${file.nameWithExtension}: $found" },
         )
     }
+
+    @Test
+    fun `should take colors from the theme when a color is used outside theme`() {
+        // Arrange
+        val withOwnColor = Scopes.production.files
+            .filterNot { themePackage.containsMatchIn(it.packagee?.name.orEmpty()) }
+            .associateWith { file -> ownColor.findAll(file.codeOutsidePreviews()).map { it.value.trim() }.toList() }
+            .filterValues { it.isNotEmpty() }
+
+        // Assert
+        withOwnColor.keys.toList().assertEmpty(
+            additionalMessage = "Take colors from MaterialTheme.colorScheme or the theme's own color roles " +
+                "(built in designsystem/theme/), and opacities from DsAlpha; only theme/ reads the raw palette " +
+                "or isSystemInDarkTheme(). Found: " +
+                withOwnColor.entries.joinToString { (file, found) -> "${file.nameWithExtension}: $found" },
+        )
+    }
 }
 
 // Comments, strings and char literals in one alternation, so whichever starts first wins ("//" inside a string stays
@@ -79,6 +96,13 @@ private val themePackage = Regex("""(^|\.)theme(\.|$)""")
 private val textStyling = Regex(
     """(?<![\w.])\d+(?:\.\d+)?\s*\.\s*sp\b|\b(?:TextStyle|TextUnit)\(|""" +
         """\b(?:fontSize|fontWeight|fontFamily|fontStyle|letterSpacing|lineHeight)\s*=(?!=)""",
+)
+
+// A Color built by hand, a raw palette swatch (DsColor), a named color other than the Transparent/Unspecified
+// sentinels, a component branching on the system theme itself, or a literal opacity.
+private val ownColor = Regex(
+    """\bColor\(|\bDsColor\.|\bColor\.(?!Transparent\b|Unspecified\b)[A-Z]\w*|\bisSystemInDarkTheme\(|""" +
+        """\.copy\(\s*alpha\s*=\s*\d""",
 )
 
 /** This file's text with preview functions, comments and string literals blanked out. */

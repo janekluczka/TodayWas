@@ -51,3 +51,8 @@ Compose:
     # A feature's :impl declares its composables internal (house style, "Modules"), so the
     # default only_public would stop checking every screen.
     checkModifiersForVisibility: public_and_internal
+  CompositionLocalAllowlist:
+    # House style, "Compose and the design system": DsTheme provides the color roles M3 lacks through
+    # LocalDsColors, the official Compose pattern for custom colors that differ between themes. Any other
+    # new CompositionLocal still fails.
+    allowedCompositionLocals: LocalDsColors

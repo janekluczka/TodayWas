@@ -3,7 +3,6 @@ package pl.luczka.todaywas.core.designsystem.components.contribution
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +28,7 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
-import pl.luczka.todaywas.core.designsystem.theme.DsColor
+import pl.luczka.todaywas.core.designsystem.theme.DsContributionColors
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsRadius
 import pl.luczka.todaywas.core.designsystem.tokens.DsSize
@@ -66,34 +65,16 @@ sealed interface DsContributionCellUiState {
     ) : DsContributionCellUiState
 }
 
-// A tonal ramp of the app's own teal hue (DsColor.teal*), not GitHub's green — this is a journaling/habit app, not a
-// code host. Fixed (not read from MaterialTheme.colorScheme) so relative intensity comparisons stay meaningful
-// regardless of the active theme — reaches straight into the raw DsColor palette rather than through DsTheme's semantic
-// roles. One palette for every habit today; a per-habit color choice (e.g. picking a different hue per scale habit) is
-// a deliberately deferred future step, not built into this API yet. Internal (not private) so DsContributionTimeline.kt
-// can share the same rendering.
-internal val LightLevelColors = mapOf(
-    DsContributionLevel.NONE to DsColor.neutralVariant90,
-    DsContributionLevel.LEVEL_1 to DsColor.teal90,
-    DsContributionLevel.LEVEL_2 to DsColor.teal70,
-    DsContributionLevel.LEVEL_3 to DsColor.teal60,
-    DsContributionLevel.LEVEL_4 to DsColor.teal40,
-    DsContributionLevel.LEVEL_5 to DsColor.teal10,
-)
-
-internal val DarkLevelColors = mapOf(
-    DsContributionLevel.NONE to DsColor.neutralVariant30,
-    DsContributionLevel.LEVEL_1 to DsColor.teal30,
-    DsContributionLevel.LEVEL_2 to DsColor.teal60,
-    DsContributionLevel.LEVEL_3 to DsColor.teal70,
-    DsContributionLevel.LEVEL_4 to DsColor.teal80,
-    DsContributionLevel.LEVEL_5 to DsColor.teal90,
-)
-
-// The selected-cell ring is drawn as three concentric layers, outside in: a DsStroke.selectionRing ring in the selection
-// color, a DsStroke.selectionRingGap gap that lets the surface behind the grid show through (so the ring visibly floats
-// off the cell rather than sitting flush against it), then the cell's own level color filling the remainder. The ring's own outer corner radius matches
-// the preset's own cellCornerRadius so a selected cell reads as the same rounded shape, just outlined.
+// The level ramp lives in DsTheme.colors.contribution (one palette for every habit today; a per-habit hue is a
+// deliberately deferred future step). Internal (not private) so DsContributionValueBadge shares the same lookup.
+internal fun DsContributionColors.of(level: DsContributionLevel): Color = when (level) {
+    DsContributionLevel.NONE -> none
+    DsContributionLevel.LEVEL_1 -> level1
+    DsContributionLevel.LEVEL_2 -> level2
+    DsContributionLevel.LEVEL_3 -> level3
+    DsContributionLevel.LEVEL_4 -> level4
+    DsContributionLevel.LEVEL_5 -> level5
+}
 
 // Named presets a screen picks from instead of wiring cell/spacing/gap/corner dp values by hand.
 // cellCornerRadius is per-preset (not a single shared constant) since a bigger cell reads better
@@ -118,10 +99,6 @@ enum class DsContributionGridSize(
     ),
 }
 
-@Composable
-internal fun contributionLevelColors(): Map<DsContributionLevel, Color> =
-    if (isSystemInDarkTheme()) DarkLevelColors else LightLevelColors
-
 // All 7 cells in one week share the same hasGapBefore value (set uniformly by the mapper), so
 // callers only need to check the first cell to decide whether the whole week needs a margin.
 internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean = when (val cell = first()) {
@@ -132,11 +109,13 @@ internal fun List<DsContributionCellUiState>.weekHasGapBefore(): Boolean = when 
 // Pure rendering only — spacing between cells is the week container's job (a verticalArrangement), and spacing between
 // weeks is the outer LazyRow's job (horizontalArrangement) — a cell never carries its own margin, so there's no
 // edge-bleed at the very first/last cell in either axis. Selection/click only ever apply to a Level cell — a Blank cell
-// carries no date, so it silently ignores both.
+// carries no date, so it silently ignores both. A selected cell is three concentric layers, outside in: a
+// DsStroke.selectionRing ring in the primary color, a DsStroke.selectionRingGap gap that lets the surface behind show
+// through, then the level color filling the rest; the ring shares the cell's corner radius.
 @Composable
 internal fun ContributionCell(
     cell: DsContributionCellUiState,
-    levelColors: Map<DsContributionLevel, Color>,
+    levelColors: DsContributionColors,
     modifier: Modifier = Modifier,
     cellSize: Dp = DsSize.contributionCellSmall,
     cellCornerRadius: Dp = DsRadius.extraSmall,
@@ -184,7 +163,7 @@ internal fun ContributionCell(
                     modifier = Modifier
                         .size(fillSize)
                         .background(
-                            color = levelColors.getValue(cell.level),
+                            color = levelColors.of(cell.level),
                             shape = fillShape,
                         ),
                 )
@@ -211,7 +190,7 @@ fun DsContributionGrid(
     selectedDate: LocalDate? = null,
     onCellClick: ((LocalDate) -> Unit)? = null,
 ) {
-    val levelColors = contributionLevelColors()
+    val levelColors = DsTheme.colors.contribution
     val weeks = cells.chunked(7)
 
     // Each week is one lazy item (not one item per cell) — a week is always exactly 7 cells, so there's no need for
