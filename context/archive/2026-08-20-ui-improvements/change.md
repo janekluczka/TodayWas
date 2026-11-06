@@ -1,10 +1,10 @@
 ---
 change_id: ui-improvements
 title: UI improvements across every screen, following the user flow
-status: implemented
+status: archived
 created: 2026-08-20
 updated: 2026-11-06
-archived_at: null
+archived_at: 2026-11-06T16:13:20Z
 ---
 
 ## Notes
