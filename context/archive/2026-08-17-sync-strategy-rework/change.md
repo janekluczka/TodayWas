@@ -1,10 +1,10 @@
 ---
 change_id: sync-strategy-rework
 title: Reconsider local-first-then-push vs remote-first-then-refetch for signed-in writes
-status: impl_reviewed
+status: archived
 created: 2026-08-17
-updated: 2026-08-18
-archived_at: null
+updated: 2026-11-06
+archived_at: 2026-11-06T16:11:18Z
 ---
 
 ## Notes
