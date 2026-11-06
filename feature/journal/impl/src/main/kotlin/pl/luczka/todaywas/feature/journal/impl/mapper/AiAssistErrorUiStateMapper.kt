@@ -1,7 +1,11 @@
 package pl.luczka.todaywas.feature.journal.impl.mapper
 
 import pl.luczka.todaywas.core.domain.model.AiAssistError
+import pl.luczka.todaywas.core.domain.model.AiAssistException
 import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
+
+internal fun Throwable.toAiAssistErrorUiState(): AiAssistErrorUiState =
+    (this as? AiAssistException)?.error?.toUiState() ?: AiAssistErrorUiState.UNKNOWN
 
 internal fun AiAssistError.toUiState(): AiAssistErrorUiState = when (this) {
     AiAssistError.InvalidRequest -> AiAssistErrorUiState.INVALID_REQUEST
