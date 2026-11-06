@@ -31,7 +31,10 @@ import java.util.Locale
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsColor
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsRadius
+import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
+import pl.luczka.todaywas.core.designsystem.tokens.DsStroke
 
 enum class DsContributionLevel {
     NONE,
@@ -87,12 +90,10 @@ internal val DarkLevelColors = mapOf(
     DsContributionLevel.LEVEL_5 to DsColor.teal90,
 )
 
-// The selected-cell ring is drawn as three concentric layers, outside in: a 2.dp ring in the selection color, a 2.dp
-// gap that lets the surface behind the grid show through (so the ring visibly floats off the cell rather than sitting
-// flush against it), then the cell's own level color filling the remainder. The ring's own outer corner radius matches
+// The selected-cell ring is drawn as three concentric layers, outside in: a DsStroke.selectionRing ring in the selection
+// color, a DsStroke.selectionRingGap gap that lets the surface behind the grid show through (so the ring visibly floats
+// off the cell rather than sitting flush against it), then the cell's own level color filling the remainder. The ring's own outer corner radius matches
 // the preset's own cellCornerRadius so a selected cell reads as the same rounded shape, just outlined.
-internal val SELECTION_RING_WIDTH = 2.dp
-internal val SELECTION_RING_GAP = 1.dp
 
 // Named presets a screen picks from instead of wiring cell/spacing/gap/corner dp values by hand.
 // cellCornerRadius is per-preset (not a single shared constant) since a bigger cell reads better
@@ -103,8 +104,18 @@ enum class DsContributionGridSize(
     val monthGap: Dp,
     val cellCornerRadius: Dp,
 ) {
-    MEDIUM(cellSize = 24.dp, cellSpacing = 4.dp, monthGap = 24.dp, cellCornerRadius = 4.dp),
-    LARGE(cellSize = 32.dp, cellSpacing = 4.dp, monthGap = 24.dp, cellCornerRadius = 8.dp),
+    MEDIUM(
+        cellSize = DsSize.contributionCellMedium,
+        cellSpacing = DsSpacing.space100,
+        monthGap = DsSpacing.space600,
+        cellCornerRadius = DsRadius.extraSmall,
+    ),
+    LARGE(
+        cellSize = DsSize.contributionCellLarge,
+        cellSpacing = DsSpacing.space100,
+        monthGap = DsSpacing.space600,
+        cellCornerRadius = DsRadius.small,
+    ),
 }
 
 @Composable
@@ -127,8 +138,8 @@ internal fun ContributionCell(
     cell: DsContributionCellUiState,
     levelColors: Map<DsContributionLevel, Color>,
     modifier: Modifier = Modifier,
-    cellSize: Dp = 12.dp,
-    cellCornerRadius: Dp = 4.dp,
+    cellSize: Dp = DsSize.contributionCellSmall,
+    cellCornerRadius: Dp = DsRadius.extraSmall,
     selected: Boolean = false,
     onClick: (() -> Unit)? = null,
 ) {
@@ -145,12 +156,12 @@ internal fun ContributionCell(
                 Modifier
             }
             val fillSize = if (selected) {
-                cellSize - (SELECTION_RING_WIDTH + SELECTION_RING_GAP) * 2
+                cellSize - (DsStroke.selectionRing + DsStroke.selectionRingGap) * 2
             } else {
                 cellSize
             }
             val fillShape = if (selected) {
-                val fillCornerRadius = (cellCornerRadius - SELECTION_RING_WIDTH - SELECTION_RING_GAP)
+                val fillCornerRadius = (cellCornerRadius - DsStroke.selectionRing - DsStroke.selectionRingGap)
                     .coerceAtLeast(0.dp)
                 RoundedCornerShape(fillCornerRadius)
             } else {
@@ -166,7 +177,7 @@ internal fun ContributionCell(
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .border(SELECTION_RING_WIDTH, MaterialTheme.colorScheme.primary, shape),
+                            .border(DsStroke.selectionRing, MaterialTheme.colorScheme.primary, shape),
                     )
                 }
                 Box(
@@ -186,7 +197,7 @@ internal fun ContributionCell(
 // cellSize picks one of the named DsContributionGridSize presets — the screen just passes the preset it wants rather
 // than wiring cell/spacing/gap dp values by hand. selectedDate/onCellClick default to null so every existing
 // non-interactive caller compiles and renders unchanged. contentPadding defaults to none — the screen embedding this
-// grid owns whatever horizontal inset it needs (e.g. 16.dp to match the rest of that screen's content) rather than this
+// grid owns whatever horizontal inset it needs (e.g. DsSpacing.space400 to match the rest of that screen's content) rather than this
 // component baking one in, since a hardcoded inset here would either double up with or fight the screen's own.
 // showMonthLabels is opt-in (defaults off) since Main's compact overview scale has no room for it; screens with a
 // full-size drill-down grid can turn it on.

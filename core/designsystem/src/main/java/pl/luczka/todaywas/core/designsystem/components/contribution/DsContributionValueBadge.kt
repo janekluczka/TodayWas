@@ -11,12 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsRadius
+import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 
-private val BADGE_SIZE = 32.dp
-private val BADGE_CORNER_RADIUS = 6.dp
+private val BADGE_CORNER_RADIUS = DsRadius.contributionBadge
 
 // A standalone, single colored cell for showing one day's value outside a grid context (e.g. a list row's trailing
 // content) — reuses the exact same level->color lookup DsContributionGrid's cells use, so a badge and the real grid
@@ -29,7 +29,7 @@ fun DsContributionValueBadge(
     level: DsContributionLevel,
     valueText: String,
     modifier: Modifier = Modifier,
-    size: Dp = BADGE_SIZE,
+    size: Dp = DsSize.contributionBadge,
 ) {
     val levelColors = contributionLevelColors()
     val backgroundColor = levelColors.getValue(level)

@@ -11,10 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.preview.BooleanPreviewParameterProvider
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsElevation
 
 // Standard M3 disabled-container/content alpha (matches Button's own disabled treatment) — an unavailable FAB action
 // stays visible but reads as unavailable, rather than disappearing from the menu entirely. That disabled container
@@ -48,10 +48,10 @@ fun DsExtendedFloatingActionButton(
         FloatingActionButtonDefaults.elevation()
     } else {
         FloatingActionButtonDefaults.elevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp,
-            focusedElevation = 0.dp,
-            hoveredElevation = 0.dp,
+            defaultElevation = DsElevation.level0,
+            pressedElevation = DsElevation.level0,
+            focusedElevation = DsElevation.level0,
+            hoveredElevation = DsElevation.level0,
         )
     }
     Box(modifier = modifier) {

@@ -30,7 +30,6 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.time.Instant
@@ -51,6 +50,7 @@ import pl.luczka.todaywas.core.designsystem.components.progress.DsLoadingIndicat
 import pl.luczka.todaywas.core.designsystem.components.snackbar.DsSnackbarHost
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.core.ui.R as CoreUiR
 import pl.luczka.todaywas.core.ui.auth.util.message
@@ -65,8 +65,6 @@ import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
 
 // Each section shows at most this many items on Main before falling back to a "View all" row.
 private const val MAIN_SECTION_CAP = 5
-
-private val EMPTY_SECTION_HEIGHT = 96.dp
 
 // The screen's navigation-only actions, called directly from the UI rather than routed through
 // the ViewModel, since none of them carries any logic.
@@ -268,7 +266,7 @@ private fun AccountBottomSheet(
                                 text = stringResource(CoreUiR.string.preferences_sign_out_cta),
                                 leadingIcon = Icons.AutoMirrored.Filled.Logout,
                                 trailingContent = if (uiState.isSigningOut) {
-                                    { DsLoadingIndicator(modifier = Modifier.size(20.dp)) }
+                                    { DsLoadingIndicator(modifier = Modifier.size(DsSize.progressIndicatorInline)) }
                                 } else {
                                     null
                                 },
@@ -512,7 +510,7 @@ private fun EmptySectionContent(text: String) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .height(EMPTY_SECTION_HEIGHT)
+            .height(DsSize.emptySectionHeight)
             .padding(horizontal = DsSpacing.space600),
     ) {
         DsText(

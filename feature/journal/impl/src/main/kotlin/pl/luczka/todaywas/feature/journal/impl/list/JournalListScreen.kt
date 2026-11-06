@@ -88,7 +88,7 @@ private fun JournalListScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp
+            // Full-bleed (no horizontal inset from this Column): the grid owns its own DsSpacing.space400
             // content padding via contentPadding, so it scrolls edge-to-edge while still resting
             // at the same inset as the rest of the screen's content.
             DsContributionGrid(

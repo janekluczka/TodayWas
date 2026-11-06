@@ -1,5 +1,6 @@
 package pl.luczka.agenttoolkit.architecture
 
+import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
 import com.lemonappdev.konsist.api.ext.list.withAnnotationNamed
 import com.lemonappdev.konsist.api.verify.assertEmpty
 import org.junit.Test
@@ -30,4 +31,45 @@ class ComposeTest {
         // Assert
         withoutPreview.assertEmpty()
     }
+
+    @Test
+    fun `should take dimensions from a Ds token when a dp value is used outside tokens`() {
+        // Arrange
+        val withRawDp = Scopes.production.files
+            .filterNot { tokensPackage.containsMatchIn(it.packagee?.name.orEmpty()) }
+            .associateWith { it.rawDpLiterals() }
+            .filterValues { it.isNotEmpty() }
+
+        // Assert
+        withRawDp.keys.toList().assertEmpty(
+            additionalMessage = "Take every dimension from a Ds token object in designsystem/tokens/ " +
+                "(DsSpacing, DsRadius, DsSize, …) or MaterialTheme.shapes; 0.dp is fine except as an elevation. " +
+                "Found: " + withRawDp.values.flatten().joinToString(),
+        )
+    }
+}
+
+// Comments, strings and char literals in one alternation, so whichever starts first wins ("//" inside a string stays
+// part of the string).
+private val commentOrString = Regex(
+    "\"\"\"[\\s\\S]*?\"\"\"|\"(?:\\\\.|[^\"\\\\\\n])*\"|'(?:\\\\.|[^'\\\\\\n])+'|//[^\\n]*|/\\*[\\s\\S]*?\\*/",
+)
+private val dpLiteral = Regex("""(?<![\w.])(\d+(?:\.\d+)?)\s*\.\s*dp\b|\bDp\(\s*(\d+(?:\.\d+)?)f?\s*\)""")
+private val elevationAssignment = Regex("""[Ee]levation\s*=\s*$""")
+private val tokensPackage = Regex("""(^|\.)tokens(\.|$)""")
+
+/** `N.dp` and `Dp(N)` literals in this file's code outside previews; `0.dp` counts only as an elevation. */
+private fun KoFileDeclaration.rawDpLiterals(): List<String> {
+    val previews = functions(includeNested = true, includeLocal = false)
+        .filter { function -> function.annotations.any { it.name.startsWith("Preview") } }
+    val code = previews
+        .fold(text) { remaining, preview -> remaining.replace(preview.text, "") }
+        .replace(commentOrString, " ")
+    return dpLiteral
+        .findAll(code)
+        .filter { match ->
+            val value = match.groupValues[1].ifEmpty { match.groupValues[2] }.toDouble()
+            value != 0.0 || elevationAssignment.containsMatchIn(code.substring(0, match.range.first))
+        }.map { "$nameWithExtension: ${it.value}" }
+        .toList()
 }

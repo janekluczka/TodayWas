@@ -135,7 +135,7 @@ private fun HabitDetailScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp content padding, so it
+            // Full-bleed (no horizontal inset from this Column): the grid owns its own DsSpacing.space400 content padding, so it
             // scrolls edge-to-edge while resting at the same inset as the day panel below it.
             DsContributionGrid(
                 cells = uiState.contributionGrid.cells,

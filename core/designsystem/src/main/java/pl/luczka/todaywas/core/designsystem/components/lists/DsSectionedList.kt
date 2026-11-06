@@ -22,19 +22,20 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.components.dividers.DsHorizontalDivider
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsRadius
+import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 private const val SKELETON_ROW_COUNT = 3
 
-// Matches M3's default Card shape (MaterialTheme.shapes.medium, unmodified by DsTheme) so the
+// Matches the default Card shape (MaterialTheme.shapes.medium, i.e. DsRadius.medium) so the
 // list's outer silhouette is pixel-identical to when this was one uniform DsCard.
-private val OUTER_CORNER_RADIUS = 12.dp
-private val INNER_CORNER_RADIUS = 4.dp
+private val OUTER_CORNER_RADIUS = DsRadius.medium
+private val INNER_CORNER_RADIUS = DsRadius.extraSmall
 
 // A titled section: up to a handful of rows in one bordered card, divided, with an optional trailing "view all" row.
 // Built for the small, caller-capped lists this ships with today (Main's 5-item sections) — not a LazyColumn, so it
@@ -166,10 +167,10 @@ private fun SkeletonBar(widthFraction: Float) {
     Box(
         modifier = Modifier
             .fillMaxWidth(widthFraction)
-            .height(DsSpacing.space400)
+            .height(DsSize.skeletonLineHeight)
             .background(
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.24f),
-                shape = RoundedCornerShape(DsSpacing.space100),
+                shape = MaterialTheme.shapes.extraSmall,
             ),
     )
 }

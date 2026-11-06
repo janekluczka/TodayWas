@@ -102,6 +102,7 @@ fun DsTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = DsTypography,
+        shapes = DsShapes,
         content = content,
     )
 }
