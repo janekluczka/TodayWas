@@ -1,10 +1,10 @@
 ---
 change_id: detail-nav-refinements
 title: Sectioned-list styling, habit-detail selected-day redesign, and list-screen navigation
-status: impl_reviewed
+status: archived
 created: 2026-09-13
-updated: 2026-09-13
-archived_at: null
+updated: 2026-11-06
+archived_at: 2026-11-06T16:11:17Z
 ---
 
 ## Notes
