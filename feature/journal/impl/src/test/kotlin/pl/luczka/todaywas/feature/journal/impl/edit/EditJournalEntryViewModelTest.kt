@@ -119,11 +119,8 @@ class EditJournalEntryViewModelTest {
             // Assert
             assertFalse(viewModel.uiState.value.isLoading)
             assertEquals("Original text.", viewModel.uiState.value.text)
-            assertEquals(
-                "1",
-                viewModel.uiState.value.entry
-                    ?.id,
-            )
+            val shownEntry = viewModel.uiState.value.entry
+            assertEquals("1", shownEntry?.id)
         }
 
     @Test

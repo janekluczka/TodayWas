@@ -130,7 +130,11 @@ private fun HabitDetailScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             // Full-bleed (no horizontal inset from this Column): the grid owns its own 16.dp content padding, so it
             // scrolls edge-to-edge while resting at the same inset as the day panel below it.
             DsContributionGrid(
@@ -140,16 +144,20 @@ private fun HabitDetailScreenContent(
                 showMonthLabels = true,
                 selectedDate = uiState.selectedDate,
                 onCellClick = { date -> onIntent(HabitDetailIntent.DaySelected(date)) },
-                modifier = Modifier.fillMaxWidth().padding(
-                    top = DsSpacing.space200,
-                    bottom = DsSpacing.space600,
-                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = DsSpacing.space200,
+                        bottom = DsSpacing.space600,
+                    ),
             )
             DayDetailPanel(
                 day = uiState.selectedDay,
                 type = uiState.type,
                 onIntent = onIntent,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = DsSpacing.space400),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = DsSpacing.space400),
             )
         }
     }
@@ -303,7 +311,9 @@ private fun EditRowSheetContent(
             selectedItem = uiState.editingValue,
             onItemSelect = { onIntent(HabitDetailIntent.ValueChanged(it)) },
             label = label,
-            modifier = Modifier.fillMaxWidth().padding(bottom = DsSpacing.space600),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = DsSpacing.space600),
         )
     }
 }

@@ -136,7 +136,12 @@ private fun SectionItem(
     shape: Shape,
     content: @Composable () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxWidth().clip(shape).background(MaterialTheme.colorScheme.surfaceVariant)) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
         content()
     }
 }
@@ -145,7 +150,9 @@ private fun SectionItem(
 private fun SkeletonRow() {
     Column(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.space200),
-        modifier = Modifier.fillMaxWidth().padding(DsSpacing.space400),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(DsSpacing.space400),
     ) {
         SkeletonBar(widthFraction = 0.4f)
         SkeletonBar(widthFraction = 0.8f)
@@ -175,7 +182,10 @@ private fun ViewAllRow(
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(DsSpacing.space400),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(DsSpacing.space400),
     ) {
         DsText(
             text = label,
@@ -192,7 +202,9 @@ private fun ViewAllRow(
 private fun PreviewRow(text: String) {
     DsText(
         text = text,
-        modifier = Modifier.fillMaxWidth().padding(DsSpacing.space400),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(DsSpacing.space400),
     )
 }
 

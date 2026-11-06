@@ -89,8 +89,16 @@ private fun OnboardingAccountSetupScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            Column(modifier = Modifier.fillMaxSize().padding(DsSpacing.space600)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(DsSpacing.space600),
+            ) {
                 when (uiState.accountSubStep) {
                     AccountSubStep.SIGN_IN -> SignInFormContent(
                         state = uiState.signInForm,
@@ -139,7 +147,9 @@ private fun OnboardingAccountSetupScreenContent(
             if (uiState.accountSubStep in AUTH_FORM_SUBSTEPS) {
                 DsIconButton(
                     onClick = { onIntent(OnboardingAccountSetupIntent.StepBack) },
-                    modifier = Modifier.align(Alignment.TopStart).padding(DsSpacing.space300),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(DsSpacing.space300),
                 ) {
                     DsIcon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,

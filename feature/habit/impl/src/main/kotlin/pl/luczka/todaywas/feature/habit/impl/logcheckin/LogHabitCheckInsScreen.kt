@@ -106,7 +106,11 @@ private fun LogHabitCheckInsScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             DsDateStrip(
                 selectedDate = uiState.selectedDate,
                 isSelectable = { it in uiState.selectableDates },
@@ -170,7 +174,9 @@ private fun HabitCheckInRow(
                     selectedItem = row.value,
                     onItemSelect = { onIntent(LogHabitCheckInsIntent.ValueChanged(row.habitId, it)) },
                     label = label,
-                    modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = DsSpacing.space200),
                 )
             }
             is HabitCheckInRowUiState.AlreadyLogged -> {
@@ -180,7 +186,9 @@ private fun HabitCheckInRow(
                     onItemSelect = {},
                     enabled = false,
                     label = label,
-                    modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = DsSpacing.space200),
                 )
             }
         }

@@ -38,7 +38,9 @@ fun DsExposedDropdownMenuBox(
             readOnly = true,
             label = label?.let { { DsText(text = it) } },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, expanded).fillMaxWidth(),
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, expanded)
+                .fillMaxWidth(),
         )
         DsDropdownMenu(
             expanded = expanded,

@@ -42,10 +42,12 @@ fun DsBottomSheet(
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(
-                horizontal = DsSpacing.space400,
-                vertical = DsSpacing.space200,
-            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = DsSpacing.space400,
+                    vertical = DsSpacing.space200,
+                ),
         ) {
             DsIconButton(onClick = onCloseClick) {
                 DsIcon(

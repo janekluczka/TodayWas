@@ -27,7 +27,9 @@ fun <T> DsSegmentedRow(
     // so new segments ease in on the right rather than popping in abruptly.
     Row(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.space100),
-        modifier = modifier.fillMaxWidth().animateContentSize(),
+        modifier = modifier
+            .fillMaxWidth()
+            .animateContentSize(),
     ) {
         for (item in items) {
             val selected = item == selectedItem

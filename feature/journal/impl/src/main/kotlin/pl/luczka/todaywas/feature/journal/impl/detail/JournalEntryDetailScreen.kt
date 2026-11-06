@@ -99,7 +99,12 @@ private fun JournalEntryDetailScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(DsSpacing.space600)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(DsSpacing.space600),
+        ) {
             if (uiState.entry != null) {
                 DsText(text = uiState.entry.text)
             }

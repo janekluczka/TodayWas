@@ -61,7 +61,10 @@ private fun OnboardingChoiceScreenContent(
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(DsSpacing.space600),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(DsSpacing.space600),
         ) {
             DsText(
                 text = stringResource(R.string.onboarding_account_title),
@@ -83,7 +86,9 @@ private fun OnboardingChoiceScreenContent(
                 text = stringResource(R.string.onboarding_account_continue_without_account_cta),
                 onClick = { onIntent(OnboardingChoiceIntent.ContinueWithoutAccountClicked) },
                 enabled = !uiState.isSaving,
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space600),
             )
             DsTextButton(
                 text = stringResource(CoreUiR.string.onboarding_account_signin_signup_cta),

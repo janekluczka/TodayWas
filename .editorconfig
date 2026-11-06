@@ -22,7 +22,8 @@ ij_kotlin_line_break_after_multiline_when_entry = false
 # Wrapping at a binary operator (`a ==\n    b`) reads badly; an overlong line fails
 # max-line-length instead and gets restructured (extract a variable, split a chain).
 ktlint_standard_binary-expression-wrapping = disabled
-# Chains of 4+ calls go one call per line.
+# Chains of 4+ calls go one call per line; Compose modifier chains already at 2+ calls (custom
+# rule agent-toolkit:modifier-chain-multiline in :ktlint-rules, always on).
 ktlint_standard_chain-method-continuation = enabled
 # Calls with 2+ arguments, at least one of them named, go one argument per line (custom rule in
 # :ktlint-rules; ktlint's own argument-list-wrapping only wraps arguments that don't fit).

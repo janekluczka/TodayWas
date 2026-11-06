@@ -77,7 +77,9 @@ fun DsSelectableCard(
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxWidth().padding(vertical = DsSpacing.space200),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = DsSpacing.space200),
             content = content,
         )
     }

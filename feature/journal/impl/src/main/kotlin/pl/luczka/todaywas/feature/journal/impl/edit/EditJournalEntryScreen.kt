@@ -130,7 +130,11 @@ private fun EditJournalEntryScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -152,7 +156,9 @@ private fun EditJournalEntryScreenContent(
                         starterPrompts = uiState.starterPrompts,
                         onPromptClick = { onIntent(EditJournalEntryIntent.TextChanged(it)) },
                         onHelpMeStartClick = { onIntent(EditJournalEntryIntent.HelpMeStartClicked) },
-                        modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(),
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .fillMaxWidth(),
                     )
                 } else if (uiState.authState is AuthStateUi.SignedIn && uiState.text.length <= MAX_REFINE_TEXT_LENGTH) {
                     DsAssistChip(
@@ -246,7 +252,9 @@ internal fun HelpMeRefineBottomSheet(
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.space400),
-                modifier = Modifier.fillMaxWidth().padding(DsSpacing.space600),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(DsSpacing.space600),
             ) {
                 when (uiState.step) {
                     HelpMeRefineStep.INPUT -> {

@@ -96,12 +96,19 @@ private fun CreateHabitScreenContent(
         snackbarHost = { DsSnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = DsSpacing.space600)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = DsSpacing.space600),
+        ) {
             DsTextField(
                 value = uiState.name,
                 onValueChange = { onIntent(CreateHabitIntent.NameChanged(it)) },
                 label = stringResource(R.string.habit_create_name_label),
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space400),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space400),
             )
             DsText(
                 text = stringResource(R.string.habit_create_scale_steps_label),
@@ -111,7 +118,9 @@ private fun CreateHabitScreenContent(
                 value = uiState.scaleSteps,
                 range = HabitScaleStepsRange,
                 onValueChange = { onIntent(CreateHabitIntent.ScaleStepsChanged(it)) },
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space100),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space100),
                 decreaseContentDescription = stringResource(R.string.content_description_decrease),
                 increaseContentDescription = stringResource(R.string.content_description_increase),
             )
@@ -128,7 +137,9 @@ private fun CreateHabitScreenContent(
                 onValueChange = { onIntent(CreateHabitIntent.DescriptionChanged(it)) },
                 label = stringResource(R.string.habit_create_description_label),
                 minLines = 2,
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space400),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space400),
             )
         }
     }

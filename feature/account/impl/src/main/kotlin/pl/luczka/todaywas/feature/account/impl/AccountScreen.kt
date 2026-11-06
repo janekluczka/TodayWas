@@ -102,7 +102,10 @@ private fun AccountScreenContent(
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         Box(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(DsSpacing.space600),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(DsSpacing.space600),
             contentAlignment = Alignment.TopCenter,
         ) {
             when {

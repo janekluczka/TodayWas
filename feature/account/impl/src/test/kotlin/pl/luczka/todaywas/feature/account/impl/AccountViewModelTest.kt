@@ -464,11 +464,8 @@ class AccountViewModelTest {
 
             // Assert
             assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
-            assertEquals(
-                1,
-                viewModel.uiState.value.dataSyncSummary
-                    ?.journalEntryCount,
-            )
+            val dataSyncSummary = viewModel.uiState.value.dataSyncSummary
+            assertEquals(1, dataSyncSummary?.journalEntryCount)
         }
 
     @Test
@@ -651,11 +648,8 @@ class AccountViewModelTest {
 
             // Assert
             assertEquals(AccountStep.DATA_SYNC_REVIEW, viewModel.uiState.value.step)
-            assertEquals(
-                1,
-                viewModel.uiState.value.dataSyncSummary
-                    ?.journalEntryCount,
-            )
+            val dataSyncSummary = viewModel.uiState.value.dataSyncSummary
+            assertEquals(1, dataSyncSummary?.journalEntryCount)
         }
 
     private fun entry() =

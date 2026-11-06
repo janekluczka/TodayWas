@@ -30,7 +30,10 @@ internal fun OnboardingWelcomeScreen(
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(DsSpacing.space600),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(DsSpacing.space600),
         ) {
             DsText(
                 text = stringResource(R.string.onboarding_welcome_title),
@@ -44,7 +47,9 @@ internal fun OnboardingWelcomeScreen(
             DsButton(
                 text = stringResource(R.string.onboarding_welcome_cta),
                 onClick = onGetStartedClick,
-                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = DsSpacing.space600),
             )
         }
     }

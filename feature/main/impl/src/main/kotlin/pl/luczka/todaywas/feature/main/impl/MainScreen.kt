@@ -170,14 +170,21 @@ private fun MainScreenContent(
         if (bothEmpty) {
             MainEmptyState(
                 navigation = navigation,
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
             )
         } else {
             // Each section is capped (DsSectionedList never shows more than MAIN_SECTION_CAP rows) and doesn't stretch
             // to fill extra space, so sections are stacked at their natural content height rather than weighted — a
             // weighted split left dead space between a short section and the next one instead of making it look
             // "bigger". Scrollable as a safety net in case combined content ever exceeds screen height.
-            Column(modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState()),
+            ) {
                 JournalSection(
                     uiState = uiState,
                     navigation = navigation,
@@ -221,12 +228,16 @@ private fun MainEmptyState(
         DsButton(
             text = stringResource(R.string.main_fab_add_journal),
             onClick = navigation.onAddEntry,
-            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space600),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space600),
         )
         DsButton(
             text = stringResource(R.string.main_fab_create_habit),
             onClick = navigation.onCreateHabit,
-            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.space200),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.space200),
         )
     }
 }
@@ -499,7 +510,10 @@ private fun HabitEmptyContent() {
 private fun EmptySectionContent(text: String) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxWidth().height(EMPTY_SECTION_HEIGHT).padding(horizontal = DsSpacing.space600),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(EMPTY_SECTION_HEIGHT)
+            .padding(horizontal = DsSpacing.space600),
     ) {
         DsText(
             text = text,
