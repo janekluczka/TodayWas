@@ -6,11 +6,11 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.OnboardingState
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeOnboardingRepository
 import pl.luczka.todaywas.domain.auth.model.AuthState
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
+import pl.luczka.todaywas.domain.onboarding.model.OnboardingState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StartupSyncTest {

@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.model
+package pl.luczka.todaywas.domain.onboarding.model
 
 data class OnboardingState(
     val completed: Boolean,

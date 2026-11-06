@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.core.database.dao.UserPreferencesDao
 import pl.luczka.todaywas.core.database.entity.UserPreferencesEntity
 import pl.luczka.todaywas.core.database.util.safeDbCall
-import pl.luczka.todaywas.core.domain.model.OnboardingState
-import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
+import pl.luczka.todaywas.domain.onboarding.model.OnboardingState
+import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
 
 class OnboardingRepositoryImpl @Inject constructor(
     private val dao: UserPreferencesDao,

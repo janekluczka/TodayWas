@@ -1,7 +1,7 @@
-package pl.luczka.todaywas.core.domain.repository
+package pl.luczka.todaywas.domain.onboarding.repository
 
 import kotlinx.coroutines.flow.Flow
-import pl.luczka.todaywas.core.domain.model.OnboardingState
+import pl.luczka.todaywas.domain.onboarding.model.OnboardingState
 
 interface OnboardingRepository {
 

@@ -1,7 +1,7 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.onboarding.usecase
 
 import javax.inject.Inject
-import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
+import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
 
 class CompleteOnboardingUseCase @Inject constructor(
     private val repository: OnboardingRepository,

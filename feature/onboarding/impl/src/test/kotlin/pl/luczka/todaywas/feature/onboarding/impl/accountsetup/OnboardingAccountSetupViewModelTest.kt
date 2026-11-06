@@ -20,12 +20,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.JournalEntry
-import pl.luczka.todaywas.core.domain.model.OnboardingState
-import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
-import pl.luczka.todaywas.core.domain.usecase.CompleteOnboardingUseCase
 import pl.luczka.todaywas.core.domain.usecase.GetLocalDataSummaryUseCase
-import pl.luczka.todaywas.core.domain.usecase.MarkLocalDataSyncedUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
 import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
@@ -39,6 +34,11 @@ import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.auth.usecase.SignInWithEmailUseCase
 import pl.luczka.todaywas.domain.auth.usecase.SignInWithGoogleUseCase
 import pl.luczka.todaywas.domain.auth.usecase.SignUpWithEmailUseCase
+import pl.luczka.todaywas.domain.onboarding.model.OnboardingState
+import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
+import pl.luczka.todaywas.domain.onboarding.usecase.CompleteOnboardingUseCase
+import pl.luczka.todaywas.domain.onboarding.usecase.MarkLocalDataSyncedUseCase
+import pl.luczka.todaywas.domain.onboarding.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
 

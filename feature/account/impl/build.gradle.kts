@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:onboarding"))
     implementation(project(":domain:auth"))
     implementation(project(":feature:account:api"))
     implementation(libs.androidx.activity.compose)
