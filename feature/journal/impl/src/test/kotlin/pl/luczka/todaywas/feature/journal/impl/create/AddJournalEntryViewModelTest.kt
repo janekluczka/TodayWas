@@ -21,10 +21,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.JournalEntry
-import pl.luczka.todaywas.core.domain.repository.JournalRepository
-import pl.luczka.todaywas.core.domain.usecase.AddJournalEntryUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAiAssistRepository
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
@@ -38,6 +34,10 @@ import pl.luczka.todaywas.domain.aiassist.usecase.RequestJournalStarterPromptUse
 import pl.luczka.todaywas.domain.auth.model.AuthState
 import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
+import pl.luczka.todaywas.domain.journal.usecase.AddJournalEntryUseCase
+import pl.luczka.todaywas.domain.journal.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.feature.journal.impl.edit.HelpMeRefineStep
 import pl.luczka.todaywas.feature.journal.impl.edit.MAX_REFINE_TEXT_LENGTH
 import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState

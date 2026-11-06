@@ -27,6 +27,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:journal"))
     implementation(project(":domain:auth"))
     implementation(project(":domain:entry"))
     // Shared composables take and render Ds components and theme types.

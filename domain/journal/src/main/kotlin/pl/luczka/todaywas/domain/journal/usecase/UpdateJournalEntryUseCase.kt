@@ -1,11 +1,11 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.journal.usecase
 
 import java.time.Clock
 import javax.inject.Inject
-import pl.luczka.todaywas.core.domain.model.JournalEntryNotFoundException
-import pl.luczka.todaywas.core.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.entry.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.entry.util.EditWindow
+import pl.luczka.todaywas.domain.journal.model.JournalEntryNotFoundException
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 
 class UpdateJournalEntryUseCase @Inject constructor(
     private val repository: JournalRepository,

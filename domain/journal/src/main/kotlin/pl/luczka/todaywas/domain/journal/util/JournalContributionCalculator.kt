@@ -1,11 +1,11 @@
-package pl.luczka.todaywas.core.domain.util
+package pl.luczka.todaywas.domain.journal.util
 
 import java.time.Instant
-import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.entry.model.ContributionGrid
 import pl.luczka.todaywas.domain.entry.model.ContributionLevel
 import pl.luczka.todaywas.domain.entry.model.ContributionWindow
 import pl.luczka.todaywas.domain.entry.model.dateRange
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
 
 object JournalContributionCalculator {
 

@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:journal"))
     implementation(project(":domain:aiassist"))
     implementation(project(":domain:onboarding"))
     implementation(project(":domain:auth"))

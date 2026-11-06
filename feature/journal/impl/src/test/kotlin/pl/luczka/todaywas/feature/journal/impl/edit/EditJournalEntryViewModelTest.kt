@@ -22,9 +22,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.JournalEntry
-import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
-import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAiAssistRepository
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
@@ -39,6 +36,9 @@ import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.entry.model.EditWindowExpiredException
 import pl.luczka.todaywas.domain.entry.usecase.IsEditableUseCase
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
+import pl.luczka.todaywas.domain.journal.usecase.ObserveJournalEntryUseCase
+import pl.luczka.todaywas.domain.journal.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.feature.journal.impl.create.STARTER_PROMPT_VARIANT_COUNT
 import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState

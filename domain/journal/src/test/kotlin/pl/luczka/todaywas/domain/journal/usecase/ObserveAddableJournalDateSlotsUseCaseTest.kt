@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.journal.usecase
 
 import java.time.Instant
 import java.time.LocalDate
@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.JournalDateSlot
-import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.journal.model.JournalDateSlot
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
 
 class ObserveAddableJournalDateSlotsUseCaseTest {
 

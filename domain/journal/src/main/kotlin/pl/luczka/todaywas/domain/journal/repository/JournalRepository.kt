@@ -1,9 +1,9 @@
-package pl.luczka.todaywas.core.domain.repository
+package pl.luczka.todaywas.domain.journal.repository
 
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
-import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.domain.entry.repository.Syncable
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
 
 interface JournalRepository : Syncable {
 

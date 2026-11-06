@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    testImplementation(project(":domain:journal"))
     implementation(project(":domain:onboarding"))
     implementation(project(":domain:auth"))
     implementation(project(":feature:onboarding:api"))

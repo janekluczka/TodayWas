@@ -2,9 +2,9 @@ package pl.luczka.todaywas.core.data.mapper
 
 import java.time.Instant
 import pl.luczka.todaywas.core.database.entity.JournalEntryEntity
-import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.network.dto.JournalEntryRemoteDto
 import pl.luczka.todaywas.domain.entry.util.SyncMeta
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
 
 fun JournalEntry.toRemoteDto(userId: String): JournalEntryRemoteDto = JournalEntryRemoteDto(
     id = id,

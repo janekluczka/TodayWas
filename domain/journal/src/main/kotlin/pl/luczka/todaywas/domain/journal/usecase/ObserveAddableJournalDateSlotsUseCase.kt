@@ -1,11 +1,11 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.journal.usecase
 
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import pl.luczka.todaywas.core.domain.model.JournalDateSlot
-import pl.luczka.todaywas.core.domain.repository.JournalRepository
+import pl.luczka.todaywas.domain.journal.model.JournalDateSlot
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 
 class ObserveAddableJournalDateSlotsUseCase @Inject constructor(
     private val repository: JournalRepository,

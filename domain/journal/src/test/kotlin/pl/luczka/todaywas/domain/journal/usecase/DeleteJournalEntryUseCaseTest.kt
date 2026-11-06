@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.journal.usecase
 
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals

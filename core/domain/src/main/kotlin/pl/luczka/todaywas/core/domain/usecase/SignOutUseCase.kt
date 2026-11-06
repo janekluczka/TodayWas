@@ -3,9 +3,9 @@ package pl.luczka.todaywas.core.domain.usecase
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import pl.luczka.todaywas.core.domain.repository.HabitRepository
-import pl.luczka.todaywas.core.domain.repository.JournalRepository
 import pl.luczka.todaywas.domain.auth.model.AuthState
 import pl.luczka.todaywas.domain.auth.repository.AuthRepository
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
 
 class SignOutUseCase @Inject constructor(

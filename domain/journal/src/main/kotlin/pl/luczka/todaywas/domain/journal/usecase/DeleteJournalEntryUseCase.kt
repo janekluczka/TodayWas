@@ -1,7 +1,7 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.journal.usecase
 
 import javax.inject.Inject
-import pl.luczka.todaywas.core.domain.repository.JournalRepository
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 
 class DeleteJournalEntryUseCase @Inject constructor(
     private val repository: JournalRepository,

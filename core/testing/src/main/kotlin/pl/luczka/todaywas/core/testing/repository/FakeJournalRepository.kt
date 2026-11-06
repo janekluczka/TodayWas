@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import pl.luczka.todaywas.core.domain.model.JournalEntry
-import pl.luczka.todaywas.core.domain.repository.JournalRepository
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 
 class FakeJournalRepository(
     initialEntries: List<JournalEntry> = emptyList(),

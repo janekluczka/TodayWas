@@ -21,10 +21,7 @@ import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.Habit
 import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.model.JournalEntry
-import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
@@ -37,6 +34,9 @@ import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.domain.auth.model.AuthError
 import pl.luczka.todaywas.domain.auth.model.AuthState
 import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
+import pl.luczka.todaywas.domain.journal.usecase.ObserveAddableJournalDateSlotsUseCase
+import pl.luczka.todaywas.domain.journal.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.feature.main.impl.FabActionUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)

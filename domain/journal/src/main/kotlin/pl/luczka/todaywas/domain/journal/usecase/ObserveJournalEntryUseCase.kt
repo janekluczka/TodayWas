@@ -1,9 +1,9 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.journal.usecase
 
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import pl.luczka.todaywas.core.domain.model.JournalEntry
-import pl.luczka.todaywas.core.domain.repository.JournalRepository
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 
 class ObserveJournalEntryUseCase @Inject constructor(
     private val repository: JournalRepository,
