@@ -15,10 +15,10 @@ import pl.luczka.todaywas.core.data.mapper.toSyncMeta
 import pl.luczka.todaywas.core.database.datasource.LocalJournalDataSource
 import pl.luczka.todaywas.core.database.entity.JournalEntryEntity
 import pl.luczka.todaywas.core.domain.model.JournalEntry
-import pl.luczka.todaywas.core.domain.repository.AuthRepository
 import pl.luczka.todaywas.core.domain.repository.JournalRepository
 import pl.luczka.todaywas.core.network.datasource.RemoteJournalDataSource
 import pl.luczka.todaywas.core.network.util.remoteCall
+import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 import pl.luczka.todaywas.domain.entry.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.entry.util.mergeForSync

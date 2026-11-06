@@ -4,12 +4,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.AuthError
-import pl.luczka.todaywas.core.domain.model.AuthState
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
 import pl.luczka.todaywas.core.testing.repository.FakeOnboardingRepository
+import pl.luczka.todaywas.domain.auth.model.AuthError
+import pl.luczka.todaywas.domain.auth.model.AuthState
 
 class SignOutUseCaseTest {
 

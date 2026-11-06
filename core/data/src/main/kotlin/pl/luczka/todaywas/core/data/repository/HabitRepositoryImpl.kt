@@ -18,11 +18,11 @@ import pl.luczka.todaywas.core.database.entity.HabitEntity
 import pl.luczka.todaywas.core.domain.model.Habit
 import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.repository.AuthRepository
 import pl.luczka.todaywas.core.domain.repository.HabitRepository
 import pl.luczka.todaywas.core.network.datasource.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.core.network.datasource.RemoteHabitDataSource
 import pl.luczka.todaywas.core.network.util.remoteCall
+import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 import pl.luczka.todaywas.domain.entry.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.entry.util.mergeForSync

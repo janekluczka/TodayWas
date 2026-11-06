@@ -2,10 +2,10 @@ package pl.luczka.todaywas.core.testing.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import pl.luczka.todaywas.core.domain.model.AuthError
-import pl.luczka.todaywas.core.domain.model.AuthException
-import pl.luczka.todaywas.core.domain.model.AuthState
-import pl.luczka.todaywas.core.domain.repository.AuthRepository
+import pl.luczka.todaywas.domain.auth.model.AuthError
+import pl.luczka.todaywas.domain.auth.model.AuthException
+import pl.luczka.todaywas.domain.auth.model.AuthState
+import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 
 class FakeAuthRepository(
     initialState: AuthState = AuthState.SignedOut,

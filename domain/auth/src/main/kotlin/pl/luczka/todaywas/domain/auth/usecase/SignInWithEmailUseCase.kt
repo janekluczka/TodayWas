@@ -1,7 +1,7 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.auth.usecase
 
 import javax.inject.Inject
-import pl.luczka.todaywas.core.domain.repository.AuthRepository
+import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 
 class SignInWithEmailUseCase @Inject constructor(
     private val repository: AuthRepository,

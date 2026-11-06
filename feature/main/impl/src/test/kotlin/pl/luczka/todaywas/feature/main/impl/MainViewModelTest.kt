@@ -18,14 +18,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.AuthError
-import pl.luczka.todaywas.core.domain.model.AuthState
 import pl.luczka.todaywas.core.domain.model.Habit
 import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
@@ -37,6 +34,9 @@ import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
+import pl.luczka.todaywas.domain.auth.model.AuthError
+import pl.luczka.todaywas.domain.auth.model.AuthState
+import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.feature.main.impl.FabActionUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)

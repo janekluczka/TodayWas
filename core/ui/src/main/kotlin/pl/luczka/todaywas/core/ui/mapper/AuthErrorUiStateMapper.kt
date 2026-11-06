@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.core.ui.mapper
 
-import pl.luczka.todaywas.core.domain.model.AuthError
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
+import pl.luczka.todaywas.domain.auth.model.AuthError
 
 fun AuthError.toUiState(): AuthErrorUiState = when (this) {
     AuthError.EmailAlreadyRegistered -> AuthErrorUiState.EMAIL_ALREADY_REGISTERED

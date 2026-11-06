@@ -11,17 +11,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.model.AuthError
-import pl.luczka.todaywas.core.domain.model.AuthException
 import pl.luczka.todaywas.core.domain.usecase.CompleteOnboardingUseCase
 import pl.luczka.todaywas.core.domain.usecase.GetLocalDataSummaryUseCase
 import pl.luczka.todaywas.core.domain.usecase.MarkLocalDataSyncedUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
-import pl.luczka.todaywas.core.domain.usecase.SignInWithEmailUseCase
-import pl.luczka.todaywas.core.domain.usecase.SignInWithGoogleUseCase
-import pl.luczka.todaywas.core.domain.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.core.ui.auth.SignUpFormUiState
@@ -31,6 +25,12 @@ import pl.luczka.todaywas.core.ui.auth.util.isValidRepeatPassword
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
 import pl.luczka.todaywas.core.ui.model.LocalDataSummaryUi
+import pl.luczka.todaywas.domain.auth.model.AuthError
+import pl.luczka.todaywas.domain.auth.model.AuthException
+import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.auth.usecase.SignInWithEmailUseCase
+import pl.luczka.todaywas.domain.auth.usecase.SignInWithGoogleUseCase
+import pl.luczka.todaywas.domain.auth.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
 

@@ -3,7 +3,7 @@ package pl.luczka.todaywas.core.data.mapper
 import io.github.jan.supabase.auth.exception.AuthErrorCode
 import io.github.jan.supabase.auth.exception.AuthRestException
 import java.io.IOException
-import pl.luczka.todaywas.core.domain.model.AuthError
+import pl.luczka.todaywas.domain.auth.model.AuthError
 
 // HttpRequestException (thrown for connectivity failures) is itself an IOException subclass,
 // so a single IOException branch covers both.

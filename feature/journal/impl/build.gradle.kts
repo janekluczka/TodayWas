@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:auth"))
     implementation(project(":domain:entry"))
     implementation(project(":feature:journal:api"))
     implementation(project(":feature:account:api"))

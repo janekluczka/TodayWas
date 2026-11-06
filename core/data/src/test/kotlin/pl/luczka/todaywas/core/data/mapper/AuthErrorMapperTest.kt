@@ -4,7 +4,7 @@ import io.github.jan.supabase.auth.exception.AuthErrorCode
 import java.io.IOException
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.AuthError
+import pl.luczka.todaywas.domain.auth.model.AuthError
 
 class AuthErrorMapperTest {
 

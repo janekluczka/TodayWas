@@ -15,13 +15,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.core.domain.usecase.AddJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAddableJournalDateSlotsUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalRefinementPromptUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalStarterPromptUseCase
 import pl.luczka.todaywas.core.ui.mapper.toDomain
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthStateUi
 import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.feature.journal.impl.edit.HelpMeRefineUiState
 import pl.luczka.todaywas.feature.journal.impl.edit.MAX_REFINE_TEXT_LENGTH
 import pl.luczka.todaywas.feature.journal.impl.edit.applyResult

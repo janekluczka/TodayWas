@@ -1,7 +1,7 @@
-package pl.luczka.todaywas.core.domain.repository
+package pl.luczka.todaywas.domain.auth.repository
 
 import kotlinx.coroutines.flow.Flow
-import pl.luczka.todaywas.core.domain.model.AuthState
+import pl.luczka.todaywas.domain.auth.model.AuthState
 
 interface AuthRepository {
 

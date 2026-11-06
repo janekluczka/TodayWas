@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.core.data.mapper
 
 import io.github.jan.supabase.auth.status.SessionStatus
-import pl.luczka.todaywas.core.domain.model.AuthState
+import pl.luczka.todaywas.domain.auth.model.AuthState
 
 fun SessionStatus.toAuthState(): AuthState = when (this) {
     is SessionStatus.Initializing -> AuthState.Loading

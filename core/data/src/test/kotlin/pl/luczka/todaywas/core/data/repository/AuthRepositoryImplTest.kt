@@ -17,8 +17,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.AuthError
-import pl.luczka.todaywas.core.domain.model.AuthException
+import pl.luczka.todaywas.domain.auth.model.AuthError
+import pl.luczka.todaywas.domain.auth.model.AuthException
 
 private const val SUCCESS_SESSION_BODY = """
 {
