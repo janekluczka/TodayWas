@@ -3,7 +3,7 @@ change_id: mvp-certification-fixes
 title: Close the 3 gaps from the 10xDevs MVP certification check
 status: planned
 created: 2026-08-16
-updated: 2026-08-16
+updated: 2026-11-06
 archived_at: null
 ---
 
@@ -17,3 +17,5 @@ mechanism, UI-layer business logic entanglement — plus fixes and tests, supers
 retroactive `test-plan.md` idea). The root `README.md` was deferred as a small standalone item, not
 part of either. This change's `plan.md`/`plan-brief.md` are kept as the original combined research
 record; the two split changes are the active plans.
+
+**Superseded 2026-11-06**: all three gaps are closed elsewhere — delete by `context/archive/2026-08-16-entry-delete/`, the test strategy by `context/archive/2026-08-18-architecture-hardening/` and `context/foundation/test-plan.md`, and the root `README.md` by #42. Archived without being implemented itself.
