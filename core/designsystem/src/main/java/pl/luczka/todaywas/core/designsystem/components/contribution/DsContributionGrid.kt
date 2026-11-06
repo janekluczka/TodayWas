@@ -32,6 +32,7 @@ import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsColor
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 import pl.luczka.todaywas.core.designsystem.tokens.DsRadius
+import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 enum class DsContributionLevel {
@@ -105,13 +106,13 @@ enum class DsContributionGridSize(
     val cellCornerRadius: Dp,
 ) {
     MEDIUM(
-        cellSize = 24.dp,
+        cellSize = DsSize.contributionCellMedium,
         cellSpacing = DsSpacing.space100,
         monthGap = DsSpacing.space600,
         cellCornerRadius = DsRadius.extraSmall,
     ),
     LARGE(
-        cellSize = 32.dp,
+        cellSize = DsSize.contributionCellLarge,
         cellSpacing = DsSpacing.space100,
         monthGap = DsSpacing.space600,
         cellCornerRadius = DsRadius.small,
@@ -138,7 +139,7 @@ internal fun ContributionCell(
     cell: DsContributionCellUiState,
     levelColors: Map<DsContributionLevel, Color>,
     modifier: Modifier = Modifier,
-    cellSize: Dp = 12.dp,
+    cellSize: Dp = DsSize.contributionCellSmall,
     cellCornerRadius: Dp = DsRadius.extraSmall,
     selected: Boolean = false,
     onClick: (() -> Unit)? = null,

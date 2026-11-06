@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -22,6 +21,7 @@ import pl.luczka.todaywas.core.designsystem.components.cards.DsCardVariant
 import pl.luczka.todaywas.core.designsystem.components.cards.DsSelectableCard
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 
 // Cards are a fixed width, purely for calendar-strip context — many more days than are ever selectable get rendered
@@ -30,7 +30,6 @@ import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 // nothing before it, or day 7 of a 7-day habit backfill window) — flanking context days fill the space either side.
 // Page index is the date's epoch-day, so the pager never needs true infinite pages: today's epoch-day is a small
 // positive Int for any realistic date, and Int.MAX_VALUE pages comfortably covers it.
-private val DATE_STRIP_CARD_WIDTH = 56.dp
 private val DATE_STRIP_CARD_SPACING = DsSpacing.space200
 
 @Composable
@@ -48,7 +47,7 @@ fun DsDateStrip(
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val cardWidth = DATE_STRIP_CARD_WIDTH
+        val cardWidth = DsSize.dateStripCardWidth
         val sideInset = (maxWidth - cardWidth) / 2
 
         HorizontalPager(

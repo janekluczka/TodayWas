@@ -14,11 +14,11 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import pl.luczka.todaywas.core.designsystem.components.icons.DsIcon
 import pl.luczka.todaywas.core.designsystem.components.progress.DsLoadingIndicator
 import pl.luczka.todaywas.core.designsystem.components.text.DsText
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
+import pl.luczka.todaywas.core.designsystem.tokens.DsSize
 import pl.luczka.todaywas.core.designsystem.tokens.DsSpacing
 import pl.luczka.todaywas.core.ui.R
 
@@ -45,13 +45,13 @@ fun GoogleSignInButton(
         if (loading) {
             DsLoadingIndicator(
                 color = LocalContentColor.current,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(DsSize.progressIndicatorInline),
             )
         } else {
             DsIcon(
                 imageVector = ImageVector.vectorResource(R.drawable.ic_google_logo),
                 contentDescription = null,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(DsSize.iconInButton),
             )
             Spacer(modifier = Modifier.width(DsSpacing.space200))
             DsText(text = text)
