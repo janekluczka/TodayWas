@@ -1,10 +1,10 @@
 ---
 change_id: ci-cd-pipeline
 title: Set up GitHub Actions CI for the app plus Edge Function auto-deploy
-status: impl_reviewed
+status: archived
 created: 2026-08-16
-updated: 2026-08-16
-archived_at: null
+updated: 2026-11-06
+archived_at: 2026-11-06T16:11:16Z
 ---
 
 ## Notes
