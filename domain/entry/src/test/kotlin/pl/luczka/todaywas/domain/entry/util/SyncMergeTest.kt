@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.util
+package pl.luczka.todaywas.domain.entry.util
 
 import java.time.Instant
 import org.junit.Assert.assertEquals

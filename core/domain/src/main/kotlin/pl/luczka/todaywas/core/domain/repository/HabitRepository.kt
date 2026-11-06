@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.core.domain.model.Habit
 import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.domain.model.HabitType
+import pl.luczka.todaywas.domain.entry.repository.Syncable
 
 interface HabitRepository : Syncable {
 

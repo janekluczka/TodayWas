@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.repository
+package pl.luczka.todaywas.domain.entry.repository
 
 interface Syncable {
 

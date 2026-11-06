@@ -26,11 +26,9 @@ import pl.luczka.todaywas.core.domain.model.AiAssistError
 import pl.luczka.todaywas.core.domain.model.AiAssistException
 import pl.luczka.todaywas.core.domain.model.AiPromptResult
 import pl.luczka.todaywas.core.domain.model.AuthState
-import pl.luczka.todaywas.core.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.repository.AiAssistRepository
 import pl.luczka.todaywas.core.domain.repository.AuthRepository
-import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.RequestJournalRefinementPromptUseCase
@@ -39,6 +37,8 @@ import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAiAssistRepository
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.entry.model.EditWindowExpiredException
+import pl.luczka.todaywas.domain.entry.usecase.IsEditableUseCase
 import pl.luczka.todaywas.feature.journal.impl.create.STARTER_PROMPT_VARIANT_COUNT
 import pl.luczka.todaywas.feature.journal.impl.model.AiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState

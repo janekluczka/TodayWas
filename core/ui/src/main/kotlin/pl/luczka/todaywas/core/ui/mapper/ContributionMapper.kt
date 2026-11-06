@@ -5,11 +5,11 @@ import java.time.LocalDate
 import java.time.YearMonth
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.core.domain.model.ContributionGrid
-import pl.luczka.todaywas.core.domain.model.ContributionLevel
-import pl.luczka.todaywas.core.domain.model.dateRange
 import pl.luczka.todaywas.core.ui.model.ContributionGridType
 import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.domain.entry.model.ContributionGrid
+import pl.luczka.todaywas.domain.entry.model.ContributionLevel
+import pl.luczka.todaywas.domain.entry.model.dateRange
 
 private const val DAYS_IN_WEEK = 7
 

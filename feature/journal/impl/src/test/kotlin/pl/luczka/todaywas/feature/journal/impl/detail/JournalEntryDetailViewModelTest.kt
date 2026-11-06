@@ -24,10 +24,10 @@ import org.junit.Before
 import org.junit.Test
 import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.domain.usecase.DeleteJournalEntryUseCase
-import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
 import pl.luczka.todaywas.core.domain.usecase.UpdateJournalEntryUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.entry.usecase.IsEditableUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JournalEntryDetailViewModelTest {

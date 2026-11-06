@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.luczka.todaywas.core.domain.usecase.DeleteJournalEntryUseCase
-import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntryUseCase
 import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.domain.entry.usecase.IsEditableUseCase
 
 @HiltViewModel(assistedFactory = JournalEntryDetailViewModel.Factory::class)
 internal class JournalEntryDetailViewModel @AssistedInject constructor(

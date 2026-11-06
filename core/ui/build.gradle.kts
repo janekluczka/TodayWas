@@ -27,6 +27,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:entry"))
     // Shared composables take and render Ds components and theme types.
     api(project(":core:designsystem"))
     implementation(project(":core:domain"))

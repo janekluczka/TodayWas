@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import pl.luczka.todaywas.core.domain.model.ContributionWindow
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalContributionUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveJournalEntriesUseCase
 import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.domain.entry.model.ContributionWindow
 import pl.luczka.todaywas.feature.journal.impl.model.JournalSortUiState
 
 @HiltViewModel

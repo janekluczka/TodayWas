@@ -15,6 +15,7 @@ import pl.luczka.todaywas.core.database.entity.HabitCheckInEntity
 import pl.luczka.todaywas.core.database.entity.HabitEntity
 import pl.luczka.todaywas.core.database.entity.JournalEntryEntity
 import pl.luczka.todaywas.core.database.todayWasDatabaseCallbacks
+import pl.luczka.todaywas.domain.entry.util.mergeForSync
 
 // End-to-end regression coverage for the soft-delete -> sync-push chain: unlike SyncMergeTest.kt
 // (mergeForSync() against hand-built SyncMeta) or the DAO tests (deletedAt gets set, active reads

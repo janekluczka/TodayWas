@@ -8,10 +8,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionCellUiState
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.core.domain.model.ContributionGrid
-import pl.luczka.todaywas.core.domain.model.ContributionLevel
-import pl.luczka.todaywas.core.domain.model.ContributionWindow
 import pl.luczka.todaywas.core.ui.model.ContributionGridType
+import pl.luczka.todaywas.domain.entry.model.ContributionGrid
+import pl.luczka.todaywas.domain.entry.model.ContributionLevel
+import pl.luczka.todaywas.domain.entry.model.ContributionWindow
 
 class ContributionMapperTest {
 

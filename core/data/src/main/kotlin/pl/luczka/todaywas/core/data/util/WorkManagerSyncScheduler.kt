@@ -10,6 +10,7 @@ import androidx.work.WorkRequest
 import java.time.Duration
 import javax.inject.Inject
 import pl.luczka.todaywas.core.data.worker.SyncWorker
+import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 
 private const val SYNC_WORK_NAME = "sync-local-data"
 

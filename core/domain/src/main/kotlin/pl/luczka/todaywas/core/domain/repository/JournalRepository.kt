@@ -3,6 +3,7 @@ package pl.luczka.todaywas.core.domain.repository
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import pl.luczka.todaywas.core.domain.model.JournalEntry
+import pl.luczka.todaywas.domain.entry.repository.Syncable
 
 interface JournalRepository : Syncable {
 

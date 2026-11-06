@@ -3,11 +3,11 @@ package pl.luczka.todaywas.core.domain.util
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.math.ceil
-import pl.luczka.todaywas.core.domain.model.ContributionGrid
-import pl.luczka.todaywas.core.domain.model.ContributionLevel
-import pl.luczka.todaywas.core.domain.model.ContributionWindow
 import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.dateRange
+import pl.luczka.todaywas.domain.entry.model.ContributionGrid
+import pl.luczka.todaywas.domain.entry.model.ContributionLevel
+import pl.luczka.todaywas.domain.entry.model.ContributionWindow
+import pl.luczka.todaywas.domain.entry.model.dateRange
 
 object HabitContributionCalculator {
 

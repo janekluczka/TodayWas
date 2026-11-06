@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.util
+package pl.luczka.todaywas.domain.entry.util
 
 import java.time.Duration
 import java.time.Instant

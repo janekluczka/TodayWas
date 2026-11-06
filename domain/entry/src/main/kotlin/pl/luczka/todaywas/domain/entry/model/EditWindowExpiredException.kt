@@ -1,3 +1,3 @@
-package pl.luczka.todaywas.core.domain.model
+package pl.luczka.todaywas.domain.entry.model
 
 class EditWindowExpiredException : Exception()

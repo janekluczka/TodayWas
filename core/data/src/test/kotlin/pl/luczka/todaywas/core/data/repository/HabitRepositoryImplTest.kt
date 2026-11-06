@@ -11,8 +11,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import pl.luczka.todaywas.core.data.datasource.FakeRemoteHabitCheckInDataSource
 import pl.luczka.todaywas.core.data.datasource.FakeRemoteHabitDataSource
-import pl.luczka.todaywas.core.data.util.SyncScheduler
-import pl.luczka.todaywas.core.data.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.core.database.datasource.LocalHabitDataSource
 import pl.luczka.todaywas.core.database.entity.HabitCheckInEntity
 import pl.luczka.todaywas.core.database.entity.HabitEntity
@@ -22,6 +20,8 @@ import pl.luczka.todaywas.core.network.datasource.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.core.network.datasource.RemoteHabitDataSource
 import pl.luczka.todaywas.core.network.dto.HabitRemoteDto
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
+import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
+import pl.luczka.todaywas.domain.entry.util.TOMBSTONE_GC_WINDOW
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HabitRepositoryImplTest {

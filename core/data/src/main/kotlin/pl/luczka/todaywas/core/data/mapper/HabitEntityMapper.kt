@@ -3,10 +3,10 @@ package pl.luczka.todaywas.core.data.mapper
 import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import pl.luczka.todaywas.core.data.util.SyncMeta
 import pl.luczka.todaywas.core.database.entity.HabitEntity
 import pl.luczka.todaywas.core.domain.model.Habit
 import pl.luczka.todaywas.core.domain.model.HabitType
+import pl.luczka.todaywas.domain.entry.util.SyncMeta
 
 fun HabitEntity.toDomain(): Habit = Habit(
     id = id,

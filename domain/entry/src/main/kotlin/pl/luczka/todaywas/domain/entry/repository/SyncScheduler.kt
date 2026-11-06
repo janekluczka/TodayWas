@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.util
+package pl.luczka.todaywas.domain.entry.repository
 
 interface SyncScheduler {
 

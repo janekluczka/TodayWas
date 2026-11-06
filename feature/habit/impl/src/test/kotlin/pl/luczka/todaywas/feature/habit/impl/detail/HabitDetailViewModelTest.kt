@@ -26,12 +26,12 @@ import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.domain.usecase.DeleteHabitCheckInUseCase
 import pl.luczka.todaywas.core.domain.usecase.DeleteHabitUseCase
-import pl.luczka.todaywas.core.domain.usecase.GetFreshLoggableDatesUseCase
-import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.domain.usecase.ObserveHabitContributionUseCase
 import pl.luczka.todaywas.core.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.entry.usecase.GetFreshLoggableDatesUseCase
+import pl.luczka.todaywas.domain.entry.usecase.IsEditableUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HabitDetailViewModelTest {

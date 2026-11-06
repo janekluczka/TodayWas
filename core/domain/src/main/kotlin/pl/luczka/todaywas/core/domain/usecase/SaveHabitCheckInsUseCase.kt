@@ -4,9 +4,9 @@ import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
-import pl.luczka.todaywas.core.domain.model.EditWindowExpiredException
 import pl.luczka.todaywas.core.domain.repository.HabitRepository
-import pl.luczka.todaywas.core.domain.util.EditWindow
+import pl.luczka.todaywas.domain.entry.model.EditWindowExpiredException
+import pl.luczka.todaywas.domain.entry.util.EditWindow
 
 class SaveHabitCheckInsUseCase @Inject constructor(
     private val repository: HabitRepository,
