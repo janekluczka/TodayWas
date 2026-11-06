@@ -13,7 +13,7 @@ internal object Modules {
     /** Tooling modules the toolkit installs; they aren't part of the app's graph. */
     private val tooling = setOf(":ktlint-rules", ":architecture-tests")
 
-    /** Every module `settings.gradle.kts` includes, at its default directory (`:core:data` → `core/data`). */
+    /** Every module `settings.gradle.kts` includes, at its default directory (`:data:auth` → `data/auth`). */
     val all: List<GradleModule> by lazy {
         val included = Regex("""include\(([^)]*)\)""")
             .findAll(root.resolve("settings.gradle.kts").readText())
@@ -48,6 +48,8 @@ internal data class GradleModule(
     val isFeature get() = segments.first() == "feature"
     val isFeatureApi get() = isFeature && segments.last() == "api"
     val isFeatureImpl get() = isFeature && segments.last() == "impl"
+    val isDomain get() = segments.first() == "domain"
+    val isData get() = segments.first() == "data"
 
     /** The feature a `:feature:<name>[:api|:impl]` module belongs to. */
     val featureName get() = if (isFeature) segments.getOrNull(1) else null
@@ -55,7 +57,7 @@ internal data class GradleModule(
     /** The directory Konsist reports as the module name, e.g. `feature/journal/impl`. */
     val konsistName get() = segments.joinToString("/")
 
-    /** `<base>.<module path>`: `pl.example.core.data` for `:core:data`; the base itself for `:app`. */
+    /** `<base>.<module path>`: `pl.example.data.auth` for `:data:auth`; the base itself for `:app`. */
     fun expectedPackage(base: String): String = if (isApp) base else (listOf(base) + segments).joinToString(".")
 
     companion object {

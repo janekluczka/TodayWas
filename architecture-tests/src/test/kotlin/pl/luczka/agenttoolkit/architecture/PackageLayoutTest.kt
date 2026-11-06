@@ -23,10 +23,10 @@ class PackageLayoutTest {
     @Test
     fun `should hold only implementations when a file is in data repository`() {
         // Arrange
-        val interfaces = Scopes.production.interfaces().filter { it.resideInPackage("..data.repository..") }
+        val interfaces = Scopes.production.interfaces().filter { it.resideInPackage("..data..repository..") }
 
         // Assert
-        interfaces.assertEmpty(additionalMessage = "Repository interfaces live in domain.repository.")
+        interfaces.assertEmpty(additionalMessage = "Repository interfaces live in domain[.<area>].repository.")
     }
 
     @Test
@@ -35,7 +35,7 @@ class PackageLayoutTest {
         val misplaced = Scopes.production
             .interfaces()
             .withNameEndingWith("Repository")
-            .filterNot { it.resideInPackage("..domain.repository..") }
+            .filterNot { it.resideInPackage("..domain..repository..") }
 
         // Assert
         misplaced.assertEmpty()

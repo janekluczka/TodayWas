@@ -12,7 +12,7 @@ class DomainLayerTest {
     @Test
     fun `should live in domain usecase when a class is a use case`() {
         // Arrange
-        val misplaced = useCases.filterNot { it.resideInPackage("..domain.usecase..") }
+        val misplaced = useCases.filterNot { it.resideInPackage("..domain..usecase..") }
 
         // Assert
         misplaced.assertEmpty()
