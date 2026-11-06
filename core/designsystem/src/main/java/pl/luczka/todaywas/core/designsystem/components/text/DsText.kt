@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.TextUnit
 import pl.luczka.todaywas.core.designsystem.theme.DsTheme
 
 @Composable
@@ -16,7 +15,6 @@ fun DsText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified,
     style: TextStyle = LocalTextStyle.current,
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
@@ -24,7 +22,6 @@ fun DsText(
     Text(
         text = text,
         color = color,
-        fontSize = fontSize,
         style = style,
         maxLines = maxLines,
         overflow = overflow,

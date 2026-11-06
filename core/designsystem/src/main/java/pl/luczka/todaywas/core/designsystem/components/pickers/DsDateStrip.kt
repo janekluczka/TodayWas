@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.sp
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -87,7 +86,7 @@ private fun DateStripCard(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             DsText(
                 text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-                fontSize = 10.sp,
+                style = MaterialTheme.typography.labelSmall,
             )
             DsText(text = date.dayOfMonth.toString())
         }
