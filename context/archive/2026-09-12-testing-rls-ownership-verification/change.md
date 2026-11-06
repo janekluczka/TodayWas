@@ -1,10 +1,10 @@
 ---
 change_id: testing-rls-ownership-verification
 title: RLS ownership verification
-status: impl_reviewed
+status: archived
 created: 2026-09-12
-updated: 2026-09-12
-archived_at: null
+updated: 2026-11-06
+archived_at: 2026-11-06T16:11:19Z
 ---
 
 ## Notes
