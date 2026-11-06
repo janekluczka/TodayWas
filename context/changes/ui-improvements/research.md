@@ -360,9 +360,9 @@ Each screen's individual findings are below, organized to match the user flow or
 
 ## Historical Context (from prior changes)
 
-- `context/changes/ux-refinements/` (status `impl_reviewed`, created 2026-08-11) is the change that
+- `context/archive/2026-08-11-ux-refinements/` (status `impl_reviewed`, created 2026-08-11) is the change that
   built the current hub main screen (bottom-nav removal, single generic account icon regardless of
-  sign-in state — `context/changes/ux-refinements/change.md:17`). It documents no known open
+  sign-in state — `context/archive/2026-08-11-ux-refinements/change.md:17`). It documents no known open
   main-screen issues beyond what shipped, so the Main-screen findings above (missing `DsCard`,
   asymmetric section spacing, 50/50 fixed split, no loading/error state) are all new since that
   change closed. As previously flagged in `context/changes/ui-improvements/change.md`, this prior

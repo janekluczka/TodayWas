@@ -204,5 +204,5 @@ not the regeneration count).
 
 - `context/changes/ui-improvements/research.md` — per-screen UI findings (design-system
   consistency, missing states, flow friction, visual polish) layered on top of this structural map.
-- `context/changes/ux-refinements/` — the prior change that established the current `Main` hub
+- `context/archive/2026-08-11-ux-refinements/` — the prior change that established the current `Main` hub
   layout and the single generic account icon.

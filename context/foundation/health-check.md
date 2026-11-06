@@ -125,7 +125,7 @@ also pinned to a commit SHA rather than a floating tag. Both jobs were verified 
 area, confirming the path-scoping logic works, though a PR that actually touches `app/**` (to see
 the `android` job go green) and a push touching `supabase/functions/ai-proxy/` on `master` (to see
 `deploy-edge-function` actually deploy) are still pending real-world exercises — tracked in
-`context/changes/ci-cd-pipeline/plan.md`'s Progress section, not a health-check finding.
+`context/archive/2026-08-16-ci-cd-pipeline/plan.md`'s Progress section, not a health-check finding.
 
 ## Configuration
 
@@ -188,5 +188,5 @@ previously-flagged packages.
 Next step: this project has no more standing infrastructure gaps from the health-check's
 perspective. Remaining real-world verification (an app-code PR actually exercising the `android`
 job, and a `supabase/functions/**` push actually exercising `deploy-edge-function`) is tracked as
-pending manual-verification items in `context/changes/ci-cd-pipeline/plan.md`, not a health-check
+pending manual-verification items in `context/archive/2026-08-16-ci-cd-pipeline/plan.md`, not a health-check
 finding — continue with feature development.
