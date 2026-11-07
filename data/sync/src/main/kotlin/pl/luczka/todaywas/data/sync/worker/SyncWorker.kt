@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.worker
+package pl.luczka.todaywas.data.sync.worker
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker

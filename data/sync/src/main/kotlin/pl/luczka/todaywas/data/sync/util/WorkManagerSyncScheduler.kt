@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.util
+package pl.luczka.todaywas.data.sync.util
 
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
@@ -9,7 +9,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import java.time.Duration
 import javax.inject.Inject
-import pl.luczka.todaywas.core.data.worker.SyncWorker
+import pl.luczka.todaywas.data.sync.worker.SyncWorker
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 
 private const val SYNC_WORK_NAME = "sync-local-data"

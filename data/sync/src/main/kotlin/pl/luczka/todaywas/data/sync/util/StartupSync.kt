@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.util
+package pl.luczka.todaywas.data.sync.util
 
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first

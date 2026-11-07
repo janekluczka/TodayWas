@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.util
+package pl.luczka.todaywas.data.sync.util
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch

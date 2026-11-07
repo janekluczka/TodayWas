@@ -7,7 +7,7 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.data.util.StartupSync
+import pl.luczka.todaywas.data.sync.util.StartupSync
 
 @HiltAndroidApp
 class TodayWasApplication :

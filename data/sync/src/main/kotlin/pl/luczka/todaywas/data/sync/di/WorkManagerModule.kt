@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.di
+package pl.luczka.todaywas.data.sync.di
 
 import android.content.Context
 import androidx.work.WorkManager
@@ -8,7 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-import pl.luczka.todaywas.core.data.util.WorkManagerSyncScheduler
+import pl.luczka.todaywas.data.sync.util.WorkManagerSyncScheduler
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 
 @Module
