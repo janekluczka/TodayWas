@@ -1,10 +1,10 @@
 ---
 change_id: domain-data-areas
 title: Domain data areas
-status: implemented
+status: archived
 created: 2026-11-07
 updated: 2026-11-07
-archived_at: null
+archived_at: 2026-11-07T16:24:21Z
 ---
 
 ## Notes
