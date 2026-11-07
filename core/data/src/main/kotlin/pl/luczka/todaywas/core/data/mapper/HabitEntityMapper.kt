@@ -4,9 +4,9 @@ import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.core.database.entity.HabitEntity
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.domain.entry.util.SyncMeta
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitType
 
 fun HabitEntity.toDomain(): Habit = Habit(
     id = id,

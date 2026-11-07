@@ -18,10 +18,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
@@ -34,6 +30,10 @@ import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.domain.auth.model.AuthError
 import pl.luczka.todaywas.domain.auth.model.AuthState
 import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitType
+import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.journal.model.JournalEntry
 import pl.luczka.todaywas.domain.journal.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.journal.usecase.ObserveJournalEntriesUseCase

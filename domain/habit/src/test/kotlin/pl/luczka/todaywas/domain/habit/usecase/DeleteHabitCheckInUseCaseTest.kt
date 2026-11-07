@@ -1,27 +1,29 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.habit.usecase
 
+import java.time.LocalDate
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 
-class DeleteHabitUseCaseTest {
+class DeleteHabitCheckInUseCaseTest {
 
     @Test
     fun `should delegate to the repository when called`() =
         runTest {
             // Arrange
             val repository = FakeHabitRepository()
-            val useCase = DeleteHabitUseCase(repository)
+            val useCase = DeleteHabitCheckInUseCase(repository)
 
             // Act
-            val result = useCase("1")
+            val result = useCase("1", LocalDate.of(2026, 7, 27))
 
             // Assert
             assertTrue(result.isSuccess)
-            assertEquals("1", repository.lastDeletedHabitId)
-            assertEquals(1, repository.deleteHabitCallCount)
+            assertEquals("1", repository.lastDeletedCheckInHabitId)
+            assertEquals(LocalDate.of(2026, 7, 27), repository.lastDeletedCheckInDate)
+            assertEquals(1, repository.deleteCheckInCallCount)
         }
 
     @Test
@@ -30,11 +32,11 @@ class DeleteHabitUseCaseTest {
             // Arrange
             val repository = FakeHabitRepository()
             val failure = RuntimeException("delete failed")
-            repository.deleteHabitResult = Result.failure(failure)
-            val useCase = DeleteHabitUseCase(repository)
+            repository.deleteCheckInResult = Result.failure(failure)
+            val useCase = DeleteHabitCheckInUseCase(repository)
 
             // Act
-            val result = useCase("1")
+            val result = useCase("1", LocalDate.of(2026, 7, 27))
 
             // Assert
             assertTrue(result.isFailure)

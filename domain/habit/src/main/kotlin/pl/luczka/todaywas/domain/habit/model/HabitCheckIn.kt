@@ -1,16 +1,15 @@
-package pl.luczka.todaywas.core.domain.model
+package pl.luczka.todaywas.domain.habit.model
 
 import java.time.Instant
+import java.time.LocalDate
 
 // updatedAt/deletedAt are data-layer sync plumbing only (conflict-resolution metadata for
 // syncWithRemote()) - never surfaced through any ui/mapper/ or UiState.
-data class Habit(
+data class HabitCheckIn(
     val id: String,
-    val name: String,
-    val description: String?,
-    val type: HabitType,
-    val scaleMin: Int?,
-    val scaleMax: Int?,
+    val habitId: String,
+    val date: LocalDate,
+    val value: Int,
     val createdAt: Instant,
     val updatedAt: Instant,
     val deletedAt: Instant? = null,

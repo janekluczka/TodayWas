@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:habit"))
     implementation(project(":domain:entry"))
     implementation(project(":feature:habit:api"))
     implementation(libs.androidx.compose.material.icons.core)

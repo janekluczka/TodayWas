@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.habit.usecase
 
 import java.time.Clock
 import java.time.Duration
@@ -9,9 +9,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.domain.entry.model.EditWindowExpiredException
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
 
 class SaveHabitCheckInsUseCaseTest {
 

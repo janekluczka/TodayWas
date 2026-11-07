@@ -15,10 +15,6 @@ import pl.luczka.todaywas.core.data.mapper.toSyncMeta
 import pl.luczka.todaywas.core.database.datasource.LocalHabitDataSource
 import pl.luczka.todaywas.core.database.entity.HabitCheckInEntity
 import pl.luczka.todaywas.core.database.entity.HabitEntity
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.repository.HabitRepository
 import pl.luczka.todaywas.core.network.datasource.RemoteHabitCheckInDataSource
 import pl.luczka.todaywas.core.network.datasource.RemoteHabitDataSource
 import pl.luczka.todaywas.core.network.util.remoteCall
@@ -26,6 +22,10 @@ import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 import pl.luczka.todaywas.domain.entry.util.TOMBSTONE_GC_WINDOW
 import pl.luczka.todaywas.domain.entry.util.mergeForSync
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitType
+import pl.luczka.todaywas.domain.habit.repository.HabitRepository
 
 class HabitRepositoryImpl @Inject constructor(
     private val local: LocalHabitDataSource,

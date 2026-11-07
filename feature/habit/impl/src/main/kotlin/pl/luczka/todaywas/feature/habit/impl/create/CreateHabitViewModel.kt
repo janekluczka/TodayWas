@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.usecase.CreateHabitUseCase
+import pl.luczka.todaywas.domain.habit.model.HabitType
+import pl.luczka.todaywas.domain.habit.usecase.CreateHabitUseCase
 
 @HiltViewModel
 internal class CreateHabitViewModel @Inject constructor(

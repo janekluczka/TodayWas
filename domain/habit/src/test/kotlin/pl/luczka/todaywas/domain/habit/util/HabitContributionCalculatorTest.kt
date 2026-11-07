@@ -1,13 +1,13 @@
-package pl.luczka.todaywas.core.domain.util
+package pl.luczka.todaywas.domain.habit.util
 
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.entry.model.ContributionLevel
 import pl.luczka.todaywas.domain.entry.model.ContributionWindow
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
 
 class HabitContributionCalculatorTest {
 

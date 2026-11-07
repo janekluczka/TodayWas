@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+    api(project(":domain:habit"))
     api(project(":domain:journal"))
     api(project(":domain:onboarding"))
     api(project(":domain:auth"))

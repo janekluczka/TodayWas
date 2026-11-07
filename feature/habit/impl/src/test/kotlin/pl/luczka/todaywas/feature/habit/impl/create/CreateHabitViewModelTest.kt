@@ -14,9 +14,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.usecase.CreateHabitUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.habit.model.HabitType
+import pl.luczka.todaywas.domain.habit.usecase.CreateHabitUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateHabitViewModelTest {

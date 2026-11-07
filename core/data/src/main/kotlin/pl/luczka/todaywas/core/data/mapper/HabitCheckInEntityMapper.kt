@@ -5,8 +5,8 @@ import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import pl.luczka.todaywas.core.database.entity.HabitCheckInEntity
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.domain.entry.util.SyncMeta
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
 
 fun HabitCheckInEntity.toDomain(): HabitCheckIn = HabitCheckIn(
     id = id,

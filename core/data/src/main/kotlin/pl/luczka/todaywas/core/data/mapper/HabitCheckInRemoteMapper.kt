@@ -2,9 +2,9 @@ package pl.luczka.todaywas.core.data.mapper
 
 import java.time.Instant
 import pl.luczka.todaywas.core.database.entity.HabitCheckInEntity
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
 import pl.luczka.todaywas.core.network.dto.HabitCheckInRemoteDto
 import pl.luczka.todaywas.domain.entry.util.SyncMeta
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
 
 fun HabitCheckIn.toRemoteDto(userId: String): HabitCheckInRemoteDto = HabitCheckInRemoteDto(
     id = id,

@@ -2,15 +2,15 @@ package pl.luczka.todaywas.core.ui.mapper
 
 import java.time.LocalDate
 import pl.luczka.todaywas.core.designsystem.components.contribution.DsContributionLevel
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitCheckInBoard
-import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.util.HabitContributionCalculator
 import pl.luczka.todaywas.core.ui.model.HabitCheckInStatusUiState
 import pl.luczka.todaywas.core.ui.model.HabitSortUiState
 import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
 import pl.luczka.todaywas.core.ui.model.HabitUiState
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitCheckInBoard
+import pl.luczka.todaywas.domain.habit.model.HabitType
+import pl.luczka.todaywas.domain.habit.util.HabitContributionCalculator
 
 // Sorts on domain data (Habit + HabitCheckIn) before mapping to HabitUiState, so the UI model
 // never needs to carry createdAt/lastCheckInDate purely for ordering purposes.

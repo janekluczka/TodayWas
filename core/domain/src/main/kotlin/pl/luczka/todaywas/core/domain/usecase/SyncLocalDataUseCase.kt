@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.core.domain.usecase
 
 import javax.inject.Inject
-import pl.luczka.todaywas.core.domain.repository.HabitRepository
+import pl.luczka.todaywas.domain.habit.repository.HabitRepository
 import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 
 class SyncLocalDataUseCase @Inject constructor(

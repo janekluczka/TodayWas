@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.habit.usecase
 
 import java.time.Instant
 import java.time.LocalDate
@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitType
 
 class ObserveHabitCheckInBoardUseCaseTest {
 

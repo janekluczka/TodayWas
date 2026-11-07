@@ -5,11 +5,11 @@ import java.time.LocalDate
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitType
 import pl.luczka.todaywas.domain.journal.model.JournalEntry
 
 class GetLocalDataSummaryUseCaseTest {

@@ -2,10 +2,10 @@ package pl.luczka.todaywas.feature.habit.impl.detail
 
 import java.time.Instant
 import java.time.LocalDate
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitType
 
 internal fun HabitDetailViewModelState.toUiState(
     freshLoggableDates: List<LocalDate>,

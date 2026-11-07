@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.usecase.LogHabitCheckInsUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.entry.usecase.GetFreshLoggableDatesUseCase
+import pl.luczka.todaywas.domain.habit.usecase.LogHabitCheckInsUseCase
+import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitCheckInBoardUseCase
 
 @HiltViewModel
 internal class LogHabitCheckInsViewModel @Inject constructor(
