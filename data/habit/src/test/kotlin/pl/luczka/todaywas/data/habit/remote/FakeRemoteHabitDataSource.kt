@@ -1,0 +1,41 @@
+package pl.luczka.todaywas.data.habit.remote
+
+import pl.luczka.todaywas.data.habit.remote.HabitRemoteDto
+import pl.luczka.todaywas.data.habit.remote.RemoteHabitDataSource
+
+class FakeRemoteHabitDataSource(
+    private val habits: MutableMap<String, HabitRemoteDto> = mutableMapOf(),
+    var shouldFail: Boolean = false,
+    private val callOrderLog: MutableList<String>? = null,
+) : RemoteHabitDataSource {
+
+    var upsertCallCount = 0
+        private set
+    var purgeCallCount = 0
+        private set
+
+    override suspend fun upsert(habits: List<HabitRemoteDto>): Result<Unit> {
+        upsertCallCount++
+        if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
+        habits.forEach { this.habits[it.id] = it }
+        return Result.success(Unit)
+    }
+
+    override suspend fun fetchAll(userId: String): Result<List<HabitRemoteDto>> {
+        if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
+        return Result.success(habits.values.filter { it.userId == userId })
+    }
+
+    override suspend fun purgeDeletedBefore(
+        userId: String,
+        cutoff: String,
+    ): Result<Unit> {
+        purgeCallCount++
+        callOrderLog?.add("habit")
+        if (shouldFail) return Result.failure(RuntimeException("simulated remote failure"))
+        habits.values
+            .filter { it.userId == userId && it.deletedAt?.let { deletedAt -> deletedAt < cutoff } == true }
+            .forEach { habits.remove(it.id) }
+        return Result.success(Unit)
+    }
+}
