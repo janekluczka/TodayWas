@@ -27,7 +27,6 @@ android {
 dependencies {
     implementation(project(":data:sync"))
     implementation(project(":domain:onboarding"))
-    implementation(project(":core:data"))
     implementation(project(":data:habit"))
     implementation(project(":data:journal"))
     implementation(project(":data:aiassist"))

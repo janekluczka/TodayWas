@@ -26,7 +26,6 @@ dependencyResolutionManagement {
 rootProject.name = "Today Was"
 include(":app")
 include(":core:designsystem")
-include(":core:data")
 include(":core:database")
 include(":core:navigation")
 include(":core:network")
