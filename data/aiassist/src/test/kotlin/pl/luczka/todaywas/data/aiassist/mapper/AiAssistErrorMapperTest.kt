@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.mapper
+package pl.luczka.todaywas.data.aiassist.mapper
 
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.exceptions.UnauthorizedRestException

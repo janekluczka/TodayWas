@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.aiassist.repository
 
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.functions.Functions

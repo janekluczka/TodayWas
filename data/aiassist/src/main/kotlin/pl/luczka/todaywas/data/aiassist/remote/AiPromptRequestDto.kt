@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.network.dto
+package pl.luczka.todaywas.data.aiassist.remote
 
 import kotlinx.serialization.Serializable
 

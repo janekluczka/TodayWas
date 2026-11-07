@@ -27,6 +27,7 @@ android {
 dependencies {
     implementation(project(":domain:onboarding"))
     implementation(project(":core:data"))
+    implementation(project(":data:aiassist"))
     implementation(project(":data:onboarding"))
     implementation(project(":data:auth"))
     implementation(project(":core:designsystem"))

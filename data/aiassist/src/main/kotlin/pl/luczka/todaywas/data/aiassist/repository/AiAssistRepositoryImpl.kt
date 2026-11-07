@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.aiassist.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.encode
@@ -11,9 +11,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
-import pl.luczka.todaywas.core.data.mapper.toAiAssistError
-import pl.luczka.todaywas.core.network.dto.AiPromptRequestDto
-import pl.luczka.todaywas.core.network.dto.AiPromptResponseDto
+import pl.luczka.todaywas.data.aiassist.mapper.toAiAssistError
+import pl.luczka.todaywas.data.aiassist.remote.AiPromptRequestDto
+import pl.luczka.todaywas.data.aiassist.remote.AiPromptResponseDto
 import pl.luczka.todaywas.domain.aiassist.model.AiAssistException
 import pl.luczka.todaywas.domain.aiassist.model.AiPromptResult
 import pl.luczka.todaywas.domain.aiassist.model.JournalPromptTone
