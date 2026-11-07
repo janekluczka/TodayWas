@@ -6,12 +6,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import pl.luczka.todaywas.core.data.repository.AiAssistRepositoryImpl
-import pl.luczka.todaywas.core.data.repository.AuthRepositoryImpl
 import pl.luczka.todaywas.core.data.repository.HabitRepositoryImpl
 import pl.luczka.todaywas.core.data.repository.JournalRepositoryImpl
 import pl.luczka.todaywas.core.data.repository.OnboardingRepositoryImpl
 import pl.luczka.todaywas.domain.aiassist.repository.AiAssistRepository
-import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.habit.repository.HabitRepository
 import pl.luczka.todaywas.domain.journal.repository.JournalRepository
 import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
@@ -30,9 +28,6 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindHabitRepository(impl: HabitRepositoryImpl): HabitRepository
-
-    @Binds
-    abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
 
     @Binds
     abstract fun bindAiAssistRepository(impl: AiAssistRepositoryImpl): AiAssistRepository

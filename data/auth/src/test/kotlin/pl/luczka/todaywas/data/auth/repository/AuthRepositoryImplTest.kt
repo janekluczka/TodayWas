@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.auth.repository
 
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.minimalConfig

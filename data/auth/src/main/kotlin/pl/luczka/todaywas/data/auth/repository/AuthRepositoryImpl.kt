@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.auth.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -9,8 +9,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import pl.luczka.todaywas.core.data.mapper.toAuthError
-import pl.luczka.todaywas.core.data.mapper.toAuthState
+import pl.luczka.todaywas.data.auth.mapper.toAuthError
+import pl.luczka.todaywas.data.auth.mapper.toAuthState
 import pl.luczka.todaywas.domain.auth.model.AuthException
 import pl.luczka.todaywas.domain.auth.model.AuthState
 import pl.luczka.todaywas.domain.auth.repository.AuthRepository

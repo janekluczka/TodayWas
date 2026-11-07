@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.mapper
+package pl.luczka.todaywas.data.auth.mapper
 
 import io.github.jan.supabase.auth.status.SessionStatus
 import pl.luczka.todaywas.domain.auth.model.AuthState
