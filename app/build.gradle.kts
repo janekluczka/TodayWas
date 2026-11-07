@@ -28,7 +28,6 @@ dependencies {
     implementation(project(":domain:onboarding"))
     implementation(project(":core:data"))
     implementation(project(":core:designsystem"))
-    implementation(project(":core:domain"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:account:impl"))
     implementation(project(":feature:habit:impl"))

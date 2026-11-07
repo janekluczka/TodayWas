@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":domain:onboarding"))
     implementation(project(":domain:auth"))
     implementation(project(":domain:entry"))
-    implementation(project(":core:domain"))
     implementation(project(":core:database"))
     implementation(project(":core:network"))
     implementation(libs.androidx.work.runtime)

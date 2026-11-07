@@ -7,10 +7,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain:habit"))
-    implementation(project(":domain:journal"))
-    implementation(project(":domain:aiassist"))
-    implementation(project(":domain:onboarding"))
-    implementation(project(":domain:auth"))
-    implementation(project(":core:domain"))
+    // The fakes implement these areas' repository interfaces, so tests using a fake see the interface type.
+    api(project(":domain:aiassist"))
+    api(project(":domain:auth"))
+    api(project(":domain:habit"))
+    api(project(":domain:journal"))
+    api(project(":domain:onboarding"))
 }

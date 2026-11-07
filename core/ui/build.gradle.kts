@@ -34,7 +34,6 @@ dependencies {
     implementation(project(":domain:entry"))
     // Shared composables take and render Ds components and theme types.
     api(project(":core:designsystem"))
-    implementation(project(":core:domain"))
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.ui)
