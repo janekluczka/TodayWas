@@ -32,10 +32,16 @@ Multi-module Gradle project, split the house-style way (`android-guidelines` →
   `onboarding` — `api` holds only the `NavKey`s and `Navigator.navigateToXxx()` functions; `impl`
   holds the screens, ViewModels, the feature's strings and its entry builder. A feature reaches
   another only through that one's `api`.
-- `:core:domain` — domain models, repository interfaces, use cases, business rules.
-- `:core:data` — repository implementations, mappers, sync; `:core:database` — Room entities,
-  DAOs, the database, migrations and the exported schemas (`core/database/schemas/`);
-  `:core:network` — Supabase client, DTOs, remote data sources.
+- `:domain:<area>` — one business area's models, repository interfaces, use cases and rules:
+  `entry` (base: `Syncable`, the 24h edit window, contribution models, `SyncScheduler`,
+  `mergeForSync`), `auth`, `onboarding`, `aiassist`, `journal`, `habit`, and the combining `sync`
+  (local-data sync, summary, sign-out). Areas depend only on other areas.
+- `:data:<area>` for `auth`, `onboarding`, `aiassist`, `journal`, `habit` — that area's repository
+  implementation, mappers, remote data sources and DTOs, and its Hilt `<Area>DataModule`;
+  `:data:sync` — `SyncWorker`, `StartupSync`, the WorkManager scheduler. Only `:app` depends on
+  `:data:*`, and data modules never depend on each other.
+- `:core:database` — Room entities, DAOs, the database, migrations and the exported schemas
+  (`core/database/schemas/`); `:core:network` — the Supabase client and `remoteCall`.
 - `:core:ui` — UI models, mappers and composables shared by more than one feature, plus their
   strings (referenced from features as `CoreUiR`); `:core:navigation` — the `Navigator`;
   `:core:testing` — shared repository fakes.

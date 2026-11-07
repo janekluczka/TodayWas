@@ -2,8 +2,8 @@ package pl.luczka.todaywas.core.testing.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import pl.luczka.todaywas.core.domain.model.OnboardingState
-import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
+import pl.luczka.todaywas.domain.onboarding.model.OnboardingState
+import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
 
 class FakeOnboardingRepository(
     initialState: OnboardingState = OnboardingState(

@@ -19,14 +19,14 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitType
-import pl.luczka.todaywas.core.domain.usecase.GetFreshLoggableDatesUseCase
-import pl.luczka.todaywas.core.domain.usecase.LogHabitCheckInsUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.ui.model.HabitTypeUiState
+import pl.luczka.todaywas.domain.entry.usecase.GetFreshLoggableDatesUseCase
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitType
+import pl.luczka.todaywas.domain.habit.usecase.LogHabitCheckInsUseCase
+import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitCheckInBoardUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LogHabitCheckInsViewModelTest {

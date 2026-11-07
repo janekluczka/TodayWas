@@ -9,11 +9,14 @@ internal object Scopes {
     val test by lazy { Konsist.scopeFromTest() }
 }
 
+/** A `domain.model` package, or an area's `domain.<area>.model`. */
+private val domainModelPackage = Regex("""\.domain\.(\w+\.)?model\.""")
+
 /** Simple names this file imports from any `domain.model` package. */
 internal fun KoFileDeclaration.importedDomainModelNames(): Set<String> =
     imports
         .map { it.name }
-        .filter { it.contains(".domain.model.") }
+        .filter { domainModelPackage.containsMatchIn(it) }
         .map { it.substringAfterLast('.') }
         .toSet()
 

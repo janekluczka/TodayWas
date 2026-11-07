@@ -19,18 +19,18 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.model.ContributionGrid
-import pl.luczka.todaywas.core.domain.model.ContributionWindow
-import pl.luczka.todaywas.core.domain.model.EditWindowExpiredException
-import pl.luczka.todaywas.core.domain.usecase.DeleteHabitCheckInUseCase
-import pl.luczka.todaywas.core.domain.usecase.DeleteHabitUseCase
-import pl.luczka.todaywas.core.domain.usecase.GetFreshLoggableDatesUseCase
-import pl.luczka.todaywas.core.domain.usecase.IsEditableUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
-import pl.luczka.todaywas.core.domain.usecase.ObserveHabitContributionUseCase
-import pl.luczka.todaywas.core.domain.usecase.SaveHabitCheckInsUseCase
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.ContributionGridUiState
+import pl.luczka.todaywas.domain.entry.model.ContributionGrid
+import pl.luczka.todaywas.domain.entry.model.ContributionWindow
+import pl.luczka.todaywas.domain.entry.model.EditWindowExpiredException
+import pl.luczka.todaywas.domain.entry.usecase.GetFreshLoggableDatesUseCase
+import pl.luczka.todaywas.domain.entry.usecase.IsEditableUseCase
+import pl.luczka.todaywas.domain.habit.usecase.DeleteHabitCheckInUseCase
+import pl.luczka.todaywas.domain.habit.usecase.DeleteHabitUseCase
+import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitCheckInBoardUseCase
+import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitContributionUseCase
+import pl.luczka.todaywas.domain.habit.usecase.SaveHabitCheckInsUseCase
 
 @HiltViewModel(assistedFactory = HabitDetailViewModel.Factory::class)
 internal class HabitDetailViewModel @AssistedInject constructor(

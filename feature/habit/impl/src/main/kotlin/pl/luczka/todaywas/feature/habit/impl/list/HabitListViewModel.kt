@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import pl.luczka.todaywas.core.domain.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.core.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.core.ui.model.HabitSortUiState
+import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitCheckInBoardUseCase
 
 @HiltViewModel
 internal class HabitListViewModel @Inject constructor(

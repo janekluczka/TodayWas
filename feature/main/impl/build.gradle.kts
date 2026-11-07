@@ -7,6 +7,10 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:sync"))
+    implementation(project(":domain:habit"))
+    implementation(project(":domain:journal"))
+    implementation(project(":domain:auth"))
     implementation(project(":feature:main:api"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:habit:api"))

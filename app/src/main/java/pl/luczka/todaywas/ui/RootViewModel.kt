@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
-import pl.luczka.todaywas.core.domain.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.onboarding.usecase.ObserveOnboardingStateUseCase
 import pl.luczka.todaywas.feature.main.api.navigation.MainKey
 import pl.luczka.todaywas.feature.onboarding.api.navigation.OnboardingWelcomeKey
 

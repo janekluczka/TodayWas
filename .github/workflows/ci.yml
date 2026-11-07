@@ -25,6 +25,8 @@ jobs:
             android:
               - 'app/**'
               - 'core/**'
+              - 'data/**'
+              - 'domain/**'
               - 'feature/**'
               - 'build-logic/**'
               - 'config/**'

@@ -62,7 +62,7 @@ class LayerTest {
         frameworkImports.assertEmpty()
     }
 
-    /** Files whose package names only segments of [layer], e.g. `<base>.core.data.local.database` for data. */
+    /** Files whose package names only segments of [layer], e.g. `<base>.data.journal.local` for data. */
     private fun filesIn(layer: Set<String>) =
         Scopes.production.files.filter { file ->
             val layers = file.packagee?.name.layers()

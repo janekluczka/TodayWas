@@ -25,9 +25,14 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:data"))
+    implementation(project(":data:sync"))
+    implementation(project(":domain:onboarding"))
+    implementation(project(":data:habit"))
+    implementation(project(":data:journal"))
+    implementation(project(":data:aiassist"))
+    implementation(project(":data:onboarding"))
+    implementation(project(":data:auth"))
     implementation(project(":core:designsystem"))
-    implementation(project(":core:domain"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:account:impl"))
     implementation(project(":feature:habit:impl"))

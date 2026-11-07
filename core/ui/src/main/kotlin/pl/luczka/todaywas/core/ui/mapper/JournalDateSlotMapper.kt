@@ -1,7 +1,7 @@
 package pl.luczka.todaywas.core.ui.mapper
 
-import pl.luczka.todaywas.core.domain.model.JournalDateSlot
 import pl.luczka.todaywas.core.ui.model.JournalDateSlotUiState
+import pl.luczka.todaywas.domain.journal.model.JournalDateSlot
 
 fun JournalDateSlot.toUiState(): JournalDateSlotUiState = when (this) {
     JournalDateSlot.TODAY -> JournalDateSlotUiState.TODAY

@@ -54,14 +54,62 @@ class ModuleTest {
     }
 
     @Test
-    fun `should not depend on a feature or the app when a core module declares dependencies`() {
+    fun `should not depend on a feature or the app when a core domain or data module declares dependencies`() {
         // Arrange
-        val offending = Modules.all.filter { it.isCore }.flatMap { module ->
+        val offending = Modules.all.filter { it.isCore || it.isDomain || it.isData }.flatMap { module ->
             module.dependencyModules().filter { it.isFeature || it.isApp }.map { "${module.path} -> ${it.path}" }
         }
 
         // Assert
-        offending.assertNone("Core modules never depend on features or the app.")
+        offending.assertNone("Core, domain and data modules never depend on features or the app.")
+    }
+
+    @Test
+    fun `should not depend on a data module when a module is not the app or a data module`() {
+        // Arrange
+        val offending = Modules.all.filterNot { it.isApp || it.isData }.flatMap { module ->
+            module.dependencyModules().filter { it.isData }.map { "${module.path} -> ${it.path}" }
+        }
+
+        // Assert
+        offending.assertNone("Only :app depends on :data:* modules, to put their Hilt modules on the graph.")
+    }
+
+    @Test
+    fun `should not depend on the database or network when a feature module declares dependencies`() {
+        // Arrange
+        val storage = setOf(":core:database", ":core:network")
+        val offending = Modules.all.filter { it.isFeature }.flatMap { module ->
+            module.dependencyModules().filter { it.path in storage }.map { "${module.path} -> ${it.path}" }
+        }
+
+        // Assert
+        offending.assertNone("Features reach data through use cases in :domain:* modules.")
+    }
+
+    @Test
+    fun `should depend only on other domain modules when a domain module declares dependencies`() {
+        // Arrange
+        val offending = Modules.all.filter { it.isDomain }.flatMap { module ->
+            module
+                .dependencyModules()
+                .filterNot { it.isDomain || it.path == ":core:testing" }
+                .map { "${module.path} -> ${it.path}" }
+        }
+
+        // Assert
+        offending.assertNone("A :domain:<area> depends on other :domain:* modules only (and :core:testing in tests).")
+    }
+
+    @Test
+    fun `should not depend on another data module when a data module declares dependencies`() {
+        // Arrange
+        val offending = Modules.all.filter { it.isData }.flatMap { module ->
+            module.dependencyModules().filter { it.isData }.map { "${module.path} -> ${it.path}" }
+        }
+
+        // Assert
+        offending.assertNone("A :data:<area> uses another area through its :domain: module, never its :data: module.")
     }
 
     @Test

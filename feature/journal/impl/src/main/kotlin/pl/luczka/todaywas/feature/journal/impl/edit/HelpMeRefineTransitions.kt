@@ -1,6 +1,6 @@
 package pl.luczka.todaywas.feature.journal.impl.edit
 
-import pl.luczka.todaywas.core.domain.model.AiPromptResult
+import pl.luczka.todaywas.domain.aiassist.model.AiPromptResult
 import pl.luczka.todaywas.feature.journal.impl.mapper.toAiAssistErrorUiState
 import pl.luczka.todaywas.feature.journal.impl.model.JournalPromptToneUiState
 import pl.luczka.todaywas.feature.journal.impl.model.hasRemainingToday

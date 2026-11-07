@@ -1,11 +1,11 @@
 package pl.luczka.todaywas.feature.habit.impl.logcheckin
 
 import java.time.LocalDate
-import pl.luczka.todaywas.core.domain.model.Habit
-import pl.luczka.todaywas.core.domain.model.HabitCheckIn
-import pl.luczka.todaywas.core.domain.model.HabitCheckInBoard
-import pl.luczka.todaywas.core.domain.model.HabitType
 import pl.luczka.todaywas.core.ui.mapper.toUiState
+import pl.luczka.todaywas.domain.habit.model.Habit
+import pl.luczka.todaywas.domain.habit.model.HabitCheckIn
+import pl.luczka.todaywas.domain.habit.model.HabitCheckInBoard
+import pl.luczka.todaywas.domain.habit.model.HabitType
 
 internal fun HabitCheckInBoard.toRows(
     selectedDate: LocalDate,

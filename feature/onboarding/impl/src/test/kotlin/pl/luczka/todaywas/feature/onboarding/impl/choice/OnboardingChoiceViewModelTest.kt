@@ -15,9 +15,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.model.OnboardingState
-import pl.luczka.todaywas.core.domain.repository.OnboardingRepository
-import pl.luczka.todaywas.core.domain.usecase.CompleteOnboardingUseCase
+import pl.luczka.todaywas.domain.onboarding.model.OnboardingState
+import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
+import pl.luczka.todaywas.domain.onboarding.usecase.CompleteOnboardingUseCase
 import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 
 @OptIn(ExperimentalCoroutinesApi::class)

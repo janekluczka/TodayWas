@@ -2,8 +2,8 @@ package pl.luczka.todaywas.core.ui.mapper
 
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import pl.luczka.todaywas.core.domain.model.JournalEntry
 import pl.luczka.todaywas.core.ui.model.JournalEntryUiState
+import pl.luczka.todaywas.domain.journal.model.JournalEntry
 
 fun JournalEntry.toUiState(): JournalEntryUiState = JournalEntryUiState(
     id = id,

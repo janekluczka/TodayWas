@@ -1,0 +1,32 @@
+package pl.luczka.todaywas.domain.sync.usecase
+
+import javax.inject.Inject
+import kotlinx.coroutines.flow.first
+import pl.luczka.todaywas.domain.auth.model.AuthState
+import pl.luczka.todaywas.domain.auth.repository.AuthRepository
+import pl.luczka.todaywas.domain.habit.repository.HabitRepository
+import pl.luczka.todaywas.domain.journal.repository.JournalRepository
+import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
+
+class SignOutUseCase @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val journalRepository: JournalRepository,
+    private val habitRepository: HabitRepository,
+    private val onboardingRepository: OnboardingRepository,
+) {
+
+    // Clearing is gated on the actual SignedIn->SignedOut auth-state transition around the call,
+    // not signOut()'s own Result, so every sign-out entry point clears synced local data the same
+    // way a local session actually ends, whether or not the remote revoke call itself succeeds.
+    suspend operator fun invoke(): Result<Unit> {
+        val wasSignedIn = authRepository.observeAuthState().first() is AuthState.SignedIn
+        val result = authRepository.signOut()
+        val isNowSignedOut = authRepository.observeAuthState().first() is AuthState.SignedOut
+        if (wasSignedIn && isNowSignedOut) {
+            journalRepository.clearLocal()
+            habitRepository.clearLocal()
+            onboardingRepository.resetSyncFlag()
+        }
+        return result
+    }
+}

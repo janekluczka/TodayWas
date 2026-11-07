@@ -1,0 +1,216 @@
+package pl.luczka.todaywas.data.aiassist.repository
+
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.functions.Functions
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockRequestHandleScope
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.engine.mock.toByteArray
+import io.ktor.client.plugins.HttpTimeoutCapability
+import io.ktor.client.request.HttpRequestData
+import io.ktor.client.request.HttpResponseData
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistError
+import pl.luczka.todaywas.domain.aiassist.model.AiAssistException
+import pl.luczka.todaywas.domain.aiassist.model.JournalPromptTone
+
+class AiAssistRepositoryImplTest {
+
+    private fun repository(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
+        AiAssistRepositoryImpl(
+            createSupabaseClient(
+                supabaseUrl = "https://example.supabase.co",
+                supabaseKey = "test-key",
+            ) {
+                httpEngine = MockEngine(handler)
+                install(Functions)
+            },
+        )
+
+    @Test
+    fun `should return the generated text when generateJournalStarterPrompt succeeds`() =
+        runTest {
+            // Arrange
+            val repository = repository {
+                respond(
+                    """{"text":"Generated prompt","remaining":7}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+
+            // Act
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals("Generated prompt", result.getOrNull()?.text)
+            assertEquals(7, result.getOrNull()?.remainingToday)
+        }
+
+    @Test
+    fun `should return AiAssistException with the mapped error when the proxy call fails`() =
+        runTest {
+            // Arrange
+            val repository = repository { respond("upstream failed", HttpStatusCode.BadGateway) }
+
+            // Act
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
+
+            // Assert
+            assertTrue(result.isFailure)
+            val error = (result.exceptionOrNull() as? AiAssistException)?.error
+            assertEquals(AiAssistError.UpstreamFailed, error)
+        }
+
+    @Test
+    fun `should return AiAssistException with DailyLimitReached when the proxy returns 429`() =
+        runTest {
+            // Arrange
+            val repository = repository {
+                respond(
+                    """{"error":"daily_limit_reached","remaining":0}""",
+                    HttpStatusCode.TooManyRequests,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+
+            // Act
+            val result = repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
+
+            // Assert
+            assertTrue(result.isFailure)
+            val error = (result.exceptionOrNull() as? AiAssistException)?.error
+            assertEquals(AiAssistError.DailyLimitReached, error)
+        }
+
+    @Test
+    fun `should return the refined text when refineJournalEntry succeeds`() =
+        runTest {
+            // Arrange
+            val repository = repository {
+                respond(
+                    """{"text":"Refined text","remaining":4}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+
+            // Act
+            val result = repository.refineJournalEntry(
+                "Original text",
+                JournalPromptTone.NEUTRAL,
+                thoughts = null,
+            )
+
+            // Assert
+            assertTrue(result.isSuccess)
+            assertEquals("Refined text", result.getOrNull()?.text)
+        }
+
+    @Test
+    fun `should include thoughts in the request body when refining with thoughts provided`() =
+        runTest {
+            // Arrange
+            var capturedBody: String? = null
+            val repository = repository { request ->
+                capturedBody = String(request.body.toByteArray())
+                respond(
+                    """{"text":"Refined text","remaining":4}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+
+            // Act
+            repository.refineJournalEntry(
+                "Original text",
+                JournalPromptTone.NEUTRAL,
+                thoughts = "make it shorter",
+            )
+
+            // Assert
+            assertTrue(capturedBody.orEmpty().contains("make it shorter"))
+        }
+
+    @Test
+    fun `should apply a 30s request and socket timeout when calling the AI proxy`() =
+        runTest {
+            // Arrange
+            var capturedRequestTimeoutMillis: Long? = null
+            var capturedSocketTimeoutMillis: Long? = null
+            val repository = repository { request ->
+                val timeoutConfig = request.getCapabilityOrNull(HttpTimeoutCapability)
+                capturedRequestTimeoutMillis = timeoutConfig?.requestTimeoutMillis
+                capturedSocketTimeoutMillis = timeoutConfig?.socketTimeoutMillis
+                respond(
+                    """{"text":"ok","remaining":9}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+
+            // Act
+            repository.generateJournalStarterPrompt(
+                JournalPromptTone.GOOD,
+                thoughts = null,
+            )
+
+            // Assert
+            assertEquals(30_000L, capturedRequestTimeoutMillis)
+            assertEquals(30_000L, capturedSocketTimeoutMillis)
+        }
+
+    @Test
+    fun `should propagate CancellationException rather than a failure when the call is cancelled`() =
+        runTest {
+            // Arrange — the engine suspends mid-call so the cancellation below lands inside
+            // invokeAiProxy's try block, not before the coroutine even starts.
+            val repository = repository {
+                delay(50)
+                respond(
+                    """{"text":"ok","remaining":9}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+            var caught: Throwable? = null
+
+            // Act
+            val job = launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    repository.generateJournalStarterPrompt(
+                        JournalPromptTone.GOOD,
+                        thoughts = null,
+                    )
+                } catch (e: CancellationException) {
+                    caught = e
+                    throw e
+                }
+            }
+            job.cancel()
+            job.join()
+
+            // Assert
+            assertTrue(caught is CancellationException)
+        }
+}
