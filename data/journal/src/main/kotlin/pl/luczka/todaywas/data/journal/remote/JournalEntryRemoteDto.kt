@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.network.dto
+package pl.luczka.todaywas.data.journal.remote
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

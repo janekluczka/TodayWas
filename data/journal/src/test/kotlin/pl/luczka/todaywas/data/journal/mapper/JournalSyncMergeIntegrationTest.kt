@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.util
+package pl.luczka.todaywas.data.journal.mapper
 
 import android.content.Context
 import androidx.room.Room
@@ -9,10 +9,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import pl.luczka.todaywas.core.data.mapper.toSyncMeta
 import pl.luczka.todaywas.core.database.TodayWasDatabase
 import pl.luczka.todaywas.core.database.entity.JournalEntryEntity
 import pl.luczka.todaywas.core.database.todayWasDatabaseCallbacks
+import pl.luczka.todaywas.data.journal.mapper.toSyncMeta
 import pl.luczka.todaywas.domain.entry.util.mergeForSync
 
 // End-to-end regression coverage for the soft-delete -> sync-push chain: unlike SyncMergeTest.kt

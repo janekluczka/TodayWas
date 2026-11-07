@@ -1,10 +1,10 @@
-package pl.luczka.todaywas.core.network.datasource
+package pl.luczka.todaywas.data.journal.remote
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import javax.inject.Inject
-import pl.luczka.todaywas.core.network.dto.JournalEntryRemoteDto
 import pl.luczka.todaywas.core.network.util.remoteCall
+import pl.luczka.todaywas.data.journal.remote.JournalEntryRemoteDto
 
 private const val TABLE = "journal_entries"
 

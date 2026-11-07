@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.journal.repository
 
 import java.time.Clock
 import java.time.LocalDate
@@ -8,14 +8,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import pl.luczka.todaywas.core.data.mapper.toDomain
-import pl.luczka.todaywas.core.data.mapper.toEntity
-import pl.luczka.todaywas.core.data.mapper.toRemoteDto
-import pl.luczka.todaywas.core.data.mapper.toSyncMeta
 import pl.luczka.todaywas.core.database.datasource.LocalJournalDataSource
 import pl.luczka.todaywas.core.database.entity.JournalEntryEntity
-import pl.luczka.todaywas.core.network.datasource.RemoteJournalDataSource
 import pl.luczka.todaywas.core.network.util.remoteCall
+import pl.luczka.todaywas.data.journal.mapper.toDomain
+import pl.luczka.todaywas.data.journal.mapper.toEntity
+import pl.luczka.todaywas.data.journal.mapper.toRemoteDto
+import pl.luczka.todaywas.data.journal.mapper.toSyncMeta
+import pl.luczka.todaywas.data.journal.remote.RemoteJournalDataSource
 import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 import pl.luczka.todaywas.domain.entry.util.TOMBSTONE_GC_WINDOW

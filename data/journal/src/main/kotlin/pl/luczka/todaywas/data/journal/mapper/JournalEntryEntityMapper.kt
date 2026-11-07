@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.mapper
+package pl.luczka.todaywas.data.journal.mapper
 
 import java.time.Instant
 import java.time.LocalDate

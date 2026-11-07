@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.journal.repository
 
 import java.time.Instant
 import java.time.LocalDate
@@ -9,12 +9,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pl.luczka.todaywas.core.data.datasource.FakeRemoteJournalDataSource
 import pl.luczka.todaywas.core.database.datasource.LocalJournalDataSource
 import pl.luczka.todaywas.core.database.entity.JournalEntryEntity
-import pl.luczka.todaywas.core.network.datasource.RemoteJournalDataSource
-import pl.luczka.todaywas.core.network.dto.JournalEntryRemoteDto
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
+import pl.luczka.todaywas.data.journal.remote.FakeRemoteJournalDataSource
+import pl.luczka.todaywas.data.journal.remote.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.journal.remote.RemoteJournalDataSource
 import pl.luczka.todaywas.domain.auth.repository.AuthRepository
 import pl.luczka.todaywas.domain.entry.repository.SyncScheduler
 import pl.luczka.todaywas.domain.entry.util.TOMBSTONE_GC_WINDOW

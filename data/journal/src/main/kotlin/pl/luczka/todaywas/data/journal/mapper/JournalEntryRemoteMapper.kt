@@ -1,8 +1,8 @@
-package pl.luczka.todaywas.core.data.mapper
+package pl.luczka.todaywas.data.journal.mapper
 
 import java.time.Instant
 import pl.luczka.todaywas.core.database.entity.JournalEntryEntity
-import pl.luczka.todaywas.core.network.dto.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.journal.remote.JournalEntryRemoteDto
 import pl.luczka.todaywas.domain.entry.util.SyncMeta
 import pl.luczka.todaywas.domain.journal.model.JournalEntry
 

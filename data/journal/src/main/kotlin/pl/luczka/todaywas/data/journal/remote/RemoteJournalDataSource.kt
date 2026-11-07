@@ -1,6 +1,6 @@
-package pl.luczka.todaywas.core.network.datasource
+package pl.luczka.todaywas.data.journal.remote
 
-import pl.luczka.todaywas.core.network.dto.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.journal.remote.JournalEntryRemoteDto
 
 interface RemoteJournalDataSource {
 

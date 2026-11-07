@@ -1,7 +1,7 @@
-package pl.luczka.todaywas.core.data.datasource
+package pl.luczka.todaywas.data.journal.remote
 
-import pl.luczka.todaywas.core.network.datasource.RemoteJournalDataSource
-import pl.luczka.todaywas.core.network.dto.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.journal.remote.JournalEntryRemoteDto
+import pl.luczka.todaywas.data.journal.remote.RemoteJournalDataSource
 
 class FakeRemoteJournalDataSource(
     private val entries: MutableMap<String, JournalEntryRemoteDto> = mutableMapOf(),
