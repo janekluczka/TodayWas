@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.onboarding.repository
 
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow

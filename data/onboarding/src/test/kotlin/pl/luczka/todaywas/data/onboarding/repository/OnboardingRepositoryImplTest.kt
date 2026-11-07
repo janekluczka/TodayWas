@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.data.repository
+package pl.luczka.todaywas.data.onboarding.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf

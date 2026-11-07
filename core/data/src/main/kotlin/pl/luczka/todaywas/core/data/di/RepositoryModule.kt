@@ -8,18 +8,13 @@ import javax.inject.Singleton
 import pl.luczka.todaywas.core.data.repository.AiAssistRepositoryImpl
 import pl.luczka.todaywas.core.data.repository.HabitRepositoryImpl
 import pl.luczka.todaywas.core.data.repository.JournalRepositoryImpl
-import pl.luczka.todaywas.core.data.repository.OnboardingRepositoryImpl
 import pl.luczka.todaywas.domain.aiassist.repository.AiAssistRepository
 import pl.luczka.todaywas.domain.habit.repository.HabitRepository
 import pl.luczka.todaywas.domain.journal.repository.JournalRepository
-import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-
-    @Binds
-    abstract fun bindOnboardingRepository(impl: OnboardingRepositoryImpl): OnboardingRepository
 
     @Binds
     @Singleton
