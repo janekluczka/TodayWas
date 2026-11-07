@@ -19,9 +19,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.usecase.GetLocalDataSummaryUseCase
-import pl.luczka.todaywas.core.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
-import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
@@ -39,6 +36,9 @@ import pl.luczka.todaywas.domain.onboarding.repository.OnboardingRepository
 import pl.luczka.todaywas.domain.onboarding.usecase.CompleteOnboardingUseCase
 import pl.luczka.todaywas.domain.onboarding.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.onboarding.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.sync.usecase.GetLocalDataSummaryUseCase
+import pl.luczka.todaywas.domain.sync.usecase.ShouldReviewLocalDataBeforeSyncUseCase
+import pl.luczka.todaywas.domain.sync.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
 

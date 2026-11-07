@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.core.ui.mapper.toSortedHabitUiStates
 import pl.luczka.todaywas.core.ui.mapper.toUiState
 import pl.luczka.todaywas.core.ui.model.AuthErrorUiState
@@ -27,6 +26,7 @@ import pl.luczka.todaywas.domain.auth.usecase.ObserveAuthStateUseCase
 import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.journal.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.journal.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.domain.sync.usecase.SignOutUseCase
 
 @HiltViewModel
 internal class MainViewModel @Inject constructor(

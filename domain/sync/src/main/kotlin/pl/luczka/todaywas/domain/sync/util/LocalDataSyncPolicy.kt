@@ -1,6 +1,6 @@
-package pl.luczka.todaywas.core.domain.util
+package pl.luczka.todaywas.domain.sync.util
 
-import pl.luczka.todaywas.core.domain.model.LocalDataSummary
+import pl.luczka.todaywas.domain.sync.model.LocalDataSummary
 
 object LocalDataSyncPolicy {
 

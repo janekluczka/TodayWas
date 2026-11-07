@@ -11,9 +11,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.luczka.todaywas.core.domain.usecase.GetLocalDataSummaryUseCase
-import pl.luczka.todaywas.core.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
-import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.core.ui.auth.SignInFormUiState
 import pl.luczka.todaywas.core.ui.auth.SignUpFormUiState
 import pl.luczka.todaywas.core.ui.auth.util.isValidEmail
@@ -31,6 +28,9 @@ import pl.luczka.todaywas.domain.auth.usecase.SignUpWithEmailUseCase
 import pl.luczka.todaywas.domain.onboarding.usecase.CompleteOnboardingUseCase
 import pl.luczka.todaywas.domain.onboarding.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.onboarding.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.sync.usecase.GetLocalDataSummaryUseCase
+import pl.luczka.todaywas.domain.sync.usecase.ShouldReviewLocalDataBeforeSyncUseCase
+import pl.luczka.todaywas.domain.sync.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.feature.onboarding.api.navigation.AllSetReason
 import pl.luczka.todaywas.feature.onboarding.impl.AccountSubStep
 

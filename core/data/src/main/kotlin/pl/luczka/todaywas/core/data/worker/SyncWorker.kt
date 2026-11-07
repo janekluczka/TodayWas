@@ -6,7 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
+import pl.luczka.todaywas.domain.sync.usecase.SyncLocalDataUseCase
 
 @HiltWorker
 class SyncWorker @AssistedInject constructor(

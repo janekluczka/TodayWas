@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:sync"))
     implementation(project(":domain:habit"))
     implementation(project(":domain:journal"))
     implementation(project(":domain:aiassist"))

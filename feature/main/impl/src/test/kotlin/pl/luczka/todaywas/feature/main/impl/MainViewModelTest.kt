@@ -18,7 +18,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
@@ -37,6 +36,7 @@ import pl.luczka.todaywas.domain.habit.usecase.ObserveHabitCheckInBoardUseCase
 import pl.luczka.todaywas.domain.journal.model.JournalEntry
 import pl.luczka.todaywas.domain.journal.usecase.ObserveAddableJournalDateSlotsUseCase
 import pl.luczka.todaywas.domain.journal.usecase.ObserveJournalEntriesUseCase
+import pl.luczka.todaywas.domain.sync.usecase.SignOutUseCase
 import pl.luczka.todaywas.feature.main.impl.FabActionUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)

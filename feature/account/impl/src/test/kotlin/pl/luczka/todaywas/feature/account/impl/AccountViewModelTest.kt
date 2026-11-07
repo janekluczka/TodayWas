@@ -17,10 +17,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import pl.luczka.todaywas.core.domain.usecase.GetLocalDataSummaryUseCase
-import pl.luczka.todaywas.core.domain.usecase.ShouldReviewLocalDataBeforeSyncUseCase
-import pl.luczka.todaywas.core.domain.usecase.SignOutUseCase
-import pl.luczka.todaywas.core.domain.usecase.SyncLocalDataUseCase
 import pl.luczka.todaywas.core.testing.repository.FakeAuthRepository
 import pl.luczka.todaywas.core.testing.repository.FakeHabitRepository
 import pl.luczka.todaywas.core.testing.repository.FakeJournalRepository
@@ -38,6 +34,10 @@ import pl.luczka.todaywas.domain.journal.model.JournalEntry
 import pl.luczka.todaywas.domain.onboarding.model.OnboardingState
 import pl.luczka.todaywas.domain.onboarding.usecase.MarkLocalDataSyncedUseCase
 import pl.luczka.todaywas.domain.onboarding.usecase.ObserveOnboardingStateUseCase
+import pl.luczka.todaywas.domain.sync.usecase.GetLocalDataSummaryUseCase
+import pl.luczka.todaywas.domain.sync.usecase.ShouldReviewLocalDataBeforeSyncUseCase
+import pl.luczka.todaywas.domain.sync.usecase.SignOutUseCase
+import pl.luczka.todaywas.domain.sync.usecase.SyncLocalDataUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {

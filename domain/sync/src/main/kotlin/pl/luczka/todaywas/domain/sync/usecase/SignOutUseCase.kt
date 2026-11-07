@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.sync.usecase
 
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first

@@ -1,10 +1,10 @@
-package pl.luczka.todaywas.core.domain.usecase
+package pl.luczka.todaywas.domain.sync.usecase
 
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
-import pl.luczka.todaywas.core.domain.model.LocalDataSummary
 import pl.luczka.todaywas.domain.habit.repository.HabitRepository
 import pl.luczka.todaywas.domain.journal.repository.JournalRepository
+import pl.luczka.todaywas.domain.sync.model.LocalDataSummary
 
 class GetLocalDataSummaryUseCase @Inject constructor(
     private val journalRepository: JournalRepository,

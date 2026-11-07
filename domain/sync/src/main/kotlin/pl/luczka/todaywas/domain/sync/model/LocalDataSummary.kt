@@ -1,4 +1,4 @@
-package pl.luczka.todaywas.core.domain.model
+package pl.luczka.todaywas.domain.sync.model
 
 data class LocalDataSummary(
     val journalEntryCount: Int,

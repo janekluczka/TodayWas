@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain:sync"))
     testImplementation(project(":domain:journal"))
     implementation(project(":domain:onboarding"))
     implementation(project(":domain:auth"))
